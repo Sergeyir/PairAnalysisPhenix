@@ -1,0 +1,15 @@
+data/
+output/
+bin/
+lib/
+backup/
+__pycache__
+
+*:w
+*.pyc
+__*
+*.log
+*.swp
+*.png
+*.root
+*.backup
