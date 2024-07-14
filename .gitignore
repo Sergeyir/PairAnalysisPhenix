@@ -13,3 +13,7 @@ __*
 *.png
 *.root
 *.backup
+*.exe
+*.o
+*.so
+*.a
