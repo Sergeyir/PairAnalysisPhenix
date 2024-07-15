@@ -44,6 +44,14 @@ Box: CppTools/src/Box.cpp IOTools
 	ar rcs lib/lib$@.a lib/$@.o && \
 	$(CXX) -shared -o lib/$@.so lib/$@.o
 
+Table: CppTools/src/Table.cpp IOTools
+	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
+	$(CPP_TOOLS_INCLUDE) \
+	$(ERROR_HANDLER_LIB) $(STR_TOOLS_LIB) $(IOTOOLS_LIB) \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+
 lib: 
 	mkdir lib
 
