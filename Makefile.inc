@@ -9,3 +9,8 @@ IOTOOLS_LIB=-L./lib/ -lIOTools
 
 PBAR_LIB=-L./lib -lPBar
 PBAR_INCLUDE=-I ./ProgressBar/include
+
+ROOT_CONFIG=${ROOT}/bin/root-config
+ROOT_BIN=${ROOT}/bin
+ROOT_INCLUDE=${ROOT}/include
+ROOT_LIB=-Wl,-rpath,${ROOT}/lib -L${ROOT}/lib -lCore

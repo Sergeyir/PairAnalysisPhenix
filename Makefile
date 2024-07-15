@@ -8,7 +8,9 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: ErrorHandler StrTools Time
+all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter
+
+# CppTools
 
 ErrorHandler: CppTools/src/ErrorHandler.cpp lib
 	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
@@ -51,6 +53,25 @@ Table: CppTools/src/Table.cpp IOTools
 	-o lib/$@.o && \
 	ar rcs lib/lib$@.a lib/$@.o && \
 	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+# ProgressBar
+
+ProgressBar: ProgressBar/src/PBar.cpp lib
+	$(CXX) ProgressBar/src/PBar.cpp $(CXX_FLAGS) \
+	-o lib/PBar.o && \
+	ar rcs lib/libPBar.a lib/PBar.o && \
+	$(CXX) -shared -o lib/PBar.so lib/PBar.o
+
+#ROOTTools
+
+TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp lib
+	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+# other 
 
 lib: 
 	mkdir lib
