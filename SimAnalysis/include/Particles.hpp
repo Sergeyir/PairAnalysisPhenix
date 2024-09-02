@@ -34,7 +34,7 @@ struct
 
 struct
 {
-   std::map<std::string, int> iter_map = 
+   std::map<std::string, int> iterMap = 
    {
       {"electron", 0},
       {"positron", 1},

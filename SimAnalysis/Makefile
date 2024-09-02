@@ -34,7 +34,7 @@ PairAnalyze: src/PairAnalyze.cpp
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 all : HeatMapper.cpp EmbAnalyze.cpp SingleAnalyze.cpp WidthAnalyze.cpp PairAnalyze.cpp
-	$(CXX) HeatMapper.cpp -o HeatMapper.exe $(CXX_COMMON) \
+	$(CXX) HeatMapper.cpp -o HeatMapper.exe \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` & \
 	$(CXX) EmbAnalyze.cpp -o EmbAnalyze.exe $(CXX_COMMON) \

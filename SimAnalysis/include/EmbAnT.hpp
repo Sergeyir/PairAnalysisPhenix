@@ -18,7 +18,6 @@
 #define EMB_AN_T_HPP
 
 #include "ErrorHandler.hpp"
-#include "IOTools.hpp"
 #include "Box.hpp"
 
 #include "PBar.hpp"
@@ -35,13 +34,13 @@
 //container for storing ThrObj histograms
 struct ThrHistStruct
 {
-	std::unique_ptr<ThrObj<TH1F>> reg_dc_pc1, reg_pc2, reg_pc3, reg_tofe, reg_tofw;
-	std::array<std::unique_ptr<ThrObj<TH1F>>, 4> reg_emcale, reg_emcalw;
-	ThrHistStruct(std::string run_type);
+	std::unique_ptr<ThrObj<TH1F>> regDCPC1, regPC2, regPC3, regTOFe, regTOFw;
+	std::array<std::unique_ptr<ThrObj<TH1F>>, 4> regEMCale, regEMCalw;
+	ThrHistStruct(std::string runType);
 };
 
 int GetEmcSector(const double phi, const double pemcy);
-void Analyze(std::string part, const int queue_num);
+void Analyze(std::string part, const int queueNum);
 void EmbAnalyze();
 int main();
 
