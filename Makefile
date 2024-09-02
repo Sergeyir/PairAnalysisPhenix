@@ -8,115 +8,122 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader SingleTrackFunctions
+all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
 
 # CppTools
 
-ErrorHandler: CppTools/src/ErrorHandler.cpp lib
-	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
-	
-StrTools: CppTools/src/StrTools.cpp lib
-	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+CppToolsLib: 
+	mkdir -p CppTools/lib
 
-Time: CppTools/src/Time.cpp lib
+ErrorHandler: CppTools/src/ErrorHandler.cpp CppToolsLib
 	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+	
+StrTools: CppTools/src/StrTools.cpp CppToolsLib
+	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 IOTools: CppTools/src/IOTools.cpp ErrorHandler StrTools
 	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
 	$(CPP_TOOLS_INCLUDE) \
-	$(ERROR_HANDLER_LIB) $(STR_TOOLS_LIB) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-L./CppTools/lib -lErrorHandler -lStrTools \
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 Box: CppTools/src/Box.cpp IOTools
 	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
 	$(CPP_TOOLS_INCLUDE) \
-	$(ERROR_HANDLER_LIB) $(STR_TOOLS_LIB) $(IOTOOLS_LIB) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-L./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 Table: CppTools/src/Table.cpp IOTools
 	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
 	$(CPP_TOOLS_INCLUDE) \
-	$(ERROR_HANDLER_LIB) $(STR_TOOLS_LIB) $(IOTOOLS_LIB) \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-L./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+
+Time: CppTools/src/Time.cpp CppToolsLib
+	$(CXX) CppTools/src/$@.cpp $(CXX_FLAGS) \
+	-o CppTools/lib/$@.o && \
+	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
+	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 # ProgressBar
 
-ProgressBar: ProgressBar/src/PBar.cpp lib
+ProgressBarLib:
+	mkdir -p ProgressBar/lib
+
+ProgressBar: ProgressBar/src/PBar.cpp ProgressBarLib
 	$(CXX) ProgressBar/src/PBar.cpp $(CXX_FLAGS) \
-	-o lib/PBar.o && \
-	ar rcs lib/libPBar.a lib/PBar.o && \
-	$(CXX) -shared -o lib/PBar.so lib/PBar.o
+	-o ProgressBar/lib/PBar.o && \
+	ar rcs ProgressBar/lib/libPBar.a ProgressBar/lib/PBar.o && \
+	$(CXX) -shared -o ProgressBar/lib/PBar.so lib/PBar.o
 
 # ROOTTools
 
-TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp lib
+ROOTToolsLib:
+	mkdir -p ROOTTools/lib
+
+TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp ROOTToolsLib
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o ROOTTOOLS/lib/$@.o && \
+	ar rcs ROOTTOOLS/lib/lib$@.a ROOTTOOLS/lib/$@.o && \
+	$(CXX) -shared -o ROOTTOOLS/lib/$@.so ROOTTOOLS/lib/$@.o
 
-GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools
+GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools ROOTToolsLib
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
-	$(CPP_TOOLS_INCLUDE) $(ERROR_HANDLER_LIB) $(IOTOOLS_LIB) \
+	$(CPP_TOOLS_INCLUDE) -L./CppTools/lib -l ErrorHandler -lIOTools \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o ROOTTOOLS/lib/$@.o && \
+	ar rcs ROOTTOOLS/lib/lib$@.a ROOTTOOLS/lib/$@.o && \
+	$(CXX) -shared -o ROOTTOOLS/lib/$@.so ROOTTOOLS/lib/$@.o
 
 
-# SimAnalysis
+# SimAnalysis libs
 
-EffTreeReader: SimAnalysis/src/EffTreeReader.cpp lib
+SimAnalysisLib:
+	mkdir -p SimAnalysis/lib
+
+EffTreeReader: SimAnalysis/src/EffTreeReader.cpp SimAnalysisLib
 	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o SimAnalysis/lib/$@.o && \
+	ar rcs SimAnalysis/lib/lib$@.a SimAnalysis/lib/$@.o && \
+	$(CXX) -shared -o SimAnalysis/lib/$@.so SimAnalysis/lib/$@.o
 
-EmbTreeReader: SimAnalysis/src/EmbTreeReader.cpp lib
+EmbTreeReader: SimAnalysis/src/EmbTreeReader.cpp SimAnalysisLib
 	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o SimAnalysis/lib/$@.o && \
+	ar rcs SimAnalysis/lib/lib$@.a SimAnalysis/lib/$@.o && \
+	$(CXX) -shared -o SimAnalysis/lib/$@.so SimAnalysis/lib/$@.o
 
-STrackFun: SimAnalysis/src/STrackFun.cpp
+STrackFun: SimAnalysis/src/STrackFun.cpp SimAnalysisLib
 	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
-	-o lib/$@.o && \
-	ar rcs lib/lib$@.a lib/$@.o && \
-	$(CXX) -shared -o lib/$@.so lib/$@.o
+	-o SimAnalysis/lib/$@.o && \
+	ar rcs SimAnalysis/lib/lib$@.a SimAnalysis/lib/$@.o && \
+	$(CXX) -shared -o SimAnalysis/lib/$@.so SimAnalysis/lib/$@.o
 	
-# executables
+# SimAnalysis executables
 EmbAnT: SimAnalysis/src/EmbAnT.cpp Box ProgressBar EmbTreeReader STrackFun
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON) \
-	$(CPP_TOOLS_INCLUDE) $(IOTOOLS_LIB) \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(SIM_ANALYSIS_INCLUDE) $(EMB_TREE_READER_LIB) $(S_TRACK_FUN_LIB) \
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
-
-# other 
-
-lib: 
-	mkdir lib
 
 clean: 
 	rm -rf lib/*

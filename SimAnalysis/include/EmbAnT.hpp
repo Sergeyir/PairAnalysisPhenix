@@ -17,6 +17,7 @@
 #ifndef EMB_AN_T_HPP
 #define EMB_AN_T_HPP
 
+#include "ErrorHandler.hpp"
 #include "IOTools.hpp"
 #include "Box.hpp"
 
