@@ -8,7 +8,7 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter
+all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit
 
 # CppTools
 
@@ -66,6 +66,30 @@ ProgressBar: ProgressBar/src/PBar.cpp lib
 
 TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp lib
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools
+	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
+	$(CPP_TOOLS_INCLUDE) $(ERROR_HANDLER_LIB) $(IOTOOLS_LIB) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+#sim_analysis
+
+EffTreeReader: SimAnalysis/src/EffTreeReader.cpp lib
+	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+EmbTreeReader: SimAnalysis/src/EmbTreeReader.cpp lib
+	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
 	-o lib/$@.o && \
 	ar rcs lib/lib$@.a lib/$@.o && \
