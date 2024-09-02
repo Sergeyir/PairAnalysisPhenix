@@ -138,7 +138,7 @@ EmbTreeReader::EmbTreeReader(TTreeReader &reader, const std::string input_type)
    b_pltofw = std::make_unique<TTreeReaderValue<float>>(
       TTreeReaderValue<float>(reader, ("pltofw" + input_type).c_str()));
 }
-	
+
 //DC-PC1 variables
 Double_t EmbTreeReader::zed() {return *(b_zed->Get());}
 Double_t EmbTreeReader::the0() {return *(b_the0->Get());}

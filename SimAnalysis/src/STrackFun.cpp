@@ -1,20 +1,23 @@
-#pragma once
+// $SOURCE$
+//------------------------------------------------------------------------------------------------
+//                                     STrackFun realisation
+//------------------------------------------------------------------------------------------------
+// STrackFun - single track funcitons
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic funcitons used in analysis for single particle tracks
+ **/
+//------------------------------------------------------------------------------------------------
 
-#include <iostream>
-#include <stdio.h>
-#include <stdlib.h>
-#include <math.h>
+#ifndef S_TRACK_FUN_CPP
+#define S_TRACK_FUN_CPP
 
-#include "TFile.h"
-#include "TF1.h"
-#include "TH1.h"
-#include "TH2.h"
-#include "TH3.h"
-
-#include "ThrObj.h"
-
-#include "Tools.h"
-#include "Particles.h"
+#include "../include/STrackFun.hpp"
 
 bool IsHit(const double dval)
 {
@@ -22,9 +25,9 @@ bool IsHit(const double dval)
 	return true;
 }
 
-bool IsMatch(const double sdphi, const double sdz, const double max_sdphi = 2., const double max_sdz = 2.)
+bool IsMatch(const double sdphi, const double sdz, const double sdphiMax, const double sdzMax)
 {
-	if (abs(sdphi) > max_sdphi || abs(sdz) > max_sdz) return false;
+	if (abs(sdphi) > sdphiMax || abs(sdz) > sdzMax) return false;
 	return true;
 }	
 
@@ -35,16 +38,18 @@ double TransformProb(double prob)
 	return prob;
 }
 
-void CutDCDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const double, const double), const double phi, const double zed)
+void CutDCDeadAreas(TH2F *hist, 
+                    bool (*cutFunc)(const double, const double, const double, const double), 
+                    const double phi, const double zed)
 {
 	for (int i = 1; i <= hist->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= hist->GetYaxis()->GetNbins(); j++)
 		{
-			const double val_x = hist->GetXaxis()->GetBinCenter(i);
-			const double val_y = hist->GetYaxis()->GetBinCenter(j);
+			const double xVal = hist->GetXaxis()->GetBinCenter(i);
+			const double yVal = hist->GetYaxis()->GetBinCenter(j);
 
-			if (cut_func(phi, zed, val_x, val_y))
+			if (cutFunc(phi, zed, xVal, yVal))
 			{
 				hist->SetBinContent(i, j, 0.);
 			}
@@ -63,14 +68,15 @@ double GetM2Mean(const double pt, const double *par)
 	return par[0] + pt*par[1];
 }
 
-double GetM2Sigma(const double pt, const double m2_mean, const double *par)
+double GetM2Sigma(const double pt, const double m2Mean, const double *par)
 {
-	return 2.*sqrt(pow(par[0]/par[3]*m2_mean*pt, 2) + 
-		pow(par[1]/par[3]*m2_mean, 2)*(1.+m2_mean/pt/pt) + 
-		pow(par[2]*2.9972e-4/par[4]*pt, 2)*(m2_mean + pt*pt));
+	return 2.*sqrt(pow(par[0]/par[3]*m2Mean*pt, 2) + 
+		pow(par[1]/par[3]*m2Mean, 2)*(1.+m2Mean/pt/pt) + 
+		pow(par[2]*2.9972e-4/par[4]*pt, 2)*(m2Mean + pt*pt));
 }
 
-double GetTOFwsdphi(const int field, const float mom, const float tofwdphi, const int charge, const int strip)
+double GetTOFwsdphi(const int field, const float mom, const float tofwdphi, 
+                    const int charge, const int strip)
 {
 	float p0 = -9999;
 	float p1 = -9999;
@@ -176,7 +182,8 @@ double GetTOFwsdphi(const int field, const float mom, const float tofwdphi, cons
 	return -9999;
 }
 
-double GetTOFwsdz(const int field, const double mom, const double tofwdz, const int charge, const int strip)
+double GetTOFwsdz(const int field, const double mom, const double tofwdz, 
+                  const int charge, const int strip)
 {
 	float p0 = -9999;
 	float p1 = -9999;
@@ -286,7 +293,8 @@ double GetTOFwsdz(const int field, const double mom, const double tofwdz, const 
 	return -9999;
 }
 
-float RecalTOFwsdphi(const int field, const double mom, const double tofwsdphi, const int charge, const int strip)
+float RecalTOFwsdphi(const int field, const double mom, const double tofwsdphi, 
+                     const int charge, const int strip)
 {
 	float p0 = -9999;
 	float p1 = -9999;
@@ -372,7 +380,8 @@ float RecalTOFwsdphi(const int field, const double mom, const double tofwsdphi, 
 	return -9999;
 }
 
-float RecalTOFwsdz(const int field, const double mom, const double tofwsdz, const int charge, const int strip)
+float RecalTOFwsdz(const int field, const double mom, const double tofwsdz, 
+                  const int charge, const int strip)
 {
 	float p0 = -9999;
 	float p1 = -9999;
@@ -457,3 +466,4 @@ float RecalTOFwsdz(const int field, const double mom, const double tofwsdz, cons
 
 	return -9999;
 }
+#endif

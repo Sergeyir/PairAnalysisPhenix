@@ -81,7 +81,7 @@ EffTreeReader::EffTreeReader(TTreeReader &reader)
    b_pltofw = std::make_unique<TTreeReaderArray<float>>(
       TTreeReaderArray<float>(reader, "pltofw"));
    b_striptofw = std::make_unique<TTreeReaderArray<int>>(
-      TTreeReaderArray<int>(reader, "striptofw"));		
+      TTreeReaderArray<int>(reader, "striptofw"));
    b_slat = std::make_unique<TTreeReaderArray<int>>(
       TTreeReaderArray<int>(reader, "slat"));
    b_pltof = std::make_unique<TTreeReaderArray<float>>(

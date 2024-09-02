@@ -1,54 +1,53 @@
-#include "../lib/ParEmb.h"
+// $SOURCE$
+//------------------------------------------------------------------------------------------------
+//                            EmbAnT functinos realisaton
+//------------------------------------------------------------------------------------------------
+// EmbAnT - embedding analysis tool
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic class functions for embedding efficiency evaluation
+ **/
+//------------------------------------------------------------------------------------------------
 
-#include "../lib/EmbTreeReader.h"
 
-#include "PBar.hpp"
+#ifndef EMB_AN_T_CPP
+#define EMB_AN_T_CPP
 
-#include "../lib/ThrObj.h"
+#include "../include/EmbAnT.hpp"
 
-#include "../lib/SingleAnalysis.h"
-
-#include "../lib/Tools.h"
-#include "../lib/Box.h"
-#include "../lib/InputTools.h"
-
-#include "ROOT/TTreeProcessorMT.hxx"
-
-
-struct ThrHistStruct
+ThrHistStruct::ThrHistStruct(std::string run_type)
 {
-	std::unique_ptr<ThrObj<TH1F>> reg_dc_pc1, reg_pc2, reg_pc3, reg_tofe, reg_tofw;
-	std::array<std::unique_ptr<ThrObj<TH1F>>, 4> reg_emcale, reg_emcalw;
-	
-	ThrHistStruct(std::string run_type)
-	{
-		reg_dc_pc1 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-			(("reg_dc_pc1" + run_type).c_str(), "dc_pc1", 
-			 Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		reg_pc2 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-			(("reg_pc2" + run_type).c_str(), "pc2", 
-			 Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		reg_pc3 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-			(("reg_pc3" + run_type).c_str(), "pc3", 
-			 Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		reg_tofe = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-			(("reg_tofe" + run_type).c_str(), "tofe", 
-			 Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		reg_tofw = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-			(("reg_tofw" + run_type).c_str(), "tofw", 
-			 Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		
-		for (int i = 0; i < 4; i++)
-		{
-			reg_emcale[i] = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-				(("reg_emcale" + std::to_string(i) + run_type).c_str(), "emcale", 
-				Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-			reg_emcalw[i] = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
-				(("reg_emcalw" + std::to_string(i) + run_type).c_str(), "emcalw", 
-				Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
-		}
-	}
-};
+   reg_dc_pc1 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+      (("reg_dc_pc1" + run_type).c_str(), "dc_pc1", 
+       Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   reg_pc2 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+      (("reg_pc2" + run_type).c_str(), "pc2", 
+       Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   reg_pc3 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+      (("reg_pc3" + run_type).c_str(), "pc3", 
+       Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   reg_tofe = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+      (("reg_tofe" + run_type).c_str(), "tofe", 
+       Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   reg_tofw = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+      (("reg_tofw" + run_type).c_str(), "tofw", 
+       Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   
+   for (int i = 0; i < 4; i++)
+   {
+      reg_emcale[i] = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+         (("reg_emcale" + std::to_string(i) + run_type).c_str(), "emcale", 
+         Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+      reg_emcalw[i] = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
+         (("reg_emcalw" + std::to_string(i) + run_type).c_str(), "emcalw", 
+         Par.centr_nbins, 0., static_cast<float>(Par.centr_nbins)));
+   }
+}
 
 int GetEmcSector(const double phi, const double pemcy)
 {
@@ -68,9 +67,9 @@ int GetEmcSector(const double phi, const double pemcy)
 	}
 }
 
-void Analyze(std::string part, const int proc_num)
+void Analyze(std::string part, const int queue_num)
 {
-	Box box = Box("Parameters of run " + std::to_string(proc_num) + 
+	Box box = Box("Parameters of run " + std::to_string(queue_num) + 
 		" out of " + std::to_string(Par.part_queue.size()));
 	
 	const double charge = ParticleProperties.charge[ParticleProperties.iter_map[part]];
@@ -419,11 +418,11 @@ void EmbAnalyze()
 	
 	system(("mkdir -p ../../analysis/data/phenix_sim/" + Par.run_name).c_str());	
 	
-	int num = 1;
+	int queue_num = 1;
 	for (std::string part : Par.part_queue)
 	{
-		Analyze(part, num);
-		num++;
+		Analyze(part, queue_num);
+		queue_num++;
 	}
 }
 
@@ -432,3 +431,5 @@ int main()
    EmbAnalyze();
    return 0;
 }
+
+#endif

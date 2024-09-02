@@ -8,7 +8,7 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit
+all: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader SingleTrackFunctions
 
 # CppTools
 
@@ -62,7 +62,7 @@ ProgressBar: ProgressBar/src/PBar.cpp lib
 	ar rcs lib/libPBar.a lib/PBar.o && \
 	$(CXX) -shared -o lib/PBar.so lib/PBar.o
 
-#ROOTTools
+# ROOTTools
 
 TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp lib
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_FLAGS) \
@@ -79,7 +79,8 @@ GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools
 	ar rcs lib/lib$@.a lib/$@.o && \
 	$(CXX) -shared -o lib/$@.so lib/$@.o
 
-#sim_analysis
+
+# SimAnalysis
 
 EffTreeReader: SimAnalysis/src/EffTreeReader.cpp lib
 	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
@@ -94,6 +95,23 @@ EmbTreeReader: SimAnalysis/src/EmbTreeReader.cpp lib
 	-o lib/$@.o && \
 	ar rcs lib/lib$@.a lib/$@.o && \
 	$(CXX) -shared -o lib/$@.so lib/$@.o
+
+STrackFun: SimAnalysis/src/STrackFun.cpp
+	$(CXX) SimAnalysis/src/$@.cpp $(CXX_FLAGS) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	-o lib/$@.o && \
+	ar rcs lib/lib$@.a lib/$@.o && \
+	$(CXX) -shared -o lib/$@.so lib/$@.o
+	
+# executables
+EmbAnT: SimAnalysis/src/EmbAnT.cpp Box ProgressBar EmbTreeReader STrackFun
+	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON) \
+	$(CPP_TOOLS_INCLUDE) $(IOTOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) \
+	$(SIM_ANALYSIS_INCLUDE) $(EMB_TREE_READER_LIB) $(S_TRACK_FUN_LIB) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+
 
 # other 
 
