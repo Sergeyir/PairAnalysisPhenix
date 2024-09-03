@@ -4,3 +4,6 @@
 [submodule "ProgressBar"]
 	path = ProgressBar
 	url = git@github.com:Sergeyir/ProgressBar
+[submodule "ROOTTools"]
+	path = ROOTTools
+	url = git@github.com:Sergeyir/ROOTTools
