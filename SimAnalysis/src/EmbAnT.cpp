@@ -88,7 +88,7 @@ void Analyze(std::string part, const int queueNum)
       {
          for (long unsigned int i = 0; i < Par.centrNBins; i++)
          {
-            inputFileName.push_back("../data/" + Par.runName + "/Embedding/" + 
+            inputFileName.push_back(Par.dataDir + Par.runName + "/Embedding/" + 
                partCharge + part + magf + "_" + Par.centrQueue[i] +  ".root");
             TFile inputFile = TFile(inputFileName[i].c_str());
             
@@ -387,7 +387,7 @@ void Analyze(std::string part, const int queueNum)
    isProcessFinished = true;
    pbarThread.join();
    
-   std::string fileName = "../../analysis/data/phenix_sim/" + 
+   std::string fileName = Par.outputDir + 
       Par.runName + "/Emb_" + part + ".root";
    
    TFile outfile(fileName.c_str(), "RECREATE");
@@ -409,14 +409,14 @@ void EmbAnalyze()
          {
             for (std::string centr: Par.centrQueue)
             {
-               CheckInputFile("../data/" + Par.runName + 
+               CheckInputFile(Par.dataDir + Par.runName + 
                   "/Embedding/" + partCharge + part + magf + "_" + centr + ".root");
             }
          }
       }
    }
    
-   system(("mkdir -p ../../analysis/data/phenix_sim/" + Par.runName).c_str());   
+   system(("mkdir -p " + Par.outputDir + Par.runName).c_str());   
    
    int queueNum = 1;
    for (std::string part : Par.partQueue)

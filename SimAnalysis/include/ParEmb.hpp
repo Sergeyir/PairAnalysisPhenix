@@ -28,6 +28,9 @@ struct
    const std::string system = "AuAu200";
    const std::string run = "Run7";
 
+   const std::string dataDir = "../data/Sim/";
+   const std::string outputDir = "../data/postSim/";
+
    std::vector<std::string> magfQueue = {"+-", "-+"};
    std::vector<std::string> partQueue = {"pion", "kaon"};
    std::vector<std::string> centrQueue = {"00-20", "20-40", "40-60", "60-93", "00-93"};
