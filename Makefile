@@ -8,7 +8,7 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: all_libs 
+all: all_libs AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
 
 all_libs: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
 
