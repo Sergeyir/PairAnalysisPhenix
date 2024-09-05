@@ -192,4 +192,4 @@ class EffTreeReader
    std::unique_ptr<TTreeReaderArray<float>> b_npe0;      
 };
 
-#endif
+#endif /*EFF_TREE_READER_HPP*/

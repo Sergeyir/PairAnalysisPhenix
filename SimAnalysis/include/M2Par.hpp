@@ -1,3 +1,5 @@
+#ifdef RUN7_AUAU
+
 //mean = pol1
 //sigma:
 //[0] = sigma_{alpha}
@@ -59,3 +61,5 @@ static const double m2_emcalw_mean_par_aproton[4][2] =
 static const double m2_emcalw_sigma_par[4][5] = 
    {{0.9, 1.8, 480., 104., 5.22}, {0.9, 1.7, 480., 104., 5.22}, 
    {0.9, 1.5, 480., 104., 5.22}, {0.9, 2., 500., 104., 5.22}};
+
+#endif /* RUN7_AUAU */

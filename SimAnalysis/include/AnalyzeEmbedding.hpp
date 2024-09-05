@@ -1,8 +1,8 @@
 // $HEADER$
 //------------------------------------------------------------------------------------------------
-//                            EmbAnT functinos declaration
+//                          AnalyzeEmbedding function declaration
 //------------------------------------------------------------------------------------------------
-// EmbAnT - embedding analysis tool
+// AnalyzeEmbedding
 //
 // ** Code for use in PHENIX related projects **
 //
@@ -10,12 +10,13 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic class functions for embedding efficiency evaluation
+ * Basic macro for embedding study 
+ * from simulation output of event-like TTrees to processed histograms
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef EMB_AN_T_HPP
-#define EMB_AN_T_HPP
+#ifndef ANALYZE_EMBEDDING_HPP
+#define ANALYZE_EMBEDDING_HPP
 
 #include "ErrorHandler.hpp"
 #include "Box.hpp"
@@ -25,23 +26,23 @@
 #include "ThrObj.hpp"
 
 #include "Particles.hpp"
-#include "ParEmb.hpp"
+#include "ParAnalyzeEmbedding.hpp"
 #include "EmbTreeReader.hpp"
 #include "STrackFun.hpp"
 
 #include "ROOT/TTreeProcessorMT.hxx"
 
 //container for storing ThrObj histograms
-struct ThrHistStruct
+struct ThrContainer
 {
 	std::unique_ptr<ThrObj<TH1F>> regDCPC1, regPC2, regPC3, regTOFe, regTOFw;
 	std::array<std::unique_ptr<ThrObj<TH1F>>, 4> regEMCale, regEMCalw;
-	ThrHistStruct(std::string runType);
+	ThrContainer(std::string runType);
 };
 
 int GetEmcSector(const double phi, const double pemcy);
-void Analyze(std::string part, const int queueNum);
-void EmbAnalyze();
+void AnalyzeParticleEmbedding(std::string part, const int queueNum);
+void AnalyzeEmbedding();
 int main();
 
-#endif
+#endif /*ANALYZE_EMBEDDING_HPP*/

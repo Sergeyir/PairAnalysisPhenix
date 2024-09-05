@@ -164,4 +164,4 @@ class EmbTreeReader
    std::unique_ptr<TTreeReaderValue<float>> b_pltofw;
 };
 
-#endif
+#endif /*EMB_TREE_READER_HPP*/

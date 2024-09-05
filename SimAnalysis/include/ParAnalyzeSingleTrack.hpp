@@ -1,8 +1,8 @@
 // $HEADER$
 //------------------------------------------------------------------------------------------------
-//                                  ParEmb declaration
+//                        Par struct declaration and realisation
 //------------------------------------------------------------------------------------------------
-// ParEmb - parameters of embedding
+// ParAnalyzeSingleTrack
 //
 // ** Code for use in PHENIX related projects **
 //
@@ -10,16 +10,20 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic global container for storing parameters for embedding analysis
+ * Basic container for storing AnalyzeSingleTrack macro parameters
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef PAR_EMB_HPP
-#define PAR_EMB_HPP
+#ifndef PAR_ANALYZE_SINGLE_TRACK_HPP
+#define PAR_ANALYZE_SINGLE_TRACK_HPP
 
 #define DEAD_AREAS_CUTS_RUN7AUAU
 
 #include <thread>
+
+#include "TFile.h"
+
+#include "Particles.hpp"
 
 #include "../../Analysis/include/DeadAreasCuts.hpp"
 
@@ -27,23 +31,24 @@ struct
 {   
    const std::string system = "AuAu200";
    const std::string run = "Run7";
-
-   const std::string dataDir = "../data/Sim/";
-   const std::string outputDir = "../data/postSim/";
-
+   bool doUseWeightFunc = true;
+   
+   const std::string simDataDir = "../data/Sim/";
+   const std::string realDataDir = "../data/Analysis/";
+   const std::string outputDir = "../data/PostSim/";
+   
    std::vector<std::string> magfQueue = {"+-", "-+"};
-   std::vector<std::string> partQueue = {"pion", "kaon"};
-   std::vector<std::string> centrQueue = {"00-20", "20-40", "40-60", "60-93", "00-93"};
-   std::vector<std::string> partChargeQueue = {"", "a"};
-
-   const double ptmin = 0.3;
-   const double ptmax = 8.;
-
+   std::vector<std::string> partQueue = {"pion", "apion", "kaon", "akaon"};
+   std::vector<std::string> auxNameQueue = {"_lpt", "_hpt"};
+   
+   const double ptMin = 0.3;
+   const double ptMax = 8.;
+   
    const int nthreads = std::thread::hardware_concurrency();
 
-   const unsigned int centrNBins = centrQueue.size();
-
+   const int ptNBins = static_cast<int>((ptMax - ptMin)*10.);
+   
    const std::string runName = run + system;
 } Par;
 
-#endif
+#endif /*PAR_ANALYZE_SINGLE_TRACK_HPP*/

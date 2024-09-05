@@ -1,14 +1,14 @@
 #pragma once
 
+#define RUN7_AUAU
+
 #include <thread>
 
 #include "Particles.h"
 #include "Run7AuAuM2Par.h"
 
-#include "../../analysis/lib/CentralityTypes.h"
-#include "../../analysis/lib/DeadAreasCuts.h"
-
-using namespace CutsRun7AuAu200MinBias;
+#include "../../Analysis/include/DeadAreasCuts.hpp"
+#include "../../Analysis/include/CentralityTypes.hpp"
 
 struct
 {

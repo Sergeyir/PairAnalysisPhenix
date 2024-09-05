@@ -38,12 +38,12 @@ struct
    {
       {"electron", 0},
       {"positron", 1},
-      {"pion", 2},
-      {"apion", 3},
-      {"kaon", 4},
-      {"akaon", 5},
-      {"proton", 6},
-      {"aproton", 7}
+      {"pion",     2},
+      {"apion",    3},
+      {"kaon",     4},
+      {"akaon",    5},
+      {"proton",   6},
+      {"aproton",  7}
    };
 
    std::vector<int> id = {11, -11, 
@@ -55,27 +55,27 @@ struct
                                     "pion", "apion", 
                                     "kaon", "akaon", 
                                     "proton", "aproton"};
-   //short name
-   std::vector<std::string> sname = {"e", "e", 
-                                     "pi", "pi", 
-                                     "K", "K", 
-                                     "P", "P"};
+   
+   std::vector<std::string> shortName = {"e", "e", 
+                                         "pi", "pi", 
+                                         "K", "K", 
+                                         "P", "P"};
    
    //for embedding
-   std::vector<std::string> abs_name = {"electron", "electron", 
-                                        "pion", "pion", 
-                                        "kaon", "kaon", 
-                                        "proton", "proton"};
+   std::vector<std::string> absName = {"electron", "electron", 
+                                       "pion", "pion", 
+                                       "kaon", "kaon", 
+                                       "proton", "proton"};
    
    std::vector<double> mass = {0.5110999e-3, 0.5110999e-3, 
                                0.139570, 0.139570, 
                                0.493677, 0.493677, 
                                0.938272, 0.938272};
    
-   std::vector<int> geant_id = {1, 2, 
-                                8, 9, 
-                                11, 12, 
-                                14, 15};
+   std::vector<int> geantId = {1, 2, 
+                               8, 9, 
+                               11, 12, 
+                               14, 15};
    
    std::vector<int> charge = {-1, 1, 
                               1, -1, 
@@ -97,4 +97,4 @@ struct KStar892
    const float gamma = 0.0508;
 };
 
-#endif
+#endif /*PARTICLES_HPP*/

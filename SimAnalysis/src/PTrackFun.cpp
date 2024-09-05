@@ -1,36 +1,46 @@
-#pragma once
+// $HEADER$
+//------------------------------------------------------------------------------------------------
+//                                 PTrackFun declaration
+//------------------------------------------------------------------------------------------------
+// PTrackFun - pair track functions
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic functions used in analysis for particle tracks pairs
+ **/
+//------------------------------------------------------------------------------------------------
 
-//struct for storing id of particles
-struct id_container
-{
-   int tof;
-   int emc;
-   int pc2;
-   int pc3;
-   int orig_id;
-};
+#ifndef P_TRACK_FUN_CPP
+#define P_TRACK_FUN_CPP
 
-bool IsTOF2PID(id_container *Id1, id_container *Id2)
+#include "../include/PTrackFun.hpp"
+
+bool IsTOF2PID(idContainer *Id1, idContainer *Id2)
 {
    if (Id1->tof == Id1->orig_id && Id2->tof == Id2->orig_id) return true;
+   
    return false;
 }
 
-bool IsEMC2PID(id_container *Id1, id_container *Id2)
+bool IsEMC2PID(idContainer *Id1, idContainer *Id2)
 {
    if (Id1->emc == Id1->orig_id && Id2->emc == Id2->orig_id) return true;
-
+   
    return false;
 }
 
-bool IsEMCnoPID(id_container *Id1, id_container *Id2)
+bool IsEMCnoPID(idContainer *Id1, idContainer *Id2)
 {
    if (Id1->emc != PartId.junk && Id2->emc != PartId.junk) return true;
-
+   
    return false;
 }
 
-bool Is1TOFandEMC2PID(id_container *Id1, id_container *Id2)
+bool Is1TOFandEMC2PID(idContainer *Id1, idContainer *Id2)
 {
    if 
    (
@@ -42,14 +52,14 @@ bool Is1TOFandEMC2PID(id_container *Id1, id_container *Id2)
    return false;
 }
 
-bool Is2PID(id_container *Id1, id_container *Id2)
+bool Is2PID(idContainer *Id1, idContainer *Id2)
 {
    if (IsEMC2PID(Id1, Id2) || Is1TOFandEMC2PID(Id1, Id2)) return true;
    
    return false;
 }
 
-bool Is1PID(id_container *Id1, id_container *Id2)
+bool Is1PID(idContainer *Id1, idContainer *Id2)
 {
    if 
    (
@@ -72,7 +82,7 @@ bool Is1PID(id_container *Id1, id_container *Id2)
    return false;
 }
 
-bool IsnoPID(id_container *Id1, id_container *Id2)
+bool IsnoPID(idContainer *Id1, idContainer *Id2)
 {
    return true;
 }
@@ -105,9 +115,9 @@ double GetMass(const double *pp1, const double *pp2, const double m1, const doub
    return mass;
 }
 
-bool IsOneArmCut(const double phi_pip, const double phi_pim)
+bool IsOneArmCut(const double phi1, const double phi2)
 {
-   if ( !((phi_pip<1.5&&phi_pim<1.5) || (phi_pip>1.5&&phi_pim>1.5) )) return true;
+   if ( !((phi1 < 1.5 && phi2 < 1.5) || (phi1 > 1.5 && phi2 > 1.5)) ) return true;
    return false;
 }
 
@@ -126,3 +136,5 @@ bool noCut()
 {
    return true;
 }
+
+#endif /* P_TRACK_FUN_CPP */

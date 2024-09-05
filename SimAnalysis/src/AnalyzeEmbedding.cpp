@@ -1,8 +1,8 @@
 // $SOURCE$
 //------------------------------------------------------------------------------------------------
-//                            EmbAnT functinos realisaton
+//                           AnalyzeEmbedding functions realisation
 //------------------------------------------------------------------------------------------------
-// EmbAnT - embedding analysis tool
+// AnalyzeEmbedding
 //
 // ** Code for use in PHENIX related projects **
 //
@@ -10,17 +10,17 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic class functions for embedding efficiency evaluation
+ * Basic macro for embedding study
+ * from simulation output of event-like TTrees to processed histograms
  **/
 //------------------------------------------------------------------------------------------------
 
+#ifndef ANALYZE_EMBEDDING_CPP
+#define ANALYZE_EMBEDDING_CPP
 
-#ifndef EMB_AN_T_CPP
-#define EMB_AN_T_CPP
+#include "../include/AnalyzeEmbedding.hpp"
 
-#include "../include/EmbAnT.hpp"
-
-ThrHistStruct::ThrHistStruct(std::string runType)
+ThrContainer::ThrContainer(std::string runType)
 {
    regDCPC1 = std::unique_ptr<ThrObj<TH1F>>(new ThrObj<TH1F>
       (("regDCPC1" + runType).c_str(), "dc_pc1", 
@@ -67,7 +67,7 @@ int GetEmcSector(const double phi, const double pemcy)
    }
 }
 
-void Analyze(std::string part, const int queueNum)
+void AnalyzeParticleEmbedding(std::string part, const int queueNum)
 {
    Box box = Box("Parameters of run " + std::to_string(queueNum) + 
       " out of " + std::to_string(Par.partQueue.size()));
@@ -90,13 +90,14 @@ void Analyze(std::string part, const int queueNum)
          {
             inputFileName.push_back(Par.dataDir + Par.runName + "/Embedding/" + 
                partCharge + part + magf + "_" + Par.centrQueue[i] +  ".root");
-            TFile inputFile = TFile(inputFileName[i].c_str());
+            
+            TFile inputFile = TFile(inputFileName.back().c_str());
             
             const double neventsCurrent = static_cast<double>(((TTree *) 
                inputFile.Get("EmbedMcRecoTrack"))->GetEntries());
             if (neventsCurrent <= 0)
             {
-               Print("Error: Number of events is equal or less than 0! in a file " + inputFileName[i]);
+               Print("Error: Number of events is equal or less than 0! in a file " + inputFileName.back());
                exit(1);
             }
             nevents += neventsCurrent;
@@ -105,15 +106,15 @@ void Analyze(std::string part, const int queueNum)
    }
    
    box.AddEntry("Number of events to be analyzed, 1e6", nevents/1e6, 3);
-   box.AddEntry("Minimum p_T, GeV", Par.ptmin);
-   box.AddEntry("Maximum p_T, GeV", Par.ptmax);
+   box.AddEntry("Minimum p_T, GeV", Par.ptMin);
+   box.AddEntry("Maximum p_T, GeV", Par.ptMax);
 
    box.AddEntry("Number of threads", Par.nthreads);
    
    box.Print();
 
-   ThrHistStruct SimThrHist("_sim");
-   ThrHistStruct RealThrHist("_real");
+   ThrContainer SimThrContainer("_sim");
+   ThrContainer RealThrContainer("_real");
 
    ROOT::EnableImplicitMT(Par.nthreads);
 
@@ -123,16 +124,16 @@ void Analyze(std::string part, const int queueNum)
 
    auto PbarCall = [&]()
    {
-      ProgressBar pbar = ProgressBar("FANCY1", "", PBarColor::BOLD_RED);
+      ProgressBar pBar = ProgressBar("FANCY1", "", PBarColor::BOLD_RED);
       while (!isProcessFinished)
       {
-         pbar.Print(ncalls/nevents);
+         pBar.Print(ncalls/nevents);
          std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }
-      pbar.Print(1.);
+      pBar.Print(1.);
    };
    
-   std::thread pbarThread(PbarCall);
+   std::thread pBarThread(PbarCall);
    
    for (long unsigned int f = 0; f < inputFileName.size(); f++)
    {
@@ -141,27 +142,27 @@ void Analyze(std::string part, const int queueNum)
       auto ProcessMP = [&](TTreeReader &reader)
       {   
          //stuff to optimize multithreading
-         std::shared_ptr<TH1F> regDCPC1Sim = SimThrHist.regDCPC1->Get();
-         std::shared_ptr<TH1F> regPC2Sim = SimThrHist.regPC2->Get();
-         std::shared_ptr<TH1F> regPC3Sim = SimThrHist.regPC3->Get();
-         std::shared_ptr<TH1F> regTOFeSim = SimThrHist.regTOFe->Get();
-         std::shared_ptr<TH1F> regTOFwSim = SimThrHist.regTOFw->Get();
+         std::shared_ptr<TH1F> regDCPC1Sim = SimThrContainer.regDCPC1->Get();
+         std::shared_ptr<TH1F> regPC2Sim = SimThrContainer.regPC2->Get();
+         std::shared_ptr<TH1F> regPC3Sim = SimThrContainer.regPC3->Get();
+         std::shared_ptr<TH1F> regTOFeSim = SimThrContainer.regTOFe->Get();
+         std::shared_ptr<TH1F> regTOFwSim = SimThrContainer.regTOFw->Get();
          
-         std::shared_ptr<TH1F> regDCPC1Real = RealThrHist.regDCPC1->Get();
-         std::shared_ptr<TH1F> regPC2Real = RealThrHist.regPC2->Get();
-         std::shared_ptr<TH1F> regPC3Real = RealThrHist.regPC3->Get();
-         std::shared_ptr<TH1F> regTOFeReal = RealThrHist.regTOFe->Get();
-         std::shared_ptr<TH1F> regTOFwReal = RealThrHist.regTOFw->Get();
+         std::shared_ptr<TH1F> regDCPC1Real = RealThrContainer.regDCPC1->Get();
+         std::shared_ptr<TH1F> regPC2Real = RealThrContainer.regPC2->Get();
+         std::shared_ptr<TH1F> regPC3Real = RealThrContainer.regPC3->Get();
+         std::shared_ptr<TH1F> regTOFeReal = RealThrContainer.regTOFe->Get();
+         std::shared_ptr<TH1F> regTOFwReal = RealThrContainer.regTOFw->Get();
 
          std::array<std::shared_ptr<TH1F>, 4> regEMCaleSim, regEMCalwSim;
          std::array<std::shared_ptr<TH1F>, 4> regEMCaleReal, regEMCalwReal;
          
          for (int i = 0; i < 4; i++)
          {
-            regEMCaleSim[i] = SimThrHist.regEMCale[i]->Get();
-            regEMCalwSim[i] = SimThrHist.regEMCalw[i]->Get();
-            regEMCaleReal[i] = RealThrHist.regEMCale[i]->Get();
-            regEMCalwReal[i] = RealThrHist.regEMCalw[i]->Get();
+            regEMCaleSim[i] = SimThrContainer.regEMCale[i]->Get();
+            regEMCalwSim[i] = SimThrContainer.regEMCalw[i]->Get();
+            regEMCaleReal[i] = RealThrContainer.regEMCale[i]->Get();
+            regEMCalwReal[i] = RealThrContainer.regEMCalw[i]->Get();
          }
          
          EventReader ET(reader);
@@ -185,7 +186,7 @@ void Analyze(std::string part, const int queueNum)
                const double the0 = RT.the0();
                const double pt = (RT.mom())*sin(the0);
                
-               if (pt < Par.ptmin || pt > Par.ptmax) isGoodReal = false;
+               if (pt < Par.ptMin || pt > Par.ptMax) isGoodReal = false;
 
                if (!(fabs(the0)<100 &&
                   ((bbcz > 0. && ((bbcz - 250.*tan(the0 - TMath::Pi()/2.)) > 2. ||
@@ -229,7 +230,7 @@ void Analyze(std::string part, const int queueNum)
                const double the0 = ST.the0();
                const double pt = (ST.mom())*sin(the0);
                
-               if (pt < Par.ptmin || pt > Par.ptmax) continue;
+               if (pt < Par.ptMin || pt > Par.ptMax) continue;
 
                if (!(fabs(the0)<100 &&
                   ((bbcz > 0. && ((bbcz - 250.*tan(the0 - TMath::Pi()/2.)) > 2. ||
@@ -385,7 +386,7 @@ void Analyze(std::string part, const int queueNum)
    }
    
    isProcessFinished = true;
-   pbarThread.join();
+   pBarThread.join();
    
    std::string fileName = Par.outputDir + 
       Par.runName + "/Emb_" + part + ".root";
@@ -399,7 +400,7 @@ void Analyze(std::string part, const int queueNum)
    PrintInfo("File " + fileName + " was written");
 }
 
-void EmbAnalyze()
+void AnalyzeEmbedding()
 {
    for (std::string magf : Par.magfQueue)
    {
@@ -409,8 +410,8 @@ void EmbAnalyze()
          {
             for (std::string centr: Par.centrQueue)
             {
-               CheckInputFile(Par.dataDir + Par.runName + 
-                  "/Embedding/" + partCharge + part + magf + "_" + centr + ".root");
+               CheckInputFile(Par.dataDir + Par.runName + "/Embedding/" + 
+                              partCharge + part + magf + "_" + centr + ".root");
             }
          }
       }
@@ -421,15 +422,15 @@ void EmbAnalyze()
    int queueNum = 1;
    for (std::string part : Par.partQueue)
    {
-      Analyze(part, queueNum);
+      AnalyzeParticleEmbedding(part, queueNum);
       queueNum++;
    }
 }
 
 int main()
 {
-   EmbAnalyze();
+   AnalyzeEmbedding();
    return 0;
 }
 
-#endif
+#endif /*ANALYZE_EMBEDDING_CPP*/

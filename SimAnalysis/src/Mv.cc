@@ -1,5 +1,23 @@
-#include "../lib/ErrorHandler.h"
-#include "../lib/OutputTool.h"
+// $SOURCE$
+//------------------------------------------------------------------------------------------------
+//                              Mv macro
+//------------------------------------------------------------------------------------------------
+// Mv - move
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic macro for renaming TTree branches
+ **/
+//------------------------------------------------------------------------------------------------
+
+#pragma once
+
+#include "ErrorHandler.hpp"
+#include "IOTools.hpp"
 
 struct
 {

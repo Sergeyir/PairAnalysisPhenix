@@ -10,7 +10,7 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic funcitons used in analysis for single particle tracks
+ * Basic functions used in analysis for single particle tracks
  **/
 //------------------------------------------------------------------------------------------------
 
@@ -47,4 +47,4 @@ float RecalTOFwsdphi(const int field, const double mom, const double tofwsdphi,
 float RecalTOFwsdz(const int field, const double mom, const double tofwsdz, 
                    const int charge, const int strip);
 
-#endif
+#endif /*S_TRACK_FUN_HPP*/

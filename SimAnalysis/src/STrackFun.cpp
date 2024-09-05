@@ -2,7 +2,7 @@
 //------------------------------------------------------------------------------------------------
 //                                     STrackFun realisation
 //------------------------------------------------------------------------------------------------
-// STrackFun - single track funcitons
+// STrackFun - single track functions
 //
 // ** Code for use in PHENIX related projects **
 //
@@ -10,7 +10,7 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic funcitons used in analysis for single particle tracks
+ * Basic functions used in analysis for single particle tracks
  **/
 //------------------------------------------------------------------------------------------------
 
