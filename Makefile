@@ -8,7 +8,7 @@ SHELL=/usr/bin/env bash
 .SECONDEXPANSION:
 .PHONY: all clean
 
-all: all_libs EmbAnT
+all: all_libs 
 
 all_libs: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
 
@@ -117,7 +117,24 @@ STrackFun: SimAnalysis/src/STrackFun.cpp SimAnalysisLib
 	$(CXX) -shared -o SimAnalysis/lib/$@.so SimAnalysis/lib/$@.o
 	
 # SimAnalysis executables
-EmbAnT: SimAnalysis/src/EmbAnT.cpp all_libs bin
+
+AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp all_libs bin
+	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) \
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+
+AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
+	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) \
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+
+AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
