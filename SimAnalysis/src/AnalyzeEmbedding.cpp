@@ -389,7 +389,7 @@ void AnalyzeParticleEmbedding(std::string part, const int queueNum)
    pBarThread.join();
    
    std::string fileName = Par.outputDir + 
-      Par.runName + "/Emb_" + part + ".root";
+      Par.runName + "/Embedding/" + part + ".root";
    
    TFile outfile(fileName.c_str(), "RECREATE");
 
@@ -417,7 +417,7 @@ void AnalyzeEmbedding()
       }
    }
    
-   system(("mkdir -p " + Par.outputDir + Par.runName).c_str());   
+   system(("mkdir -p " + Par.outputDir + Par.runName + "/Embedding").c_str());   
    
    int queueNum = 1;
    for (std::string part : Par.partQueue)

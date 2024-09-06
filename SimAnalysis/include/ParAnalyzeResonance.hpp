@@ -1,11 +1,28 @@
-#pragma once
+// $HEADER$
+//------------------------------------------------------------------------------------------------
+//                        Par struct declaration and realisation
+//------------------------------------------------------------------------------------------------
+// ParAnalyzeResonance
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic container for storing AnalyzeResonance macro parameters
+ **/
+//------------------------------------------------------------------------------------------------
 
-#define RUN7_AUAU
+#ifndef PAR_ANALYZE_RESONANCE_HPP
+#define PAR_ANALYZE_RESONANCE_HPP
+
+#define RUN7UAU
 
 #include <thread>
 
-#include "Particles.h"
-#include "Run7AuAuM2Par.h"
+#include "Particles.hpp"
+#include "M2Par.hpp"
 
 #include "../../Analysis/include/DeadAreasCuts.hpp"
 #include "../../Analysis/include/CentralityTypes.hpp"
@@ -49,3 +66,5 @@ struct
    
    const int pt_nbins = static_cast<int>((pair_ptmax - pair_ptmin)*10.);
 } Par;
+
+#endif /* PAR_ANALYZE_RESONANCE_HPP */

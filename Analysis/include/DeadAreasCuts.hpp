@@ -1,4 +1,4 @@
-#ifdef DEAD_AREAS_CUTS_RUN7AUAU
+#ifdef RUN7AUAU
 
 bool IsDeadDC(double phi, double zed, double board, double alpha) 
 {

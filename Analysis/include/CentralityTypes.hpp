@@ -1,4 +1,5 @@
-#pragma once
+#ifndef CENTRALITY_TYPES
+#define CENTRALITY_TYPES
 
 #include <string>
 #include <array>
@@ -71,3 +72,5 @@ struct HeAu200CTypeMB4
 	
 	std::string name = RunName.AuAu200;
 };
+
+#endif /* CENTRALITY_TYPES */

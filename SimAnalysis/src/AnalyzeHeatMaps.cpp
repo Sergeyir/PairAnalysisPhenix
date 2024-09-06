@@ -29,7 +29,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       Par.magfQueue.size()*Par.auxNameQueue.size()));
 
    std::string simInputFileName = Par.simDataDir + 
-      Par.runName + "/Single/" + part + magf + auxName + ".root";
+      Par.runName + "/SingleTrack/" + part + magf + auxName + ".root";
    std::string realDataFileName = Par.realDataDir + 
       Par.runName + "/sum" + magf + ".root";
 
@@ -366,7 +366,7 @@ void HeatMapper()
          for (std::string auxName : Par.auxNameQueue)
          {
             CheckInputFile(Par.simDataDir + Par.runName + 
-               "/Single/" + part + magf + auxName + ".root");
+               "/SingleTrack/" + part + magf + auxName + ".root");
          }
       }
    }
@@ -382,25 +382,23 @@ void HeatMapper()
    {
       std::string realDataInputFileName = Par.realDataDir + Par.runName + "/sum.root";
       std::string alphaReweightInputFileName = Par.outputDir + 
-         Par.runName + "/heatmaps.root";
+         Par.runName + "/heatmaps/all.root";
       
       CheckInputFile(realDataInputFileName);
       if (CheckInputFile(alphaReweightInputFileName, false)) 
       {
-         Par.realDataInputFile = std::unique_ptr<TFile>(
-            TFile::Open(realDataInputFileName.c_str()));
-         Par.alphaReweightInputFile = std::unique_ptr<TFile>(
-            TFile::Open(alphaReweightInputFileName.c_str()));
+         TFile realDataInputFile(realDataInputFileName.c_str());
+         TFile alphaReweightInputFile(alphaReweightInputFileName.c_str());
 
-         TH2F *realDataDCe0 = (TH2F *) Par.realDataInputFile->Get("dceast0");
-         TH2F *realDataDCe1 = (TH2F *) Par.realDataInputFile->Get("dceast1");
-         TH2F *realDataDCw0 = (TH2F *) Par.realDataInputFile->Get("dcwest0");
-         TH2F *realDataDCw1 = (TH2F *) Par.realDataInputFile->Get("dcwest1");
-
-         TH2F *simDCe0 = (TH2F *) Par.alphaReweightInputFile->Get("unscaled_dceast0");
-         TH2F *simDCe1 = (TH2F *) Par.alphaReweightInputFile->Get("unscaled_dceast1");
-         TH2F *simDCw0 = (TH2F *) Par.alphaReweightInputFile->Get("unscaled_dcwest0");
-         TH2F *simDCw1 = (TH2F *) Par.alphaReweightInputFile->Get("unscaled_dcwest1");
+         TH2F *realDataDCe0 = (TH2F *) realDataInputFile.Get("dceast0");
+         TH2F *realDataDCe1 = (TH2F *) realDataInputFile.Get("dceast1");
+         TH2F *realDataDCw0 = (TH2F *) realDataInputFile.Get("dcwest0");
+         TH2F *realDataDCw1 = (TH2F *) realDataInputFile.Get("dcwest1");
+         
+         TH2F *simDCe0 = (TH2F *) alphaReweightInputFile.Get("unscaled_dceast0");
+         TH2F *simDCe1 = (TH2F *) alphaReweightInputFile.Get("unscaled_dceast1");
+         TH2F *simDCw0 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest0");
+         TH2F *simDCw1 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest1");
 
          CutDCDeadAreas(realDataDCe0, &IsDeadDC, 2., 1.);
          CutDCDeadAreas(realDataDCe1, &IsDeadDC, 2., -1.);
@@ -442,7 +440,7 @@ void HeatMapper()
          //capping alpha reweight since experiments extends to higher pt than simulation
          //capped values do not affect the simulation since they are statisticaly insufficient
          //capping is only needed to exclude very big weights in some points in the DC map
-         //for better visibility
+         //that are not used for better visibility
          for (int i = 0; i < Par.alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
          {
             if (Par.alphaReweightDCe0->GetBinContent(i) > 100.)
@@ -483,12 +481,19 @@ void HeatMapper()
          Par.alphaReweightDCw0->Write();
          Par.alphaReweightDCw1->Write();
 
+         //decoupling histograms from the open file directory
+         //so they would not be deleted at the end of the scope
+         Par.alphaReweightDCe0->SetDirectory(0);
+         Par.alphaReweightDCe1->SetDirectory(0);
+         Par.alphaReweightDCw0->SetDirectory(0);
+         Par.alphaReweightDCw1->SetDirectory(0);         
+
          alphaReweightOutputFile.Close();
          PrintInfo("File " + alphaReweightOutputFileName + " was written");
       }
       else 
       {
-         PrintInfo("File " + alphaReweightInputFileName + " does not exist -> alpha reweight is now disabled");
+         PrintInfo("alpha reweight is now disabled");
          Par.doReweightAlpha = false;
       }
    }
@@ -525,7 +530,7 @@ void HeatMapper()
    PrintInfo("Merging output files into one");
 
    system(("hadd -f " + Par.outputDir + 
-      Par.runName + "/heatmaps.root " + Par.outputDir + 
+      Par.runName + "/heatmaps/all.root " + Par.outputDir + 
       Par.runName + "/heatmaps/*.root").c_str());
 }
 

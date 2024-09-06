@@ -16,12 +16,12 @@
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef ANALYZE_TRACK_PAIR_HPP
-#define ANALYZE_TRACK_PAIR_HPP
+#ifndef ANALYZE_RESONANCE_HPP
+#define ANALYZE_RESONANCE_HPP
 
 #include "STrackFun.hpp"
 #include "PTrackFun.hpp"
-#include "ParAnalyzeTrackPair.h"
+#include "ParAnalyzeResonance.hpp"
 #include "../lib/Ident.h"
 
 #include "../lib/EffTreeReader.h"
@@ -132,7 +132,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                           const std::string& daughter2, const std::string& magf, 
                           const std::string& auxName, const double ptDeviation, 
                           const int procNum);
-void AnalyzeTrackPair();
+void AnalyzeResonance();
 int main();
 
-#endif /* ANALYZE_TRACK_PAIR_HPP */
+#endif /* ANALYZE_RESONANCE_HPP */

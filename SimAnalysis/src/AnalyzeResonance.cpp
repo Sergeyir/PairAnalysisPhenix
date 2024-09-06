@@ -16,8 +16,8 @@
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef ANALYZE_TRACK_PAIR_CPP
-#define ANALYZE_TRACK_PAIR_CPP
+#ifndef ANALYZE_RESONANCE_CPP
+#define ANALYZE_RESONANCE_CPP
 
 //Analyze specific track pair configuration
 void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& daughter1, 
@@ -1297,4 +1297,4 @@ int main()
    return 0;
 }
 
-#endif /* ANALYZE_TRACK_PAIR_CPP */
+#endif /* ANALYZE_RESONANCE_CPP */

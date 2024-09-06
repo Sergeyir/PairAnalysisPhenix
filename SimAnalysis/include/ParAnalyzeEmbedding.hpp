@@ -17,7 +17,7 @@
 #ifndef PAR_ANALYZE_EMBEDDING_HPP
 #define PAR_ANALYZE_EMBEDDING_HPP
 
-#define DEAD_AREAS_CUTS_RUN7AUAU
+#define RUN7AUAU
 
 #include <thread>
 

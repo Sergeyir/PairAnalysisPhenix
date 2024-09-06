@@ -36,7 +36,7 @@ void AnalyzeParticle(ThrContainer *thrContainer, const std::string &particle,
    const int partCharge = ParticleProperties.charge[partIndex];
 
    const std::string simInputFileName = 
-      Par.simDataDir + Par.runName + "/Single/" + particle + magf + auxName + ".root";
+      Par.simDataDir + Par.runName + "/SingleTrack/" + particle + magf + auxName + ".root";
    const std::string realInputFileName = 
       Par.realDataDir + Par.runName + "/sum" + magf + ".root";
 
@@ -302,7 +302,7 @@ void AnalyzeSingleTrack()
          {
             for (std::string auxName : Par.auxNameQueue)
             {
-               CheckInputFile(Par.simDataDir + Par.runName + "/Single/" + 
+               CheckInputFile(Par.simDataDir + Par.runName + "/SingleTrack/" + 
                               part + magf + auxName + ".root");
             }
          }
@@ -313,7 +313,7 @@ void AnalyzeSingleTrack()
       }
    }
    
-   system(("mkdir -p " + Par.outputDir + Par.runName).c_str());   
+   system(("mkdir -p " + Par.outputDir + Par.runName + "/SingleTrack").c_str());   
    
    int num = 1;
    for (std::string part : Par.partQueue)
@@ -328,7 +328,7 @@ void AnalyzeSingleTrack()
             num++;
          }
          const std::string outputFileName = 
-            Par.outputDir + Par.runName + "/" + part + magf + ".root";
+            Par.outputDir + Par.runName + "/SingleTrack/" + part + magf + ".root";
 
          TFile outfile(outputFileName.c_str(), "RECREATE");
          outfile.cd();
@@ -337,8 +337,8 @@ void AnalyzeSingleTrack()
          PrintInfo("File " + outputFileName + " was written");
       }
       
-      system(("hadd -f " + Par.outputDir + Par.runName + "/" + part + 
-              ".root " + Par.outputDir + Par.runName + "/" + part + "*").c_str());
+      system(("hadd -f " + Par.outputDir + Par.runName + "/SingleTrack/" + part + 
+              ".root " + Par.outputDir + Par.runName + "/SingleTrack/" + part + "*").c_str());
    }
 }
 

@@ -17,7 +17,7 @@
 #ifndef PAR_ANALYZE_HEAT_MAPS_HPP
 #define PAR_ANALYZE_HEAT_MAPS_HPP
 
-#define DEAD_AREAS_CUTS_RUN7AUAU
+#define RUN7AUAU
 
 #include <thread>
 
@@ -51,10 +51,6 @@ struct
    const int nthreads = std::thread::hardware_concurrency();
    
    const std::string runName = run + system;
-   
-   std::unique_ptr<TFile> realDataInputFile;
-   std::unique_ptr<TFile> simInputFile;
-   std::unique_ptr<TFile> alphaReweightInputFile;
    
    TH1F *alphaReweightDCe0;
    TH1F *alphaReweightDCe1;
