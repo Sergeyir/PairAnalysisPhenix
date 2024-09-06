@@ -1,8 +1,8 @@
 // $HEADER$
 //------------------------------------------------------------------------------------------------
-//                     AnalyzeTrackPair function declaration
+//                     AnalyzeResonance function declaration
 //------------------------------------------------------------------------------------------------
-// AnalyzeTrackPair
+// AnalyzeResonance
 //
 // ** Code for use in PHENIX related projects **
 //
@@ -10,9 +10,9 @@
 // Email: antsupov0124@gmail.com
 //
 /**
- * Basic macro used for evaluation of registration of pair of tracks for different methods
+ * Basic macro used for evaluation of registration of resonance for different methods
  * from simulation output of event-like TTrees to processed histograms 
- * for further track pair registering correction evaluation
+ * for further track pair from resonance registering correction evaluation
  **/
 //------------------------------------------------------------------------------------------------
 
@@ -35,37 +35,37 @@
 
 struct ThrContainer
 {
-   ThrObj<TH1F> origPtDistr = ThrObj<TH1F>
-      ("orig","orig", Par.pt_nbins, Par.pair_ptmin, Par.pair_ptmax);
+   ThrObj<TH1F> origPtDistr = ThrObj<TH1F>(
+      "orig","orig", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair);
 
-   ThrObj<TH2F> orig_pt_vs_pt = ThrObj<TH2F>
-      ("orig_pt_vs_pt", "orig vs pt", 
-       Par.pt_nbins, Par.ptmin, Par.ptmax, 
-       Par.pt_nbins, Par.pair_ptmin, Par.pair_ptmax);
+   ThrObj<TH2F> orig_pt_vs_pt = ThrObj<TH2F>(
+      "orig_pt_vs_pt", "orig vs pt", 
+      Par.ptNBins, Par.ptMin, Par.ptMax, 
+      Par.ptNBins, Par.ptMinPair, Par.ptMaxPair);
    
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_noPID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_noPID_acc_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_noPID_acc_increased;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_1PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_1PID_acc_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_1PID_acc_increased;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_2PID_acc_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_2PID_acc_increased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_2PID_m2_eff_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_2PID_m2_eff_increased;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDDecreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDIncreasedM2Eff;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_TOF2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_TOF2PID_acc_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_TOF2PID_acc_increased;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_EMC2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_EMC2PID_acc_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_EMC2PID_acc_increased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_EMC2PID_m2_eff_decreased;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> InvM_EMC2PID_m2_eff_increased;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDDecreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDIncreasedM2Eff;
 };
 
 struct ParticleContainer
