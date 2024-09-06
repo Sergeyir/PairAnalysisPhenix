@@ -6,40 +6,48 @@
 
 #include "TColor.h"
 
+#ifdef RUN7AUAU
+
 struct
 {
 	std::string AuAu200 = "Au+Au@#sqrt{s_{NN}} = 200 GeV";
 } RunName;
 
-struct AuAu200CTypeMB4
+#ifdef RUN7AUAU_MB4
+
+struct CentralityContainer
 {
-	static constexpr int size = 5;
-	std::array<int, size> cmin = {0, 2, 4, 6, 0};
-	std::array<int, size> cmax = {1, 3, 5, 9, 9};
+	static constexpr int arraySize = 5;
+   
+	std::array<int, size> minIndex = {0, 2, 4, 6, 0};
+	std::array<int, size> maxIndex = {1, 3, 5, 9, 9};
 
-	std::array<std::string, size> cmin_name = {"0", "20", "40", "60", "0"};
-	std::array<std::string, size> cmax_name = {"20", "40", "60", "93", "93"};
+	std::array<std::string, size> minName = {"0", "20", "40", "60", "0"};
+	std::array<std::string, size> maxName = {"20", "40", "60", "93", "93"};
 
-	std::array<std::string, size> cname_nop = {"0-20", "20-40", "40-60", "60-93", "MB"};
-	std::array<std::string, size> cname = {"0-20%", "20-40%", "40-60%", "60-93%", "MB"};
-	std::array<std::string, size> cname_latex = {"0-20\\%", "20-40\\%", "40-60\\%", "60-93\\%", "MB"};
+	std::array<std::string, size> name = {"0-20%", "20-40%", "40-60%", "60-93%", "MB"};
+	std::array<std::string, size> nameNoPercent = {"0-20", "20-40", "40-60", "60-93", "MB"};
+	std::array<std::string, size> nameLatex = {"0-20\\%", "20-40\\%", "40-60\\%", "60-93\\%", "MB"};
 
 	std::array<Color_t, size> color = {kAzure+5, kTeal+5, kSpring+5, kOrange+5, kBlue-2};
-	std::array<Style_t, size> marker_style = {53, 54, 55, 59, 47};
+	std::array<Style_t, size> markerStyle = {53, 54, 55, 59, 47};
 
-	std::array<double, size> ncolls = {784, 300.8, 94.2, 14.8, 257.8};
-	std::array<double, size> ncolls_uncertainty = {77.0, 31.4, 13.0, 4.0, 25.4};
-	std::string name = RunName.AuAu200;
+	std::array<double, size> nColls = {784, 300.8, 94.2, 14.8, 257.8};
+	std::array<double, size> nCollsUncertainty = {77.0, 31.4, 13.0, 4.0, 25.4};
 
-	const int central = 0;
-	const int peripheral = 3;
+	const int centralIndex = 0;
+	const int peripheralIndex = 3;
 };
 
-struct AuAu200CTypeMB5
+#endif /* RUN7AUAU_MB4 */
+
+#ifdef RUN7AUAU_MB5
+
+struct Centrality
 {
-	static constexpr int size = 6;
-	std::array<int, size> cmin = {0, 1, 2, 4, 6, 0};
-	std::array<int, size> cmax = {0, 1, 3, 5, 9, 9};
+	static constexpr int arraySize = 6;
+	std::array<int, size> minIndex = {0, 1, 2, 4, 6, 0};
+	std::array<int, size> maxIndex = {0, 1, 3, 5, 9, 9};
 
 	std::array<std::string, size> cmin_name = {"0", "10", "20", "40", "60", "0"};
 	std::array<std::string, size> cmax_name = {"10", "20", "40", "60", "93", "93"};
@@ -55,11 +63,22 @@ struct AuAu200CTypeMB5
 	std::array<double, size> ncolls_uncertainty = {80., 77.0, 31.4, 13.0, 4.0, 25.4};
 	std::string name = RunName.AuAu200;
 
-	const int central = 0;
-	const int peripheral = 4;
+	const int centralIndex = 0;
+	const int peripheralIndex = 4;
 };
 
-struct HeAu200CTypeMB4
+#endif /* RUN7AUAU_MB5 */
+
+#endif /* RUN7AUAU */
+
+#ifdef RUN14HEAU
+
+struct
+{
+	std::string AuAu200 = "Au+Au@#sqrt{s_{NN}} = 200 GeV";
+} RunName;
+
+struct Centrality
 {
 	std::array<int, 5> cmin = {0, 0, 2, 4, 6};
 	std::array<int, 5> cmax = {9, 1, 3, 5, 9};
@@ -72,5 +91,7 @@ struct HeAu200CTypeMB4
 	
 	std::string name = RunName.AuAu200;
 };
+
+#endif /* RUN14HEAU */
 
 #endif /* CENTRALITY_TYPES */
