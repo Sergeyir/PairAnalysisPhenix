@@ -36,7 +36,6 @@ all_libs: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinte
 # CppTools
 
 CppToolsLib: 
-	@$(ECHO) Creating directory for CppTools libraries
 	mkdir -p CppTools/lib
 
 ErrorHandler: CppTools/src/ErrorHandler.cpp CppToolsLib
@@ -90,7 +89,6 @@ Time: CppTools/src/Time.cpp CppToolsLib
 # ProgressBar
 
 ProgressBarLib:
-	@$(ECHO) Creating directory for ProgressBar libraries
 	mkdir -p ProgressBar/lib
 
 ProgressBar: ProgressBar/src/PBar.cpp ProgressBarLib
@@ -103,7 +101,6 @@ ProgressBar: ProgressBar/src/PBar.cpp ProgressBarLib
 # ROOTTools
 
 ROOTToolsLib:
-	@$(ECHO) Creating directory for ROOTTools libraries
 	mkdir -p ROOTTools/lib
 
 TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp ROOTToolsLib
@@ -126,7 +123,6 @@ GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools ROOTToolsLib
 # SimAnalysis
 
 SimAnalysisLib:
-	@$(ECHO) Creating directory for SimAnalysis libraries
 	mkdir -p SimAnalysis/lib
 
 EffTreeReader: SimAnalysis/src/EffTreeReader.cpp SimAnalysisLib
@@ -171,7 +167,8 @@ AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
+	$(ANALYSIS_INCLUDE)
 
 AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
@@ -180,7 +177,8 @@ AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
+	$(ANALYSIS_INCLUDE)
 
 AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
@@ -189,12 +187,12 @@ AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
+	$(ANALYSIS_INCLUDE)
 
 # other
 
 bin:
-	@$(ECHO) Creating directory for binary executables
 	mkdir bin
 
 clean: 

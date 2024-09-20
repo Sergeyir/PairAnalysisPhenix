@@ -25,7 +25,7 @@
 
 #include "Particles.hpp"
 
-#include "../../Analysis/include/DeadAreasCuts.hpp"
+#include "DeadAreasCuts.hpp"
 
 struct
 {   

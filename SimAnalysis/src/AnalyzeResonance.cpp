@@ -19,9 +19,11 @@
 #ifndef ANALYZE_RESONANCE_CPP
 #define ANALYZE_RESONANCE_CPP
 
+#include "../include/AnalyzeResonance.hpp"
+
 //Analyze specific track pair configuration
-void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& daughter1, 
-                          const std::string& daughter2, const std::string magf, 
+void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughter1, 
+                          const std::string& daughter2, const std::string& magf, 
                           const std::string& auxName, const double ptDeviation, 
                           const int procNum)
 {
@@ -118,11 +120,13 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
    auto ProcessMP = [&](TTreeReader &reader)
    {
       //arrays and constants for positives and negative particles and their tracks
-      PartArray ptrack, ntrack;
+      ParticleContainer ptrack, ntrack;
 
       //arrays for keeping weights for varied acceptancies
-      PartArray ptrackDecreasedAcceptance, ptrackIncreasedAcceptance, ntrackDecreasedAcceptance, ntrackIncreasedAcceptance;
-      PartArray ptrackDecreasedM2Eff, ptrackIncreasedM2Eff, ntrackDecreasedM2Eff, ntrackIncreasedM2Eff;
+      ParticleContainer ptrackDecreasedAcceptance, ptrackIncreasedAcceptance, 
+                        ntrackDecreasedAcceptance, ntrackIncreasedAcceptance;
+      ParticleContainer ptrackDecreasedM2Eff, ptrackIncreasedM2Eff, 
+                        ntrackDecreasedM2Eff, ntrackIncreasedM2Eff;
 
       //arrays for keeping weights for varied /epsilon_{m^2}
       
@@ -138,107 +142,107 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
       Id1.origId = ptrack.origId;
       Id2.origId = ntrack.origId;
 
-      ptrack.geant_id = ParticleProperties.geant_id[ptrack.iter];
-      ntrack.geant_id = ParticleProperties.geant_id[ntrack.iter];
+      ptrack.geantId = ParticleProperties.geantId[ptrack.iter];
+      ntrack.geantId = ParticleProperties.geantId[ntrack.iter];
 
       ptrack.mass = ParticleProperties.mass[ptrack.iter];
       ntrack.mass = ParticleProperties.mass[ntrack.iter];
 
       //setting embedding
-      ptrack.dc_pc1_emb = std::unique_ptr<double>(
+      ptrack.embDCPC1 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ptrack.iter] + "_dc_pc1.txt", 
          CentralityContainer.size));
-      ptrack.pc2_emb = std::unique_ptr<double>(
+      ptrack.embPC2 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ptrack.iter] + "_pc2.txt", 
          CentralityContainer.size));
-      ptrack.pc3_emb = std::unique_ptr<double>(
+      ptrack.embPC3 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ptrack.iter] + "_pc3.txt", 
          CentralityContainer.size));
-      ptrack.tofe_emb = std::unique_ptr<double>(
+      ptrack.embTOFe = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ptrack.iter] + "_tofe.txt", 
          CentralityContainer.size));
-      ptrack.tofw_emb = std::unique_ptr<double>(
+      ptrack.embTOFw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ptrack.iter] + "_tofw.txt", 
          CentralityContainer.size));
 
-      ntrack.dc_pc1_emb = std::unique_ptr<double>(
+      ntrack.embDCPC1 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ntrack.iter] + "_dc_pc1.txt", 
          CentralityContainer.size));
-      ntrack.pc2_emb = std::unique_ptr<double>(
+      ntrack.embPC2 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ntrack.iter] + "_pc2.txt", 
          CentralityContainer.size));
-      ntrack.pc3_emb = std::unique_ptr<double>(
+      ntrack.embPC3 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ntrack.iter] + "_pc3.txt", 
          CentralityContainer.size));
-      ntrack.tofe_emb = std::unique_ptr<double>(
+      ntrack.embTOFe = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ntrack.iter] + "_tofe.txt", 
          CentralityContainer.size));
-      ntrack.tofw_emb = std::unique_ptr<double>(
+      ntrack.embTOFw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.abs_name[ntrack.iter] + "_tofw.txt", 
          CentralityContainer.size));
       
       for (int i = 0; i < 4; i++)
       {
-         ptrack.emcale_emb[i] = std::unique_ptr<double>(
+         ptrack.embEMCale[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.abs_name[ptrack.iter] + "_emcale" + std::to_string(i) + ".txt", 
             CentralityContainer.size));
-         ptrack.emcalw_emb[i] = std::unique_ptr<double>(
+         ptrack.embEMCalw[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.abs_name[ptrack.iter] + "_emcalw" + std::to_string(i) + ".txt", 
             CentralityContainer.size));
          
-         ntrack.emcale_emb[i] = std::unique_ptr<double>(
+         ntrack.embEMCale[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.abs_name[ntrack.iter] + "_emcale" + std::to_string(i) + ".txt", 
             CentralityContainer.size));
-         ntrack.emcalw_emb[i] = std::unique_ptr<double>(
+         ntrack.embEMCalw[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.abs_name[ntrack.iter] + "_emcalw" + std::to_string(i) + ".txt", 
             CentralityContainer.size));
       }
 
-      ptrack.emcale_m2_eff = std::unique_ptr<double>(
+      ptrack.m2EffEMCale = std::unique_ptr<double>(
          ReadFileIntoArray("../input/M2Eff/" + Par.runName + "/" +
          ParticleProperties.name[ptrack.iter] + "_EMCale" + magf + ".txt", 2));
-      ptrack.emcalw_m2_eff = std::unique_ptr<double>(
+      ptrack.m2EffEMCalw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/M2Eff/" + Par.runName + "/" +
          ParticleProperties.name[ptrack.iter] + "_EMCalw" + magf + ".txt", 4));
       
-      ntrack.emcale_m2_eff = std::unique_ptr<double>(
+      ntrack.m2EffEMCale = std::unique_ptr<double>(
          ReadFileIntoArray("../input/M2Eff/" + Par.runName + "/" +
          ParticleProperties.name[ntrack.iter] + "_EMCale" + magf + ".txt", 2));
-      ntrack.emcalw_m2_eff = std::unique_ptr<double>(
+      ntrack.m2EffEMCalw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/M2Eff/" + Par.runName + "/" +
          ParticleProperties.name[ntrack.iter] + "_EMCalw" + magf + ".txt", 4));
 
-      ptrack.emcale_m2_eff_sys = std::unique_ptr<double>(
+      ptrack.m2EffSysEMCale = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Systematics/" + Par.runName + "/m2eff_" +
          ParticleProperties.name[ptrack.iter] + "_EMCale" + magf + ".txt", 2));
-      ptrack.emcalw_m2_eff_sys = std::unique_ptr<double>(
+      ptrack.m2EffSysEMCalw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Systematics/" + Par.runName + "/m2eff_" +
          ParticleProperties.name[ptrack.iter] + "_EMCalw" + magf + ".txt", 4));
       
-      ntrack.emcale_m2_eff_sys = std::unique_ptr<double>(
+      ntrack.m2EffSysEMCale = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Systematics/" + Par.runName + "/m2eff_" +
          ParticleProperties.name[ntrack.iter] + "_EMCale" + magf + ".txt", 2));
-      ntrack.emcalw_m2_eff_sys = std::unique_ptr<double>(
+      ntrack.m2EffSysEMCalw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Systematics/" + Par.runName + "/m2eff_" +
          ParticleProperties.name[ntrack.iter] + "_EMCalw" + magf + ".txt", 4));
 
-      std::shared_ptr<TH1F> origPtDistr = ThrContainer->origPtDistr.Get();
+      std::shared_ptr<TH1F> origPtDistr = thrContainer->origPtDistr.Get();
       
-      std::shared_ptr<TH2F> origPtVsPtDistr = ThrContainer->origPtVsPtDistr.Get();
+      std::shared_ptr<TH2F> origPtVsPtDistr = thrContainer->origPtVsPtDistr.Get();
       
       std::array<std::shared_ptr<TH2F>, CentralityContainer.size> invMDistrNoPID;
       std::array<std::shared_ptr<TH2F>, CentralityContainer.size> invMDistrNoPIDDecreasedAcceptance;
@@ -266,29 +270,29 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
 
       for (int i = 0; i < CentralityContainer.size; i++)
       {
-         invMDistrNoPID[i] = ThrContainer->invMDistrNoPID[i]->Get();
-         invMDistrNoPIDDecreasedAcceptance[i] = ThrContainer->invMDistrNoPIDDecreasedAcceptance[i]->Get();
-         invMDistrNoPIDIncreasedAcceptance[i] = ThrContainer->invMDistrNoPIDIncreasedAcceptance[i]->Get();
+         invMDistrNoPID[i] = thrContainer->invMDistrNoPID[i]->Get();
+         invMDistrNoPIDDecreasedAcceptance[i] = thrContainer->invMDistrNoPIDDecreasedAcceptance[i]->Get();
+         invMDistrNoPIDIncreasedAcceptance[i] = thrContainer->invMDistrNoPIDIncreasedAcceptance[i]->Get();
 
-         invMDistr1PID[i] = ThrContainer->invMDistr1PID[i]->Get();
-         invMDistr1PIDDecreasedAcceptance[i] = ThrContainer->invMDistr1PIDDecreasedAcceptance[i]->Get();
-         invMDistr1PIDIncreasedAcceptance[i] = ThrContainer->invMDistr1PIDIncreasedAcceptance[i]->Get();
+         invMDistr1PID[i] = thrContainer->invMDistr1PID[i]->Get();
+         invMDistr1PIDDecreasedAcceptance[i] = thrContainer->invMDistr1PIDDecreasedAcceptance[i]->Get();
+         invMDistr1PIDIncreasedAcceptance[i] = thrContainer->invMDistr1PIDIncreasedAcceptance[i]->Get();
 
-         invMDistr2PID[i] = ThrContainer->invMDistr2PID[i]->Get();
-         invMDistr2PIDDecreasedAcceptance[i] = ThrContainer->invMDistr2PIDDecreasedAcceptance[i]->Get();
-         invMDistr2PIDIncreasedAcceptance[i] = ThrContainer->invMDistr2PIDIncreasedAcceptance[i]->Get();
-         invMDistr2PIDDecreasedM2Eff[i] = ThrContainer->invMDistr2PIDDecreasedM2Eff[i]->Get();
-         invMDistr2PIDIncreasedM2Eff[i] = ThrContainer->invMDistr2PIDIncreasedM2Eff[i]->Get();
+         invMDistr2PID[i] = thrContainer->invMDistr2PID[i]->Get();
+         invMDistr2PIDDecreasedAcceptance[i] = thrContainer->invMDistr2PIDDecreasedAcceptance[i]->Get();
+         invMDistr2PIDIncreasedAcceptance[i] = thrContainer->invMDistr2PIDIncreasedAcceptance[i]->Get();
+         invMDistr2PIDDecreasedM2Eff[i] = thrContainer->invMDistr2PIDDecreasedM2Eff[i]->Get();
+         invMDistr2PIDIncreasedM2Eff[i] = thrContainer->invMDistr2PIDIncreasedM2Eff[i]->Get();
 
-         invMDistrTOF2PID[i] = ThrContainer->invMDistrTOF2PID[i]->Get();
-         invMDistrTOF2PIDDecreasedAcceptance[i] = ThrContainer->invMDistrTOF2PIDDecreasedAcceptance[i]->Get();
-         invMDistrTOF2PIDIncreasedAcceptance[i] = ThrContainer->invMDistrTOF2PIDIncreasedAcceptance[i]->Get();
+         invMDistrTOF2PID[i] = thrContainer->invMDistrTOF2PID[i]->Get();
+         invMDistrTOF2PIDDecreasedAcceptance[i] = thrContainer->invMDistrTOF2PIDDecreasedAcceptance[i]->Get();
+         invMDistrTOF2PIDIncreasedAcceptance[i] = thrContainer->invMDistrTOF2PIDIncreasedAcceptance[i]->Get();
 
-         invMDistrEMC2PID[i] = ThrContainer->invMDistrEMC2PID[i]->Get();
-         invMDistrEMC2PIDDecreasedAcceptance[i] = ThrContainer->invMDistrEMC2PIDDecreasedAcceptance[i]->Get();
-         invMDistrEMC2PIDIncreasedAcceptance[i] = ThrContainer->invMDistrEMC2PIDIncreasedAcceptance[i]->Get();
-         invMDistrEMC2PIDDecreasedM2Eff[i] = ThrContainer->invMDistrEMC2PIDDecreasedM2Eff[i]->Get();
-         invMDistrEMC2PIDIncreasedM2Eff[i] = ThrContainer->invMDistrEMC2PIDIncreasedM2Eff[i]->Get();
+         invMDistrEMC2PID[i] = thrContainer->invMDistrEMC2PID[i]->Get();
+         invMDistrEMC2PIDDecreasedAcceptance[i] = thrContainer->invMDistrEMC2PIDDecreasedAcceptance[i]->Get();
+         invMDistrEMC2PIDIncreasedAcceptance[i] = thrContainer->invMDistrEMC2PIDIncreasedAcceptance[i]->Get();
+         invMDistrEMC2PIDDecreasedM2Eff[i] = thrContainer->invMDistrEMC2PIDDecreasedM2Eff[i]->Get();
+         invMDistrEMC2PIDIncreasedM2Eff[i] = thrContainer->invMDistrEMC2PIDIncreasedM2Eff[i]->Get();
       }
       
       EffTreeReader T(reader);
@@ -379,49 +383,49 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
    
                   if (charge == 1)
                   {
-                     ptrack.tof_id[ptrack.size] = id;
+                     ptrack.idTOF[ptrack.size] = id;
                      
                      for (int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ptrack.tof_weight[j][ptrack.size] = 
-                           ptrack.tofe_emb.get()[j]/ptrack.dc_pc1_emb.get()[j];
-                        ptrackDecreasedAcceptance.tof_weight[j][ptrack.size] = 
-                           ptrack.tof_weight[j][ptrack.size]*(1. - acc_var);
-                        ptrackIncreasedAcceptance.tof_weight[j][ptrack.size] = 
-                           Minimum(1., ptrack.tof_weight[j][ptrack.size]*(1.+acc_var));
+                        ptrack.weightTOF[j][ptrack.size] = 
+                           ptrack.embTOFe.get()[j]/ptrack.embDCPC1.get()[j];
+                        ptrackDecreasedAcceptance.weightTOF[j][ptrack.size] = 
+                           ptrack.weightTOF[j][ptrack.size]*(1. - acc_var);
+                        ptrackIncreasedAcceptance.weightTOF[j][ptrack.size] = 
+                           Minimum(1., ptrack.weightTOF[j][ptrack.size]*(1.+acc_var));
 
                         if (id == ptrack.origId) 
                         {
-                           ptrack.tof_id_weight[j][ptrack.size] = 
-                              ptrack.tof_weight[j][ptrack.size];
-                           ptrackDecreasedAcceptance.tof_id_weight[j][ptrack.size] = 
-                              ptrack.tof_id_weight[j][ptrack.size]*(1. - acc_var);
-                           ptrackIncreasedAcceptance.tof_id_weight[j][ptrack.size] = 
-                              Minimum(1., ptrack.tof_id_weight[j][ptrack.size]*(1.+acc_var));
+                           ptrack.weightIdTOF[j][ptrack.size] = 
+                              ptrack.weightTOF[j][ptrack.size];
+                           ptrackDecreasedAcceptance.weightIdTOF[j][ptrack.size] = 
+                              ptrack.weightIdTOF[j][ptrack.size]*(1. - acc_var);
+                           ptrackIncreasedAcceptance.weightIdTOF[j][ptrack.size] = 
+                              Minimum(1., ptrack.weightIdTOF[j][ptrack.size]*(1.+acc_var));
                         }   
                      }
                   }
                   else
                   {
-                     ntrack.tof_id[ntrack.size] = id;
+                     ntrack.idTOF[ntrack.size] = id;
                      
                      for (int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ntrack.tof_weight[j][ntrack.size] = 
-                           ntrack.tofe_emb.get()[j]/ntrack.dc_pc1_emb.get()[j];
-                        ntrackDecreasedAcceptance.tof_weight[j][ntrack.size] = 
-                           ntrack.tof_weight[j][ntrack.size]*(1. - acc_var);
-                        ntrackIncreasedAcceptance.tof_weight[j][ntrack.size] = 
-                           Minimum(1., ntrack.tof_weight[j][ntrack.size]*(1.+acc_var));
+                        ntrack.weightTOF[j][ntrack.size] = 
+                           ntrack.embTOFe.get()[j]/ntrack.embDCPC1.get()[j];
+                        ntrackDecreasedAcceptance.weightTOF[j][ntrack.size] = 
+                           ntrack.weightTOF[j][ntrack.size]*(1. - acc_var);
+                        ntrackIncreasedAcceptance.weightTOF[j][ntrack.size] = 
+                           Minimum(1., ntrack.weightTOF[j][ntrack.size]*(1.+acc_var));
                         
                         if (id == ntrack.origId)
                         {
-                           ntrack.tof_id_weight[j][ntrack.size] = 
-                              ntrack.tof_weight[j][ntrack.size];
-                           ntrackDecreasedAcceptance.tof_id_weight[j][ntrack.size] = 
-                              ntrack.tof_id_weight[j][ntrack.size]*(1. - acc_var);
-                           ntrackIncreasedAcceptance.tof_id_weight[j][ntrack.size] = Minimum(1.,
-                              ntrack.tof_id_weight[j][ntrack.size]*(1.+acc_var));
+                           ntrack.weightIdTOF[j][ntrack.size] = 
+                              ntrack.weightTOF[j][ntrack.size];
+                           ntrackDecreasedAcceptance.weightIdTOF[j][ntrack.size] = 
+                              ntrack.weightIdTOF[j][ntrack.size]*(1. - acc_var);
+                           ntrackIncreasedAcceptance.weightIdTOF[j][ntrack.size] = Minimum(1.,
+                              ntrack.weightIdTOF[j][ntrack.size]*(1.+acc_var));
                         }
                      }
                   }
@@ -457,49 +461,49 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   
                   if (charge == 1)
                   {
-                     ptrack.tof_id[ptrack.size] = id;
+                     ptrack.idTOF[ptrack.size] = id;
                      
                      for (unsigned int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ptrack.tof_weight[j][ptrack.size] = 
-                           Par.correctionTOFw*ptrack.tofw_emb.get()[j]/ptrack.dc_pc1_emb.get()[j];
-                        ptrackDecreasedAcceptance.tof_weight[j][ptrack.size] = 
-                           ptrack.tof_weight[j][ptrack.size]*(1. - acc_var);
-                        ptrackIncreasedAcceptance.tof_weight[j][ptrack.size] = Minimum(1.,
-                           ptrack.tof_weight[j][ptrack.size]*(1. + acc_var));
+                        ptrack.weightTOF[j][ptrack.size] = 
+                           Par.correctionTOFw*ptrack.embTOFw.get()[j]/ptrack.embDCPC1.get()[j];
+                        ptrackDecreasedAcceptance.weightTOF[j][ptrack.size] = 
+                           ptrack.weightTOF[j][ptrack.size]*(1. - acc_var);
+                        ptrackIncreasedAcceptance.weightTOF[j][ptrack.size] = Minimum(1.,
+                           ptrack.weightTOF[j][ptrack.size]*(1. + acc_var));
 
                         if (id == ptrack.origId) 
                         {
-                           ptrack.tof_id_weight[j][ptrack.size] = 
-                               ptrack.tof_weight[j][ptrack.size];
-                           ptrackDecreasedAcceptance.tof_id_weight[j][ptrack.size] = 
-                               ptrack.tof_weight[j][ptrack.size]*(1. - acc_var);
-                           ptrackIncreasedAcceptance.tof_id_weight[j][ptrack.size] = Minimum(1.,
-                              ptrack.tof_weight[j][ptrack.size]*(1.+acc_var));
+                           ptrack.weightIdTOF[j][ptrack.size] = 
+                               ptrack.weightTOF[j][ptrack.size];
+                           ptrackDecreasedAcceptance.weightIdTOF[j][ptrack.size] = 
+                               ptrack.weightTOF[j][ptrack.size]*(1. - acc_var);
+                           ptrackIncreasedAcceptance.weightIdTOF[j][ptrack.size] = Minimum(1.,
+                              ptrack.weightTOF[j][ptrack.size]*(1.+acc_var));
                         }
                      }
                   }
                   else
                   {
-                     ntrack.tof_id[ntrack.size] = id;
+                     ntrack.idTOF[ntrack.size] = id;
                      
                      for (unsigned int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ntrack.tof_weight[j][ntrack.size] = 
-                           Par.correctionTOFw*ntrack.tofw_emb.get()[j]/ntrack.dc_pc1_emb.get()[j];
-                        ntrackDecreasedAcceptance.tof_weight[j][ntrack.size] = 
-                           ntrack.tof_weight[j][ntrack.size]*(1. - acc_var);
-                        ntrackIncreasedAcceptance.tof_weight[j][ntrack.size] = Minimum(1.,
-                           ntrack.tof_weight[j][ntrack.size]*(1.+acc_var));
+                        ntrack.weightTOF[j][ntrack.size] = 
+                           Par.correctionTOFw*ntrack.embTOFw.get()[j]/ntrack.embDCPC1.get()[j];
+                        ntrackDecreasedAcceptance.weightTOF[j][ntrack.size] = 
+                           ntrack.weightTOF[j][ntrack.size]*(1. - acc_var);
+                        ntrackIncreasedAcceptance.weightTOF[j][ntrack.size] = Minimum(1.,
+                           ntrack.weightTOF[j][ntrack.size]*(1.+acc_var));
 
                         if (id == ntrack.origId) 
                         {
-                           ntrack.tof_id_weight[j][ntrack.size] = 
-                              ntrack.tof_weight[j][ntrack.size];
-                           ntrackDecreasedAcceptance.tof_id_weight[j][ntrack.size] = 
-                              ntrack.tof_id_weight[j][ntrack.size]*(1. - acc_var);
-                           ntrackIncreasedAcceptance.tof_id_weight[j][ntrack.size] = Minimum(1.,
-                              ntrack.tof_id_weight[j][ntrack.size]*(1.+acc_var));
+                           ntrack.weightIdTOF[j][ntrack.size] = 
+                              ntrack.weightTOF[j][ntrack.size];
+                           ntrackDecreasedAcceptance.weightIdTOF[j][ntrack.size] = 
+                              ntrack.weightIdTOF[j][ntrack.size]*(1. - acc_var);
+                           ntrackIncreasedAcceptance.weightIdTOF[j][ntrack.size] = Minimum(1.,
+                              ntrack.weightIdTOF[j][ntrack.size]*(1.+acc_var));
                         }
                      }
                   }
@@ -516,8 +520,8 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   double acc_var;
                   double m2_eff_var = 0.;
 
-                  if (charge == 1) ptrack.emc_id[ptrack.size] = PartId.noPID;
-                  else ntrack.emc_id[ntrack.size] = PartId.noPID;
+                  if (charge == 1) ptrack.idEMC[ptrack.size] = PartId.noPID;
+                  else ntrack.idEMC[ntrack.size] = PartId.noPID;
 
                   if (phi > 1.5)
                   {
@@ -530,20 +534,20 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      {
                         for (unsigned int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ptrack.emc_weight[j][ptrack.size] = 
-                              ptrack.emcale_emb[T.sect(i)].get()[j]/ptrack.dc_pc1_emb.get()[j];
+                           ptrack.weightEMC[j][ptrack.size] = 
+                              ptrack.embEMCale[T.sect(i)].get()[j]/ptrack.embDCPC1.get()[j];
                         }
          
-                        if (T.particle_id(i) == ptrack.geant_id && T.sect(i) > 1)
+                        if (T.particle_id(i) == ptrack.geantId && T.sect(i) > 1)
                         {
-                           ptrack.emc_id[ptrack.size] = ptrack.origId;
+                           ptrack.idEMC[ptrack.size] = ptrack.origId;
                            for (unsigned int j = 0; j < CentralityContainer.size; j++)
                            {
-                              ptrack.emc_id_weight[j][ptrack.size] = 
-                                 ptrack.emc_weight[j][ptrack.size]*
-                                 ptrack.emcale_m2_eff.get()[T.sect(i)-2]*
-                                 GetEMCalEid(pt, ptrack.emc_id[ptrack.size], charge, phi, T.sect(i));
-                              m2_eff_var = ptrack.emcale_m2_eff_sys.get()[T.sect(i)-2];
+                              ptrack.weightIdEMC[j][ptrack.size] = 
+                                 ptrack.weightEMC[j][ptrack.size]*
+                                 ptrack.m2EffEMCale.get()[T.sect(i)-2]*
+                                 GetEMCalId(pt, ptrack.idEMC[ptrack.size], charge, phi, T.sect(i));
+                              m2_eff_var = ptrack.m2EffSysEMCale.get()[T.sect(i)-2];
                            }
                         }
                      }
@@ -551,20 +555,20 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      {   
                         for (unsigned int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ntrack.emc_weight[j][ntrack.size] = 
-                              ntrack.emcale_emb[T.sect(i)].get()[j]/ntrack.dc_pc1_emb.get()[j];
+                           ntrack.weightEMC[j][ntrack.size] = 
+                              ntrack.embEMCale[T.sect(i)].get()[j]/ntrack.embDCPC1.get()[j];
                         }
                            
-                        if (T.particle_id(i) == ntrack.geant_id && T.sect(i) > 1)
+                        if (T.particle_id(i) == ntrack.geantId && T.sect(i) > 1)
                         {
-                           ntrack.emc_id[ntrack.size] = ntrack.origId;
+                           ntrack.idEMC[ntrack.size] = ntrack.origId;
                            for (unsigned int j = 0; j < CentralityContainer.size; j++)
                            {
-                              ntrack.emc_id_weight[j][ntrack.size] = 
-                                 ntrack.emc_weight[j][ntrack.size]*
-                                 ntrack.emcale_m2_eff.get()[T.sect(i)-2]*
-                                 GetEMCalEid(pt, ntrack.emc_id[ntrack.size], charge, phi, T.sect(i));
-                              m2_eff_var = ntrack.emcale_m2_eff_sys.get()[T.sect(i)-2];
+                              ntrack.weightIdEMC[j][ntrack.size] = 
+                                 ntrack.weightEMC[j][ntrack.size]*
+                                 ntrack.m2EffEMCale.get()[T.sect(i)-2]*
+                                 GetEMCalId(pt, ntrack.idEMC[ntrack.size], charge, phi, T.sect(i));
+                              m2_eff_var = ntrack.m2EffSysEMCale.get()[T.sect(i)-2];
                            }
                         }
                      }
@@ -592,20 +596,20 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      {
                         for (unsigned int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ptrack.emc_weight[j][ptrack.size] = 
-                              ptrack.emcalw_emb[T.sect(i)].get()[j]/ptrack.dc_pc1_emb.get()[j];
+                           ptrack.weightEMC[j][ptrack.size] = 
+                              ptrack.embEMCalw[T.sect(i)].get()[j]/ptrack.embDCPC1.get()[j];
                         }
                         
-                        if (T.particle_id(i) == ptrack.geant_id)
+                        if (T.particle_id(i) == ptrack.geantId)
                         {
-                           ptrack.emc_id[ptrack.size] = ptrack.origId;
+                           ptrack.idEMC[ptrack.size] = ptrack.origId;
                            for (unsigned int j = 0; j < CentralityContainer.size; j++)
                            {
-                              ptrack.emc_id_weight[j][ptrack.size] = 
-                                 ptrack.emc_weight[j][ptrack.size]*
-                                 ptrack.emcalw_m2_eff.get()[T.sect(i)]*
-                                 GetEMCalEid(pt, ptrack.emc_id[ptrack.size], charge, phi, T.sect(i));
-                              m2_eff_var = ptrack.emcalw_m2_eff_sys.get()[T.sect(i)];
+                              ptrack.weightIdEMC[j][ptrack.size] = 
+                                 ptrack.weightEMC[j][ptrack.size]*
+                                 ptrack.m2EffEMCalw.get()[T.sect(i)]*
+                                 GetEMCalId(pt, ptrack.idEMC[ptrack.size], charge, phi, T.sect(i));
+                              m2_eff_var = ptrack.m2EffSysEMCalw.get()[T.sect(i)];
                            }
                         }
                      }
@@ -613,20 +617,20 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      {
                         for (unsigned int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ntrack.emc_weight[j][ntrack.size] = 
-                              ntrack.emcalw_emb[T.sect(i)].get()[j]/ntrack.dc_pc1_emb.get()[j];
+                           ntrack.weightEMC[j][ntrack.size] = 
+                              ntrack.embEMCalw[T.sect(i)].get()[j]/ntrack.embDCPC1.get()[j];
                         }
                         
-                        if (T.particle_id(i) == ntrack.geant_id)
+                        if (T.particle_id(i) == ntrack.geantId)
                         {
-                           ntrack.emc_id[ntrack.size] = ntrack.origId;
+                           ntrack.idEMC[ntrack.size] = ntrack.origId;
                            for (unsigned int j = 0; j < CentralityContainer.size; j++)
                            {
-                              ntrack.emc_id_weight[j][ntrack.size] = 
-                                 ntrack.emc_weight[j][ntrack.size]*
-                                 ntrack.emcalw_m2_eff.get()[T.sect(i)]*
-                                 GetEMCalEid(pt, ntrack.emc_id[ntrack.size], charge, phi, T.sect(i));
-                              m2_eff_var = ntrack.emcalw_m2_eff_sys.get()[T.sect(i)];
+                              ntrack.weightIdEMC[j][ntrack.size] = 
+                                 ntrack.weightEMC[j][ntrack.size]*
+                                 ntrack.m2EffEMCalw.get()[T.sect(i)]*
+                                 GetEMCalId(pt, ntrack.idEMC[ntrack.size], charge, phi, T.sect(i));
+                              m2_eff_var = ntrack.m2EffSysEMCalw.get()[T.sect(i)];
                            }
                         }
                      }
@@ -648,40 +652,40 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   {
                      for (unsigned int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ptrackDecreasedAcceptance.emc_weight[j][ptrack.size] = 
-                           ptrack.emc_weight[j][ptrack.size]*(1. - acc_var);
-                        ptrackIncreasedAcceptance.emc_weight[j][ptrack.size] = Minimum(1.,
-                           ptrack.emc_weight[j][ptrack.size]*(1. + acc_var));
+                        ptrackDecreasedAcceptance.weightEMC[j][ptrack.size] = 
+                           ptrack.weightEMC[j][ptrack.size]*(1. - acc_var);
+                        ptrackIncreasedAcceptance.weightEMC[j][ptrack.size] = Minimum(1.,
+                           ptrack.weightEMC[j][ptrack.size]*(1. + acc_var));
 
-                        ptrackDecreasedAcceptance.emc_id_weight[j][ptrack.size] = 
-                           ptrack.emc_id_weight[j][ptrack.size]*(1. - acc_var);
-                        ptrackIncreasedAcceptance.emc_id_weight[j][ptrack.size] = Minimum(1.,
-                           ptrack.emc_id_weight[j][ptrack.size]*(1. + acc_var));
+                        ptrackDecreasedAcceptance.weightIdEMC[j][ptrack.size] = 
+                           ptrack.weightIdEMC[j][ptrack.size]*(1. - acc_var);
+                        ptrackIncreasedAcceptance.weightIdEMC[j][ptrack.size] = Minimum(1.,
+                           ptrack.weightIdEMC[j][ptrack.size]*(1. + acc_var));
 
-                        ptrackDecreasedM2Eff.emc_id_weight[j][ptrack.size] = 
-                           ptrack.emc_id_weight[j][ptrack.size]*(1. - m2_eff_var);
-                        ptrackIncreasedM2Eff.emc_id_weight[j][ptrack.size] = Minimum(1.,
-                           ptrack.emc_id_weight[j][ptrack.size]*(1. + m2_eff_var));
+                        ptrackDecreasedM2Eff.weightIdEMC[j][ptrack.size] = 
+                           ptrack.weightIdEMC[j][ptrack.size]*(1. - m2_eff_var);
+                        ptrackIncreasedM2Eff.weightIdEMC[j][ptrack.size] = Minimum(1.,
+                           ptrack.weightIdEMC[j][ptrack.size]*(1. + m2_eff_var));
                      }
                   }
                   else
                   {
                      for (unsigned int j = 0; j < CentralityContainer.size; j++)
                      {
-                        ntrackDecreasedAcceptance.emc_weight[j][ntrack.size] = 
-                           ntrack.emc_weight[j][ntrack.size]*(1. - acc_var);
-                        ntrackIncreasedAcceptance.emc_weight[j][ntrack.size] = Minimum(1.,
-                           ntrack.emc_weight[j][ntrack.size]*(1. + acc_var));
+                        ntrackDecreasedAcceptance.weightEMC[j][ntrack.size] = 
+                           ntrack.weightEMC[j][ntrack.size]*(1. - acc_var);
+                        ntrackIncreasedAcceptance.weightEMC[j][ntrack.size] = Minimum(1.,
+                           ntrack.weightEMC[j][ntrack.size]*(1. + acc_var));
 
-                        ntrackDecreasedAcceptance.emc_id_weight[j][ntrack.size] = 
-                           ntrack.emc_id_weight[j][ntrack.size]*(1. - acc_var);
-                        ntrackIncreasedAcceptance.emc_id_weight[j][ntrack.size] = Minimum(1.,
-                           ntrack.emc_id_weight[j][ntrack.size]*(1. + acc_var));
+                        ntrackDecreasedAcceptance.weightIdEMC[j][ntrack.size] = 
+                           ntrack.weightIdEMC[j][ntrack.size]*(1. - acc_var);
+                        ntrackIncreasedAcceptance.weightIdEMC[j][ntrack.size] = Minimum(1.,
+                           ntrack.weightIdEMC[j][ntrack.size]*(1. + acc_var));
 
-                        ntrackDecreasedM2Eff.emc_id_weight[j][ntrack.size] = 
-                           ntrack.emc_id_weight[j][ntrack.size]*(1. - m2_eff_var);
-                        ntrackIncreasedM2Eff.emc_id_weight[j][ntrack.size] = Minimum(1.,
-                           ntrack.emc_id_weight[j][ntrack.size]*(1. + m2_eff_var));
+                        ntrackDecreasedM2Eff.weightIdEMC[j][ntrack.size] = 
+                           ntrack.weightIdEMC[j][ntrack.size]*(1. - m2_eff_var);
+                        ntrackIncreasedM2Eff.weightIdEMC[j][ntrack.size] = Minimum(1.,
+                           ntrack.weightIdEMC[j][ntrack.size]*(1. + m2_eff_var));
                      }
                   }
                }
@@ -703,32 +707,32 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      
                      if (charge == 1)
                      {
-                        ptrack.pc2_id[ptrack.size] = PartId.noPID;
+                        ptrack.idPC2[ptrack.size] = PartId.noPID;
    
                         for (int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ptrack.pc2_weight[j][ptrack.size] = 
-                              ptrack.pc2_emb.get()[j]/ptrack.dc_pc1_emb.get()[j];
+                           ptrack.weightPC2[j][ptrack.size] = 
+                              ptrack.embPC2.get()[j]/ptrack.embDCPC1.get()[j];
                            
-                           ptrackDecreasedAcceptance.pc2_weight[j][ptrack.size] = 
-                              ptrack.pc2_weight[j][ptrack.size]*(1. - acc_var);
-                           ptrackIncreasedAcceptance.pc2_weight[j][ptrack.size] = Minimum(1.,
-                              ptrack.pc2_weight[j][ptrack.size]*(1. + acc_var));
+                           ptrackDecreasedAcceptance.weightPC2[j][ptrack.size] = 
+                              ptrack.weightPC2[j][ptrack.size]*(1. - acc_var);
+                           ptrackIncreasedAcceptance.weightPC2[j][ptrack.size] = Minimum(1.,
+                              ptrack.weightPC2[j][ptrack.size]*(1. + acc_var));
                         }
                      }
                      else
                      {
-                        ntrack.pc2_id[ntrack.size] = PartId.noPID;
+                        ntrack.idPC2[ntrack.size] = PartId.noPID;
                         
                         for (int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ntrack.pc2_weight[j][ntrack.size] = 
-                              ntrack.pc2_emb.get()[j]/ntrack.dc_pc1_emb.get()[j];
+                           ntrack.weightPC2[j][ntrack.size] = 
+                              ntrack.embPC2.get()[j]/ntrack.embDCPC1.get()[j];
 
-                           ntrackDecreasedAcceptance.pc2_weight[j][ntrack.size] = 
-                              ntrack.pc2_weight[j][ntrack.size]*(1. - acc_var);
-                           ntrackIncreasedAcceptance.pc2_weight[j][ntrack.size] = Minimum(1.,
-                              ntrack.pc2_weight[j][ntrack.size]*(1. + acc_var));
+                           ntrackDecreasedAcceptance.weightPC2[j][ntrack.size] = 
+                              ntrack.weightPC2[j][ntrack.size]*(1. - acc_var);
+                           ntrackIncreasedAcceptance.weightPC2[j][ntrack.size] = Minimum(1.,
+                              ntrack.weightPC2[j][ntrack.size]*(1. + acc_var));
                         }
                      }
                   }
@@ -761,32 +765,32 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      
                      if (charge == 1)
                      {
-                        ptrack.pc3_id[ptrack.size] = PartId.noPID;
+                        ptrack.idPC3[ptrack.size] = PartId.noPID;
                         
                         for (int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ptrack.pc3_weight[j][ptrack.size] = 
-                              ptrack.pc3_emb.get()[j]/ptrack.dc_pc1_emb.get()[j];
+                           ptrack.weightPC3[j][ptrack.size] = 
+                              ptrack.embPC3.get()[j]/ptrack.embDCPC1.get()[j];
 
-                           ptrackDecreasedAcceptance.pc3_weight[j][ptrack.size] = 
-                              ptrack.pc3_weight[j][ptrack.size]*(1. - acc_var); 
-                           ptrackIncreasedAcceptance.pc3_weight[j][ptrack.size] = Minimum(1.,
-                              ptrack.pc3_weight[j][ptrack.size]*(1. + acc_var)); 
+                           ptrackDecreasedAcceptance.weightPC3[j][ptrack.size] = 
+                              ptrack.weightPC3[j][ptrack.size]*(1. - acc_var); 
+                           ptrackIncreasedAcceptance.weightPC3[j][ptrack.size] = Minimum(1.,
+                              ptrack.weightPC3[j][ptrack.size]*(1. + acc_var)); 
                         }
                      }
                      else
                      {
-                        ntrack.pc3_id[ntrack.size] = PartId.noPID;
+                        ntrack.idPC3[ntrack.size] = PartId.noPID;
                         
                         for (int j = 0; j < CentralityContainer.size; j++)
                         {
-                           ntrack.pc3_weight[j][ntrack.size] = 
-                              ntrack.pc3_emb.get()[j]/ntrack.dc_pc1_emb.get()[j];
+                           ntrack.weightPC3[j][ntrack.size] = 
+                              ntrack.embPC3.get()[j]/ntrack.embDCPC1.get()[j];
                            
-                           ntrackDecreasedAcceptance.pc3_weight[j][ntrack.size] = 
-                              ntrack.pc3_weight[j][ntrack.size]*(1. - acc_var); 
-                           ntrackIncreasedAcceptance.pc3_weight[j][ntrack.size] = Minimum(1.,
-                              ntrack.pc3_weight[j][ntrack.size]*(1. + acc_var)); 
+                           ntrackDecreasedAcceptance.weightPC3[j][ntrack.size] = 
+                              ntrack.weightPC3[j][ntrack.size]*(1. - acc_var); 
+                           ntrackIncreasedAcceptance.weightPC3[j][ntrack.size] = Minimum(1.,
+                              ntrack.weightPC3[j][ntrack.size]*(1. + acc_var)); 
                         }
                      }
                   }
@@ -796,10 +800,10 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
             //At least 1 detector is required
             if (charge == 1)
             {
-               if (ptrack.pc2_id[ptrack.size] == PartId.junk &&
-                     ptrack.pc3_id[ptrack.size] == PartId.junk &&
-                     ptrack.tof_id[ptrack.size] == PartId.junk &&
-                     ptrack.emc_id[ptrack.size] == PartId.junk) 
+               if (ptrack.idPC2[ptrack.size] == PartId.junk &&
+                     ptrack.idPC3[ptrack.size] == PartId.junk &&
+                     ptrack.idTOF[ptrack.size] == PartId.junk &&
+                     ptrack.idEMC[ptrack.size] == PartId.junk) 
                {
                   continue;
                }
@@ -811,10 +815,10 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
             }
             else if (charge == -1)
             {
-               if (ntrack.pc2_id[ntrack.size] == PartId.junk &&
-                     ntrack.pc3_id[ntrack.size] == PartId.junk &&
-                     ntrack.tof_id[ntrack.size] == PartId.junk &&
-                     ntrack.emc_id[ntrack.size] == PartId.junk) 
+               if (ntrack.idPC2[ntrack.size] == PartId.junk &&
+                     ntrack.idPC3[ntrack.size] == PartId.junk &&
+                     ntrack.idTOF[ntrack.size] == PartId.junk &&
+                     ntrack.idEMC[ntrack.size] == PartId.junk) 
                {
                   continue;
                }
@@ -852,15 +856,15 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                const double pt = sqrt((ptrack.mom[0] + ntrack.mom[0])*(ptrack.mom[0] + ntrack.mom[0]) +
                   (ptrack.mom[1] + ptrack.mom[1])*(ntrack.mom[1] + ntrack.mom[1]));
 
-               Id1.pc2 = ptrack.pc2_id[i];
-               Id1.pc3 = ptrack.pc3_id[i];
-               Id1.emc = ptrack.emc_id[i];
-               Id1.tof = ptrack.tof_id[i];
+               Id1.pc2 = ptrack.idPC2[i];
+               Id1.pc3 = ptrack.idPC3[i];
+               Id1.emc = ptrack.idEMC[i];
+               Id1.tof = ptrack.idTOF[i];
 
-               Id2.pc2 = ntrack.pc2_id[j];
-               Id2.pc3 = ntrack.pc3_id[j];
-               Id2.emc = ntrack.emc_id[j];
-               Id2.tof = ntrack.tof_id[j];
+               Id2.pc2 = ntrack.idPC2[j];
+               Id2.pc3 = ntrack.idPC3[j];
+               Id2.emc = ntrack.idEMC[j];
+               Id2.tof = ntrack.idTOF[j];
 
                if (IsnoPID(&Id1, &Id2))
                {
@@ -868,18 +872,18 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   {
                      //probabilities of not registering dc-pc1 tracks
                      double no_track1_prob = Product(
-                        1. - ptrack.pc2_weight[k][i], 
-                        1. - ptrack.pc3_weight[k][i], 
-                        1. - ptrack.tof_weight[k][i], 
-                        1. - ptrack.emc_weight[k][i]);
+                        1. - ptrack.weightPC2[k][i], 
+                        1. - ptrack.weightPC3[k][i], 
+                        1. - ptrack.weightTOF[k][i], 
+                        1. - ptrack.weightEMC[k][i]);
                      
                      double no_track2_prob = Product(
-                        1. - ntrack.pc2_weight[k][j], 
-                        1. - ntrack.pc3_weight[k][j], 
-                        1. - ntrack.tof_weight[k][j], 
-                        1. - ntrack.emc_weight[k][j]);
+                        1. - ntrack.weightPC2[k][j], 
+                        1. - ntrack.weightPC3[k][j], 
+                        1. - ntrack.weightTOF[k][j], 
+                        1. - ntrack.weightEMC[k][j]);
 
-                     double pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     double pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
       
                      invMDistrNoPID[k]->Fill(pt, mass, event_weight*pair_weight);
@@ -887,35 +891,35 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                      origPtVsPtDistr->Fill(pt, origPt, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackDecreasedAcceptance.pc2_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.pc3_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.tof_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.emc_weight[k][i]);
+                        1. - ptrackDecreasedAcceptance.weightPC2[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightPC3[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightTOF[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrackDecreasedAcceptance.pc2_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.pc3_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.tof_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.emc_weight[k][j]);
+                        1. - ntrackDecreasedAcceptance.weightPC2[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightPC3[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightTOF[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightEMC[k][j]);
 
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistrNoPIDDecreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackIncreasedAcceptance.pc2_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.pc3_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.tof_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.emc_weight[k][i]);
+                        1. - ptrackIncreasedAcceptance.weightPC2[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightPC3[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightTOF[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrackIncreasedAcceptance.pc2_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.pc3_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.tof_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.emc_weight[k][j]);
+                        1. - ntrackIncreasedAcceptance.weightPC2[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightPC3[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightTOF[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightEMC[k][j]);
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistrNoPIDIncreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
@@ -928,66 +932,66 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
                      double no_track1_prob = Product(
-                        1. - ptrack.pc2_weight[k][i], 
-                        1. - ptrack.pc3_weight[k][i], 
-                        1. - ptrack.tof_weight[k][i], 
-                        1. - ptrack.emc_weight[k][i]);
+                        1. - ptrack.weightPC2[k][i], 
+                        1. - ptrack.weightPC3[k][i], 
+                        1. - ptrack.weightTOF[k][i], 
+                        1. - ptrack.weightEMC[k][i]);
 
-                     double no_id_track1_prob = 1. - ptrack.tof_id_weight[k][i];
+                     double no_id_track1_prob = 1. - ptrack.weightIdTOF[k][i];
                      
                      double no_track2_prob = Product(
-                        1. - ntrack.pc2_weight[k][j], 
-                        1. - ntrack.pc3_weight[k][j], 
-                        1. - ntrack.tof_weight[k][j], 
-                        1. - ntrack.emc_weight[k][j]);
+                        1. - ntrack.weightPC2[k][j], 
+                        1. - ntrack.weightPC3[k][j], 
+                        1. - ntrack.weightTOF[k][j], 
+                        1. - ntrack.weightEMC[k][j]);
 
-                     double no_id_track2_prob = 1. - ntrack.tof_id_weight[k][j];
+                     double no_id_track2_prob = 1. - ntrack.weightIdTOF[k][j];
                      
-                     double pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*(1. -
+                     double pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*(1. -
                         (1. - (1. - no_id_track1_prob)*(1. - no_track2_prob))*
                         (1. - (1. - no_track1_prob)*(1. - no_id_track2_prob)));
 
                      invMDistr1PID[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackDecreasedAcceptance.pc2_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.pc3_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.tof_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.emc_weight[k][i]);
+                        1. - ptrackDecreasedAcceptance.weightPC2[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightPC3[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightTOF[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightEMC[k][i]);
 
-                     no_id_track1_prob = 1. - ptrackDecreasedAcceptance.tof_id_weight[k][i];
+                     no_id_track1_prob = 1. - ptrackDecreasedAcceptance.weightIdTOF[k][i];
                      
                      no_track2_prob = Product(
-                        1. - ntrackDecreasedAcceptance.pc2_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.pc3_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.tof_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.emc_weight[k][j]);
+                        1. - ntrackDecreasedAcceptance.weightPC2[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightPC3[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightTOF[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightEMC[k][j]);
 
-                     no_id_track2_prob = 1. - ntrackDecreasedAcceptance.tof_id_weight[k][j];
+                     no_id_track2_prob = 1. - ntrackDecreasedAcceptance.weightIdTOF[k][j];
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*(1. -
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*(1. -
                         (1. - (1. - no_id_track1_prob)*(1. - no_track2_prob))*
                         (1. - (1. - no_track1_prob)*(1. - no_id_track2_prob)));
 
                      invMDistr1PIDDecreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackIncreasedAcceptance.pc2_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.pc3_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.tof_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.emc_weight[k][i]);
+                        1. - ptrackIncreasedAcceptance.weightPC2[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightPC3[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightTOF[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightEMC[k][i]);
 
-                     no_id_track1_prob = 1. - ptrackIncreasedAcceptance.tof_id_weight[k][i];
+                     no_id_track1_prob = 1. - ptrackIncreasedAcceptance.weightIdTOF[k][i];
                      
                      no_track2_prob = Product(
-                        1. - ntrackIncreasedAcceptance.pc2_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.pc3_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.tof_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.emc_weight[k][j]);
+                        1. - ntrackIncreasedAcceptance.weightPC2[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightPC3[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightTOF[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightEMC[k][j]);
                      
-                     no_id_track2_prob = 1. - ntrackIncreasedAcceptance.tof_id_weight[k][j];
+                     no_id_track2_prob = 1. - ntrackIncreasedAcceptance.weightIdTOF[k][j];
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*(1. -
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*(1. -
                         (1. - (1. - no_id_track1_prob)*(1. - no_track2_prob))*
                         (1. - (1. - no_track1_prob)*(1. - no_id_track2_prob)));
                      
@@ -1000,66 +1004,66 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
                      double no_track1_prob = Product(
-                        1. - ptrack.tof_id_weight[k][i], 
-                        1. - ptrack.emc_id_weight[k][i]);
+                        1. - ptrack.weightIdTOF[k][i], 
+                        1. - ptrack.weightIdEMC[k][i]);
                      
                      double no_track2_prob = Product(
-                        1. - ntrack.tof_id_weight[k][j], 
-                        1. - ntrack.emc_id_weight[k][j]);
+                        1. - ntrack.weightIdTOF[k][j], 
+                        1. - ntrack.weightIdEMC[k][j]);
                      
-                     double pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     double pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistr2PID[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackDecreasedAcceptance.tof_id_weight[k][i], 
-                        1. - ptrackDecreasedAcceptance.emc_id_weight[k][i]);
+                        1. - ptrackDecreasedAcceptance.weightIdTOF[k][i], 
+                        1. - ptrackDecreasedAcceptance.weightIdEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrackDecreasedAcceptance.tof_id_weight[k][j], 
-                        1. - ntrackDecreasedAcceptance.emc_id_weight[k][j]);
+                        1. - ntrackDecreasedAcceptance.weightIdTOF[k][j], 
+                        1. - ntrackDecreasedAcceptance.weightIdEMC[k][j]);
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistr2PIDDecreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrackIncreasedAcceptance.tof_id_weight[k][i], 
-                        1. - ptrackIncreasedAcceptance.emc_id_weight[k][i]);
+                        1. - ptrackIncreasedAcceptance.weightIdTOF[k][i], 
+                        1. - ptrackIncreasedAcceptance.weightIdEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrackIncreasedAcceptance.tof_id_weight[k][j], 
-                        1. - ntrackIncreasedAcceptance.emc_id_weight[k][j]);
+                        1. - ntrackIncreasedAcceptance.weightIdTOF[k][j], 
+                        1. - ntrackIncreasedAcceptance.weightIdEMC[k][j]);
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistr2PIDIncreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrack.tof_id_weight[k][i], 
-                        1. - ptrackDecreasedM2Eff.emc_id_weight[k][i]);
+                        1. - ptrack.weightIdTOF[k][i], 
+                        1. - ptrackDecreasedM2Eff.weightIdEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrack.tof_id_weight[k][j], 
-                        1. - ntrackDecreasedM2Eff.emc_id_weight[k][j]);
+                        1. - ntrack.weightIdTOF[k][j], 
+                        1. - ntrackDecreasedM2Eff.weightIdEMC[k][j]);
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistr2PIDDecreasedM2Eff[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      no_track1_prob = Product(
-                        1. - ptrack.tof_id_weight[k][i], 
-                        1. - ptrackIncreasedM2Eff.emc_id_weight[k][i]);
+                        1. - ptrack.weightIdTOF[k][i], 
+                        1. - ptrackIncreasedM2Eff.weightIdEMC[k][i]);
                      
                      no_track2_prob = Product(
-                        1. - ntrack.tof_id_weight[k][j], 
-                        1. - ntrackIncreasedM2Eff.emc_id_weight[k][j]);
+                        1. - ntrack.weightIdTOF[k][j], 
+                        1. - ntrackIncreasedM2Eff.weightIdEMC[k][j]);
                      
-                     pair_weight = ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
+                     pair_weight = ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
                         (1. - no_track1_prob)*(1. - no_track2_prob);
 
                      invMDistr2PIDIncreasedM2Eff[k]->Fill(pt, mass, event_weight*pair_weight);
@@ -1072,20 +1076,20 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
                      double pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrack.tof_id_weight[k][i]*ntrack.tof_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrack.weightIdTOF[k][i]*ntrack.weightIdTOF[k][j];
                      
                      invMDistrTOF2PID[k]->Fill(pt, mass, event_weight*pair_weight);
                      
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackDecreasedAcceptance.tof_id_weight[k][i]*ntrackDecreasedAcceptance.tof_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackDecreasedAcceptance.weightIdTOF[k][i]*ntrackDecreasedAcceptance.weightIdTOF[k][j];
                      
                      invMDistrTOF2PIDDecreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackIncreasedAcceptance.tof_id_weight[k][i]*ntrackIncreasedAcceptance.tof_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackIncreasedAcceptance.weightIdTOF[k][i]*ntrackIncreasedAcceptance.weightIdTOF[k][j];
                      
                      invMDistrTOF2PIDIncreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
                   }
@@ -1096,32 +1100,32 @@ void AnalyzeConfiguration(ThrContainerStruct *ThrContainer, const std::string& d
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
                      double pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrack.emc_id_weight[k][i]*ntrack.emc_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrack.weightIdEMC[k][i]*ntrack.weightIdEMC[k][j];
 
                      invMDistrEMC2PID[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackDecreasedAcceptance.emc_id_weight[k][i]*ntrackDecreasedAcceptance.emc_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackDecreasedAcceptance.weightIdEMC[k][i]*ntrackDecreasedAcceptance.weightIdEMC[k][j];
 
                      invMDistrEMC2PIDDecreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackIncreasedAcceptance.emc_id_weight[k][i]*ntrackIncreasedAcceptance.emc_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackIncreasedAcceptance.weightIdEMC[k][i]*ntrackIncreasedAcceptance.weightIdEMC[k][j];
 
                      invMDistrEMC2PIDIncreasedAcceptance[k]->Fill(pt, mass, event_weight*pair_weight);
                      
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackDecreasedM2Eff.emc_id_weight[k][i]*ntrackDecreasedM2Eff.emc_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackDecreasedM2Eff.weightIdEMC[k][i]*ntrackDecreasedM2Eff.weightIdEMC[k][j];
 
                      invMDistrEMC2PIDDecreasedM2Eff[k]->Fill(pt, mass, event_weight*pair_weight);
 
                      pair_weight = 
-                        ptrack.dc_pc1_emb.get()[k]*ntrack.dc_pc1_emb.get()[k]*
-                        ptrackIncreasedM2Eff.emc_id_weight[k][i]*ntrackIncreasedM2Eff.emc_id_weight[k][j];
+                        ptrack.embDCPC1.get()[k]*ntrack.embDCPC1.get()[k]*
+                        ptrackIncreasedM2Eff.weightIdEMC[k][i]*ntrackIncreasedM2Eff.weightIdEMC[k][j];
 
                      invMDistrEMC2PIDIncreasedM2Eff[k]->Fill(pt, mass, event_weight*pair_weight);
                   }
@@ -1204,7 +1208,7 @@ void AnalyzeTrackPair()
    int procNum = 1;
    for (double ptDeviation : Par.ptDeviationQueue)
    {
-      ThrContainerStruct ThrContainer;
+      thrContainer thrContainer;
 
       const double min_inv_mass = 0.;
 
@@ -1212,115 +1216,115 @@ void AnalyzeTrackPair()
       {
          std::string dir = CentralityContainer.nameWithoutPercent[j];
          
-         ThrContainer.invMDistrNoPID[j] = 
+         thrContainer.invMDistrNoPID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "noPID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "noPID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrNoPIDDecreasedAcceptance[j] = 
+         thrContainer.invMDistrNoPIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "noPID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                 "noPID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                 Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrNoPIDIncreasedAcceptance[j] = 
+         thrContainer.invMDistrNoPIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "noPID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "noPID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
 
-         ThrContainer.invMDistr1PID[j] = 
+         thrContainer.invMDistr1PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "1PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr1PIDDecreasedAcceptance[j] = 
+         thrContainer.invMDistr1PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "1PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr1PIDIncreasedAcceptance[j] = 
+         thrContainer.invMDistr1PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "1PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
 
-         ThrContainer.invMDistr2PID[j] = 
+         thrContainer.invMDistr2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr2PIDDecreasedAcceptance[j] = 
+         thrContainer.invMDistr2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr2PIDIncreasedAcceptance[j] = 
+         thrContainer.invMDistr2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr2PIDDecreasedM2Eff[j] = 
+         thrContainer.invMDistr2PIDDecreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "2PID_m2Eff-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistr2PIDIncreasedM2Eff[j] = 
+         thrContainer.invMDistr2PIDIncreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "2PID_m2Eff+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrTOF2PID[j] = 
+         thrContainer.invMDistrTOF2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "TOF2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrTOF2PIDDecreasedAcceptance[j] = 
+         thrContainer.invMDistrTOF2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "TOF2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrTOF2PIDIncreasedAcceptance[j] = 
+         thrContainer.invMDistrTOF2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "TOF2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
 
-         ThrContainer.invMDistrEMC2PID[j] = 
+         thrContainer.invMDistrEMC2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "EMC2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrEMC2PIDDecreasedAcceptance[j] = 
+         thrContainer.invMDistrEMC2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "EMC2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrEMC2PIDIncreasedAcceptance[j] = 
+         thrContainer.invMDistrEMC2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "EMC2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrEMC2PIDDecreasedM2Eff[j] = 
+         thrContainer.invMDistrEMC2PIDDecreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "EMC2PID_m2Eff-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
                Par.invMNBins, min_inv_mass, 4., dir));
          
-         ThrContainer.invMDistrEMC2PIDIncreasedM2Eff[j] = 
+         thrContainer.invMDistrEMC2PIDIncreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
                "EMC2PID_m2Eff+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair, 
@@ -1333,7 +1337,7 @@ void AnalyzeTrackPair()
          {   
             for (std::string auxName : Par.auxNameQueue)
             {
-               AnalyzeConfiguration(&ThrContainer, Par.daughter1Queue[i], Par.daughter2Queue[i], 
+               AnalyzeConfiguration(&thrContainer, Par.daughter1Queue[i], Par.daughter2Queue[i], 
                   magf, auxName, ptDeviation, procNum);
                procNum++;
             }

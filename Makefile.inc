@@ -14,5 +14,7 @@ PBAR_LIB=-L ./ProgressBar/lib -lPBar
 SIM_ANALYSIS_INCLUDE=-I ./SimAnalysis/include
 SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun
 
+ANALYSIS_INCLUDE=-I ./Analysis/include
+
 ROOT_LIB=-Wl,-rpath,${ROOT}/lib -L${ROOT}/lib -lCore
 ROOT_CONFIG=${ROOT}/bin/root-config

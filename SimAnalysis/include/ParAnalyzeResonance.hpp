@@ -21,12 +21,13 @@
 #define RUN7UAU_MB5 //for centrality
 
 #include <thread>
+#include <string>
 
 #include "Particles.hpp"
 #include "M2Par.hpp"
 
-#include "../../Analysis/include/DeadAreasCuts.hpp"
-#include "../../Analysis/include/CentralityTypes.hpp"
+#include "DeadAreasCuts.hpp"
+#include "CentralityTypes.hpp"
 
 struct
 {

@@ -19,17 +19,17 @@
 #ifndef ANALYZE_RESONANCE_HPP
 #define ANALYZE_RESONANCE_HPP
 
+#include "PBar.hpp"
+#include "IOTools.hpp"
+#include "Box.hpp"
+
+#include "ThrObj.hpp"
+
 #include "STrackFun.hpp"
 #include "PTrackFun.hpp"
 #include "ParAnalyzeResonance.hpp"
-#include "../lib/Ident.h"
-
-#include "../lib/EffTreeReader.h"
-
-#include "PBar.hpp"
-#include "../lib/Tools.h"
-#include "../lib/InputTools.h"
-#include "../lib/Box.h"
+#include "Ident.hpp"
+#include "EffTreeReader.hpp"
 
 #include "ROOT/TTreeProcessorMT.hxx"
 
@@ -70,60 +70,61 @@ struct ThrContainer
 
 struct ParticleContainer
 {
+   int size;
+   
    double mass;
    double iter;
-   int orig_id;
-   int geant_id;
+   int origId;
+   int geantId;
    
-   std::unique_ptr<double> dc_pc1_emb;
-   std::unique_ptr<double> pc2_emb;
-   std::unique_ptr<double> pc3_emb;
-   std::unique_ptr<double> tofe_emb;
-   std::unique_ptr<double> tofw_emb;
+   std::unique_ptr<double> embDCPC1;
+   std::unique_ptr<double> embPC2;
+   std::unique_ptr<double> embPC3;
+   std::unique_ptr<double> embTOFe;
+   std::unique_ptr<double> embTOFw;
    
-   std::array<std::unique_ptr<double>, 4> emcale_emb;
-   std::array<std::unique_ptr<double>, 4> emcalw_emb;
+   std::array<std::unique_ptr<double>, 4> embEMCale;
+   std::array<std::unique_ptr<double>, 4> embEMCalw;
 
-   std::unique_ptr<double> emcale_m2_eff;
-   std::unique_ptr<double> emcalw_m2_eff;
-   std::unique_ptr<double> emcale_m2_eff_sys;
-   std::unique_ptr<double> emcalw_m2_eff_sys;
+   std::unique_ptr<double> m2EffEMCale;
+   std::unique_ptr<double> m2EffEMCalw;
+   std::unique_ptr<double> m2EffSysEMCale;
+   std::unique_ptr<double> m2EffSysEMCalw;
    
-   int size;
    double mom[3];
    std::array<int, 50> index;
    
-   std::array<int, 50> pc2_id;
-   std::array<int, 50> pc3_id;
-   std::array<int, 50> tof_id;
-   std::array<int, 50> emc_id;
+   std::array<int, 50> idPC2;
+   std::array<int, 50> idPC3;
+   std::array<int, 50> idTOF;
+   std::array<int, 50> idEMC;
    
-   std::array<std::array<double, 50>, Par.CType.size> pc2_weight;
-   std::array<std::array<double, 50>, Par.CType.size> pc3_weight;
-   std::array<std::array<double, 50>, Par.CType.size> tof_weight;
-   std::array<std::array<double, 50>, Par.CType.size> emc_weight;
+   std::array<std::array<double, 50>, Par.CType.size> weightPC2;
+   std::array<std::array<double, 50>, Par.CType.size> weightPC3;
+   std::array<std::array<double, 50>, Par.CType.size> weightTOF;
+   std::array<std::array<double, 50>, Par.CType.size> weightEMC;
    
-   std::array<std::array<double, 50>, Par.CType.size> tof_id_weight;
-   std::array<std::array<double, 50>, Par.CType.size> emc_id_weight;
+   std::array<std::array<double, 50>, Par.CType.size> weightIdTOF;
+   std::array<std::array<double, 50>, Par.CType.size> weightIdEMC;
    
    void ResetTrack(const int i)
    {
       index[i] = 0.;
       
-      pc2_id[i] = PartId.junk;
-      pc3_id[i] = PartId.junk;
-      tof_id[i] = PartId.junk;
-      emc_id[i] = PartId.junk;
+      idPC2[i] = PartId.junk;
+      idPC3[i] = PartId.junk;
+      idTOF[i] = PartId.junk;
+      idEMC[i] = PartId.junk;
       
       for (int j = 0; j < Par.CType.size; j++)
       {
-         pc2_weight[j][i] = 0.;
-         pc3_weight[j][i] = 0.;
-         tof_weight[j][i] = 0.;
-         emc_weight[j][i] = 0.;
+         weightPC2[j][i] = 0.;
+         weightPC3[j][i] = 0.;
+         weightTOF[j][i] = 0.;
+         weightEMC[j][i] = 0.;
          
-         tof_id_weight[j][i] = 0.;
-         emc_id_weight[j][i] = 0.;
+         weightIdTOF[j][i] = 0.;
+         weightIdEMC[j][i] = 0.;
       }
    }
 };
