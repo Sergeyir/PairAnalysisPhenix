@@ -25,7 +25,7 @@ endif
 .SECONDEXPANSION:
 .PHONY: all clean
 
-.SILENT: CppToolsLib ROOTToolsLib ProgressBarLib SimAnalysisLib ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
+.SILENT: CppToolsLib ROOTToolsLib ProgressBarLib SimAnalysisLib ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
 
 
 all: all_libs AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
@@ -40,21 +40,21 @@ CppToolsLib:
 	mkdir -p CppTools/lib
 
 ErrorHandler: CppTools/src/ErrorHandler.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	-o CppTools/lib/$@.o && \
 	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
 	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 	
 StrTools: CppTools/src/StrTools.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	-o CppTools/lib/$@.o && \
 	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
 	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 IOTools: CppTools/src/IOTools.cpp ErrorHandler StrTools
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	$(CPP_TOOLS_INCLUDE) \
 	-L ./CppTools/lib -lErrorHandler -lStrTools \
@@ -63,7 +63,7 @@ IOTools: CppTools/src/IOTools.cpp ErrorHandler StrTools
 	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 Box: CppTools/src/Box.cpp IOTools
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	$(CPP_TOOLS_INCLUDE) \
 	-L ./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
@@ -72,7 +72,7 @@ Box: CppTools/src/Box.cpp IOTools
 	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 Table: CppTools/src/Table.cpp IOTools
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	$(CPP_TOOLS_INCLUDE) \
 	-L ./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
@@ -81,7 +81,7 @@ Table: CppTools/src/Table.cpp IOTools
 	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
 
 Time: CppTools/src/Time.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools module
+	@$(ECHO) Compiling $@.cpp from CppTools submodule
 	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	-o CppTools/lib/$@.o && \
 	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
@@ -94,7 +94,7 @@ ProgressBarLib:
 	mkdir -p ProgressBar/lib
 
 ProgressBar: ProgressBar/src/PBar.cpp ProgressBarLib
-	@$(ECHO) Compiling $@.cpp from ProgressBar module
+	@$(ECHO) Compiling $@.cpp from ProgressBar submodule
 	$(CXX) ProgressBar/src/PBar.cpp $(CXX_COMMON_LIB) \
 	-o ProgressBar/lib/PBar.o && \
 	ar rcs ProgressBar/lib/libPBar.a ProgressBar/lib/PBar.o && \
@@ -107,7 +107,7 @@ ROOTToolsLib:
 	mkdir -p ROOTTools/lib
 
 TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp ROOTToolsLib
-	@$(ECHO) Compiling $@.cpp from ROOTTools module
+	@$(ECHO) Compiling $@.cpp from ROOTTools submodule
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
 	-o ROOTTools/lib/$@.o && \
@@ -115,7 +115,7 @@ TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp ROOTToolsLib
 	$(CXX) -shared -o ROOTTools/lib/$@.so ROOTTools/lib/$@.o
 
 GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools ROOTToolsLib
-	@$(ECHO) Compiling $@.cpp from ROOTTools module
+	@$(ECHO) Compiling $@.cpp from ROOTTools submodule
 	$(CXX) ROOTTools/src/$@.cpp $(CXX_COMMON_LIB) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
 	$(CPP_TOOLS_INCLUDE) -L./CppTools/lib -l ErrorHandler -lIOTools \
@@ -182,10 +182,19 @@ AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
 
+AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
+	@$(ECHO) Compiling $@.cpp from SimAnalysis module
+	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) \
+	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
+
 # other
 
 bin:
-	@$(ECHO) Creating directory for binaries
+	@$(ECHO) Creating directory for binary executables
 	mkdir bin
 
 clean: 

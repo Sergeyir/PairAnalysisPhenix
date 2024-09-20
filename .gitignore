@@ -4,6 +4,7 @@ bin/
 lib/
 backup/
 __pycache__
+tmp/
 
 *:w
 *.pyc
