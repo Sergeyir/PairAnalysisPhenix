@@ -2,4 +2,4 @@
 
 cd bin
 
-./AnalyzeHeatMaps.exe && ./AnalyzeHeatMaps.exe && ./AnalyzeEmbedding.exe && ./AnalyzeSingleTrack.exe
+./AnalyzeHeatMaps && ./AnalyzeHeatMaps && ./AnalyzeEmbedding && ./AnalyzeSingleTrack

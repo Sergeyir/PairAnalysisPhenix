@@ -5,7 +5,7 @@ CXX_COMMON_EXE=-Wall -Wpedantic -pipe -O2 -g -ldl
 CPP_TOOLS_LIB_DIR=./CppTools/lib
 CPP_TOOLS_SRC_DIR=./CppTools/src
 CPP_TOOLS_INCLUDE=-I ./CppTools/include
-CPP_TOOLS_LIB=-L.${CPP_TOOLS_LIB_DIR} -lBox -lTime -lTable -lIOTools -lStrTools -lErrorHandler 
+CPP_TOOLS_LIB=-L./CppTools/lib -lBox -lTime -lTable -lIOTools -lStrTools -lErrorHandler 
 
 ROOT_TOOLS_LIB_DIR=./ROOTTools/lib
 ROOT_TOOLS_SRC_DIR=./ROOTTools/src
