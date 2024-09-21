@@ -23,7 +23,7 @@ endif
 
 # Rules without physical targets (secondary expansion for specific rules).
 .SECONDEXPANSION:
-.PHONY: all clean
+.PHONY: all ALL_LIBS EXE_TARGETS clean
 
 EXE_TARGETS: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
 
