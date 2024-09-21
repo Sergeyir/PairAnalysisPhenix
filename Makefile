@@ -25,83 +25,76 @@ endif
 .SECONDEXPANSION:
 .PHONY: all clean
 
-.SILENT: CppToolsLib ROOTToolsLib ProgressBarLib SimAnalysisLib ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
+EXE_TARGETS: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
 
+ALL_LIBS: $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so \
+			 $(CPP_TOOLS_LIB_DIR)/StrTools.o $(CPP_TOOLS_LIB_DIR)/StrTools.so \
+			 $(CPP_TOOLS_LIB_DIR)/Time.o $(CPP_TOOLS_LIB_DIR)/Time.so \
+			 $(CPP_TOOLS_LIB_DIR)/IOTools.o $(CPP_TOOLS_LIB_DIR)/IOTools.so \
+			 $(CPP_TOOLS_LIB_DIR)/Box.o $(CPP_TOOLS_LIB_DIR)/Box.so \
+			 $(CPP_TOOLS_LIB_DIR)/Table.o $(CPP_TOOLS_LIB_DIR)/Table.so \
+			 $(PBAR_LIB_DIR)/PBar.o $(PBAR_LIB_DIR)/PBar.so \
+			 TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
 
-all: all_libs AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
+.SILENT: $(CPP_TOOLS_LIB_DIR) clean \
+			$(CPP_TOOLS_LIB_DIR)/ErrorHandler.o $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so \
+			$(CPP_TOOLS_LIB_DIR)/StrTools.o $(CPP_TOOLS_LIB_DIR)/StrTools.so \
+			$(CPP_TOOLS_LIB_DIR)/Time.o $(CPP_TOOLS_LIB_DIR)/Time.so \
+			$(CPP_TOOLS_LIB_DIR)/IOTools.o $(CPP_TOOLS_LIB_DIR)/IOTools.so \
+			$(CPP_TOOLS_LIB_DIR)/Box.o $(CPP_TOOLS_LIB_DIR)/Box.so \
+			$(CPP_TOOLS_LIB_DIR)/Table.o $(CPP_TOOLS_LIB_DIR)/Table.so \
+			$(PBAR_LIB_DIR)/PBar.o $(PBAR_LIB_DIR)/PBar.so \
+			TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
+
+all: ALL_LIBS EXE_TARGETS
 	@echo "All done"
-
-all_libs: ErrorHandler StrTools Time IOTools Box Table ProgressBar TCanvasPrinter GUIFit EffTreeReader EmbTreeReader STrackFun
 
 # CppTools
 
-CppToolsLib: 
-	mkdir -p CppTools/lib
+$(CPP_TOOLS_LIB_DIR): 
+	mkdir -p $@
 
-ErrorHandler: CppTools/src/ErrorHandler.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
-	
-StrTools: CppTools/src/StrTools.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+$(CPP_TOOLS_LIB_DIR)/ErrorHandler.o: $(CPP_TOOLS_SRC_DIR)/ErrorHandler.cpp | $(CPP_TOOLS_LIB_DIR)
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@
 
-IOTools: CppTools/src/IOTools.cpp ErrorHandler StrTools
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	$(CPP_TOOLS_INCLUDE) \
-	-L ./CppTools/lib -lErrorHandler -lStrTools \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+$(CPP_TOOLS_LIB_DIR)/StrTools.o: $(CPP_TOOLS_SRC_DIR)/StrTools.cpp | $(CPP_TOOLS_LIB_DIR)
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@
 
-Box: CppTools/src/Box.cpp IOTools
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	$(CPP_TOOLS_INCLUDE) \
-	-L ./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+$(CPP_TOOLS_LIB_DIR)/Time.o: $(CPP_TOOLS_SRC_DIR)/Time.cpp | $(CPP_TOOLS_LIB_DIR)
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@
 
-Table: CppTools/src/Table.cpp IOTools
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	$(CPP_TOOLS_INCLUDE) \
-	-L ./CppTools/lib -lErrorHandler -lStrTools -lIOTools \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+$(CPP_TOOLS_LIB_DIR)/IOTools.o: $(CPP_TOOLS_SRC_DIR)/IOTools.cpp \
+										  $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
+										  $(CPP_TOOLS_LIB_DIR)/StrTools.o
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
+	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools
 
-Time: CppTools/src/Time.cpp CppToolsLib
-	@$(ECHO) Compiling $@.cpp from CppTools submodule
-	$(CXX) CppTools/src/$@.cpp $(CXX_COMMON_LIB) \
-	-o CppTools/lib/$@.o && \
-	ar rcs CppTools/lib/lib$@.a CppTools/lib/$@.o && \
-	$(CXX) -shared -o CppTools/lib/$@.so CppTools/lib/$@.o
+$(CPP_TOOLS_LIB_DIR)/Box.o: $(CPP_TOOLS_SRC_DIR)/Box.cpp $(CPP_TOOLS_LIB_DIR)/IOTools.o
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
+	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools -lIOTools
 
-# ProgressBar
+$(CPP_TOOLS_LIB_DIR)/Table.o: $(CPP_TOOLS_SRC_DIR)/Table.cpp $(CPP_TOOLS_LIB_DIR)/IOTools.o
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
+	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools -lIOTools
 
-ProgressBarLib:
-	mkdir -p ProgressBar/lib
+$(CPP_TOOLS_LIB_DIR)/%.so: $(CPP_TOOLS_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	$(CXX) -shared -o $@ $<
 
-ProgressBar: ProgressBar/src/PBar.cpp ProgressBarLib
-	@$(ECHO) Compiling $@.cpp from ProgressBar submodule
-	$(CXX) ProgressBar/src/PBar.cpp $(CXX_COMMON_LIB) \
-	-o ProgressBar/lib/PBar.o && \
-	ar rcs ProgressBar/lib/libPBar.a ProgressBar/lib/PBar.o && \
-	$(CXX) -shared -o ProgressBar/lib/PBar.so ProgressBar/lib/PBar.o
+$(CPP_TOOLS_LIB_DIR)/%.a: $(CPP_TOOLS_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	ar rcs $@ $<
 
 # ROOTTools
 
-ROOTToolsLib:
-	mkdir -p ROOTTools/lib
+$(ROOT_TOOLS_LIB_DIR):
+	mkdir -p $@
 
 TCanvasPrinter: ROOTTools/src/TCanvasPrinter.cpp ROOTToolsLib
 	@$(ECHO) Compiling $@.cpp from ROOTTools submodule
@@ -119,6 +112,24 @@ GUIFit: ROOTTools/src/GUIFit.cpp ErrorHandler IOTools ROOTToolsLib
 	-o ROOTTools/lib/$@.o && \
 	ar rcs ROOTTools/lib/lib$@.a ROOTTools/lib/$@.o && \
 	$(CXX) -shared -o ROOTTools/lib/$@.so ROOTTools/lib/$@.o
+
+# ProgressBar
+
+$(PBAR_LIB_DIR):
+	mkdir -p $@
+
+$(PBAR_LIB_DIR)/PBar.o: $(PBAR_SRC_DIR)/PBar.cpp | $(PBAR_LIB_DIR)
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@
+
+$(PBAR_LIB_DIR)/%.so: $(PBAR_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	$(CXX) -shared -o $@ $<
+
+$(PBAR_LIB_DIR)/%.a: $(PBAR_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	ar rcs $@ $<
+
 
 # SimAnalysis
 
@@ -151,7 +162,7 @@ STrackFun: SimAnalysis/src/STrackFun.cpp SimAnalysisLib
 	
 # SimAnalysis executables
 
-AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp all_libs bin
+AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp ALL_LIBS bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
@@ -160,7 +171,7 @@ AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp all_libs bin
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB)
 
-AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
+AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp ALL_LIBS bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
@@ -170,7 +181,7 @@ AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
 	$(ANALYSIS_INCLUDE)
 
-AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
+AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp ALL_LIBS bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
@@ -180,7 +191,7 @@ AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
 	$(ANALYSIS_INCLUDE)
 
-AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
+AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp ALL_LIBS bin
 	@$(ECHO) Compiling $@.cpp from SimAnalysis module
 	$(CXX) SimAnalysis/src/$@.cpp -o bin/$@.exe $(CXX_COMMON_EXE) \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
@@ -197,10 +208,10 @@ bin:
 
 clean: 
 	@echo Cleaning
-	rm -r bin ; \
-	rm -r CppTools/lib ; \
-	rm -r ROOTTools/lib ; \
-	rm -r ProgressBar/lib ; \
-	rm -r SimAnalysis/lib
+	rm -rf bin/* ; \
+	rm -rf CppTools/lib/* ; \
+	rm -rf ROOTTools/lib/* ; \
+	rm -rf ProgressBar/lib/* ; \
+	rm -rf SimAnalysis/lib/*
 
 endif

@@ -16,52 +16,49 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
    {
       if (charge > 0)
       {
-         m2MeanPion = GetM2Mean(pt, m2_emcale_mean_par_pion[sector-2]);
-         m2MeanKaon = GetM2Mean(pt, m2_emcale_mean_par_kaon[sector-2]);
-         m2MeanProton = GetM2Mean(pt, m2_emcale_mean_par_proton[sector-2]);
+         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_PION[sector-2]);
+         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_KAON[sector-2]);
+         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_PROTON[sector-2]);
          
-         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, m2_emcale_sigma_par[sector-2]);
-         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, m2_emcale_sigma_par[sector-2]);
-         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, m2_emcale_sigma_par[sector-2]);
+         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR_EMCALE[sector-2]);
+         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_EMCALE[sector-2]);
+         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_EMCALE[sector-2]);
       }
       else 
       {
-         m2MeanPion = GetM2Mean(pt, m2_emcale_mean_par_apion[sector]);
-         m2MeanKaon = GetM2Mean(pt, m2_emcale_mean_par_akaon[sector]);
-         m2MeanProton = GetM2Mean(pt, m2_emcale_mean_par_aproton[sector]);
+         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_APION[sector]);
+         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_AKAON[sector]);
+         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_APROTON[sector]);
          
-         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, m2_emcale_sigma_par[sector]);
-         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, m2_emcale_sigma_par[sector]);
-         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, m2_emcale_sigma_par[sector]);
+         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR_EMCALE[sector]);
+         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_EMCALE[sector]);
+         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_EMCALE[sector]);
       }
    }
    else
    {
       if (charge > 0)
       {
-         m2MeanPion = GetM2Mean(pt, m2_emcalw_mean_par_pion[sector]);
-         m2MeanKaon = GetM2Mean(pt, m2_emcalw_mean_par_kaon[sector]);
-         m2MeanProton = GetM2Mean(pt, m2_emcalw_mean_par_proton[sector]);
+         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_PION[sector]);
+         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_KAON[sector]);
+         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_PROTON[sector]);
          
-         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, m2_emcalw_sigma_par[sector]);
-         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, m2_emcalw_sigma_par[sector]);
-         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, m2_emcalw_sigma_par[sector]);
+         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR[sector]);
+         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR[sector]);
+         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR[sector]);
       }
       else 
       {
-         m2MeanPion = GetM2Mean(pt, m2_emcalw_mean_par_apion[sector]);
-         m2MeanKaon = GetM2Mean(pt, m2_emcalw_mean_par_akaon[sector]);
-         m2MeanProton = GetM2Mean(pt, m2_emcalw_mean_par_aproton[sector]);
+         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_EMCALW_APION[sector]);
+         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_EMCALW_AKAON[sector]);
+         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_EMCALW_APROTON[sector]);
          
-         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, m2_emcalw_sigma_par[sector]);
-         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, m2_emcalw_sigma_par[sector]);
-         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, m2_emcalw_sigma_par[sector]);
+         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR_EMCALW[sector]);
+         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_EMCALW[sector]);
+         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_EMCALW[sector]);
       }
    }
    
-   const double SIGMA_VETO = 3.;
-   const double SIGMA_RANGE = 1.;
-      
    double weight = 0;
 
    switch (id)
@@ -104,7 +101,8 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
          
          if (upp_range <= low_veto) return 0.;
 
-         weight = erf((m2MeanProton - Maximum(low_range, low_veto))/m2SigmaProton/TMath::Sqrt2())/2. +
+         weight = erf((m2MeanProton - Maximum(low_range, low_veto))/
+                  m2SigmaProton/TMath::Sqrt2())/2. +
             erf((upp_range - m2MeanProton)/m2SigmaProton/TMath::Sqrt2())/2.;
       }
    }   

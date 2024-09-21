@@ -20,7 +20,7 @@
 
 #include "../include/AnalyzeHeatMaps.hpp"
 
-//auxName can be used to specify different statistics of the same dataset e.g. low pt or high pt
+//auxName can be used to specify different statistics of the same dataset e.g. low pT or high pT
 void Analyze(ThrContainer *thrContainer, const std::string& part, const std::string& magf, 
              const std::string &auxName, const int procNum)  
 {   
@@ -61,12 +61,12 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       TH1F *centrHist = (TH1F *) realDataFile.Get("central_bin");
       
       eventNormWeight = origPtHist->Integral(
-         origPtHist->GetXaxis()->FindBin(Par.ptMin), 
-         origPtHist->GetXaxis()->FindBin(Par.ptMax))/
+         origPtHist->GetXaxis()->FindBin(Par.pTMin), 
+         origPtHist->GetXaxis()->FindBin(Par.pTMax))/
          centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
 
-      //this normalization is needed to merge 2 files with flat pt distribution with different ranges
-      eventNormWeight *= (Par.ptMax - Par.ptMin)/(upPtBound-lowPtBound);
+      //this normalization is needed to merge 2 files with flat pT distribution with different ranges
+      eventNormWeight *= (Par.pTMax - Par.pTMin)/(upPtBound-lowPtBound);
    }
    
    box.AddEntry("Run name", Par.runName);
@@ -77,11 +77,11 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    box.AddEntry("Use weight function", Par.doUseWeightFunc);
    box.AddEntry("Reweight alpha", Par.doReweightAlpha);
    
-   box.AddEntry("Minimum p_T, GeV", Par.ptMin);
-   box.AddEntry("Maximum p_T, GeV", Par.ptMax);
+   box.AddEntry("Minimum p_T, GeV", Par.pTMin);
+   box.AddEntry("Maximum p_T, GeV", Par.pTMax);
    box.AddEntry("Number of events to be analyzed, 1e6", nevents/1e6, 3);
 
-   box.AddEntry("Number of threads", Par.nthreads);
+   box.AddEntry("Number of threads", Par.nThreads);
    
    box.Print();
    
@@ -91,7 +91,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    weightFunc->SetParameters(
       ReadFileIntoArray("../input/SimAnalysis/Spectra/" + Par.system + "/" + part + ".txt", 6));
    
-   ROOT::EnableImplicitMT(Par.nthreads);
+   ROOT::EnableImplicitMT(Par.nThreads);
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
    
    double ncalls = 0.;
@@ -100,43 +100,43 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
 
    auto ProcessMP = [&](TTreeReader &reader)
    {   
-      std::shared_ptr<TH1F> orig = thrContainer->orig.Get();
-      std::shared_ptr<TH2F> origPTVsRecPT = thrContainer->origPTVsRecPT.Get();
+      std::shared_ptr<TH1F> distrOrigPT = thrContainer->distrOrigPT.Get();
+      std::shared_ptr<TH2F> distrOrigPTVsRecPT = thrContainer->distrOrigPTVsRecPT.Get();
       
-      std::shared_ptr<TH2F> dce0 = thrContainer->dce0.Get();
-      std::shared_ptr<TH2F> dcw0 = thrContainer->dcw0.Get();
-      std::shared_ptr<TH2F> dce1 = thrContainer->dce1.Get();
-      std::shared_ptr<TH2F> dcw1 = thrContainer->dcw1.Get();
+      std::shared_ptr<TH2F> distrDCe0 = thrContainer->distrDCe0.Get();
+      std::shared_ptr<TH2F> distrDCe1 = thrContainer->distrDCe1.Get();
+      std::shared_ptr<TH2F> distrDCw0 = thrContainer->distrDCw0.Get();
+      std::shared_ptr<TH2F> distrDCw1 = thrContainer->distrDCw1.Get();
 
-      std::shared_ptr<TH2F> dce0Unscaled = thrContainer->dce0Unscaled.Get();
-      std::shared_ptr<TH2F> dcw0Unscaled = thrContainer->dcw0Unscaled.Get();
-      std::shared_ptr<TH2F> dce1Unscaled = thrContainer->dce1Unscaled.Get();
-      std::shared_ptr<TH2F> dcw1Unscaled = thrContainer->dcw1Unscaled.Get();
+      std::shared_ptr<TH2F> distrUnscaledDCe0 = thrContainer->distrUnscaledDCe0.Get();
+      std::shared_ptr<TH2F> distrUnscaledDCw0 = thrContainer->distrUnscaledDCw0.Get();
+      std::shared_ptr<TH2F> distrUnscaledDCe1 = thrContainer->distrUnscaledDCe1.Get();
+      std::shared_ptr<TH2F> distrUnscaledDCw1 = thrContainer->distrUnscaledDCw1.Get();
 
-      std::shared_ptr<TH2F> zVsPhiPc1e = thrContainer->zVsPhiPc1e.Get();
-      std::shared_ptr<TH2F> zVsPhiPc1w = thrContainer->zVsPhiPc1w.Get();
+      std::shared_ptr<TH2F> distrPC1e = thrContainer->distrPC1e.Get();
+      std::shared_ptr<TH2F> distrPC1w = thrContainer->distrPC1w.Get();
       
-      std::shared_ptr<TH2F> zVsPhiPc2 = thrContainer->zVsPhiPc2.Get();
-      std::shared_ptr<TH2F> zVsPhiPc3e = thrContainer->zVsPhiPc3e.Get();
-      std::shared_ptr<TH2F> zVsPhiPc3w = thrContainer->zVsPhiPc3w.Get();
+      std::shared_ptr<TH2F> distrPC2 = thrContainer->distrPC2.Get();
+      std::shared_ptr<TH2F> distrPC3e = thrContainer->distrPC3e.Get();
+      std::shared_ptr<TH2F> distrPC3w = thrContainer->distrPC3w.Get();
       
-      std::array<std::shared_ptr<TH2F>, 4> emcalePos, emcaleNeg, emcalwPos, emcalwNeg;
+      std::array<std::shared_ptr<TH2F>, 4> distrEMCalePos, distrEMCaleNeg, distrEMCalwPos, distrEMCalwNeg;
 
-      std::shared_ptr<TH1F> stripTofw = thrContainer->stripTofw.Get();
-      std::shared_ptr<TH1F> slatTofe = thrContainer->slatTofe.Get();
+      std::shared_ptr<TH1F> distrStripTOFw = thrContainer->distrStripTOFw.Get();
+      std::shared_ptr<TH1F> distrSlatTOFe = thrContainer->distrSlatTOFe.Get();
       
-      std::shared_ptr<TH2F> tofe0 = thrContainer->tofe0.Get();
-      std::shared_ptr<TH2F> tofe1 = thrContainer->tofe1.Get();
+      std::shared_ptr<TH2F> distrTOFe0 = thrContainer->distrTOFe0.Get();
+      std::shared_ptr<TH2F> distrTOFe1 = thrContainer->distrTOFe1.Get();
       
-      std::shared_ptr<TH2F> tofw0 = thrContainer->tofw0.Get();
-      std::shared_ptr<TH2F> tofw1 = thrContainer->tofw1.Get();
+      std::shared_ptr<TH2F> distrTOFw0 = thrContainer->distrTOFw0.Get();
+      std::shared_ptr<TH2F> distrTOFw1 = thrContainer->distrTOFw1.Get();
 
       for (int i = 0; i < 4; i++)
       {
-         emcalePos[i] = thrContainer->emcalePos[i].Get();
-         emcaleNeg[i] = thrContainer->emcaleNeg[i].Get();
-         emcalwPos[i] = thrContainer->emcalwPos[i].Get();
-         emcalwNeg[i] = thrContainer->emcalwNeg[i].Get();
+         distrEMCalePos[i] = thrContainer->distrEMCalePos[i].Get();
+         distrEMCaleNeg[i] = thrContainer->distrEMCaleNeg[i].Get();
+         distrEMCalwPos[i] = thrContainer->distrEMCalwPos[i].Get();
+         distrEMCalwNeg[i] = thrContainer->distrEMCalwNeg[i].Get();
       }
    
       EffTreeReader T(reader);
@@ -154,7 +154,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
          }
          else eventWeight = 1.;
          
-         orig->Fill(origPt, eventWeight);
+         distrOrigPT->Fill(origPt, eventWeight);
          
          const double bbcz = T.bbcz();
          if (fabs(bbcz) > 30) continue;
@@ -162,9 +162,9 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
          for(int i = 0; i < T.nch(); i++)
          {
             const double the0 = T.the0(i);
-            const double pt = (T.mom(i))*sin(the0);
+            const double pT = (T.mom(i))*sin(the0);
 
-            if (pt < Par.ptMin || pt > Par.ptMax) continue;
+            if (pT < Par.pTMin || pT > Par.pTMax) continue;
             if (IsQualityCut(T.qual(i))) continue;
             
             int charge = T.charge(i);
@@ -194,38 +194,38 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             {
                if (zed >=0) 
                {
-                  dce0Unscaled->Fill(board, alpha, eventWeight);
+                  distrUnscaledDCe0->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCe0->GetBinContent(
                      Par.alphaReweightDCe0->FindBin(alpha));
-                  dce0->Fill(board, alpha, particleWeight);
+                  distrDCe0->Fill(board, alpha, particleWeight);
                }
                else 
                {
-                  dce1Unscaled->Fill(board, alpha, eventWeight);
+                  distrUnscaledDCe1->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCe1->GetBinContent(
                      Par.alphaReweightDCe1->FindBin(alpha));
-                  dce1->Fill(board, alpha, particleWeight);
+                  distrDCe1->Fill(board, alpha, particleWeight);
                }
             }
             else
             {
                if (zed >=0) 
                {
-                  dcw0Unscaled->Fill(board, alpha, eventWeight);
+                  distrUnscaledDCw0->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCw0->GetBinContent(
                      Par.alphaReweightDCw0->FindBin(alpha));
-                  dcw0->Fill(board, alpha, particleWeight);
+                  distrDCw0->Fill(board, alpha, particleWeight);
                }
                else 
                {
-                  dcw1Unscaled->Fill(board, alpha, eventWeight);
+                  distrUnscaledDCw1->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCw1->GetBinContent(
                      Par.alphaReweightDCw1->FindBin(alpha));
-                  dcw1->Fill(board, alpha, particleWeight);
+                  distrDCw1->Fill(board, alpha, particleWeight);
                }
             }
             
@@ -234,19 +234,19 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             double pc1phi = atan2(T.ppc1y(i), T.ppc1x(i));
             if (phi >= 1.5 && pc1phi < 0) pc1phi += M_PI*2.;
             
-            if (phi < 1.5) zVsPhiPc1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
-            else zVsPhiPc1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
+            if (phi < 1.5) distrPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
+            else distrPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
             
             if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
 
-            origPTVsRecPT->Fill(origPt, pt, eventWeight);
+            distrOrigPTVsRecPT->Fill(origPt, pT, eventWeight);
             
             if (IsMatch(T.pc2sdz(i), T.pc2sdphi(i), 2., 2.))
             {
                const double pc2z = T.ppc2z(i) - T.pc2dz(i);
                const double pc2phi = atan2(T.ppc2y(i), T.ppc2x(i)) - T.pc2dphi(i);
                
-               zVsPhiPc2->Fill(pc2z, pc2phi, particleWeight);
+               distrPC2->Fill(pc2z, pc2phi, particleWeight);
             }
 
             if (IsMatch(T.pc3sdz(i), T.pc3sdphi(i), 2., 2.))
@@ -257,9 +257,9 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                if (phi > 1.5) 
                {
                   if (pc3phi < 0) pc3phi += 6.2831853;
-                  zVsPhiPc3e->Fill(pc3z, pc3phi, particleWeight);
+                  distrPC3e->Fill(pc3z, pc3phi, particleWeight);
                }
-               else zVsPhiPc3w->Fill(pc3z, pc3phi, particleWeight);
+               else distrPC3w->Fill(pc3z, pc3phi, particleWeight);
             }
             
             if (IsHit(T.tofdz(i)))
@@ -267,7 +267,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                const double beta = T.pltof(i)/T.ttof(i)/29.97;
                const double eloss = 0.0014*pow(beta, -1.66);
 
-               slatTofe->Fill(T.slat(i), particleWeight);
+               distrSlatTOFe->Fill(T.slat(i), particleWeight);
                
                if (IsMatch(T.tofsdz(i), T.tofsdphi(i), 2., 2.) && 
                   !IsBadSlat(T.slat(i)) &&
@@ -275,11 +275,11 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                {
                   if (zed >= 0) 
                   {
-                     tofe0->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
+                     distrTOFe0->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
                   }
                   else 
                   {
-                     tofe1->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
+                     distrTOFe1->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
                   }
                }
             }
@@ -293,16 +293,16 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    
                if (IsMatch(tofwsdphi, tofwsdz, 3., 3.))
                {
-                  stripTofw->Fill(T.striptofw(i), particleWeight*0.877);
+                  distrStripTOFw->Fill(T.striptofw(i), particleWeight*Par.correctionTOFw);
                   if (!IsBadStripTOFw(static_cast<int>(T.striptofw(i))))
                   {
                      if (zed >=0) 
                      {
-                        tofw0->Fill(board, alpha, particleWeight*0.877);
+                        distrTOFw0->Fill(board, alpha, particleWeight*Par.correctionTOFw);
                      }
                      else 
                      {
-                        tofw1->Fill(board, alpha, particleWeight*0.877);
+                        distrTOFw1->Fill(board, alpha, particleWeight*Par.correctionTOFw);
                      }
                   }
                }
@@ -316,16 +316,16 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                   {
                      if (phi > 1.5) 
                      {
-                        if (zed >= 0) emcalePos[T.sect(i)]->Fill(
+                        if (zed >= 0) distrEMCalePos[T.sect(i)]->Fill(
                            T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
-                        else emcaleNeg[T.sect(i)]->Fill(
+                        else distrEMCaleNeg[T.sect(i)]->Fill(
                            T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
                      }
                      else
                      {   
-                        if (zed >= 0) emcalwPos[T.sect(i)]->Fill(
+                        if (zed >= 0) distrEMCalwPos[T.sect(i)]->Fill(
                            T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
-                        else emcalwNeg[T.sect(i)]->Fill(
+                        else distrEMCalwNeg[T.sect(i)]->Fill(
                            T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
                      }
                   }
@@ -437,7 +437,7 @@ void HeatMapper()
          Par.alphaReweightDCw1->Divide(simDCw1->ProjectionY("dcw1_proj",
             1, simDCw1->GetXaxis()->GetNbins()));
 
-         //capping alpha reweight since experiments extends to higher pt than simulation
+         //capping alpha reweight since experiments extends to higher pT than simulation
          //capped values do not affect the simulation since they are statisticaly insufficient
          //capping is only needed to exclude very big weights in some points in the DC map
          //that are not used for better visibility

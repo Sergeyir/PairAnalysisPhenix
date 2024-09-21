@@ -43,12 +43,15 @@ struct
    std::vector<std::string> magfQueue = {"+-", "-+"};
    std::vector<std::string> auxNameQueue = {"_lpt", "_hpt"};
    
-   const double ptMin = 0.3;
-   const double ptMax = 8.;
+   const double pTMin = 0.3;
+   const double pTMax = 8.;
+
+   //adc cut + efficiency correction of TOFw form AN814
+   const double correctionTOFw = 0.799;
    
-   const int ptNBins = static_cast<int>((ptMax - ptMin)*10.);
+   const int pTNBins = static_cast<int>((pTMax - pTMin)*10.);
    
-   const int nthreads = std::thread::hardware_concurrency();
+   const int nThreads = std::thread::hardware_concurrency();
    
    const std::string runName = run + system;
    
