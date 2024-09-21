@@ -1,12 +1,27 @@
-#include "ParAnalyzeResonance.hpp"
-#include "IOTools.hpp"
+// $SOURCE$
+//------------------------------------------------------------------------------------------------
+//                             IdentFun functions realisations
+//------------------------------------------------------------------------------------------------
+// IdentFun
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Basic functions used for charged particle tracks identification
+ **/
+//------------------------------------------------------------------------------------------------
 
-double GetEMCalId(const double pt, const int id, const int charge, const double phi, 
-                  const int sector)
-{
-   const double SIGMA_VETO = 3.;
-   const double SIGMA_RANGE = 2.;
-      
+#ifndef IDENT_FUN_CPP
+#define IDENT_FUN_CPP
+
+#include "../include/IdentFun.hpp"
+
+double GetEMCalId(const double pt, const int id, const int charge, 
+                  const double phi, const int sector)
+{   
    if (pt > 1.2) return 0.;
    
    double m2MeanPion, m2MeanKaon, m2MeanProton;
@@ -61,14 +76,17 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
    
    double weight = 0;
 
+   const double sigmaVeto = 3.;
+   const double sigmaRange = 2.;
+
    switch (id)
    {
       case 211:
       {
-         double low_range = m2MeanPion - SIGMA_RANGE*m2SigmaPion;
-         double upp_range = m2MeanPion + SIGMA_RANGE*m2SigmaPion;
+         double low_range = m2MeanPion - sigmaRange*m2SigmaPion;
+         double upp_range = m2MeanPion + sigmaRange*m2SigmaPion;
          
-         double upp_veto = m2MeanKaon - SIGMA_VETO*m2SigmaKaon;
+         double upp_veto = m2MeanKaon - sigmaVeto*m2SigmaKaon;
          if (low_range >= upp_veto) return 0.;
 
          weight = erf((m2MeanPion - low_range)/m2SigmaPion/TMath::Sqrt2())/2. +
@@ -78,11 +96,11 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
       {
          if (charge == 1 && pt < 0.4) return 0.;
          
-         double low_range = m2MeanKaon - SIGMA_RANGE*m2SigmaKaon;
-         double upp_range = m2MeanKaon + SIGMA_RANGE*m2SigmaKaon;
+         double low_range = m2MeanKaon - sigmaRange*m2SigmaKaon;
+         double upp_range = m2MeanKaon + sigmaRange*m2SigmaKaon;
          
-         double low_veto = m2MeanPion + SIGMA_VETO*m2SigmaPion; 
-         double upp_veto = m2MeanProton - SIGMA_VETO*m2SigmaProton; 
+         double low_veto = m2MeanPion + sigmaVeto*m2SigmaPion; 
+         double upp_veto = m2MeanProton - sigmaVeto*m2SigmaProton; 
          
          if (low_range >= upp_veto || upp_range <= low_veto || upp_veto <= low_veto) return 0.;
          
@@ -94,10 +112,10 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
          if (charge == 1 && pt < 0.6) return 0.;
          else if (charge == -1 && pt < 0.4) return 0.;
          
-         double low_range = m2MeanProton - SIGMA_RANGE*m2SigmaProton;
-         double upp_range = m2MeanProton + SIGMA_RANGE*m2SigmaProton;
+         double low_range = m2MeanProton - sigmaRange*m2SigmaProton;
+         double upp_range = m2MeanProton + sigmaRange*m2SigmaProton;
          
-         double low_veto = m2MeanKaon + SIGMA_VETO*m2SigmaKaon;
+         double low_veto = m2MeanKaon + sigmaVeto*m2SigmaKaon;
          
          if (upp_range <= low_veto) return 0.;
 
@@ -106,7 +124,7 @@ double GetEMCalId(const double pt, const int id, const int charge, const double 
             erf((upp_range - m2MeanProton)/m2SigmaProton/TMath::Sqrt2())/2.;
       }
    }   
-   return weight/erf(SIGMA_RANGE/TMath::Sqrt2());
+   return weight/erf(sigmaRange/TMath::Sqrt2());
 }
 
 int GetTOFePID(const double pt, const int charge, const double m2)
@@ -137,24 +155,24 @@ int GetTOFePID(const double pt, const int charge, const double m2)
       m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_TOFE);
    }
    
-   const double SIGMA_VETO = 3.;
-   const double SIGMA_RANGE = 2.;
+   const double sigmaVeto = 3.;
+   const double sigmaRange = 2.;
       
-   const double m2HighVetoPion = m2MeanPion + SIGMA_VETO*m2SigmaPion;
-   const double m2LowVetoKaon = m2MeanKaon - SIGMA_VETO*m2SigmaKaon;
-   const double m2HighVetoKaon = m2MeanKaon + SIGMA_VETO*m2SigmaKaon;
-   const double m2LowVetoProtong = m2MeanProton - SIGMA_VETO*m2SigmaProton;
+   const double m2HighVetoPion = m2MeanPion + sigmaVeto*m2SigmaPion;
+   const double m2LowVetoKaon = m2MeanKaon - sigmaVeto*m2SigmaKaon;
+   const double m2HighVetoKaon = m2MeanKaon + sigmaVeto*m2SigmaKaon;
+   const double m2LowVetoProtong = m2MeanProton - sigmaVeto*m2SigmaProton;
       
-   if ((m2 > m2MeanPion - SIGMA_RANGE*m2SigmaPion && 
-      m2 < m2MeanPion + SIGMA_RANGE*m2SigmaPion) && 
+   if ((m2 > m2MeanPion - sigmaRange*m2SigmaPion && 
+      m2 < m2MeanPion + sigmaRange*m2SigmaPion) && 
       m2 < m2LowVetoKaon && m2 < m2LowVetoProtong) return PartId.pion;
       
-   if (pt < 2. && (m2 > m2MeanKaon - SIGMA_RANGE*m2SigmaKaon && 
-      m2 < m2MeanKaon + SIGMA_RANGE*m2SigmaKaon) && 
+   if (pt < 2. && (m2 > m2MeanKaon - sigmaRange*m2SigmaKaon && 
+      m2 < m2MeanKaon + sigmaRange*m2SigmaKaon) && 
       m2 > m2HighVetoPion && m2 < m2LowVetoProtong) return PartId.kaon;
 
-   if ((m2 > m2MeanProton - SIGMA_RANGE*m2SigmaProton && 
-      m2 < m2MeanProton + SIGMA_RANGE*m2SigmaProton) && 
+   if ((m2 > m2MeanProton - sigmaRange*m2SigmaProton && 
+      m2 < m2MeanProton + sigmaRange*m2SigmaProton) && 
       m2 > m2HighVetoKaon && m2 > m2HighVetoPion) return PartId.proton;
          
    return PartId.noPID;
@@ -187,23 +205,28 @@ int GetTOFwPID(const double pt, const int charge, const double m2)
       m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_TOFW);
       m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_TOFW);
    }
+
+   const double sigmaVeto = 3.;
+   const double sigmaRange = 2.;
    
-   const double m2HighVetoPion = m2MeanPion + SIGMA_VETO*m2SigmaPion;
-   const double m2LowVetoKaon = m2MeanKaon - SIGMA_VETO*m2SigmaKaon;
-   const double m2HighVetoKaon = m2MeanKaon + SIGMA_VETO*m2SigmaKaon;
-   const double m2LowVetoProtong = m2MeanProton - SIGMA_VETO*m2SigmaProton;
+   const double m2HighVetoPion = m2MeanPion + sigmaVeto*m2SigmaPion;
+   const double m2LowVetoKaon = m2MeanKaon - sigmaVeto*m2SigmaKaon;
+   const double m2HighVetoKaon = m2MeanKaon + sigmaVeto*m2SigmaKaon;
+   const double m2LowVetoProtong = m2MeanProton - sigmaVeto*m2SigmaProton;
       
-   if ((m2 > m2MeanPion - SIGMA_RANGE*m2SigmaPion && 
-      m2 < m2MeanPion + SIGMA_RANGE*m2SigmaPion) && 
+   if ((m2 > m2MeanPion - sigmaRange*m2SigmaPion && 
+      m2 < m2MeanPion + sigmaRange*m2SigmaPion) && 
       m2 < m2LowVetoKaon && m2 < m2LowVetoProtong) return PartId.pion;
       
-   if (pt < 4. && (m2 > m2MeanKaon - SIGMA_RANGE*m2SigmaKaon && 
-      m2 < m2MeanKaon + SIGMA_RANGE*m2SigmaKaon) && 
+   if (pt < 4. && (m2 > m2MeanKaon - sigmaRange*m2SigmaKaon && 
+      m2 < m2MeanKaon + sigmaRange*m2SigmaKaon) && 
       m2 > m2HighVetoPion && m2 < m2LowVetoProtong) return PartId.kaon;
 
-   if ((m2 > m2MeanProton - SIGMA_RANGE*m2SigmaProton && 
-      m2 < m2MeanProton + SIGMA_RANGE*m2SigmaProton) && 
+   if ((m2 > m2MeanProton - sigmaRange*m2SigmaProton && 
+      m2 < m2MeanProton + sigmaRange*m2SigmaProton) && 
       m2 > m2HighVetoKaon && m2 > m2HighVetoPion) return PartId.proton;
          
    return PartId.noPID;
 }
+
+#endif /* IDENT_FUN */

@@ -44,13 +44,13 @@ struct
 
    bool doUseWeightFunc = true;
    
-   std::vector<double> ptDeviationQueue = {1., 0.995, 1., 1.005};
+   std::vector<double> pTDeviationQueue = {1., 0.995, 1., 1.005};
    
-   const double ptMin = 0.3;
-   const double ptMax = 8.;
+   const double pTMin = 0.3;
+   const double pTMax = 8.;
 
-   const double ptMinPair = 0.9;
-   const double ptMaxPair = 8.5;
+   const double pTMinPair = 0.9;
+   const double pTMaxPair = 8.5;
 
    const int invMNBins = 300;
 
@@ -66,7 +66,7 @@ struct
 
    const int nThreads = std::thread::hardware_concurrency();
    
-   const int ptNBins = static_cast<int>((pair_ptmax - pair_ptmin)*10.);
+   const int pTNBins = static_cast<int>((pair_ptmax - pair_ptmin)*10.);
 } Par;
 
 #endif /* PAR_ANALYZE_RESONANCE_HPP */

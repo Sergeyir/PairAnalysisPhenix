@@ -20,7 +20,7 @@ PBAR_LIB=-L ./ProgressBar/lib -lPBar
 SIM_ANALYSIS_LIB_DIR=./SimAnalysis/lib
 SIM_ANALYSIS_SRC_DIR=./SimAnalysis/src
 SIM_ANALYSIS_INCLUDE=-I ./SimAnalysis/include
-SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun
+SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun
 
 ANALYSIS_INCLUDE=-I ./Analysis/include
 

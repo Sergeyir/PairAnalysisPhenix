@@ -19,100 +19,102 @@
 
 #include "../include/PTrackFun.hpp"
 
-bool IsTOF2PID(idContainer *Id1, idContainer *Id2)
+bool IsTOF2PID(idContainer *id1, idContainer *id2)
 {
-   if (Id1->tof == Id1->orig_id && Id2->tof == Id2->orig_id) return true;
+   if (id1->tof == id1->origId && id2->tof == id2->origId) return true;
    
    return false;
 }
 
-bool IsEMC2PID(idContainer *Id1, idContainer *Id2)
+bool IsEMC2PID(idContainer *id1, idContainer *id2)
 {
-   if (Id1->emc == Id1->orig_id && Id2->emc == Id2->orig_id) return true;
+   if (id1->emc == id1->origId && id2->emc == id2->origId) return true;
    
    return false;
 }
 
-bool IsEMCnoPID(idContainer *Id1, idContainer *Id2)
+bool IsEMCnoPID(idContainer *id1, idContainer *id2)
 {
-   if (Id1->emc != PartId.junk && Id2->emc != PartId.junk) return true;
+   if (id1->emc != PartId.junk && id2->emc != PartId.junk) return true;
    
    return false;
 }
 
-bool Is1TOFandEMC2PID(idContainer *Id1, idContainer *Id2)
+bool Is1TOFandEMC2PID(idContainer *id1, idContainer *id2)
 {
    if 
    (
-      IsTOF2PID(Id1, Id2) ||
-      (Id1->emc == Id1->orig_id && Id2->tof == Id2->orig_id) || 
-      (Id1->tof == Id1->orig_id && Id2->emc == Id2->orig_id)
+      IsTOF2PID(id1, id2) ||
+      (id1->emc == id1->origId && id2->tof == id2->origId) || 
+      (id1->tof == id1->origId && id2->emc == id2->origId)
    ) return true;
 
    return false;
 }
 
-bool Is2PID(idContainer *Id1, idContainer *Id2)
+bool Is2PID(idContainer *id1, idContainer *id2)
 {
-   if (IsEMC2PID(Id1, Id2) || Is1TOFandEMC2PID(Id1, Id2)) return true;
+   if (IsEMC2PID(id1, id2) || Is1TOFandEMC2PID(id1, id2)) return true;
    
    return false;
 }
 
-bool Is1PID(idContainer *Id1, idContainer *Id2)
+bool Is1PID(idContainer *id1, idContainer *id2)
 {
    if 
    (
-      (Id1->tof == Id1->orig_id && 
+      (id1->tof == id1->origId && 
       (
-         Id2->tof != PartId.junk || 
-         Id2->emc != PartId.junk || 
-         Id2->pc2 != PartId.junk ||
-         Id2->pc3 != PartId.junk)
+         id2->tof != PartId.junk || 
+         id2->emc != PartId.junk || 
+         id2->pc2 != PartId.junk ||
+         id2->pc3 != PartId.junk)
       ) || 
-      (Id2->tof == Id2->orig_id && 
+      (id2->tof == id2->origId && 
       (
-         Id1->tof != PartId.junk || 
-         Id1->emc != PartId.junk || 
-         Id1->pc2 != PartId.junk ||
-         Id1->pc3 != PartId.junk)
+         id1->tof != PartId.junk || 
+         id1->emc != PartId.junk || 
+         id1->pc2 != PartId.junk ||
+         id1->pc3 != PartId.junk)
       ) 
    ) return true;
    
    return false;
 }
 
-bool IsnoPID(idContainer *Id1, idContainer *Id2)
+bool IsnoPID(idContainer *id1, idContainer *id2)
 {
    return true;
 }
 
-double GetPairPt(const double *pp1, const double *pp2)
+//mom = momentum
+double GetPairPT(const double *mom1, const double *mom2)
 {
-   const double pt = sqrt((pp1[0]+pp2[0])*(pp1[0]+pp2[0]) + (pp1[1]+pp2[1])*(pp1[1]+pp2[1]));
-   return pt;
+   const double pT = sqrt((mom1[0]+mom2[0])*(mom1[0]+mom2[0]) + 
+                          (mom1[1]+mom2[1])*(mom1[1]+mom2[1]));
+   return pT;
 }
 
-double GetMass(const double *pp1, const double *pp2, const double m1, const double m2)
+//mom = momentum
+double GetMass(const double *mom1, const double *mom2, const double m1, const double m2)
 {
-   const double pm1 = pp1[0]*pp1[0] + pp1[1]*pp1[1] + pp1[2]*pp1[2];
-   const double pm2 = pp2[0]*pp2[0] + pp2[1]*pp2[1] + pp2[2]*pp2[2];
-
-   if( pm1 <= 0. || pm2 <= 0. ) return -999;
-
-   const double e1 = sqrt(pow(m1, 2) + pm1);
-   const double e2 = sqrt(pow(m2, 2) + pm2);
-   const double es = e1 + e2;
-
-   double ps[3];
+   const double mom1Squared = mom1[0]*mom1[0] + mom1[1]*mom1[1] + mom1[2]*mom1[2];
+   const double mom2Squared = mom2[0]*mom2[0] + mom2[1]*mom2[1] + mom2[2]*mom2[2];
    
-   ps[0] = pp1[0] + pp2[0];
-   ps[1] = pp1[1] + pp2[1];
-   ps[2] = pp1[2] + pp2[2];
+   const double energy1 = sqrt(pow(m1, 2) + mom1Squared);
+   const double energy2 = sqrt(pow(m2, 2) + mom2Squared);
+   const double pairEnergy = energy1 + energy2;
+
+   double pairMom[3];
    
-   const double mass = sqrt(es*es - ps[0]*ps[0] - ps[1]*ps[1] - ps[2]*ps[2]);
+   pairMom[0] = mom1[0] + mom2[0];
+   pairMom[1] = mom1[1] + mom2[1];
+   pairMom[2] = mom1[2] + mom2[2];
    
-   return mass;
+   const double pairMass = sqrt(pairEnergy*pairEnergy - pairMom[0]*pairMom[0] - 
+                                pairMom[1]*pairMom[1] - pairMom[2]*pairMom[2]);
+   
+   return pairMass;
 }
 
 bool IsOneArmCut(const double phi1, const double phi2)
@@ -121,14 +123,14 @@ bool IsOneArmCut(const double phi1, const double phi2)
    return false;
 }
 
-bool IsGhostCut(double dzed, double dphi, double dalpha)
+bool IsGhostCut(double dZed, double dPhi, double dAlpha)
 {
    //pc1
-   if (fabs(dzed) < 6.0 && fabs(dphi - (0.13*dalpha)) < 0.015) return true;
+   if (fabs(dZed) < 6.0 && fabs(dPhi - (0.13*dAlpha)) < 0.015) return true;
    //x1x2_1
-   if (fabs(dphi - (0.04*dalpha)) < 0.015) return true;
+   if (fabs(dPhi - (0.04*dAlpha)) < 0.015) return true;
    //x1x2_2
-   if (fabs(dphi - (-0.065*dalpha)) < 0.015) return true;
+   if (fabs(dPhi - (-0.065*dAlpha)) < 0.015) return true;
    return false;
 }
 

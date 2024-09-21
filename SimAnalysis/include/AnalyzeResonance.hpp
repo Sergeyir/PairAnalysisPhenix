@@ -35,37 +35,37 @@
 
 struct ThrContainer
 {
-   ThrObj<TH1F> origPtDistr = ThrObj<TH1F>(
+   ThrObj<TH1F> distrOrigPT = ThrObj<TH1F>(
       "orig","orig", Par.ptNBins, Par.ptMinPair, Par.ptMaxPair);
 
-   ThrObj<TH2F> orig_pt_vs_pt = ThrObj<TH2F>(
+   ThrObj<TH2F> distrOrigPTVsRecPT = ThrObj<TH2F>(
       "orig_pt_vs_pt", "orig vs pt", 
       Par.ptNBins, Par.ptMin, Par.ptMax, 
       Par.ptNBins, Par.ptMinPair, Par.ptMaxPair);
    
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPIDDecreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrNoPIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMNoPID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMNoPIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMNoPIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PIDDecreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr1PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM1PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM1PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM1PIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDDecreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDIncreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDDecreasedM2Eff;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistr2PIDIncreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM2PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM2PIDDecreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvM2PIDIncreasedM2Eff;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PIDDecreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrTOF2PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMTOF2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMTOF2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMTOF2PIDIncreasedAcceptance;
 
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PID;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDDecreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDIncreasedAcceptance;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDDecreasedM2Eff;
-   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> invMDistrEMC2PIDIncreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMEMC2PID;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMEMC2PIDDecreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMEMC2PIDIncreasedAcceptance;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMEMC2PIDDecreasedM2Eff;
+   std::array<std::unique_ptr<ThrObj<TH2F>>, Par.CType.size> distrInvMEMC2PIDIncreasedM2Eff;
 };
 
 struct ParticleContainer
