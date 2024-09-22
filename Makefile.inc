@@ -20,9 +20,13 @@ PBAR_LIB=-L ./ProgressBar/lib -lPBar
 SIM_ANALYSIS_LIB_DIR=./SimAnalysis/lib
 SIM_ANALYSIS_SRC_DIR=./SimAnalysis/src
 SIM_ANALYSIS_INCLUDE=-I ./SimAnalysis/include
-SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun
+SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun -lIdentFun
 
 ANALYSIS_INCLUDE=-I ./Analysis/include
+ANALYSIS_LIB_DIR=./Analysis/lib
+ANALYSIS_SRC_DIR=./Analysis/src
+ANALYSIS_INCLUDE=-I ./Analysis/include
+ANALYSIS_LIB=-L ./Analysis/lib -lDeadAreasCuts
 
 ROOT_LIB=-Wl,-rpath,${ROOT}/lib -L${ROOT}/lib -lCore
 ROOT_CONFIG=${ROOT}/bin/root-config

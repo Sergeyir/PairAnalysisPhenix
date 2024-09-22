@@ -54,13 +54,13 @@ double GetEMCalId(const double pt, const int id, const int charge,
    {
       if (charge > 0)
       {
-         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_PION[sector]);
-         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_KAON[sector]);
-         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_PROTON[sector]);
+         m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_PION[sector]);
+         m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_KAON[sector]);
+         m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_EMCALE_PROTON[sector]);
          
-         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR[sector]);
-         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR[sector]);
-         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR[sector]);
+         m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR_EMCALE[sector]);
+         m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_EMCALE[sector]);
+         m2SigmaProton = GetM2Sigma(pt, m2MeanProton, M2_SIGMA_PAR_EMCALE[sector]);
       }
       else 
       {
@@ -136,9 +136,9 @@ int GetTOFePID(const double pt, const int charge, const double m2)
    
    if (charge > 0)
    {
-      m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_PION_TOFE);
-      m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_KAON_TOFE);
-      m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_PROTON_TOFE);
+      m2MeanPion = GetM2Mean(pt, M2_MEAN_PAR_TOFE_PION);
+      m2MeanKaon = GetM2Mean(pt, M2_MEAN_PAR_TOFE_KAON);
+      m2MeanProton = GetM2Mean(pt, M2_MEAN_PAR_TOFE_PROTON);
       
       m2SigmaPion = GetM2Sigma(pt, m2MeanPion, M2_SIGMA_PAR_TOFE);
       m2SigmaKaon = GetM2Sigma(pt, m2MeanKaon, M2_SIGMA_PAR_TOFE);

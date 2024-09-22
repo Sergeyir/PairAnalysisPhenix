@@ -17,9 +17,13 @@
 #ifndef IDENT_FUN_HPP
 #define IDENT_FUN_HPP
 
-#define RUN7AUAU
+#include <cmath>
+
+#include "MathTools.hpp"
 
 #include "Particles.hpp"
+#include "STrackFun.hpp"
+
 #include "M2IdentPar.hpp"
 
 double GetEMCalId(const double pt, const int id, const int charge, 

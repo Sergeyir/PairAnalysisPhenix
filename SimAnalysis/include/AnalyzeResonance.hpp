@@ -28,7 +28,7 @@
 #include "STrackFun.hpp"
 #include "PTrackFun.hpp"
 #include "ParAnalyzeResonance.hpp"
-#include "Ident.hpp"
+#include "IdentFun.hpp"
 #include "EffTreeReader.hpp"
 
 #include "ROOT/TTreeProcessorMT.hxx"

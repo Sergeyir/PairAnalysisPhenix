@@ -137,10 +137,10 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       pTrack.origId = abs(ParticleProperties.id[pTrack.iter]);
       nTrack.origId = abs(ParticleProperties.id[nTrack.iter]);
 
-      idContainer Id1, Id2;
+      idContainer id1, id2;
 
-      Id1.origId = pTrack.origId;
-      Id2.origId = nTrack.origId;
+      id1.origId = pTrack.origId;
+      id2.origId = nTrack.origId;
 
       pTrack.geantId = ParticleProperties.geantId[pTrack.iter];
       nTrack.geantId = ParticleProperties.geantId[nTrack.iter];
@@ -854,17 +854,17 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                const double mass = GetMass(pTrack.mom, nTrack.mom, pTrack.mass, nTrack.mass);
                const double pT = GetPairPT(pTrack.mom, nTrack.mom)
                
-               Id1.pc2 = pTrack.idPC2[i];
-               Id1.pc3 = pTrack.idPC3[i];
-               Id1.emc = pTrack.idEMC[i];
-               Id1.tof = pTrack.idTOF[i];
+               id1.pc2 = pTrack.idPC2[i];
+               id1.pc3 = pTrack.idPC3[i];
+               id1.emc = pTrack.idEMC[i];
+               id1.tof = pTrack.idTOF[i];
 
-               Id2.pc2 = nTrack.idPC2[j];
-               Id2.pc3 = nTrack.idPC3[j];
-               Id2.emc = nTrack.idEMC[j];
-               Id2.tof = nTrack.idTOF[j];
+               id2.pc2 = nTrack.idPC2[j];
+               id2.pc3 = nTrack.idPC3[j];
+               id2.emc = nTrack.idEMC[j];
+               id2.tof = nTrack.idTOF[j];
 
-               if (IsnoPID(&Id1, &Id2))
+               if (IsnoPID(&id1, &id2))
                {
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
@@ -925,7 +925,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                }
                else continue;
 
-               if (Is1PID(&Id1, &Id2))
+               if (Is1PID(&id1, &id2))
                {
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
@@ -997,7 +997,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   }
                }
 
-               if (Is2PID(&Id1, &Id2))
+               if (Is2PID(&id1, &id2))
                {
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
@@ -1069,7 +1069,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                }
                else continue;
 
-               if (IsTOF2PID(&Id1, &Id2))
+               if (IsTOF2PID(&id1, &id2))
                {
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {
@@ -1093,7 +1093,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   }
                }
 
-               if (IsEMC2PID(&Id1, &Id2))
+               if (IsEMC2PID(&id1, &id2))
                {
                   for (int k = 0; k < CentralityContainer.size; k++)
                   {

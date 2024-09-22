@@ -41,6 +41,7 @@ all_libs: $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
 			 $(SIM_ANALYSIS_LIB_DIR)/STrackFun.o \
 			 $(SIM_ANALYSIS_LIB_DIR)/PTrackFun.o \
 			 $(SIM_ANALYSIS_LIB_DIR)/IdentFun.o \
+			 $(ANALYSIS_LIB_DIR)/DeadAreasCuts.o \
 			 $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so \
 			 $(CPP_TOOLS_LIB_DIR)/StrTools.so \
 			 $(CPP_TOOLS_LIB_DIR)/Time.so \
@@ -55,6 +56,7 @@ all_libs: $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
 			 $(SIM_ANALYSIS_LIB_DIR)/STrackFun.so \
 			 $(SIM_ANALYSIS_LIB_DIR)/PTrackFun.so \
 			 $(SIM_ANALYSIS_LIB_DIR)/IdentFun.so \
+			 $(ANALYSIS_LIB_DIR)/DeadAreasCuts.so \
 			 $(CPP_TOOLS_LIB_DIR)/libErrorHandler.a \
 			 $(CPP_TOOLS_LIB_DIR)/libStrTools.a \
 			 $(CPP_TOOLS_LIB_DIR)/libTime.a \
@@ -68,54 +70,10 @@ all_libs: $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
 			 $(SIM_ANALYSIS_LIB_DIR)/libEmbTreeReader.a \
 			 $(SIM_ANALYSIS_LIB_DIR)/libSTrackFun.a \
 			 $(SIM_ANALYSIS_LIB_DIR)/libPTrackFun.a \
-			 $(SIM_ANALYSIS_LIB_DIR)/libIdentFun.a
+			 $(SIM_ANALYSIS_LIB_DIR)/libIdentFun.a \
+			 $(ANALYSIS_LIB_DIR)/libDeadAreasCuts.a
 
-.SILENT: bin clean \
-			$(CPP_TOOLS_LIB_DIR) $(ROOT_TOOLS_LIB_DIR) $(PBAR_LIB_DIR) $(SIM_ANALYSIS_LIB_DIR) \
-			$(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
-			$(CPP_TOOLS_LIB_DIR)/StrTools.o \
-			$(CPP_TOOLS_LIB_DIR)/Time.o \
-			$(CPP_TOOLS_LIB_DIR)/IOTools.o \
-			$(CPP_TOOLS_LIB_DIR)/Box.o \
-			$(CPP_TOOLS_LIB_DIR)/Table.o \
-			$(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.o \
-			$(ROOT_TOOLS_LIB_DIR)/GUIFit.o \
-			$(PBAR_LIB_DIR)/PBar.o \
-			$(SIM_ANALYSIS_LIB_DIR)/EffTreeReader.o \
-			$(SIM_ANALYSIS_LIB_DIR)/EmbTreeReader.o \
-			$(SIM_ANALYSIS_LIB_DIR)/STrackFun.o \
-			$(SIM_ANALYSIS_LIB_DIR)/PTrackFun.o \
-			$(SIM_ANALYSIS_LIB_DIR)/IdentFun.o \
-			$(CPP_TOOLS_LIB_DIR)/ErrorHandler.so \
-			$(CPP_TOOLS_LIB_DIR)/StrTools.so \
-			$(CPP_TOOLS_LIB_DIR)/Time.so \
-			$(CPP_TOOLS_LIB_DIR)/IOTools.so \
-			$(CPP_TOOLS_LIB_DIR)/Box.so \
-			$(CPP_TOOLS_LIB_DIR)/Table.so \
-			$(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.so \
-			$(ROOT_TOOLS_LIB_DIR)/GUIFit.so \
-			$(PBAR_LIB_DIR)/PBar.so \
-			$(SIM_ANALYSIS_LIB_DIR)/EffTreeReader.so \
-			$(SIM_ANALYSIS_LIB_DIR)/EmbTreeReader.so \
-			$(SIM_ANALYSIS_LIB_DIR)/STrackFun.so \
-			$(SIM_ANALYSIS_LIB_DIR)/PTrackFun.so \
-			$(SIM_ANALYSIS_LIB_DIR)/IdentFun.so \
-			$(CPP_TOOLS_LIB_DIR)/libErrorHandler.a \
-			$(CPP_TOOLS_LIB_DIR)/libStrTools.a \
-			$(CPP_TOOLS_LIB_DIR)/libTime.a \
-			$(CPP_TOOLS_LIB_DIR)/libIOTools.a \
-			$(CPP_TOOLS_LIB_DIR)/libBox.a \
-			$(CPP_TOOLS_LIB_DIR)/libTable.a \
-			$(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.a \
-			$(ROOT_TOOLS_LIB_DIR)/libGUIFit.a \
-			$(PBAR_LIB_DIR)/libPBar.a \
-			$(SIM_ANALYSIS_LIB_DIR)/libEffTreeReader.a \
-			$(SIM_ANALYSIS_LIB_DIR)/libEmbTreeReader.a \
-			$(SIM_ANALYSIS_LIB_DIR)/libSTrackFun.a \
-			$(SIM_ANALYSIS_LIB_DIR)/libPTrackFun.a \
-			$(SIM_ANALYSIS_LIB_DIR)/libIdentFun.a \
-			AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack
-
+.SILENT:
 
 all: all_libs exe_targets
 	@echo "All done"
@@ -214,27 +172,35 @@ $(SIM_ANALYSIS_LIB_DIR):
 $(SIM_ANALYSIS_LIB_DIR)/EffTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EffTreeReader.cpp | \
 													  $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Compiling $< into $@
-	$(CXX) $< $(CXX_COMMON_LIB) $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` -o $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/EmbTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EmbTreeReader.cpp | \
 													  $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Compiling $< into $@
-	$(CXX) $< $(CXX_COMMON_LIB) $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` -o $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/STrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/STrackFun.cpp | \
 											    $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Compiling $< into $@
-	$(CXX) $< $(CXX_COMMON_LIB) $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` -o $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/PTrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/PTrackFun.cpp | \
 											    $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Compiling $< into $@
-	$(CXX) $< $(CXX_COMMON_LIB) $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` -o $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/IdentFun.o: $(SIM_ANALYSIS_SRC_DIR)/IdentFun.cpp | \
 											   $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Compiling $< into $@
-	$(CXX) $< $(CXX_COMMON_LIB) $(ANALYSIS_INCLUDE) $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` -o $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ANALYSIS_INCLUDE) \
+	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(SIM_ANALYSIS_INCLUDE) -L./$(SIM_ANALYSIS_LIB_DIR) -lSTrackFun \
+	$(ANALYSIS_INCLUDE) -L./$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
 
 $(SIM_ANALYSIS_LIB_DIR)/%.so: $(SIM_ANALYSIS_LIB_DIR)/%.o
 	@$(ECHO) Creating $@ from $<
@@ -284,7 +250,24 @@ AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
-	$(ANALYSIS_INCLUDE)
+	$(ANALYSIS_INCLUDE) $(ANALYSIS_LIB)
+
+# Analysis
+
+$(ANALYSIS_LIB_DIR):
+	mkdir -p $@
+
+$(ANALYSIS_LIB_DIR)/DeadAreasCuts.o: $(ANALYSIS_SRC_DIR)/DeadAreasCuts.cpp | $(ANALYSIS_LIB_DIR)
+	@$(ECHO) Compiling $< into $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@
+
+$(ANALYSIS_LIB_DIR)/%.so: $(ANALYSIS_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	$(CXX) -shared -o $@ $<
+
+$(ANALYSIS_LIB_DIR)/lib%.a: $(ANALYSIS_LIB_DIR)/%.o
+	@$(ECHO) Creating $@ from $<
+	ar rcs $@ $<
 
 # other
 

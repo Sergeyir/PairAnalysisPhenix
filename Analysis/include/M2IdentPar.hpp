@@ -11,8 +11,7 @@
 //
 /**
  * Header for storing global variables for m2 identification of pions, kaons, and protons
- **/
-//------------------------------------------------------------------------------------------------
+ **/ //------------------------------------------------------------------------------------------------
 
 #ifndef M2_IDENT_PAR_HPP
 #define M2_IDENT_PAR_HPP
@@ -28,22 +27,29 @@
 //
 // Means were fitted with 1st order polynomial
 
-#ifdef RUN7AUAU
+// chooses Run7AuAu by default; needed for compilation if no run was chosen
+// since it requires arguments below to be declared
+#ifndef M2_PAR_RUN_WAS_CHOSEN_CHECK
+#define M2_PAR_RUN_WAS_CHOSEN_CHECK
+#endif /* M2_PAR_RUN_WAS_CHOSEN_CHECK */
 
-static const double M2_MEAN_PAR_PION_TOFE[7] = {0.0174898, 0.00427226};
-static const double M2_MEAN_PAR_KAON_TOFE[7] = {0.245808, 1.15555e-05};
-static const double M2_MEAN_PAR_PROTON_TOFE[7] = {0.889027, -0.0127422};
-static const double M2_MEAN_PAR_APION_TOFE[7] = {0.0175598, -0.00436738};
-static const double M2_MEAN_PAR_AKAON_TOFE[7] = {0.245897, -0.000129887};
-static const double M2_MEAN_PAR_APROTON_TOFE[7] = {0.894373, 0.0147789};
+#ifdef RUN7AUAU
+#define M2_PAR_RUN_WAS_CHOSEN_CHECK
+
+static const double M2_MEAN_PAR_TOFE_PION[2] = {0.0174898, 0.00427226};
+static const double M2_MEAN_PAR_TOFE_KAON[2] = {0.245808, 1.15555e-05};
+static const double M2_MEAN_PAR_TOFE_PROTON[2] = {0.889027, -0.0127422};
+static const double M2_MEAN_PAR_TOFE_APION[2] = {0.0175598, -0.00436738};
+static const double M2_MEAN_PAR_TOFE_AKAON[2] = {0.245897, -0.000129887};
+static const double M2_MEAN_PAR_TOFE_APROTON[2] = {0.894373, 0.0147789};
 static const double M2_SIGMA_PAR_TOFE[5] = {0.835, 1., 120, 104, 5.2};
 
-static const double M2_MEAN_PAR_TOFW_PION[7] = {0.0195054, 0.00083337};
-static const double M2_MEAN_PAR_TOFW_KAON[7] = {0.246532, -0.00120144};
-static const double M2_MEAN_PAR_TOFW_PROTON[7] = {0.889054, -0.00509407};
-static const double M2_MEAN_PAR_TOFW_APION[7] = {0.0194966, -0.000710241};
-static const double M2_MEAN_PAR_TOFW_AKAON[7] = {0.246375, 0.00113778};
-static const double M2_MEAN_PAR_TOFW_APROTON[7] = {0.887917, 0.00325808};
+static const double M2_MEAN_PAR_TOFW_PION[2] = {0.0195054, 0.00083337};
+static const double M2_MEAN_PAR_TOFW_KAON[2] = {0.246532, -0.00120144};
+static const double M2_MEAN_PAR_TOFW_PROTON[2] = {0.889054, -0.00509407};
+static const double M2_MEAN_PAR_TOFW_APION[2] = {0.0194966, -0.000710241};
+static const double M2_MEAN_PAR_TOFW_AKAON[2] = {0.246375, 0.00113778};
+static const double M2_MEAN_PAR_TOFW_APROTON[2] = {0.887917, 0.00325808};
 static const double M2_SIGMA_PAR_TOFW[5] = {0.9, 1., 75.9, 104, 4.95};
 
 //[sector][parameter]
