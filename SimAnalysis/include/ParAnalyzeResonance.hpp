@@ -17,46 +17,46 @@
 #ifndef PAR_ANALYZE_RESONANCE_HPP
 #define PAR_ANALYZE_RESONANCE_HPP
 
-#define RUN7UAU //for deadmaps and centrality
-#define RUN7UAU_MB5 //for centrality
-
 #include <thread>
 #include <string>
 
 #include "Particles.hpp"
 #include "M2Par.hpp"
 
+#include "RunConfiguration.hpp"
+#include "CentralityConfiguration.hpp"
 #include "DeadAreasCuts.hpp"
-#include "CentralityTypes.hpp"
 
 struct
 {
-   const std::string system = "AuAu200";
-   const std::string run = "Run7";
+   const std::string system = COLLISION_SYSTEM_NAME;
+   const std::string run = NUMBERED_RUN_NAME;
    
    KStar892 origParticle;
-
+   
    std::vector<std::string> magfQueue = {"+-", "-+"};
    std::vector<std::string> auxNameQueue = {"lpt", "hpt"};
-
+   
    std::vector<std::string> daughter1Queue = {"pion", "kaon"};
    std::vector<std::string> daughter2Queue = {"akaon", "apion"};
 
+   CentralityContainer Centrality;
+   
    bool doUseWeightFunc = true;
    
    std::vector<double> pTDeviationQueue = {1., 0.995, 1., 1.005};
    
    const double pTMin = 0.3;
    const double pTMax = 8.;
-
+   
    const double pTMinPair = 0.9;
    const double pTMaxPair = 8.5;
-
+   
    const int invMNBins = 300;
-
+   
    //adc cut + efficiency correction of TOFw form AN814
    const double correctionTOFw = 0.799;
-
+   
    std::array<std::string, 13> detectors = 
       {"dc_pc1", "pc2", "pc3", "tofe", "tofw", 
        "emcale0", "emcale1", "emcale2", "emcale3", 
@@ -66,7 +66,7 @@ struct
 
    const int nThreads = std::thread::hardware_concurrency();
    
-   const int pTNBins = static_cast<int>((pair_ptmax - pair_ptmin)*10.);
+   const int pTNBins = static_cast<int>((pTMaxPair - pTMinPair)*10.);
 } Par;
 
 #endif /* PAR_ANALYZE_RESONANCE_HPP */

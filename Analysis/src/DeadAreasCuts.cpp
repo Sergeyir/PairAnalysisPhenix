@@ -17,7 +17,9 @@
 #ifndef DEAD_AREAS_CUTS_CPP
 #define DEAD_AREAS_CUTS_CPP
 
-#ifdef RUN7AUAU
+#include "../include/DeadAreasCuts.hpp"
+
+#ifdef RUN7AUAU200
 
 bool IsDeadDC(const double phi, const double zed, const double board, const double alpha) 
 {
@@ -1770,6 +1772,6 @@ bool IsDeadTOFw(const double zed, const double board, const double alpha)
    return false;
 }
 
-#endif /* Run7AUAU */
+#endif /* RUN7AUAU200 */
 
 #endif /* DEAD_AREAS_CUTS_CPP */

@@ -16,6 +16,8 @@
 #ifndef M2_IDENT_PAR_HPP
 #define M2_IDENT_PAR_HPP
 
+#include "GlobalConfiguration.h"
+
 // Info on parameters indices of sigma functions
 // mean = pol1
 // sigma:
@@ -27,14 +29,7 @@
 //
 // Means were fitted with 1st order polynomial
 
-// chooses Run7AuAu by default; needed for compilation if no run was chosen
-// since it requires arguments below to be declared
-#ifndef M2_PAR_RUN_WAS_CHOSEN_CHECK
-#define M2_PAR_RUN_WAS_CHOSEN_CHECK
-#endif /* M2_PAR_RUN_WAS_CHOSEN_CHECK */
-
-#ifdef RUN7AUAU
-#define M2_PAR_RUN_WAS_CHOSEN_CHECK
+#ifdef RUN7AUAU200
 
 static const double M2_MEAN_PAR_TOFE_PION[2] = {0.0174898, 0.00427226};
 static const double M2_MEAN_PAR_TOFE_KAON[2] = {0.245808, 1.15555e-05};
@@ -90,6 +85,6 @@ static const double M2_SIGMA_PAR_EMCALW[4][5] =
 	{{0.9, 1.8, 480., 104., 5.22}, {0.9, 1.7, 480., 104., 5.22}, 
 	{0.9, 1.5, 480., 104., 5.22}, {0.9, 2., 500., 104., 5.22}};
 
-#endif /* RUN7AUAU */
+#endif /* RUN7AUAU200 */
 
 #endif /* M2_IDENT_PAR_HPP */

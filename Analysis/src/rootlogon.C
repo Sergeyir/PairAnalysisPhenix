@@ -4,7 +4,6 @@
                   (static_cast<std::string>(gSystem->Getenv("LD_LIBRARY_PATH")) + ":" + 
                    static_cast<std::string>(std::filesystem::current_path()) + 
                    "/../../ProgressBar/lib").c_str());
-    */
    
    gInterpreter->AddIncludePath("../../CppTools/include");
    gInterpreter->AddIncludePath("../../ROOTTools/include");
@@ -20,4 +19,5 @@
    gSystem->Load("../../lib/Table.so");
    
    gSystem->Load("../../lib/PBar.so");
+    */
 }

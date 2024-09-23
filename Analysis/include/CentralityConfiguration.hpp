@@ -1,23 +1,34 @@
-#ifndef CENTRALITY_TYPES
-#define CENTRALITY_TYPES
+// $HEADER$
+//------------------------------------------------------------------------------------------------
+//                           CentralityConfiguration flags
+//------------------------------------------------------------------------------------------------
+// CentralityConfiguration
+//
+// ** Code for use in PHENIX related projects **
+//
+// Author: Sergei Antsupov
+// Email: antsupov0124@gmail.com
+//
+/**
+ * Flags and constant variables that determine centrality configuration
+ **/
+//------------------------------------------------------------------------------------------------
+
+#ifndef CENTRALITY_CONFIGURATION
+#define CENTRALITY_CONFIGURATION
 
 #include <string>
 #include <array>
 
-#include "TColor.h"
+#include "GlobalConfiguration.h"
 
-#ifdef RUN7AUAU
+#ifdef RUN7AUAU200
 
-struct
-{
-	std::string AuAu200 = "Au+Au@#sqrt{s_{NN}} = 200 GeV";
-} RunName;
-
-#ifdef RUN7AUAU_MB4
+#ifdef CENTRALITY_CLASSES_MB4
 
 struct CentralityContainer
 {
-	static constexpr int arraySize = 5;
+	static constexpr int size = 5;
    
 	std::array<int, size> minIndex = {0, 2, 4, 6, 0};
 	std::array<int, size> maxIndex = {1, 3, 5, 9, 9};
@@ -26,7 +37,7 @@ struct CentralityContainer
 	std::array<std::string, size> maxName = {"20", "40", "60", "93", "93"};
 
 	std::array<std::string, size> name = {"0-20%", "20-40%", "40-60%", "60-93%", "MB"};
-	std::array<std::string, size> nameNoPercent = {"0-20", "20-40", "40-60", "60-93", "MB"};
+	std::array<std::string, size> nameWithoutPercent = {"0-20", "20-40", "40-60", "60-93", "MB"};
 	std::array<std::string, size> nameLatex = {"0-20\\%", "20-40\\%", "40-60\\%", "60-93\\%", "MB"};
 
 	std::array<Color_t, size> color = {kAzure+5, kTeal+5, kSpring+5, kOrange+5, kBlue-2};
@@ -41,11 +52,12 @@ struct CentralityContainer
 
 #endif /* RUN7AUAU_MB4 */
 
-#ifdef RUN7AUAU_MB5
+#ifdef CENTRALITY_CLASSES_MB5
 
-struct Centrality
+struct CentralityContainer
 {
-	static constexpr int arraySize = 6;
+	static constexpr int size = 6;
+   
 	std::array<int, size> minIndex = {0, 1, 2, 4, 6, 0};
 	std::array<int, size> maxIndex = {0, 1, 3, 5, 9, 9};
 
@@ -61,7 +73,6 @@ struct Centrality
 
 	std::array<double, size> ncolls = {900., 784, 300.8, 94.2, 14.8, 257.8};
 	std::array<double, size> ncolls_uncertainty = {80., 77.0, 31.4, 13.0, 4.0, 25.4};
-	std::string name = RunName.AuAu200;
 
 	const int centralIndex = 0;
 	const int peripheralIndex = 4;
@@ -69,16 +80,13 @@ struct Centrality
 
 #endif /* RUN7AUAU_MB5 */
 
-#endif /* RUN7AUAU */
+#endif /* RUN7AUAU200 */
 
-#ifdef RUN14HEAU
+#ifdef RUN14HEAU200
 
-struct
-{
-	std::string AuAu200 = "Au+Au@#sqrt{s_{NN}} = 200 GeV";
-} RunName;
+#ifdef CENTRALITY_CLASSES_MB4
 
-struct Centrality
+struct CentralityContainer
 {
 	std::array<int, 5> cmin = {0, 0, 2, 4, 6};
 	std::array<int, 5> cmax = {9, 1, 3, 5, 9};
@@ -88,10 +96,10 @@ struct Centrality
 
 	std::array<Color_t, 5> color = {kAzure, kGreen, kOrange, kRed, kViolet};
 	std::array<Style_t, 5> marker_style = {53, 54, 55, 59};
-	
-	std::string name = RunName.AuAu200;
 };
 
-#endif /* RUN14HEAU */
+#endif /* CENTRALITY_CLASSES_MB4 */
 
-#endif /* CENTRALITY_TYPES */
+#endif /* RUN14HEAU200 */
+
+#endif /* CENTRALITY_CONFIGURATION */

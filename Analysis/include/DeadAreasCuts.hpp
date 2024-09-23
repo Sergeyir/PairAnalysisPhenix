@@ -17,6 +17,8 @@
 #ifndef DEAD_AREAS_CUTS_HPP
 #define DEAD_AREAS_CUTS_HPP
 
+#include "GlobalConfiguration.h"
+
 bool IsDeadDC(const double phi, const double zed, const double board, const double alpha);
 bool IsDeadPC1(const double phi, const double pc1z, const double pc1phi);
 bool IsDeadPC2(const double pc2z, const double pc2phi);

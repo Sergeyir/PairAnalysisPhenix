@@ -17,20 +17,18 @@
 #ifndef PAR_ANALYZE_SINGLE_TRACK_HPP
 #define PAR_ANALYZE_SINGLE_TRACK_HPP
 
-#define RUN7AUAU
-
 #include <thread>
 
 #include "TFile.h"
 
+#include "RunConfiguration.hpp"
 #include "Particles.hpp"
-
 #include "DeadAreasCuts.hpp"
 
 struct
 {   
-   const std::string system = "AuAu200";
-   const std::string run = "Run7";
+   const std::string run = NUMBERED_RUN_NAME;
+   const std::string system = COLLISION_SYSTEM_NAME;
    bool doUseWeightFunc = true;
    
    const std::string simDataDir = "../data/Sim/";

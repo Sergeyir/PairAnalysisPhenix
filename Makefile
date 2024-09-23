@@ -200,7 +200,7 @@ $(SIM_ANALYSIS_LIB_DIR)/IdentFun.o: $(SIM_ANALYSIS_SRC_DIR)/IdentFun.cpp | \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(SIM_ANALYSIS_INCLUDE) -L./$(SIM_ANALYSIS_LIB_DIR) -lSTrackFun \
-	$(ANALYSIS_INCLUDE) -L./$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
+	$(ANALYSIS_INCLUDE)
 
 $(SIM_ANALYSIS_LIB_DIR)/%.so: $(SIM_ANALYSIS_LIB_DIR)/%.o
 	@$(ECHO) Creating $@ from $<
@@ -219,7 +219,7 @@ AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp all_libs bin
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
-	$(ANALYSIS_INCLUDE) \
+	$(ANALYSIS_INCLUDE) -L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts \
 	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
 
 AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
@@ -230,7 +230,7 @@ AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
-	$(ANALYSIS_INCLUDE)
+	$(ANALYSIS_INCLUDE) -L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
 
 AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	@$(ECHO) Compiling $< into bin/$@
@@ -240,7 +240,7 @@ AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
-	$(ANALYSIS_INCLUDE)
+	$(ANALYSIS_INCLUDE) -L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
 
 AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	@$(ECHO) Compiling $< into bin/$@
@@ -250,7 +250,7 @@ AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
-	$(ANALYSIS_INCLUDE) $(ANALYSIS_LIB)
+	$(ANALYSIS_INCLUDE) -L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
 
 # Analysis
 

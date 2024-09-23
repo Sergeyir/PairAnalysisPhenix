@@ -25,6 +25,7 @@ SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFu
 ANALYSIS_INCLUDE=-I ./Analysis/include
 ANALYSIS_LIB_DIR=./Analysis/lib
 ANALYSIS_SRC_DIR=./Analysis/src
+ANALYSIS_INCLUDE_DIR=./Analysis/src
 ANALYSIS_INCLUDE=-I ./Analysis/include
 ANALYSIS_LIB=-L ./Analysis/lib -lDeadAreasCuts
 

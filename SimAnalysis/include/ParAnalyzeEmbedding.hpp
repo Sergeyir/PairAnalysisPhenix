@@ -17,16 +17,15 @@
 #ifndef PAR_ANALYZE_EMBEDDING_HPP
 #define PAR_ANALYZE_EMBEDDING_HPP
 
-#define RUN7AUAU
-
 #include <thread>
 
+#include "RunConfiguration.hpp"
 #include "DeadAreasCuts.hpp"
 
 struct
 {   
-   const std::string system = "AuAu200";
-   const std::string run = "Run7";
+   const std::string run = NUMBERED_RUN_NAME;
+   const std::string system = COLLISION_SYSTEM_NAME;
 
    const std::string dataDir = "../data/Sim/";
    const std::string outputDir = "../data/PostSim/";

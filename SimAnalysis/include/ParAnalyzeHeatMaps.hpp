@@ -17,8 +17,6 @@
 #ifndef PAR_ANALYZE_HEAT_MAPS_HPP
 #define PAR_ANALYZE_HEAT_MAPS_HPP
 
-#define RUN7AUAU
-
 #include <thread>
 
 #include "TFile.h"
@@ -28,10 +26,12 @@
 
 #include "DeadAreasCuts.hpp"
 
+#include "RunConfiguration.hpp"
+
 struct
 {
-   const std::string system = "AuAu200";
-   const std::string run = "Run7";
+   const std::string run = NUMBERED_RUN_NAME;
+   const std::string system = COLLISION_SYSTEM_NAME;
    const bool doUseWeightFunc = true;
    bool doReweightAlpha = true;
    

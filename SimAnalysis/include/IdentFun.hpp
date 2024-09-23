@@ -24,6 +24,7 @@
 #include "Particles.hpp"
 #include "STrackFun.hpp"
 
+#include "GlobalConfiguration.h"
 #include "M2IdentPar.hpp"
 
 double GetEMCalId(const double pt, const int id, const int charge, 

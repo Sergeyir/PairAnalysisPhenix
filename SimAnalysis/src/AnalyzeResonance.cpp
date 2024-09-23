@@ -152,64 +152,64 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       pTrack.embDCPC1 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[pTrack.iter] + "_dc_pc1.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       pTrack.embPC2 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[pTrack.iter] + "_pc2.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       pTrack.embPC3 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[pTrack.iter] + "_pc3.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       pTrack.embTOFe = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[pTrack.iter] + "_tofe.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       pTrack.embTOFw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[pTrack.iter] + "_tofw.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
 
       nTrack.embDCPC1 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[nTrack.iter] + "_dc_pc1.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       nTrack.embPC2 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[nTrack.iter] + "_pc2.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       nTrack.embPC3 = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[nTrack.iter] + "_pc3.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       nTrack.embTOFe = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[nTrack.iter] + "_tofe.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       nTrack.embTOFw = std::unique_ptr<double>(
          ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
          ParticleProperties.absName[nTrack.iter] + "_tofw.txt", 
-         CentralityContainer.size));
+         Par.Centrality.size));
       
       for (int i = 0; i < 4; i++)
       {
          pTrack.embEMCale[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.absName[pTrack.iter] + "_emcale" + std::to_string(i) + ".txt", 
-            CentralityContainer.size));
+            Par.Centrality.size));
          pTrack.embEMCalw[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.absName[pTrack.iter] + "_emcalw" + std::to_string(i) + ".txt", 
-            CentralityContainer.size));
+            Par.Centrality.size));
          
          nTrack.embEMCale[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.absName[nTrack.iter] + "_emcale" + std::to_string(i) + ".txt", 
-            CentralityContainer.size));
+            Par.Centrality.size));
          nTrack.embEMCalw[i] = std::unique_ptr<double>(
             ReadFileIntoArray("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.absName[nTrack.iter] + "_emcalw" + std::to_string(i) + ".txt", 
-            CentralityContainer.size));
+            Par.Centrality.size));
       }
 
       pTrack.m2EffEMCale = std::unique_ptr<double>(
@@ -240,35 +240,35 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
          ReadFileIntoArray("../input/Systematics/" + Par.runName + "/m2eff_" +
          ParticleProperties.name[nTrack.iter] + "_EMCalw" + magf + ".txt", 4));
 
-      std::shared_ptr<TH1F> origPtDistr = thrContainer->origPtDistr.Get();
+      std::shared_ptr<TH1F> distrOrigPT = thrContainer->distrOrigPT.Get();
       
       std::shared_ptr<TH2F> distrOrigPTVsRecPT = thrContainer->distrOrigPTVsRecPT.Get();
       
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMNoPID;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMNoPIDDecreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMNoPIDIncreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMNoPID;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMNoPIDDecreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMNoPIDIncreasedAcceptance;
 
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM1PID;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM1PIDDecreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM1PIDIncreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM1PID;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM1PIDDecreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM1PIDIncreasedAcceptance;
 
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM2PID;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM2PIDDecreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM2PIDIncreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM2PIDDecreasedM2Eff;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvM2PIDIncreasedM2Eff;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM2PID;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM2PIDDecreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM2PIDIncreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM2PIDDecreasedM2Eff;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvM2PIDIncreasedM2Eff;
 
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMTOF2PID;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMTOF2PIDDecreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMTOF2PIDIncreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMTOF2PID;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMTOF2PIDDecreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMTOF2PIDIncreasedAcceptance;
 
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMEMC2PID;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMEMC2PIDDecreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMEMC2PIDIncreasedAcceptance;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMEMC2PIDDecreasedM2Eff;
-      std::array<std::shared_ptr<TH2F>, CentralityContainer.size> distrInvMEMC2PIDIncreasedM2Eff;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMEMC2PID;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMEMC2PIDDecreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMEMC2PIDIncreasedAcceptance;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMEMC2PIDDecreasedM2Eff;
+      std::array<std::shared_ptr<TH2F>, Par.Centrality.size> distrInvMEMC2PIDIncreasedM2Eff;
 
-      for (int i = 0; i < CentralityContainer.size; i++)
+      for (int i = 0; i < Par.Centrality.size; i++)
       {
          distrInvMNoPID[i] = thrContainer->distrInvMNoPID[i]->Get();
          distrInvMNoPIDDecreasedAcceptance[i] = thrContainer->distrInvMNoPIDDecreasedAcceptance[i]->Get();
@@ -300,13 +300,13 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       while (reader.Next())
       {   
          ncalls += 1.;
-         const double origPt = sqrt(pow(T.mom_orig(0), 2) + pow(T.mom_orig(1), 2))*pTDeviation;
+         const double origPT = sqrt(pow(T.mom_orig(0), 2) + pow(T.mom_orig(1), 2))*pTDeviation;
          
          double eventWeight = 1.;
          
          if (Par.doUseWeightFunc) eventWeight = weightFunc.Eval(origPT)/eventNormWeight*4e11;
          
-         origPtDistr->Fill(origPt, eventWeight);
+         distrOrigPT->Fill(origPT, eventWeight);
          
          if (T.nch() > 49 || T.nch() <= 0) continue;
          
@@ -385,7 +385,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   {
                      pTrack.idTOF[pTrack.size] = id;
                      
-                     for (int j = 0; j < CentralityContainer.size; j++)
+                     for (int j = 0; j < Par.Centrality.size; j++)
                      {
                         pTrack.weightTOF[j][pTrack.size] = 
                            pTrack.embTOFe.get()[j]/pTrack.embDCPC1.get()[j];
@@ -409,7 +409,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   {
                      nTrack.idTOF[nTrack.size] = id;
                      
-                     for (int j = 0; j < CentralityContainer.size; j++)
+                     for (int j = 0; j < Par.Centrality.size; j++)
                      {
                         nTrack.weightTOF[j][nTrack.size] = 
                            nTrack.embTOFe.get()[j]/nTrack.embDCPC1.get()[j];
@@ -463,7 +463,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   {
                      pTrack.idTOF[pTrack.size] = id;
                      
-                     for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                     for (unsigned int j = 0; j < Par.Centrality.size; j++)
                      {
                         pTrack.weightTOF[j][pTrack.size] = 
                            Par.correctionTOFw*pTrack.embTOFw.get()[j]/pTrack.embDCPC1.get()[j];
@@ -487,7 +487,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   {
                      nTrack.idTOF[nTrack.size] = id;
                      
-                     for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                     for (unsigned int j = 0; j < Par.Centrality.size; j++)
                      {
                         nTrack.weightTOF[j][nTrack.size] = 
                            Par.correctionTOFw*nTrack.embTOFw.get()[j]/nTrack.embDCPC1.get()[j];
@@ -532,7 +532,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      
                      if (charge == 1)
                      {
-                        for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                        for (unsigned int j = 0; j < Par.Centrality.size; j++)
                         {
                            pTrack.weightEMC[j][pTrack.size] = 
                               pTrack.embEMCale[T.sect(i)].get()[j]/pTrack.embDCPC1.get()[j];
@@ -541,7 +541,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                         if (T.particle_id(i) == pTrack.geantId && T.sect(i) > 1)
                         {
                            pTrack.idEMC[pTrack.size] = pTrack.origId;
-                           for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                           for (unsigned int j = 0; j < Par.Centrality.size; j++)
                            {
                               pTrack.weightIdEMC[j][pTrack.size] = 
                                  pTrack.weightEMC[j][pTrack.size]*
@@ -553,7 +553,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      }
                      else
                      {   
-                        for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                        for (unsigned int j = 0; j < Par.Centrality.size; j++)
                         {
                            nTrack.weightEMC[j][nTrack.size] = 
                               nTrack.embEMCale[T.sect(i)].get()[j]/nTrack.embDCPC1.get()[j];
@@ -562,7 +562,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                         if (T.particle_id(i) == nTrack.geantId && T.sect(i) > 1)
                         {
                            nTrack.idEMC[nTrack.size] = nTrack.origId;
-                           for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                           for (unsigned int j = 0; j < Par.Centrality.size; j++)
                            {
                               nTrack.weightIdEMC[j][nTrack.size] = 
                                  nTrack.weightEMC[j][nTrack.size]*
@@ -594,7 +594,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      
                      if (charge == 1)
                      {
-                        for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                        for (unsigned int j = 0; j < Par.Centrality.size; j++)
                         {
                            pTrack.weightEMC[j][pTrack.size] = 
                               pTrack.embEMCalw[T.sect(i)].get()[j]/pTrack.embDCPC1.get()[j];
@@ -603,7 +603,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                         if (T.particle_id(i) == pTrack.geantId)
                         {
                            pTrack.idEMC[pTrack.size] = pTrack.origId;
-                           for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                           for (unsigned int j = 0; j < Par.Centrality.size; j++)
                            {
                               pTrack.weightIdEMC[j][pTrack.size] = 
                                  pTrack.weightEMC[j][pTrack.size]*
@@ -615,7 +615,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      }
                      else
                      {
-                        for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                        for (unsigned int j = 0; j < Par.Centrality.size; j++)
                         {
                            nTrack.weightEMC[j][nTrack.size] = 
                               nTrack.embEMCalw[T.sect(i)].get()[j]/nTrack.embDCPC1.get()[j];
@@ -624,7 +624,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                         if (T.particle_id(i) == nTrack.geantId)
                         {
                            nTrack.idEMC[nTrack.size] = nTrack.origId;
-                           for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                           for (unsigned int j = 0; j < Par.Centrality.size; j++)
                            {
                               nTrack.weightIdEMC[j][nTrack.size] = 
                                  nTrack.weightEMC[j][nTrack.size]*
@@ -650,7 +650,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   
                   if (charge == 1)
                   {
-                     for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                     for (unsigned int j = 0; j < Par.Centrality.size; j++)
                      {
                         pTrackDecreasedAcceptance.weightEMC[j][pTrack.size] = 
                            pTrack.weightEMC[j][pTrack.size]*(1. - acceptanceVariation);
@@ -670,7 +670,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                   }
                   else
                   {
-                     for (unsigned int j = 0; j < CentralityContainer.size; j++)
+                     for (unsigned int j = 0; j < Par.Centrality.size; j++)
                      {
                         nTrackDecreasedAcceptance.weightEMC[j][nTrack.size] = 
                            nTrack.weightEMC[j][nTrack.size]*(1. - acceptanceVariation);
@@ -709,7 +709,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      {
                         pTrack.idPC2[pTrack.size] = PartId.noPID;
    
-                        for (int j = 0; j < CentralityContainer.size; j++)
+                        for (int j = 0; j < Par.Centrality.size; j++)
                         {
                            pTrack.weightPC2[j][pTrack.size] = 
                               pTrack.embPC2.get()[j]/pTrack.embDCPC1.get()[j];
@@ -724,7 +724,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      {
                         nTrack.idPC2[nTrack.size] = PartId.noPID;
                         
-                        for (int j = 0; j < CentralityContainer.size; j++)
+                        for (int j = 0; j < Par.Centrality.size; j++)
                         {
                            nTrack.weightPC2[j][nTrack.size] = 
                               nTrack.embPC2.get()[j]/nTrack.embDCPC1.get()[j];
@@ -767,7 +767,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      {
                         pTrack.idPC3[pTrack.size] = PartId.noPID;
                         
-                        for (int j = 0; j < CentralityContainer.size; j++)
+                        for (int j = 0; j < Par.Centrality.size; j++)
                         {
                            pTrack.weightPC3[j][pTrack.size] = 
                               pTrack.embPC3.get()[j]/pTrack.embDCPC1.get()[j];
@@ -782,7 +782,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                      {
                         nTrack.idPC3[nTrack.size] = PartId.noPID;
                         
-                        for (int j = 0; j < CentralityContainer.size; j++)
+                        for (int j = 0; j < Par.Centrality.size; j++)
                         {
                            nTrack.weightPC3[j][nTrack.size] = 
                               nTrack.embPC3.get()[j]/nTrack.embDCPC1.get()[j];
@@ -852,7 +852,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
                if (IsOneArmCut(T.phi(ppc), T.phi(npc))) continue;
                
                const double mass = GetMass(pTrack.mom, nTrack.mom, pTrack.mass, nTrack.mass);
-               const double pT = GetPairPT(pTrack.mom, nTrack.mom)
+               const double pT = GetPairPT(pTrack.mom, nTrack.mom);
                
                id1.pc2 = pTrack.idPC2[i];
                id1.pc3 = pTrack.idPC3[i];
@@ -866,7 +866,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
                if (IsnoPID(&id1, &id2))
                {
-                  for (int k = 0; k < CentralityContainer.size; k++)
+                  for (int k = 0; k < Par.Centrality.size; k++)
                   {
                      //probabilities of not registering dc-pc1 tracks
                      double probNoTrack1 = Product(
@@ -886,7 +886,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       
                      distrInvMNoPID[k]->Fill(pT, mass, eventWeight*pairWeight);
 
-                     distrOrigPTVsRecPT->Fill(pT, origPt, eventWeight*pairWeight);
+                     distrOrigPTVsRecPT->Fill(pT, origPT, eventWeight*pairWeight);
 
                      probNoTrack1 = Product(
                         1. - pTrackDecreasedAcceptance.weightPC2[k][i], 
@@ -927,7 +927,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
                if (Is1PID(&id1, &id2))
                {
-                  for (int k = 0; k < CentralityContainer.size; k++)
+                  for (int k = 0; k < Par.Centrality.size; k++)
                   {
                      double probNoTrack1 = Product(
                         1. - pTrack.weightPC2[k][i], 
@@ -999,7 +999,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
                if (Is2PID(&id1, &id2))
                {
-                  for (int k = 0; k < CentralityContainer.size; k++)
+                  for (int k = 0; k < Par.Centrality.size; k++)
                   {
                      double probNoTrack1 = Product(
                         1. - pTrack.weightIdTOF[k][i], 
@@ -1071,7 +1071,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
                if (IsTOF2PID(&id1, &id2))
                {
-                  for (int k = 0; k < CentralityContainer.size; k++)
+                  for (int k = 0; k < Par.Centrality.size; k++)
                   {
                      double pairWeight = 
                         pTrack.embDCPC1.get()[k]*nTrack.embDCPC1.get()[k]*
@@ -1095,7 +1095,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
                if (IsEMC2PID(&id1, &id2))
                {
-                  for (int k = 0; k < CentralityContainer.size; k++)
+                  for (int k = 0; k < Par.Centrality.size; k++)
                   {
                      double pairWeight = 
                         pTrack.embDCPC1.get()[k]*nTrack.embDCPC1.get()[k]*
@@ -1150,24 +1150,24 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
    pBarThread.join();
 }
 
-void AnalyzeTrackPair()
+int main()
 {
    if (Par.doUseWeightFunc) CheckInputFile("../input/Spectra/" + 
       Par.system + "/" + Par.origParticle.name + ".txt");
-   
+
    for (long unsigned int i = 0; i < Par.daughter1Queue.size(); i++)
    {
-      const int indexDaughter2 = ParticleProperties.iterMap[Par.daughter1Queue[i]];
+      const int indexDaughter1 = ParticleProperties.iterMap[Par.daughter1Queue[i]];
       const int indexDaughter2 = ParticleProperties.iterMap[Par.daughter2Queue[i]];   
       
       const std::string decayChannel = 
-         ParticleProperties.shortName[indexDaughter2] + 
+         ParticleProperties.shortName[indexDaughter1] + 
          ParticleProperties.shortName[indexDaughter2];
       
       for (std::string detector : Par.detectors)
       {
          CheckInputFile("../input/Embedding/" + Par.runName + "/" + 
-            ParticleProperties.absName[indexDaughter2] + "_" + detector + ".txt");
+            ParticleProperties.absName[indexDaughter1] + "_" + detector + ".txt");
          CheckInputFile("../input/Embedding/" + Par.runName + "/" + 
             ParticleProperties.absName[indexDaughter2] + "_" + detector + ".txt");   
       }
@@ -1175,13 +1175,13 @@ void AnalyzeTrackPair()
       for (std::string magf : Par.magfQueue)
       {
          CheckInputFile("../input/M2Eff/" + Par.runName + "/" +
-               ParticleProperties.name[indexDaughter2] + "_EMCale" + magf + ".txt");
+               ParticleProperties.name[indexDaughter1] + "_EMCale" + magf + ".txt");
          CheckInputFile("../input/M2Eff/" + Par.runName + "/" +
-               ParticleProperties.name[indexDaughter2] + "_EMCalw" + magf + ".txt");
+               ParticleProperties.name[indexDaughter1] + "_EMCalw" + magf + ".txt");
          CheckInputFile("../input/Systematics/" + Par.runName + "/m2eff_" +
-               ParticleProperties.name[indexDaughter2] + "_EMCale" + magf + ".txt");
+               ParticleProperties.name[indexDaughter1] + "_EMCale" + magf + ".txt");
          CheckInputFile("../input/Systematics/" + Par.runName + "/m2eff_" +
-               ParticleProperties.name[indexDaughter2] + "_EMCalw" + magf + ".txt");
+               ParticleProperties.name[indexDaughter1] + "_EMCalw" + magf + ".txt");
 
          CheckInputFile("../input/M2Eff/" + Par.runName + "/" +
                ParticleProperties.name[indexDaughter2] + "_EMCale" + magf + ".txt");
@@ -1206,125 +1206,125 @@ void AnalyzeTrackPair()
    int procNum = 1;
    for (double pTDeviation : Par.pTDeviationQueue)
    {
-      thrContainer thrContainer;
+      ThrContainer thrContainer;
 
       const double invMassMin = 0.;
 
-      for (long unsigned int j = 0; j < CentralityContainer.nameWithoutPercent.size(); j++)
+      for (long unsigned int j = 0; j < Par.Centrality.nameWithoutPercent.size(); j++)
       {
-         std::string dir = CentralityContainer.nameWithoutPercent[j];
+         std::string dir = Par.Centrality.nameWithoutPercent[j];
          
          thrContainer.distrInvMNoPID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "noPID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "noPID_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "noPID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMNoPIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "noPID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "noPID_A-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                 "noPID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                 Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMNoPIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "noPID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "noPID_A+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "noPID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
 
          thrContainer.distrInvM1PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "1PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "1PID_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM1PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "1PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "1PID_A-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM1PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "1PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "1PID_A+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "1PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
 
          thrContainer.distrInvM2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "2PID_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "2PID_A-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "2PID_A+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM2PIDDecreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "2PID_m2Eff-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "2PID_m2Eff-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvM2PIDIncreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "2PID_m2Eff+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "2PID_m2Eff+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMTOF2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "TOF2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "TOF2PID_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMTOF2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "TOF2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "TOF2PID_A-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMTOF2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "TOF2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "TOF2PID_A+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "TOF2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
 
          thrContainer.distrInvMEMC2PID[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "EMC2PID_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "EMC2PID_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMEMC2PIDDecreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "EMC2PID_A-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "EMC2PID_A-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMEMC2PIDIncreasedAcceptance[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "EMC2PID_A+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "EMC2PID_A+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMEMC2PIDDecreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "EMC2PID_m2Eff-_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "EMC2PID_m2Eff-_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
          
          thrContainer.distrInvMEMC2PIDIncreasedM2Eff[j] = 
             std::unique_ptr<ThrObj<TH2F>>(new ThrObj<TH2F>((
-               "EMC2PID_m2Eff+_" + CentralityContainer.nameWithoutPercent[j]).c_str(), 
+               "EMC2PID_m2Eff+_" + Par.Centrality.nameWithoutPercent[j]).c_str(), 
                "EMC2PID", Par.pTNBins, Par.pTMinPair, Par.pTMaxPair, 
                Par.invMNBins, invMassMin, 4., dir));
       }
@@ -1358,11 +1358,6 @@ void AnalyzeTrackPair()
 
       PrintInfo("File " + outputFileName + " was written");
    }
-}
-
-int main()
-{
-   AnalyzeTrackPair();
    return 0;
 }
 
