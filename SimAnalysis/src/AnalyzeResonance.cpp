@@ -41,9 +41,9 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
    
    TFile inputFile = TFile(inputFileName.c_str());
 
-   const double nevents= static_cast<double>(((TTree *) inputFile.Get("Tree"))->GetEntries());
+   const double nEvents= static_cast<double>(((TTree *) inputFile.Get("Tree"))->GetEntries());
    
-   if (nevents <= 0)
+   if (nEvents <= 0)
    {
       Print("Error: Number of events is less or equal to 0");
       exit(1);
@@ -83,7 +83,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
 
    box.AddEntry("Input file orig p_T range, GeV", DtoStr(lowPTBound, 1) + "-" + DtoStr(UpPTBound, 1));
    
-   box.AddEntry("Number of events to be analyzed, 1e6", nevents/1e6, 3);
+   box.AddEntry("Number of events to be analyzed, 1e6", nEvents/1e6, 3);
 
    box.AddEntry("pT deviation", DtoStr(pTDeviation, 3));
    
@@ -99,7 +99,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
    ROOT::EnableImplicitMT(Par.nThreads);
    ROOT::TTreeProcessorMT tp(inputFileName.c_str());
    
-   double ncalls = 0.;
+   double nCalls = 0.;
 
    //acceptance systematic uncertainties of detectors
    double sysDCe0, sysDCe1, sysDCw0, sysDCw1,
@@ -299,7 +299,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       
       while (reader.Next())
       {   
-         ncalls += 1.;
+         nCalls += 1.;
          const double origPT = sqrt(pow(T.mom_orig(0), 2) + pow(T.mom_orig(1), 2))*pTDeviation;
          
          double eventWeight = 1.;
@@ -1133,18 +1133,18 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& daughte
       }//cycle by events
    };
 
-   auto PbarCall = [&]()
+   auto PBarCall = [&]()
    {
       ProgressBar pBar = ProgressBar("Fancy");
       while (!isProcessFinished)
       {
-         pBar.Print(ncalls/nevents);
+         pBar.Print(nCalls/nEvents);
          std::this_thread::sleep_for(std::chrono::milliseconds(20));
       }
       pBar.Print(1.);
    };
    
-   std::thread pBarThread(PbarCall);
+   std::thread pBarThread(PBarCall);
    tp.Process(ProcessMP);
    isProcessFinished = true;
    pBarThread.join();
