@@ -124,14 +124,16 @@ $(ROOT_TOOLS_LIB_DIR):
 $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.o: $(ROOT_TOOLS_SRC_DIR)/TCanvasPrinter.cpp | \
 												    $(ROOT_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
-	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp \
 										$(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
 										$(CPP_TOOLS_LIB_DIR)/IOTools.o | \
 										$(CPP_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
-	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 	$(CPP_TOOLS_INCLUDE) -L$(CPP_TOOLS_LIB_DIR) -l ErrorHandler -lIOTools
 
 $(ROOT_TOOLS_LIB_DIR)/%.so: $(ROOT_TOOLS_LIB_DIR)/%.o
@@ -168,31 +170,31 @@ $(SIM_ANALYSIS_LIB_DIR)/EffTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EffTreeReader.c
 													  $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/EmbTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EmbTreeReader.cpp | \
 													  $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/STrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/STrackFun.cpp | \
 											    $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/PTrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/PTrackFun.cpp | \
 											    $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(SIM_ANALYSIS_LIB_DIR)/IdentFun.o: $(SIM_ANALYSIS_SRC_DIR)/IdentFun.cpp | \
 											   $(SIM_ANALYSIS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ANALYSIS_INCLUDE) \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(SIM_ANALYSIS_INCLUDE) -L./$(SIM_ANALYSIS_LIB_DIR) -lSTrackFun \
 	$(ANALYSIS_INCLUDE)
@@ -213,12 +215,12 @@ AnalyzeEmbedding: SimAnalysis/src/AnalyzeEmbedding.cpp all_libs bin
 	$(ROOT_TOOLS_INCLUDE) \
 	$(SIM_ANALYSIS_INCLUDE) $(SIM_ANALYSIS_LIB) \
 	$(ANALYSIS_INCLUDE) -L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
@@ -228,7 +230,7 @@ AnalyzeHeatMaps: SimAnalysis/src/AnalyzeHeatMaps.cpp all_libs bin
 AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
@@ -238,7 +240,7 @@ AnalyzeSingleTrack: SimAnalysis/src/AnalyzeSingleTrack.cpp all_libs bin
 AnalyzeResonance: SimAnalysis/src/AnalyzeResonance.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_LIB) `$(ROOT_CONFIG) --cflags --glibs` \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
