@@ -106,7 +106,7 @@ void AnalyzeParticle(ThrContainer *thrContainer, const std::string &particle,
    bool isProcessFinished = false;
    auto ProcessMP = [&](TTreeReader &reader)
    {   
-      std::shared_ptr<TH2> nPartDistr = thrContainer->nPartDistr.Get();
+      std::shared_ptr<TH2F> nPartDistr = thrContainer->nPartDistr.Get();
       
       std::shared_ptr<TH1F> origPtDistr = thrContainer->origPtDistr.Get();
 
