@@ -29,5 +29,5 @@ ANALYSIS_INCLUDE_DIR=./Analysis/src
 ANALYSIS_INCLUDE=-I ./Analysis/include
 ANALYSIS_LIB=-L ./Analysis/lib -lDeadAreasCuts
 
-ROOT_INCLUDE=-I${ROOT}/include
-ROOT_CONFIG=${ROOT}/bin/root-config
+ROOT_INCLUDE=-I${ROOT_PATH}/include
+ROOT_CONFIG=${ROOT_PATH}/bin/root-config

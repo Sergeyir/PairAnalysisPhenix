@@ -133,7 +133,7 @@ $(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp \
 										$(CPP_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) -L$(CPP_TOOLS_LIB_DIR) -l ErrorHandler -lIOTools
 
 $(ROOT_TOOLS_LIB_DIR)/%.so: $(ROOT_TOOLS_LIB_DIR)/%.o
