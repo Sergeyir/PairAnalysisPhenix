@@ -1,8 +1,8 @@
-#include "../lib/OutputTool.h"
-#include "../lib/StrTool.h"
-#include "../lib/DeadAreasCuts.h"
+#include "IOTools.hpp"
+#include "StrTools.hpp"
+#include "DeadAreasCuts.hpp"
 
-using namespace CutsRun7AuAu200MinBias;
+#define RUN14HEAU200
 
 struct
 {
@@ -21,7 +21,7 @@ struct
 {
 	double orig_integral;
 	std::array<bool, 4> is_min = {true, true, true, true};
-	TFile file = TFile("../data/Run7AuAu200/sum.root");
+	TFile file = TFile("data/Analysis/Run14HeAu200/sum.root");
 	//TFile file = TFile("../data/PHENIX_sim/Run7AuAu200/hotmaps.root");
 	TH2F *hist;
 
@@ -264,7 +264,7 @@ void exec()
 		DrawCutLines(0., y, CutMode.current_cut_mode);
 	else if (event != kKeyPress && (!Par.is_min[3] && CutMode.current_cut_mode == CutMode.key[3]))
 		DrawCutLines(x, y, CutMode.current_cut_mode);
-	Print(event);
+	//Print(event);
 
 	if (event == kButton1Down)
 	{
@@ -532,12 +532,10 @@ void exec()
 				else PrintInfo("Cannot delete last point since the current number of points is 0");
 			}
 			break;
-		
 		case 'r':
 			drawdm();
 			PrintInfo("Resetting the range of the selected area");
 			break;
-
 		case 'p':
 			for (int i = 0; i < CutMode.inv_rect_xmax.size(); i++)
 			{
@@ -571,27 +569,22 @@ void exec()
 					") return true;" << std::endl;
 			}
 			break;
-
 		case '0':
 			Print("Deactivating cutting mode");
 			CutMode.current_cut_mode = -1;
 			break;
-		
 		case '1':
 			Print("Activating rectangular cutting mode");
 			CutMode.current_cut_mode = 1;
 			break;
-		
 		case '2':
 			Print("Activating linear cutting mode along x axis");
 			CutMode.current_cut_mode = 2;
 			break;
-
 		case '3':
 			Print("Activating linear cutting mode along y axis");
 			CutMode.current_cut_mode = 3;
 			break;
-		
 		case '4':
 			Print("Activating inverse rectangular cutting mode");
 			CutMode.current_cut_mode = 4;
@@ -599,23 +592,24 @@ void exec()
 	};
 }
 
-void InteractCanv ()
+void GUIDM()
 {
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("tofw1");
+	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCe0");
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
 	
+	CutDeadAreas(Par.hist, &IsDeadDC, 1., 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC2);
 	//CutDeadAreas(Par.hist, &IsDeadPC3, 1.);
 	//CutDeadAreas(Par.hist, &IsDeadEMCal, 2., 1., 3);
 	//CutDeadAreas(Par.hist, &IsDeadTOFe, -1.);
-	CutDeadAreas(Par.hist, &IsDeadTOFw, -1.);
+	//CutDeadAreas(Par.hist, &IsDeadTOFw, -1.);
 
 	TCanvas *canv = new TCanvas("canv");
-
+   
 	drawdm();
 	
 	gPad->AddExec("exec", "exec()");
