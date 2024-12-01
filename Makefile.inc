@@ -17,17 +17,8 @@ PBAR_SRC_DIR=./ProgressBar/src
 PBAR_INCLUDE=-I ./ProgressBar/include
 PBAR_LIB=-L ./ProgressBar/lib -lPBar
 
-SIM_ANALYSIS_LIB_DIR=./SimAnalysis/lib
-SIM_ANALYSIS_SRC_DIR=./SimAnalysis/src
-SIM_ANALYSIS_INCLUDE=-I ./SimAnalysis/include
-SIM_ANALYSIS_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun -lIdentFun
-
-ANALYSIS_INCLUDE=-I ./Analysis/include
-ANALYSIS_LIB_DIR=./Analysis/lib
-ANALYSIS_SRC_DIR=./Analysis/src
-ANALYSIS_INCLUDE_DIR=./Analysis/src
-ANALYSIS_INCLUDE=-I ./Analysis/include
-ANALYSIS_LIB=-L ./Analysis/lib -lDeadAreasCuts
+ANALYSIS_INCLUDE=-I ./include
+SIM_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun -lIdentFun
 
 ROOT_INCLUDE=-I${ROOT_PATH}/include
 ROOT_CONFIG=${ROOT_PATH}/bin/root-config

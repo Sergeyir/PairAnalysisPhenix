@@ -1,9 +1,8 @@
-#include "../lib/Tools.h"
-#include "../lib/OutputTool.h"
-#include "../lib/DeadAreasCuts.h"
-#include "../lib/Table.h"
-#include "../lib/StrTool.h"
-#include "../lib/TCanvasPrinter.h"
+#include "IOTools.hpp"
+#include "DeadAreasCuts.h"
+#include "Table.hpp"
+#include "StrTools.hpp"
+#include "TCanvasPrinter.hpp"
 
 using namespace CutsRun7AuAu200MinBias;
 

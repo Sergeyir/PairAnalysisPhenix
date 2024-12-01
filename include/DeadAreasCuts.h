@@ -1,6 +1,6 @@
 // $SOURCE$
 //------------------------------------------------------------------------------------------------
-//                       DeadAreasCuts functions realisations
+//                DeadAreasCuts functions declarations and realisations
 //------------------------------------------------------------------------------------------------
 // DeadAreasCuts
 //
@@ -14,10 +14,8 @@
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef DEAD_AREAS_CUTS_CPP
-#define DEAD_AREAS_CUTS_CPP
-
-#include "../include/DeadAreasCuts.hpp"
+#ifndef DEAD_AREAS_CUTS_HPP
+#define DEAD_AREAS_CUTS_HPP
 
 namespace Run7AuAu200Cuts
 {
@@ -1777,8 +1775,13 @@ namespace Run14HeAu200Cuts
 {
    bool IsDeadDC(const double phi, const double zed, const double board, const double alpha)
    {
+      if (alpha > (0.276 * board - (0.2))) 	return true;
+      if (alpha < (-0.276 * board + (0.2))) 	return true;
+      if (alpha > (-0.242 * board + (19.2)))	return true;
+      if (alpha < (0.242 * board + (-19.3)))	return true;	
+      
       return false;
    }
 }
 
-#endif /* DEAD_AREAS_CUTS_CPP */
+#endif /* DEAD_AREAS_CUTS_HPP */
