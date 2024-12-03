@@ -1,5 +1,5 @@
 {
-   gInterpreter->AddIncludePath("Analysis/include");
+   gInterpreter->AddIncludePath("include");
    gInterpreter->AddIncludePath("CppTools/include");
    gInterpreter->AddIncludePath("ROOTTools/include");
    gInterpreter->AddIncludePath("ProgressBar/include");
@@ -10,7 +10,7 @@
    gSystem->Load("CppTools/lib/Box.so");
    gSystem->Load("CppTools/lib/Table.so");
 
-   gSystem->Load("Analysis/lib/DeadAreasCuts.so");
-   
    gSystem->Load("ProgressBar/lib/PBar.so");
+
+   gSystem->Load("lib/DataCutsSelector.so");
 }

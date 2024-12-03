@@ -1,32 +1,31 @@
 #include "IOTools.hpp"
 #include "StrTools.hpp"
-#include "DeadAreasCuts.hpp"
 
-#define RUN14HEAU200
+#include "DataCutsSelector.hpp"
 
 struct
 {
-	std::vector<int> key = {1, 2, 3, 4};
-	std::vector<std::string> name = {"Rectangle", "LineX", "LineY", "Inverse rectangle"};
+	std::vector<std::string> name = {"Rectangle", "LineX", "LineY", "Inverse rectangle", "Angled line"};
 	
-	std::vector<double> rect_xmin, rect_xmax, rect_ymin, rect_ymax;
-	std::vector<double> line_xmin, line_xmax;
-	std::vector<double> line_ymin, line_ymax;
-	std::vector<double> inv_rect_xmin, inv_rect_xmax, inv_rect_ymin, inv_rect_ymax;
+	std::vector<double> rectXMin, rectXMax, rectYMin, rectYMax;
+	std::vector<double> lineXMin, lineXMax;
+	std::vector<double> lineYMin, lineYMin;
+	std::vector<double> invRectXMin, invRectXMax, invRectYMin, invRectYMax;
+	std::vector<double> angledLineXMin, angledLineXMax, angledLineYMin, angledLineYMax;
 	
-	int current_cut_mode = -1;
+	int currentCutMode = -1;
 } CutMode;
 
 struct 
 {
 	double orig_integral;
-	std::array<bool, 4> is_min = {true, true, true, true};
-	TFile file = TFile("data/Analysis/Run14HeAu200/sum.root");
+	std::array<bool, 5> isMin = {true, true, true, true, true};
+	TFile file = TFile("data/Real/Run14HeAu200/sum.root");
 	//TFile file = TFile("../data/PHENIX_sim/Run7AuAu200/hotmaps.root");
 	TH2F *hist;
 
-	std::string xval_name = "pemcy";
-	std::string yval_name = "pemcz";
+	std::string xValName = "board";
+	std::string yValName = "alpha";
 } Par;
 
 void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double))
@@ -108,26 +107,26 @@ void drawdm(bool is_fixed_range = false)
 			double xval = hist_dm->GetXaxis()->GetBinCenter(i);
 			double yval = hist_dm->GetYaxis()->GetBinCenter(j);
 			
-			for (int k = 0; k < CutMode.rect_xmax.size(); k++)
+			for (int k = 0; k < CutMode.rectXMax.size(); k++)
 			{
-				if (xval > CutMode.rect_xmin[k] && xval < CutMode.rect_xmax[k] && 
-					yval > CutMode.rect_ymin[k] && yval < CutMode.rect_ymax[k]) 
+				if (xval > CutMode.rectXMin[k] && xval < CutMode.rectXMax[k] && 
+					yval > CutMode.rectYMin[k] && yval < CutMode.rectYMax[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
-			for (int k = 0; k < CutMode.line_xmax.size(); k++)
+			for (int k = 0; k < CutMode.lineXMax.size(); k++)
 			{
-				if (xval > CutMode.line_xmin[k] && xval < CutMode.line_xmax[k]) 
+				if (xval > CutMode.lineXMin[k] && xval < CutMode.lineXMax[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
-			for (int k = 0; k < CutMode.line_ymax.size(); k++)
+			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
-				if (yval > CutMode.line_ymin[k] && yval < CutMode.line_ymax[k]) 
+				if (yval > CutMode.lineYMin[k] && yval < CutMode.lineYMin[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
-			for (int k = 0; k < CutMode.inv_rect_xmax.size(); k++)
+			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
 			{
-				if (xval < CutMode.inv_rect_xmin[k] || xval > CutMode.inv_rect_xmax[k] ||
-					yval < CutMode.inv_rect_ymin[k] || yval > CutMode.inv_rect_ymax[k]) 
+				if (xval < CutMode.invRectXMin[k] || xval > CutMode.invRectXMax[k] ||
+					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
 		}
@@ -158,18 +157,21 @@ void SetTLineStyle(TLine *line)
 	line->SetLineWidth(2);
 }
 
-void DrawCutLines(double xmax, double ymax, const int current_cut_mode)
+void DrawCutLines(double xmax, double ymax, const int currentCutMode)
 {
-	switch (CutMode.current_cut_mode)
+   if (currentCutMode < 0) return;
+   if (Par.isMin[currentCutMode]) return;
+   
+	switch (CutMode.currentCutMode)
 	{
-		case 1:
+		case 0:
 			{
-				TLine line1 = TLine(CutMode.rect_xmin.back(), CutMode.rect_ymin.back(), 
-					xmax, CutMode.rect_ymin.back());
-				TLine line2 = TLine(CutMode.rect_xmin.back(), CutMode.rect_ymin.back(), 
-					CutMode.rect_xmin.back(), ymax);
-				TLine line3 = TLine(xmax, CutMode.rect_ymin.back(), xmax, ymax);
-				TLine line4 = TLine(CutMode.rect_xmin.back(), ymax, xmax, ymax);
+				TLine line1 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
+					xmax, CutMode.rectYMin.back());
+				TLine line2 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
+					CutMode.rectXMin.back(), ymax);
+				TLine line3 = TLine(xmax, CutMode.rectYMin.back(), xmax, ymax);
+				TLine line4 = TLine(CutMode.rectXMin.back(), ymax, xmax, ymax);
 
 				SetTLineStyle(&line1);
 				SetTLineStyle(&line2);
@@ -185,13 +187,31 @@ void DrawCutLines(double xmax, double ymax, const int current_cut_mode)
 				gPad->Update();
 			}
 			break;
-		case 2:
+		case 1:
 			{
 				const double ymin = Par.hist->GetYaxis()->GetBinLowEdge(1);
 				ymax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
 				
-				TLine line1 = TLine(CutMode.line_xmin.back(), ymin, CutMode.line_xmin.back(), ymax);
+				TLine line1 = TLine(CutMode.lineXMin.back(), ymin, CutMode.lineXMin.back(), ymax);
 				TLine line2 = TLine(xmax, ymin, xmax, ymax);
+
+				SetTLineStyle(&line1);
+				SetTLineStyle(&line2);
+
+				line1.Draw();
+				line2.Draw();
+
+				gPad->Modified();
+				gPad->Update();
+			}
+			break;
+		case 2:
+			{
+				const double xmin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+				xmax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+				
+				TLine line1 = TLine(xmin, CutMode.lineYMin.back(), xmax, CutMode.lineYMin.back());
+				TLine line2 = TLine(xmin, ymax, xmax, ymax);
 
 				SetTLineStyle(&line1);
 				SetTLineStyle(&line2);
@@ -205,30 +225,12 @@ void DrawCutLines(double xmax, double ymax, const int current_cut_mode)
 			break;
 		case 3:
 			{
-				const double xmin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-				xmax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
-				
-				TLine line1 = TLine(xmin, CutMode.line_ymin.back(), xmax, CutMode.line_ymin.back());
-				TLine line2 = TLine(xmin, ymax, xmax, ymax);
-
-				SetTLineStyle(&line1);
-				SetTLineStyle(&line2);
-
-				line1.Draw();
-				line2.Draw();
-
-				gPad->Modified();
-				gPad->Update();
-			}
-			break;
-		case 4:
-			{
-				TLine line1 = TLine(CutMode.inv_rect_xmin.back(), CutMode.inv_rect_ymin.back(), 
-					xmax, CutMode.inv_rect_ymin.back());
-				TLine line2 = TLine(CutMode.inv_rect_xmin.back(), CutMode.inv_rect_ymin.back(), 
-					CutMode.inv_rect_xmin.back(), ymax);
-				TLine line3 = TLine(xmax, CutMode.inv_rect_ymin.back(), xmax, ymax);
-				TLine line4 = TLine(CutMode.inv_rect_xmin.back(), ymax, xmax, ymax);
+				TLine line1 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
+					xmax, CutMode.invRectYMin.back());
+				TLine line2 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
+					CutMode.invRectXMin.back(), ymax);
+				TLine line3 = TLine(xmax, CutMode.invRectYMin.back(), xmax, ymax);
+				TLine line4 = TLine(CutMode.invRectXMin.back(), ymax, xmax, ymax);
 
 				SetTLineStyle(&line1);
 				SetTLineStyle(&line2);
@@ -255,178 +257,170 @@ void exec()
 
 	const double x = gPad->PadtoX(gPad->AbsPixeltoX(px));
 	const double y = gPad->PadtoY(gPad->AbsPixeltoY(py));
-
-	if (event != kKeyPress && (!Par.is_min[0] && CutMode.current_cut_mode == CutMode.key[0]))
-		DrawCutLines(x, y, CutMode.current_cut_mode);
-	else if (event != kKeyPress && (!Par.is_min[1] && CutMode.current_cut_mode == CutMode.key[1]))
-		DrawCutLines(x, 0., CutMode.current_cut_mode);
-	else if (event != kKeyPress && (!Par.is_min[2] && CutMode.current_cut_mode == CutMode.key[2]))
-		DrawCutLines(0., y, CutMode.current_cut_mode);
-	else if (event != kKeyPress && (!Par.is_min[3] && CutMode.current_cut_mode == CutMode.key[3]))
-		DrawCutLines(x, y, CutMode.current_cut_mode);
-	//Print(event);
-
+   
+   if (event != kKeyPress) DrawCutLines(x, y, CutMode.currentCutMode);
+   
 	if (event == kButton1Down)
 	{
-		switch (CutMode.current_cut_mode)
+		switch (CutMode.currentCutMode)
 		{
-			case 1:
-				if (Par.is_min[0])
+			case 0:
+				if (Par.isMin[0])
 				{
-					CutMode.rect_xmin.push_back(x);
-					CutMode.rect_ymin.push_back(y);
+					CutMode.rectXMin.push_back(x);
+					CutMode.rectYMin.push_back(y);
 					
-					Par.is_min[0] = false;
+					Par.isMin[0] = false;
 
 					PrintInfo("Setting the first point");	
 				}
 				else
 				{
-					if (x >= CutMode.rect_xmin.back()) 
+					if (x >= CutMode.rectXMin.back()) 
 					{
-						CutMode.rect_xmax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
+						CutMode.rectXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
 							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.rect_xmin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.rect_xmin.back()));
+						CutMode.rectXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.rectXMin.back()));
 					}
 					else 
 					{
-						CutMode.rect_xmax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.rect_xmin.back())));
-						CutMode.rect_xmin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
+						CutMode.rectXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.rectXMin.back())));
+						CutMode.rectXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
 							Par.hist->GetXaxis()->FindBin(x));
 					}
 					
-					if (y >= CutMode.rect_ymin.back()) 
+					if (y >= CutMode.rectYMin.back()) 
 					{
-						CutMode.rect_ymax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+						CutMode.rectYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
 							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.rect_ymin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.rect_ymin.back()));
+						CutMode.rectYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.rectYMin.back()));
 					}
 					else 
 					{
-						CutMode.rect_ymax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.rect_ymin.back())));
-						CutMode.rect_ymin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
+						CutMode.rectYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.rectYMin.back())));
+						CutMode.rectYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
 							Par.hist->GetYaxis()->FindBin(y));
 					}
 
-					Par.is_min[0] = true;
+					Par.isMin[0] = true;
 					PrintInfo("Setting the second point");
-					if (Par.is_min[0]) drawdm(true);
+					if (Par.isMin[0]) drawdm(true);
+				}
+				break;
+
+			case 1:
+				if (Par.isMin[1])
+				{
+					CutMode.lineXMin.push_back(x);
+					
+					Par.isMin[1] = false;
+
+					PrintInfo("Setting the first line");	
+				}
+				else
+				{
+					if (x >= CutMode.lineXMin.back()) 
+					{
+						CutMode.lineXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(x)));
+						CutMode.lineXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.lineXMin.back()));
+					}
+					else 
+					{
+						CutMode.lineXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.lineXMin.back())));
+						CutMode.lineXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(x));
+					}
+
+					Par.isMin[1] = true;
+					PrintInfo("Setting the second point");
+					if (Par.isMin[1]) drawdm(true);
 				}
 				break;
 
 			case 2:
-				if (Par.is_min[1])
+				if (Par.isMin[2])
 				{
-					CutMode.line_xmin.push_back(x);
+					CutMode.lineYMin.push_back(y);
 					
-					Par.is_min[1] = false;
+					Par.isMin[2] = false;
 
 					PrintInfo("Setting the first line");	
 				}
 				else
 				{
-					if (x >= CutMode.line_xmin.back()) 
+					if (y >= CutMode.lineYMin.back()) 
 					{
-						CutMode.line_xmax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.line_xmin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.line_xmin.back()));
+						CutMode.lineYMin.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(y)));
+						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back()));
 					}
 					else 
 					{
-						CutMode.line_xmax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.line_xmin.back())));
-						CutMode.line_xmin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(x));
+						CutMode.lineYMin.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back())));
+						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(y));
 					}
 
-					Par.is_min[1] = true;
+					Par.isMin[2] = true;
 					PrintInfo("Setting the second point");
-					if (Par.is_min[1]) drawdm(true);
+					if (Par.isMin[2]) drawdm(true);
 				}
 				break;
 
 			case 3:
-				if (Par.is_min[2])
+				if (Par.isMin[3])
 				{
-					CutMode.line_ymin.push_back(y);
+					CutMode.invRectXMin.push_back(x);
+					CutMode.invRectYMin.push_back(y);
 					
-					Par.is_min[2] = false;
-
-					PrintInfo("Setting the first line");	
-				}
-				else
-				{
-					if (y >= CutMode.line_ymin.back()) 
-					{
-						CutMode.line_ymax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.line_ymin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.line_ymin.back()));
-					}
-					else 
-					{
-						CutMode.line_ymax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.line_ymin.back())));
-						CutMode.line_ymin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(y));
-					}
-
-					Par.is_min[2] = true;
-					PrintInfo("Setting the second point");
-					if (Par.is_min[2]) drawdm(true);
-				}
-				break;
-
-			case 4:
-				if (Par.is_min[3])
-				{
-					CutMode.inv_rect_xmin.push_back(x);
-					CutMode.inv_rect_ymin.push_back(y);
-					
-					Par.is_min[3] = false;
+					Par.isMin[3] = false;
 
 					PrintInfo("Setting the first point");	
 				}
 				else
 				{
-					if (x >= CutMode.inv_rect_xmin.back()) 
+					if (x >= CutMode.invRectXMin.back()) 
 					{
-						CutMode.inv_rect_xmax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+						CutMode.invRectXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
 							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.inv_rect_xmin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.inv_rect_xmin.back()));
+						CutMode.invRectXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.invRectXMin.back()));
 					}
 					else 
 					{
-						CutMode.inv_rect_xmax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.inv_rect_xmin.back())));
-						CutMode.inv_rect_xmin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
+						CutMode.invRectXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.invRectXMin.back())));
+						CutMode.invRectXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
 							Par.hist->GetXaxis()->FindBin(x));
 					}
 					
-					if (y >= CutMode.inv_rect_ymin.back()) 
+					if (y >= CutMode.invRectYMin.back()) 
 					{
-						CutMode.inv_rect_ymax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+						CutMode.invRectYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
 							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.inv_rect_ymin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.inv_rect_ymin.back()));
+						CutMode.invRectYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.invRectYMin.back()));
 					}
 					else 
 					{
-						CutMode.inv_rect_ymax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.inv_rect_ymin.back())));
-						CutMode.inv_rect_ymin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
+						CutMode.invRectYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.invRectYMin.back())));
+						CutMode.invRectYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
 							Par.hist->GetYaxis()->FindBin(y));
 					}
 
-					Par.is_min[3] = true;
+					Par.isMin[3] = true;
 					PrintInfo("Setting the second point");
-					if (Par.is_min[3]) drawdm(true);
+					if (Par.isMin[3]) drawdm(true);
 				}
 				break;
 		}
@@ -435,159 +429,171 @@ void exec()
 	switch(px)
 	{
 		case 'u':
-			if (CutMode.current_cut_mode == 1)
-			{
-				if (CutMode.rect_xmin.size() != 0)
-				{
-					if (Par.is_min[0])
-					{
-						CutMode.rect_xmin.pop_back();
-						CutMode.rect_ymin.pop_back();
-						CutMode.rect_xmax.pop_back();
-						CutMode.rect_ymax.pop_back();
+         switch (CutMode.currentCutMode)
+         {
+            case 0:
+               if (CutMode.rectXMin.size() != 0)
+               {
+                  if (Par.isMin[0])
+                  {
+                     CutMode.rectXMin.pop_back();
+                     CutMode.rectYMin.pop_back();
+                     CutMode.rectXMax.pop_back();
+                     CutMode.rectYMax.pop_back();
 
-						PrintInfo("Deleting last minimum and maximum points");
-					}
-					else
-					{
-						CutMode.rect_xmin.pop_back();
-						CutMode.rect_ymin.pop_back();
-							
-						PrintInfo("Deleting last minimum point");
-					}
-					if (Par.is_min[0]) drawdm(true);
-					Par.is_min[0] = true;
-					gPad->Update();
-				}
-				else PrintInfo("Cannot delete last point since the current number of points is 0");
-			}
-			else if (CutMode.current_cut_mode == 2)
-			{
-				if (CutMode.line_xmin.size() != 0)
-				{
-					if (Par.is_min[1])
-					{
-						CutMode.line_xmin.pop_back();
-						CutMode.line_xmax.pop_back();
+                     PrintInfo("Deleting last minimum and maximum points");
+                  }
+                  else
+                  {
+                     CutMode.rectXMin.pop_back();
+                     CutMode.rectYMin.pop_back();
+                        
+                     PrintInfo("Deleting last minimum point");
+                  }
+                  if (Par.isMin[0]) drawdm(true);
+                  Par.isMin[0] = true;
+                  gPad->Update();
+               }
+               else PrintInfo("Cannot delete last point since the current number of points is 0");
+               break;
+            
+            case 1:
+               if (CutMode.lineXMin.size() != 0)
+               {
+                  if (Par.isMin[1])
+                  {
+                     CutMode.lineXMin.pop_back();
+                     CutMode.lineXMax.pop_back();
 
-						PrintInfo("Deleting last pair of lines");
-					}
-					else
-					{
-						CutMode.line_xmin.pop_back();
-						PrintInfo("Deleting last line");
-					}
-					if (Par.is_min[1]) drawdm(true);
-					Par.is_min[1] = true;
-					gPad->Update();
-				}
-				else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
-			}
-			else if (CutMode.current_cut_mode == 3)
-			{
-				if (CutMode.line_ymin.size() != 0)
-				{
-					if (Par.is_min[2])
-					{
-						CutMode.line_ymin.pop_back();
-						CutMode.line_ymax.pop_back();
+                     PrintInfo("Deleting last pair of lines");
+                  }
+                  else
+                  {
+                     CutMode.lineXMin.pop_back();
+                     PrintInfo("Deleting last line");
+                  }
+                  if (Par.isMin[1]) drawdm(true);
+                  Par.isMin[1] = true;
+                  gPad->Update();
+               }
+               else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
+               break;
+            case 2:
+               if (CutMode.lineYMin.size() != 0)
+               {
+                  if (Par.isMin[2])
+                  {
+                     CutMode.lineYMin.pop_back();
+                     CutMode.lineYMin.pop_back();
 
-						PrintInfo("Deleting last pair of lines");
-					}
-					else
-					{
-						CutMode.line_ymin.pop_back();
-						PrintInfo("Deleting last line");
-					}
-					if (Par.is_min[2]) drawdm(true);
-					Par.is_min[2] = true;
-					gPad->Update();
-				}
-				else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
-			}
-			if (CutMode.current_cut_mode == 4)
-			{
-				if (CutMode.inv_rect_xmin.size() != 0)
-				{
-					if (Par.is_min[3])
-					{
-						CutMode.inv_rect_xmin.pop_back();
-						CutMode.inv_rect_ymin.pop_back();
-						CutMode.inv_rect_xmax.pop_back();
-						CutMode.inv_rect_ymax.pop_back();
+                     PrintInfo("Deleting last pair of lines");
+                  }
+                  else
+                  {
+                     CutMode.lineYMin.pop_back();
+                     PrintInfo("Deleting last line");
+                  }
+                  if (Par.isMin[2]) drawdm(true);
+                  Par.isMin[2] = true;
+                  gPad->Update();
+               }
+               else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
+               break;
+            case 3:
+               if (CutMode.invRectXMin.size() != 0)
+               {
+                  if (Par.isMin[3])
+                  {
+                     CutMode.invRectXMin.pop_back();
+                     CutMode.invRectYMin.pop_back();
+                     CutMode.invRectXMax.pop_back();
+                     CutMode.invRectYMax.pop_back();
 
-						PrintInfo("Deleting last minimum and maximum points");
-					}
-					else
-					{
-						CutMode.inv_rect_xmin.pop_back();
-						CutMode.inv_rect_ymin.pop_back();
-							
-						PrintInfo("Deleting last minimum point");
-					}
-					if (Par.is_min[3]) drawdm(true);
-					Par.is_min[3] = true;
-					gPad->Update();
-				}
-				else PrintInfo("Cannot delete last point since the current number of points is 0");
+                     PrintInfo("Deleting last minimum and maximum points");
+                  }
+                  else
+                  {
+                     CutMode.invRectXMin.pop_back();
+                     CutMode.invRectYMin.pop_back();
+                        
+                     PrintInfo("Deleting last minimum point");
+                  }
+                  if (Par.isMin[3]) drawdm(true);
+                  Par.isMin[3] = true;
+                  gPad->Update();
+               }
+               else PrintInfo("Cannot delete last point since the current number of points is 0");
+               break;
 			}
 			break;
+         
 		case 'r':
 			drawdm();
 			PrintInfo("Resetting the range of the selected area");
 			break;
+         
 		case 'p':
-			for (int i = 0; i < CutMode.inv_rect_xmax.size(); i++)
+			for (int i = 0; i < CutMode.invRectXMax.size(); i++)
 			{
 				std::cout <<
-					"if (" + Par.xval_name + " < " << CutMode.inv_rect_xmin[i] <<
-					" || " + Par.yval_name + " < " << CutMode.inv_rect_ymin[i] <<
-					std::endl << "	|| " + Par.xval_name + " > " << CutMode.inv_rect_xmax[i] <<
-					" || " + Par.yval_name + " > " << CutMode.inv_rect_ymax[i] <<
+					"if (" + Par.xValName + " < " << CutMode.invRectXMin[i] <<
+					" || " + Par.yValName + " < " << CutMode.invRectYMin[i] <<
+					std::endl << "	|| " + Par.xValName + " > " << CutMode.invRectXMax[i] <<
+					" || " + Par.yValName + " > " << CutMode.invRectYMax[i] <<
 					") return true;" << std::endl;
 			}
-			for (int i = 0; i < CutMode.line_xmax.size(); i++)
+			for (int i = 0; i < CutMode.lineXMax.size(); i++)
 			{
 				std::cout <<
-					"if (" + Par.xval_name + " > " << CutMode.line_xmin[i] <<
-					" && " + Par.xval_name + " < " << CutMode.line_xmax[i] <<
+					"if (" + Par.xValName + " > " << CutMode.lineXMin[i] <<
+					" && " + Par.xValName + " < " << CutMode.lineXMax[i] <<
 					") return true;" << std::endl;
 			}
-			for (int i = 0; i < CutMode.line_ymax.size(); i++)
+			for (int i = 0; i < CutMode.lineYMin.size(); i++)
 			{
 				std::cout <<
-					"if (" + Par.yval_name + " > " << CutMode.line_ymin[i] <<
-					" && " + Par.yval_name + " < " << CutMode.line_ymax[i] <<
+					"if (" + Par.yValName + " > " << CutMode.lineYMin[i] <<
+					" && " + Par.yValName + " < " << CutMode.lineYMin[i] <<
 					") return true;" << std::endl;
 			}
-			for (int i = 0; i < CutMode.rect_xmax.size(); i++)
+			for (int i = 0; i < CutMode.rectXMax.size(); i++)
 			{
-				std::cout << "if (" + Par.xval_name + " > " << CutMode.rect_xmin[i] <<
-					" && " + Par.yval_name + " > " << CutMode.rect_ymin[i] <<
-					std::endl << "	&& " + Par.xval_name + " < " << CutMode.rect_xmax[i] <<
-					" && " + Par.yval_name + " < " << CutMode.rect_ymax[i] <<
+				std::cout << "if (" + Par.xValName + " > " << CutMode.rectXMin[i] <<
+					" && " + Par.yValName + " > " << CutMode.rectYMin[i] <<
+					std::endl << "	&& " + Par.xValName + " < " << CutMode.rectXMax[i] <<
+					" && " + Par.yValName + " < " << CutMode.rectYMax[i] <<
 					") return true;" << std::endl;
 			}
 			break;
+         
 		case '0':
 			Print("Deactivating cutting mode");
-			CutMode.current_cut_mode = -1;
+			CutMode.currentCutMode = -1;
 			break;
+         
 		case '1':
 			Print("Activating rectangular cutting mode");
-			CutMode.current_cut_mode = 1;
+			CutMode.currentCutMode = 1;
 			break;
+         
 		case '2':
 			Print("Activating linear cutting mode along x axis");
-			CutMode.current_cut_mode = 2;
+			CutMode.currentCutMode = 2;
 			break;
+         
 		case '3':
 			Print("Activating linear cutting mode along y axis");
-			CutMode.current_cut_mode = 3;
+			CutMode.currentCutMode = 3;
 			break;
+         
 		case '4':
 			Print("Activating inverse rectangular cutting mode");
-			CutMode.current_cut_mode = 4;
+			CutMode.currentCutMode = 4;
+			break;
+         
+		case '5':
+			Print("Activating angled linear cutting mode");
+			CutMode.currentCutMode = 5;
 			break;
 	};
 }
@@ -599,8 +605,10 @@ void GUIDM()
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
+
+   DataCutsSelector dSel("Run14HeAu200MB")
 	
-	CutDeadAreas(Par.hist, &IsDeadDC, 1., 1.);
+	CutDeadAreas(Par.hist, dSel.fIsDeadDC, 1., 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC2);
 	//CutDeadAreas(Par.hist, &IsDeadPC3, 1.);

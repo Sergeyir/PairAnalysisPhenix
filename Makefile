@@ -33,39 +33,40 @@ all: all_libs exe_targets
 	@echo "All done"
 
 exe_targets: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
-all_libs: CppToolsLib ROOTToolsLib PBarLib SimLib AnalysisLib
+all_libs: 	 CppToolsLib ROOTToolsLib PBarLib AnalysisLib
 
 # CppTools target groups
 
-CppToolsLib: 	 ErrorHandler StrTools Time IOTools Box Table
-ErrorHandler: 	 $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so $(CPP_TOOLS_LIB_DIR)/libErrorHandler.a
-StrTools: 	  	 $(CPP_TOOLS_LIB_DIR)/StrTools.so $(CPP_TOOLS_LIB_DIR)/libStrTools.a
-Time: 		  	 $(CPP_TOOLS_LIB_DIR)/Time.so $(CPP_TOOLS_LIB_DIR)/libTime.a
-IOTools: 	  	 $(CPP_TOOLS_LIB_DIR)/IOTools.so $(CPP_TOOLS_LIB_DIR)/libIOTools.a
-Box: 			  	 $(CPP_TOOLS_LIB_DIR)/Box.so $(CPP_TOOLS_LIB_DIR)/libBox.a
-Table: 		  	 $(CPP_TOOLS_LIB_DIR)/Table.so $(CPP_TOOLS_LIB_DIR)/libTable.a
+CppToolsLib: 	 	 ErrorHandler StrTools Time IOTools Box Table
+ErrorHandler: 	 	 $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so $(CPP_TOOLS_LIB_DIR)/libErrorHandler.a
+StrTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/StrTools.so $(CPP_TOOLS_LIB_DIR)/libStrTools.a
+Time: 		  	 	 $(CPP_TOOLS_LIB_DIR)/Time.so $(CPP_TOOLS_LIB_DIR)/libTime.a
+IOTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/IOTools.so $(CPP_TOOLS_LIB_DIR)/libIOTools.a
+Box: 			  	 	 $(CPP_TOOLS_LIB_DIR)/Box.so $(CPP_TOOLS_LIB_DIR)/libBox.a
+Table: 		  	 	 $(CPP_TOOLS_LIB_DIR)/Table.so $(CPP_TOOLS_LIB_DIR)/libTable.a
 
 # ROOTTools target groups
 
-ROOTToolsLib: 	 TCanvasPrinter GUIFit
-TCanvasPrinter: $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.so $(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.a
-GUIFit: 			 $(ROOT_TOOLS_LIB_DIR)/GUIFit.so $(ROOT_TOOLS_LIB_DIR)/libGUIFit.a
+ROOTToolsLib: 	 	 TCanvasPrinter GUIFit
+TCanvasPrinter: 	 $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.so $(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.a
+GUIFit: 			 	 $(ROOT_TOOLS_LIB_DIR)/GUIFit.so $(ROOT_TOOLS_LIB_DIR)/libGUIFit.a
 
 # ProgressBar target groups
 
-PBarLib: 		 PBar
-PBar: 			 $(PBAR_LIB_DIR)/PBar.so $(PBAR_LIB_DIR)/libPBar.a
+PBarLib: 		 	 PBar
+PBar: 			 	 $(PBAR_LIB_DIR)/PBar.so $(PBAR_LIB_DIR)/libPBar.a
 
-# Sim target groups
+# current repository target groups (Analysis)
 
-SimLib: EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun
-EffTreeReader:	 lib/EffTreeReader.so lib/libEffTreeReader.a
-EmbTreeReader:	 lib/EmbTreeReader.so lib/libEmbTreeReader.a
-STrackFun:	 	 lib/STrackFun.so lib/libSTrackFun.a
-PTrackFun:	 	 lib/PTrackFun.so lib/libPTrackFun.a
-IdentFun:	 	 lib/IdentFun.so lib/libIdentFun.a
+AnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataCutsSelector
+EffTreeReader:	 	 lib/EffTreeReader.so lib/libEffTreeReader.a
+EmbTreeReader:	 	 lib/EmbTreeReader.so lib/libEmbTreeReader.a
+STrackFun:	 	 	 lib/STrackFun.so lib/libSTrackFun.a
+PTrackFun:	 	 	 lib/PTrackFun.so lib/libPTrackFun.a
+IdentFun:	 	 	 lib/IdentFun.so lib/libIdentFun.a
+DataCutsSelector:	 lib/DataCutsSelector.so lib/libDataCutsSelector.a
 
-# CppTools targets
+# CppTools sumbodule targets
 
 $(CPP_TOOLS_LIB_DIR): 
 	mkdir -p $@
@@ -107,7 +108,7 @@ $(CPP_TOOLS_LIB_DIR)/lib%.a: $(CPP_TOOLS_LIB_DIR)/%.o
 	@$(ECHO) Building CXX static library $@
 	ar rcs $@ $<
 
-# ROOTTools targets
+# ROOTTools sumbodule targets
 
 $(ROOT_TOOLS_LIB_DIR):
 	mkdir -p $@
@@ -135,7 +136,7 @@ $(ROOT_TOOLS_LIB_DIR)/lib%.a: $(ROOT_TOOLS_LIB_DIR)/%.o
 	@$(ECHO) Building CXX static library $@
 	ar rcs $@ $<
 
-# ProgressBar targets
+# ProgressBar sumbodule targets
 
 $(PBAR_LIB_DIR):
 	mkdir -p $@
@@ -152,37 +153,37 @@ $(PBAR_LIB_DIR)/lib%.a: $(PBAR_LIB_DIR)/%.o
 	@$(ECHO) Building CXX static library $@
 	ar rcs $@ $<
 
-# Sim targets
+# Current repository targets (Analysis)
 
 lib:
 	mkdir -p $@
 
-lib/EffTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EffTreeReader.cpp | \
-													  lib
+lib/DataCutsSelector.o: src/DataCutsSelector.cpp | lib
+	@$(ECHO) Building CXX object $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB)
+
+lib/EffTreeReader.o: src/EffTreeReader.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-lib/EmbTreeReader.o: $(SIM_ANALYSIS_SRC_DIR)/EmbTreeReader.cpp | \
-													  lib
+lib/EmbTreeReader.o: src/EmbTreeReader.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-lib/STrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/STrackFun.cpp | \
-											    lib
+lib/STrackFun.o: src/STrackFun.cpp |lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-lib/PTrackFun.o: $(SIM_ANALYSIS_SRC_DIR)/PTrackFun.cpp | \
-											    lib
+lib/PTrackFun.o: src/PTrackFun.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-lib/IdentFun.o: $(SIM_ANALYSIS_SRC_DIR)/IdentFun.cpp | \
-											   lib
+lib/IdentFun.o: src/IdentFun.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ANALYSIS_INCLUDE) \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \

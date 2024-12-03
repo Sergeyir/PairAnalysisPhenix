@@ -1188,7 +1188,8 @@ namespace Run7AuAu200Cuts
       return false;
    }
 
-   bool IsDeadEMCal(const double phi, const double zed, const int sect, const double pemcy, const double pemcz)
+   bool IsDeadEMCal(const double phi, const double zed, const int sect, 
+                    const double pemcy, const double pemcz)
    {
       if (phi >= 1.5 && zed >= 0)
       {
@@ -1771,7 +1772,7 @@ namespace Run7AuAu200Cuts
    }
 }
 
-namespace Run14HeAu200Cuts
+namespace Run14HeAu200MBCuts
 {
    bool IsDeadDC(const double phi, const double zed, const double board, const double alpha)
    {
@@ -1781,6 +1782,47 @@ namespace Run14HeAu200Cuts
       if (alpha < (0.242 * board + (-19.3)))	return true;	
       
       return false;
+   }
+
+   bool IsDeadPC1(const double phi, const double pc1z, const double pc1phi)
+   {
+      return false;
+   }
+
+   bool IsDeadPC2(const double pc2z, const double pc2phi)
+   {
+      return false;
+   }
+
+   bool IsDeadPC3(const double phi, const double pc3z, const double pc3phi)
+   {
+      return false;
+   }
+
+   bool IsDeadEMCal(const double phi, const double zed, const int sect, 
+                    const double pemcy, const double pemcz)
+   {
+        return false;
+   }
+
+   bool IsBadSlat(const int slat)
+   {
+      return false; 
+   }
+
+   bool IsBadStripTOFw(const int strip)
+   {
+      return false;
+   }
+
+   bool IsDeadTOFe(const double zed, const double tofy, const double tofz)
+   {
+      return false;
+   }
+
+   bool IsDeadTOFw(const double zed, const double board, const double alpha)
+   {
+        return false;
    }
 }
 
