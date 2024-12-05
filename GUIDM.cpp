@@ -165,87 +165,91 @@ void DrawCutLines(double xmax, double ymax, const int currentCutMode)
 	switch (CutMode.currentCutMode)
 	{
 		case 0:
-			{
-				TLine line1 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
-					xmax, CutMode.rectYMin.back());
-				TLine line2 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
-					CutMode.rectXMin.back(), ymax);
-				TLine line3 = TLine(xmax, CutMode.rectYMin.back(), xmax, ymax);
-				TLine line4 = TLine(CutMode.rectXMin.back(), ymax, xmax, ymax);
+         TLine line1 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
+            xmax, CutMode.rectYMin.back());
+         TLine line2 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
+            CutMode.rectXMin.back(), ymax);
+         TLine line3 = TLine(xmax, CutMode.rectYMin.back(), xmax, ymax);
+         TLine line4 = TLine(CutMode.rectXMin.back(), ymax, xmax, ymax);
 
-				SetTLineStyle(&line1);
-				SetTLineStyle(&line2);
-				SetTLineStyle(&line3);
-				SetTLineStyle(&line4);
-				
-				line1.Draw();
-				line2.Draw();
-				line3.Draw();
-				line4.Draw();
+         SetTLineStyle(&line1);
+         SetTLineStyle(&line2);
+         SetTLineStyle(&line3);
+         SetTLineStyle(&line4);
+         
+         line1.Draw();
+         line2.Draw();
+         line3.Draw();
+         line4.Draw();
 
-				gPad->Modified();
-				gPad->Update();
-			}
+         gPad->Modified();
+         gPad->Update();
+         
 			break;
+      
 		case 1:
-			{
-				const double ymin = Par.hist->GetYaxis()->GetBinLowEdge(1);
-				ymax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
-				
-				TLine line1 = TLine(CutMode.lineXMin.back(), ymin, CutMode.lineXMin.back(), ymax);
-				TLine line2 = TLine(xmax, ymin, xmax, ymax);
+         const double ymin = Par.hist->GetYaxis()->GetBinLowEdge(1);
+         ymax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
+         
+         TLine line1 = TLine(CutMode.lineXMin.back(), ymin, CutMode.lineXMin.back(), ymax);
+         TLine line2 = TLine(xmax, ymin, xmax, ymax);
 
-				SetTLineStyle(&line1);
-				SetTLineStyle(&line2);
+         SetTLineStyle(&line1);
+         SetTLineStyle(&line2);
 
-				line1.Draw();
-				line2.Draw();
+         line1.Draw();
+         line2.Draw();
 
-				gPad->Modified();
-				gPad->Update();
-			}
+         gPad->Modified();
+         gPad->Update();
+         
 			break;
+      
 		case 2:
-			{
-				const double xmin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-				xmax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
-				
-				TLine line1 = TLine(xmin, CutMode.lineYMin.back(), xmax, CutMode.lineYMin.back());
-				TLine line2 = TLine(xmin, ymax, xmax, ymax);
+         const double xmin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+         xmax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+         
+         TLine line1 = TLine(xmin, CutMode.lineYMin.back(), xmax, CutMode.lineYMin.back());
+         TLine line2 = TLine(xmin, ymax, xmax, ymax);
 
-				SetTLineStyle(&line1);
-				SetTLineStyle(&line2);
+         SetTLineStyle(&line1);
+         SetTLineStyle(&line2);
 
-				line1.Draw();
-				line2.Draw();
+         line1.Draw();
+         line2.Draw();
 
-				gPad->Modified();
-				gPad->Update();
-			}
+         gPad->Modified();
+         gPad->Update();
+         
 			break;
+      
 		case 3:
-			{
-				TLine line1 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
-					xmax, CutMode.invRectYMin.back());
-				TLine line2 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
-					CutMode.invRectXMin.back(), ymax);
-				TLine line3 = TLine(xmax, CutMode.invRectYMin.back(), xmax, ymax);
-				TLine line4 = TLine(CutMode.invRectXMin.back(), ymax, xmax, ymax);
+         TLine line1 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
+            xmax, CutMode.invRectYMin.back());
+         TLine line2 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
+            CutMode.invRectXMin.back(), ymax);
+         TLine line3 = TLine(xmax, CutMode.invRectYMin.back(), xmax, ymax);
+         TLine line4 = TLine(CutMode.invRectXMin.back(), ymax, xmax, ymax);
 
-				SetTLineStyle(&line1);
-				SetTLineStyle(&line2);
-				SetTLineStyle(&line3);
-				SetTLineStyle(&line4);
-				
-				line1.Draw();
-				line2.Draw();
-				line3.Draw();
-				line4.Draw();
+         SetTLineStyle(&line1);
+         SetTLineStyle(&line2);
+         SetTLineStyle(&line3);
+         SetTLineStyle(&line4);
+         
+         line1.Draw();
+         line2.Draw();
+         line3.Draw();
+         line4.Draw();
 
-				gPad->Modified();
-				gPad->Update();
-			}
+         gPad->Modified();
+         gPad->Update();
+         
 			break;
+      case 4:
+         double angle;
+         if (CutMode.angledLineYMin.back() < ymax) = atan((ymax - CutMode.angledLine.YMin.back())/(xMax - xMin));
+         TLine line1 = TLine();
+      break;
 	}
 }
 
@@ -423,6 +427,53 @@ void exec()
 					if (Par.isMin[3]) drawdm(true);
 				}
 				break;
+         case 4:
+				if (Par.isMin[4])
+				{
+					CutMode.angledLineXMin.push_back(x);
+					CutMode.angledLineYMin.push_back(y);
+					
+					Par.isMin[4] = false;
+
+					PrintInfo("Setting the first point");	
+				}
+				else
+				{
+					if (x >= CutMode.angledLineXMin.back()) 
+					{
+						CutMode.angledLineXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(x)));
+						CutMode.angledLineXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.angledLineXMin.back()));
+					}
+					else 
+					{
+						CutMode.angledLineXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+							Par.hist->GetXaxis()->FindBin(CutMode.angledLineXMin.back())));
+						CutMode.angledLineXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
+							Par.hist->GetXaxis()->FindBin(x));
+					}
+					
+					if (y >= CutMode.angledLineYMin.back()) 
+					{
+						CutMode.angledLineYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(y)));
+						CutMode.angledLineYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.angledLineYMin.back()));
+					}
+					else 
+					{
+						CutMode.angledLineYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+							Par.hist->GetYaxis()->FindBin(CutMode.angledLineYMin.back())));
+						CutMode.angledLineYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
+							Par.hist->GetYaxis()->FindBin(y));
+					}
+
+					Par.isMin[4] = true;
+					PrintInfo("Setting the second point");
+					if (Par.isMin[4]) drawdm(true);
+				}
+            break;
 		}
 	}
 
