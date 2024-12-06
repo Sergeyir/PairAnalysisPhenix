@@ -3,13 +3,15 @@
 
 #include "DataCutsSelector.hpp"
 
+#include "MathTools.hpp"
+
 struct
 {
 	std::vector<std::string> name = {"Rectangle", "LineX", "LineY", "Inverse rectangle", "Angled line"};
 	
 	std::vector<double> rectXMin, rectXMax, rectYMin, rectYMax;
 	std::vector<double> lineXMin, lineXMax;
-	std::vector<double> lineYMin, lineYMin;
+	std::vector<double> lineYMin, lineYMax;
 	std::vector<double> invRectXMin, invRectXMax, invRectYMin, invRectYMax;
 	std::vector<double> angledLineXMin, angledLineXMax, angledLineYMin, angledLineYMax;
 	
@@ -28,16 +30,21 @@ struct
 	std::string yValName = "alpha";
 } Par;
 
+double Pol1(const double par0, const double par1, const double x)
+{
+   return par0 + x*par1;
+}
+
 void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double))
 {
 	for (int i = 1; i <= hist->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= hist->GetYaxis()->GetNbins(); j++)
 		{
-			const double val_x = hist->GetXaxis()->GetBinCenter(i);
-			const double val_y = hist->GetYaxis()->GetBinCenter(j);
+			const double valX = hist->GetXaxis()->GetBinCenter(i);
+			const double valY = hist->GetYaxis()->GetBinCenter(j);
 			
-			if (cut_func(val_x, val_y)) 
+			if (cut_func(valX, valY)) 
 			{
 				hist->SetBinContent(i, j, 0.);
 			}
@@ -51,10 +58,10 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 	{
 		for (int j = 1; j <= hist->GetYaxis()->GetNbins(); j++)
 		{
-			const double val_x = hist->GetXaxis()->GetBinCenter(i);
-			const double val_y = hist->GetYaxis()->GetBinCenter(j);
+			const double valX = hist->GetXaxis()->GetBinCenter(i);
+			const double valY = hist->GetYaxis()->GetBinCenter(j);
 			
-			if (cut_func(aux_val, val_x, val_y)) 
+			if (cut_func(aux_val, valX, valY)) 
 			{
 				hist->SetBinContent(i, j, 0.);
 			}
@@ -68,10 +75,10 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 	{
 		for (int j = 1; j <= hist->GetYaxis()->GetNbins(); j++)
 		{
-			const double val_x = hist->GetXaxis()->GetBinCenter(i);
-			const double val_y = hist->GetYaxis()->GetBinCenter(j);
+			const double valX = hist->GetXaxis()->GetBinCenter(i);
+			const double valY = hist->GetYaxis()->GetBinCenter(j);
 			
-			if (cut_func(aux_val1, aux_val2, val_x, val_y)) 
+			if (cut_func(aux_val1, aux_val2, valX, valY)) 
 			{
 				hist->SetBinContent(i, j, 0.);
 			}
@@ -85,10 +92,10 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 	{
 		for (int j = 1; j <= hist->GetYaxis()->GetNbins(); j++)
 		{
-			const double val_x = hist->GetXaxis()->GetBinCenter(i);
-			const double val_y = hist->GetYaxis()->GetBinCenter(j);
+			const double valX = hist->GetXaxis()->GetBinCenter(i);
+			const double valY = hist->GetYaxis()->GetBinCenter(j);
 			
-			if (cut_func(aux_val1, aux_val2, aux_val3, val_x, val_y)) 
+			if (cut_func(aux_val1, aux_val2, aux_val3, valX, valY)) 
 			{
 				hist->SetBinContent(i, j, 0.);
 			}
@@ -120,7 +127,7 @@ void drawdm(bool is_fixed_range = false)
 			}
 			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
-				if (yval > CutMode.lineYMin[k] && yval < CutMode.lineYMin[k]) 
+				if (yval > CutMode.lineYMin[k] && yval < CutMode.lineYMax[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
@@ -129,18 +136,42 @@ void drawdm(bool is_fixed_range = false)
 					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
 					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
 			}
+			for (int k = 0; k < CutMode.angledLineXMax.size(); k++)
+			{ 
+            double tanAlpha = (CutMode.angledLineYMin[k] - CutMode.angledLineYMax[k])/
+                              (CutMode.angledLineXMin[k] - CutMode.angledLineXMax[k]);
+            
+            const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+            const double lineXMax = 
+               Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+            
+            TLine line1 = TLine(lineXMin, , 
+                                lineXMax, Pol1(CutMode.angledLineYMin.back() - 
+                                               CutMode.angledLineXMin.back()*tanAlpha, 
+                                               tanAlpha, lineXMax));
+            TLine line2 = TLine(lineXMin, Pol1(CutMode.angledLineYMax.back() - 
+                                               CutMode.angledLineXMax.back()*tanAlpha, 
+                                               tanAlpha, lineXMin), 
+                                lineXMax, Pol1(CutMode.angledLineYMax.back() - 
+                                               CutMode.angledLineXMax.back()*tanAlpha, 
+                                               tanAlpha, lineXMax));
+				if (xval > Pol1(CutMode.angledLineYMin[k] - CutMode.angledLineXMin[k]*tanAlpha, 
+                                               tanAlpha, lineXMin) || xval > CutMode.invRectXMax[k] ||
+					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
+					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+			}
 		}
 	}
 
 	if (is_fixed_range)
 	{
-		const int xmin = hist_dm->GetXaxis()->FindBin(gPad->GetUxmin());
-		const int xmax = hist_dm->GetXaxis()->FindBin(gPad->GetUxmax())-1;
-		const int ymin = hist_dm->GetYaxis()->FindBin(gPad->GetUymin())+1;
-		const int ymax = hist_dm->GetYaxis()->FindBin(gPad->GetUymax())-1;
+		const int xMin = hist_dm->GetXaxis()->FindBin(gPad->GetUxmin());
+		const int xMax = hist_dm->GetXaxis()->FindBin(gPad->GetUxmax())-1;
+		const int yMin = hist_dm->GetYaxis()->FindBin(gPad->GetUymin())+1;
+		const int yMax = hist_dm->GetYaxis()->FindBin(gPad->GetUymax())-1;
 		
-		hist_dm->GetXaxis()->SetRange(xmin, xmax);
-		hist_dm->GetYaxis()->SetRange(ymin, ymax);
+		hist_dm->GetXaxis()->SetRange(xMin, xMax);
+		hist_dm->GetYaxis()->SetRange(yMin, yMax);
 	}
 	
 	hist_dm->Draw("COLZ");
@@ -157,7 +188,7 @@ void SetTLineStyle(TLine *line)
 	line->SetLineWidth(2);
 }
 
-void DrawCutLines(double xmax, double ymax, const int currentCutMode)
+void DrawCutLines(double xMax, double yMax, const int currentCutMode)
 {
    if (currentCutMode < 0) return;
    if (Par.isMin[currentCutMode]) return;
@@ -165,12 +196,13 @@ void DrawCutLines(double xmax, double ymax, const int currentCutMode)
 	switch (CutMode.currentCutMode)
 	{
 		case 0:
+      {
          TLine line1 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
-            xmax, CutMode.rectYMin.back());
+            xMax, CutMode.rectYMin.back());
          TLine line2 = TLine(CutMode.rectXMin.back(), CutMode.rectYMin.back(), 
-            CutMode.rectXMin.back(), ymax);
-         TLine line3 = TLine(xmax, CutMode.rectYMin.back(), xmax, ymax);
-         TLine line4 = TLine(CutMode.rectXMin.back(), ymax, xmax, ymax);
+            CutMode.rectXMin.back(), yMax);
+         TLine line3 = TLine(xMax, CutMode.rectYMin.back(), xMax, yMax);
+         TLine line4 = TLine(CutMode.rectXMin.back(), yMax, xMax, yMax);
 
          SetTLineStyle(&line1);
          SetTLineStyle(&line2);
@@ -186,13 +218,14 @@ void DrawCutLines(double xmax, double ymax, const int currentCutMode)
          gPad->Update();
          
 			break;
-      
+      }
 		case 1:
-         const double ymin = Par.hist->GetYaxis()->GetBinLowEdge(1);
-         ymax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
+      {
+         const double yMin = Par.hist->GetYaxis()->GetBinLowEdge(1);
+         yMax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
          
-         TLine line1 = TLine(CutMode.lineXMin.back(), ymin, CutMode.lineXMin.back(), ymax);
-         TLine line2 = TLine(xmax, ymin, xmax, ymax);
+         TLine line1 = TLine(CutMode.lineXMin.back(), yMin, CutMode.lineXMin.back(), yMax);
+         TLine line2 = TLine(xMax, yMin, xMax, yMax);
 
          SetTLineStyle(&line1);
          SetTLineStyle(&line2);
@@ -204,32 +237,34 @@ void DrawCutLines(double xmax, double ymax, const int currentCutMode)
          gPad->Update();
          
 			break;
-      
+      }
 		case 2:
-         const double xmin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-         xmax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+      {
+         const double xMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+         xMax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
          
-         TLine line1 = TLine(xmin, CutMode.lineYMin.back(), xmax, CutMode.lineYMin.back());
-         TLine line2 = TLine(xmin, ymax, xmax, ymax);
-
+         TLine line1 = TLine(xMin, CutMode.lineYMin.back(), xMax, CutMode.lineYMin.back());
+         TLine line2 = TLine(xMin, yMax, xMax, yMax);
+         
          SetTLineStyle(&line1);
          SetTLineStyle(&line2);
-
+         
          line1.Draw();
          line2.Draw();
-
+         
          gPad->Modified();
          gPad->Update();
          
 			break;
-      
+      }
 		case 3:
+      {
          TLine line1 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
-            xmax, CutMode.invRectYMin.back());
+            xMax, CutMode.invRectYMin.back());
          TLine line2 = TLine(CutMode.invRectXMin.back(), CutMode.invRectYMin.back(), 
-            CutMode.invRectXMin.back(), ymax);
-         TLine line3 = TLine(xmax, CutMode.invRectYMin.back(), xmax, ymax);
-         TLine line4 = TLine(CutMode.invRectXMin.back(), ymax, xmax, ymax);
+            CutMode.invRectXMin.back(), yMax);
+         TLine line3 = TLine(xMax, CutMode.invRectYMin.back(), xMax, yMax);
+         TLine line4 = TLine(CutMode.invRectXMin.back(), yMax, xMax, yMax);
 
          SetTLineStyle(&line1);
          SetTLineStyle(&line2);
@@ -245,10 +280,36 @@ void DrawCutLines(double xmax, double ymax, const int currentCutMode)
          gPad->Update();
          
 			break;
+      }
       case 4:
-         double angle;
-         if (CutMode.angledLineYMin.back() < ymax) = atan((ymax - CutMode.angledLine.YMin.back())/(xMax - xMin));
-         TLine line1 = TLine();
+         double tanAlpha = (CutMode.angledLineYMin.back() - yMax)/
+                           (CutMode.angledLineXMin.back() - xMax);
+         
+         const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+         const double lineXMax = 
+            Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+         
+         TLine line1 = TLine(lineXMin, Pol1(CutMode.angledLineYMin.back() - 
+                                            CutMode.angledLineXMin.back()*tanAlpha, 
+                                            tanAlpha, lineXMin), 
+                             lineXMax, Pol1(CutMode.angledLineYMin.back() - 
+                                            CutMode.angledLineXMin.back()*tanAlpha, 
+                                            tanAlpha, lineXMax));
+         TLine line2 = TLine(lineXMin, Pol1(CutMode.angledLineYMax.back() - 
+                                            CutMode.angledLineXMax.back()*tanAlpha, 
+                                            tanAlpha, lineXMin), 
+                             lineXMax, Pol1(CutMode.angledLineYMax.back() - 
+                                            CutMode.angledLineXMax.back()*tanAlpha, 
+                                            tanAlpha, lineXMax));
+         
+         SetTLineStyle(&line1);
+         SetTLineStyle(&line2);
+         
+         line1.Draw();
+         line2.Draw();
+         
+         gPad->Modified();
+         gPad->Update();
       break;
 	}
 }
@@ -361,14 +422,14 @@ void exec()
 				{
 					if (y >= CutMode.lineYMin.back()) 
 					{
-						CutMode.lineYMin.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+						CutMode.lineYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
 							Par.hist->GetYaxis()->FindBin(y)));
 						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
 							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back()));
 					}
 					else 
 					{
-						CutMode.lineYMin.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
+						CutMode.lineYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
 							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back())));
 						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
 							Par.hist->GetYaxis()->FindBin(y));
@@ -535,7 +596,7 @@ void exec()
                   if (Par.isMin[2])
                   {
                      CutMode.lineYMin.pop_back();
-                     CutMode.lineYMin.pop_back();
+                     CutMode.lineYMax.pop_back();
 
                      PrintInfo("Deleting last pair of lines");
                   }
@@ -571,6 +632,31 @@ void exec()
                   }
                   if (Par.isMin[3]) drawdm(true);
                   Par.isMin[3] = true;
+                  gPad->Update();
+               }
+               else PrintInfo("Cannot delete last point since the current number of points is 0");
+               break;
+            case 4:
+               if (CutMode.angledLineXMin.size() != 0)
+               {
+                  if (Par.isMin[4])
+                  {
+                     CutMode.angledLineXMin.pop_back();
+                     CutMode.angledLineYMin.pop_back();
+                     CutMode.angledLineXMax.pop_back();
+                     CutMode.angledLineYMax.pop_back();
+
+                     PrintInfo("Deleting last minimum and maximum points");
+                  }
+                  else
+                  {
+                     CutMode.angledLineXMin.pop_back();
+                     CutMode.angledLineYMin.pop_back();
+                        
+                     PrintInfo("Deleting last minimum point");
+                  }
+                  if (Par.isMin[4]) drawdm(true);
+                  Par.isMin[4] = true;
                   gPad->Update();
                }
                else PrintInfo("Cannot delete last point since the current number of points is 0");
@@ -624,27 +710,27 @@ void exec()
          
 		case '1':
 			Print("Activating rectangular cutting mode");
-			CutMode.currentCutMode = 1;
+			CutMode.currentCutMode = 0;
 			break;
          
 		case '2':
 			Print("Activating linear cutting mode along x axis");
-			CutMode.currentCutMode = 2;
+			CutMode.currentCutMode = 1;
 			break;
          
 		case '3':
 			Print("Activating linear cutting mode along y axis");
-			CutMode.currentCutMode = 3;
+			CutMode.currentCutMode = 2;
 			break;
          
 		case '4':
 			Print("Activating inverse rectangular cutting mode");
-			CutMode.currentCutMode = 4;
+			CutMode.currentCutMode = 3;
 			break;
          
 		case '5':
 			Print("Activating angled linear cutting mode");
-			CutMode.currentCutMode = 5;
+			CutMode.currentCutMode = 4;
 			break;
 	};
 }
@@ -657,7 +743,7 @@ void GUIDM()
 
 	Par.orig_integral = Par.hist->Integral();
 
-   DataCutsSelector dSel("Run14HeAu200MB")
+   DataCutsSelector dSel("Run14HeAu200MB");
 	
 	CutDeadAreas(Par.hist, dSel.fIsDeadDC, 1., 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
