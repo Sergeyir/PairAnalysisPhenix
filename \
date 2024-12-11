@@ -13,8 +13,7 @@ struct
 	std::vector<double> lineXMin, lineXMax;
 	std::vector<double> lineYMin, lineYMax;
 	std::vector<double> invRectXMin, invRectXMax, invRectYMin, invRectYMax;
-	std::vector<double> angledLine1XMin, angledLine1XMax, angledLine1YMin, angledLine1YMax;
-	std::vector<double> angledLine2XMin, angledLine2XMax, angledLine2YMin, angledLine2YMax;
+	std::vector<double> angledLineXMin, angledLineXMax, angledLineYMin, angledLineYMax;
 	
 	int currentCutMode = -1;
 } CutMode;
@@ -174,9 +173,9 @@ void drawdm(bool is_fixed_range = false)
 	PrintInfo("Data lost " + to_string((1.-hist_dm->Integral()/Par.orig_integral)*100.) + "\%");
 }
 
-void SetTLineStyle(TLine *line, const EColor color=kRed)
+void SetTLineStyle(TLine *line)
 {
-	line->SetLineColor(color);
+	line->SetLineColor(kRed);
 	line->SetLineStyle(2);
 	line->SetLineWidth(2);
 }
@@ -275,8 +274,8 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
 			break;
       }
       case 4:
-         const double tanAlpha = (CutMode.angledLine1YMin.back() - yMax)/
-                           (CutMode.angledLine1XMin.back() - xMax);
+         double tanAlpha = (CutMode.angledLineYMin.back() - yMax)/
+                           (CutMode.angledLineXMin.back() - xMax);
          
          const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
          const double lineXMax = 
@@ -289,18 +288,13 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
                                             CutMode.angledLineXMin.back()*tanAlpha, 
                                             tanAlpha, lineXMax));
          TLine line2 = TLine(lineXMin, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMin), 
-                             lineXMax, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMax));
-         
-         TLine line3 = TLine(CutMode.angledLineXMin.back(), CutMode.angledLineYMin.back(), 
-                             xMax, yMax);
+                             Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMax));
          
          SetTLineStyle(&line1);
          SetTLineStyle(&line2);
-         SetTLineStyle(&line3, kGray);
          
          line1.Draw();
          line2.Draw();
-         line3.Draw();
          
          gPad->Modified();
          gPad->Update();
