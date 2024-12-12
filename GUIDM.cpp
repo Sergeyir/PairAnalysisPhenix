@@ -15,6 +15,7 @@ struct
 	std::vector<double> invRectXMin, invRectXMax, invRectYMin, invRectYMax;
 	std::vector<double> angledLine1X1, angledLine1X2, angledLine1Y1, angledLine1Y2;
 	std::vector<double> angledLine2X1, angledLine2X2, angledLine2Y1, angledLine2Y2;
+	std::vector<double> tanAlpha1, tanAlpha2, shiftY1, shiftY2;
 	
 	int currentCutMode = -1;
 } CutMode;
@@ -104,74 +105,68 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 	}
 }
 
-void drawdm(bool is_fixed_range = false)
+void DrawDM(bool is_fixed_range = false)
 {
-	TH2F *hist_dm = (TH2F *) Par.hist->Clone();
+	TH2F *histDM = (TH2F *) Par.hist->Clone();
 	
-	for (int i = 0; i < hist_dm->GetXaxis()->GetNbins(); i++)
+	for (int i = 0; i < histDM->GetXaxis()->GetNbins(); i++)
 	{
-		for (int j = 0; j < hist_dm->GetYaxis()->GetNbins(); j++)
+		for (int j = 0; j < histDM->GetYaxis()->GetNbins(); j++)
 		{
-			double xval = hist_dm->GetXaxis()->GetBinCenter(i);
-			double yval = hist_dm->GetYaxis()->GetBinCenter(j);
+			double xval = histDM->GetXaxis()->GetBinCenter(i);
+			double yval = histDM->GetYaxis()->GetBinCenter(j);
 			
 			for (int k = 0; k < CutMode.rectXMax.size(); k++)
 			{
 				if (xval > CutMode.rectXMin[k] && xval < CutMode.rectXMax[k] && 
 					yval > CutMode.rectYMin[k] && yval < CutMode.rectYMax[k]) 
-					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineXMax.size(); k++)
 			{
 				if (xval > CutMode.lineXMin[k] && xval < CutMode.lineXMax[k]) 
-					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
 				if (yval > CutMode.lineYMin[k] && yval < CutMode.lineYMax[k]) 
-					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
 			{
 				if (xval < CutMode.invRectXMin[k] || xval > CutMode.invRectXMax[k] ||
 					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
-					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
-         /*
-			for (int k = 0; k < CutMode.angledLineXMax.size(); k++)
+			for (int k = 0; k < CutMode.shiftY2.size(); k++)
 			{ 
-            double tanAlpha = (CutMode.angledLineYMin[k] - CutMode.angledLineYMax[k])/
-                              (CutMode.angledLineXMin[k] - CutMode.angledLineXMax[k]);
+            const double y1Cut = Pol1(CutMode.shiftY1[k], CutMode.tanAlpha1[k], xval);
+            const double y2Cut = Pol1(CutMode.shiftY2[k], CutMode.tanAlpha2[k], xval);
             
-            const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-            const double lineXMax = 
-               Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
-            
-				if (xval > Pol1(CutMode.angledLineYMin[k] - CutMode.angledLineXMin[k]*tanAlpha, 
-                                               tanAlpha, lineXMin) || xval > CutMode.invRectXMax[k] ||
-					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
-					hist_dm->SetBinContent(hist_dm->GetBin(i, j), 0.);
+				if (yval > Minimum(y1Cut, y2Cut) && yval < Maximum(y1Cut, y2Cut)) 
+            {
+					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+            }
 			}
-         */
 		}
 	}
 
 	if (is_fixed_range)
 	{
-		const int xMin = hist_dm->GetXaxis()->FindBin(gPad->GetUxmin());
-		const int xMax = hist_dm->GetXaxis()->FindBin(gPad->GetUxmax())-1;
-		const int yMin = hist_dm->GetYaxis()->FindBin(gPad->GetUymin())+1;
-		const int yMax = hist_dm->GetYaxis()->FindBin(gPad->GetUymax())-1;
+		const int xMin = histDM->GetXaxis()->FindBin(gPad->GetUxmin());
+		const int xMax = histDM->GetXaxis()->FindBin(gPad->GetUxmax())-1;
+		const int yMin = histDM->GetYaxis()->FindBin(gPad->GetUymin())+1;
+		const int yMax = histDM->GetYaxis()->FindBin(gPad->GetUymax())-1;
 		
-		hist_dm->GetXaxis()->SetRange(xMin, xMax);
-		hist_dm->GetYaxis()->SetRange(yMin, yMax);
+		histDM->GetXaxis()->SetRange(xMin, xMax);
+		histDM->GetYaxis()->SetRange(yMin, yMax);
 	}
 	
-	hist_dm->Draw("COLZ");
+	histDM->Draw("COLZ");
 	gPad->Modified();
 	gPad->Update();
 
-	PrintInfo("Data lost " + to_string((1.-hist_dm->Integral()/Par.orig_integral)*100.) + "\%");
+	PrintInfo("Data lost " + to_string((1.-histDM->Integral()/Par.orig_integral)*100.) + "\%");
 }
 
 void SetTLineStyle(TLine *line, const EColor color=kRed)
@@ -275,35 +270,57 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
 			break;
       }
       case 4:
-         const double tanAlpha = (CutMode.angledLine1YMin.back() - yMax)/
-                           (CutMode.angledLine1XMin.back() - xMax);
-         
-         const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-         const double lineXMax = 
-            Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
-         
-         TLine line1 = TLine(lineXMin, Pol1(CutMode.angledLineYMin.back() - 
-                                            CutMode.angledLineXMin.back()*tanAlpha, 
-                                            tanAlpha, lineXMin), 
-                             lineXMax, Pol1(CutMode.angledLineYMin.back() - 
-                                            CutMode.angledLineXMin.back()*tanAlpha, 
-                                            tanAlpha, lineXMax));
-         TLine line2 = TLine(lineXMin, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMin), 
-                             lineXMax, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMax));
-         
-         TLine line3 = TLine(CutMode.angledLineXMin.back(), CutMode.angledLineYMin.back(), 
-                             xMax, yMax);
-         
-         SetTLineStyle(&line1);
-         SetTLineStyle(&line2);
-         SetTLineStyle(&line3, kGray);
-         
-         line1.Draw();
-         line2.Draw();
-         line3.Draw();
-         
-         gPad->Modified();
-         gPad->Update();
+         if (CutMode.angledLine1X1.size() > CutMode.angledLine2X1.size())
+         {
+            const double tanAlpha = (CutMode.angledLine1Y1.back() - yMax)/
+                              (CutMode.angledLine1X1.back() - xMax);
+            
+            const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+            const double lineXMax = 
+               Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+            
+            TLine line = TLine(lineXMin, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMin), 
+                                lineXMax, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMax));
+
+            SetTLineStyle(&line);
+            
+            line.Draw();
+            
+            gPad->Modified();
+            gPad->Update();
+
+            CutMode.tanAlpha1.back() = tanAlpha;
+            CutMode.shiftY1.back() = yMax - xMax*tanAlpha;
+         }
+         else
+         {
+            const double tanAlpha = (CutMode.angledLine2Y1.back() - yMax)/
+                              (CutMode.angledLine2X1.back() - xMax);
+            
+            const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+            const double lineXMax = 
+               Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+            
+            TLine line1 = TLine(lineXMin, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMin), 
+                                lineXMax, Pol1(yMax - xMax*tanAlpha, tanAlpha, lineXMax));
+            
+            TLine line2 = TLine(lineXMin, 
+                                Pol1(CutMode.shiftY1.back(), CutMode.tanAlpha1.back(), lineXMin), 
+                                lineXMax, 
+                                Pol1(CutMode.shiftY1.back(), CutMode.tanAlpha1.back(), lineXMax));
+            
+            SetTLineStyle(&line1);
+            SetTLineStyle(&line2, kGray);
+            
+            line1.Draw();
+            line2.Draw();
+            
+            gPad->Modified();
+            gPad->Update();
+
+            CutMode.tanAlpha2.back() = tanAlpha;
+            CutMode.shiftY2.back() = yMax - xMax*tanAlpha;
+         }
       break;
 	}
 }
@@ -367,7 +384,7 @@ void exec()
 
 					Par.isMin[0] = true;
 					PrintInfo("Setting the second point");
-					if (Par.isMin[0]) drawdm(true);
+					if (Par.isMin[0]) DrawDM(true);
 				}
 				break;
 
@@ -399,7 +416,7 @@ void exec()
 
 					Par.isMin[1] = true;
 					PrintInfo("Setting the second point");
-					if (Par.isMin[1]) drawdm(true);
+					if (Par.isMin[1]) DrawDM(true);
 				}
 				break;
 
@@ -431,7 +448,7 @@ void exec()
 
 					Par.isMin[2] = true;
 					PrintInfo("Setting the second point");
-					if (Par.isMin[2]) drawdm(true);
+					if (Par.isMin[2]) DrawDM(true);
 				}
 				break;
 
@@ -479,13 +496,13 @@ void exec()
 
 					Par.isMin[3] = true;
 					PrintInfo("Setting the second point");
-					if (Par.isMin[3]) drawdm(true);
+					if (Par.isMin[3]) DrawDM(true);
 				}
 				break;
          case 4:
 				if (Par.isMin[4])
 				{
-               if (CutMode.angledLine1X2.size() == CutMode.angledLine2X2.size())
+               if (CutMode.angledLine1X1.size() == CutMode.angledLine2X2.size())
                {
                   CutMode.angledLine1X1.push_back(Par.hist->GetXaxis()->
                      GetBinLowEdge(Par.hist->GetXaxis()->FindBin(x)));
@@ -493,6 +510,8 @@ void exec()
                      GetBinLowEdge(Par.hist->GetYaxis()->FindBin(y)));
                   
                   Par.isMin[4] = false;
+                  CutMode.tanAlpha1.push_back(0.);
+                  CutMode.shiftY1.push_back(0.);
 
                   PrintInfo("Setting the first point of the first line");	
                }
@@ -516,10 +535,13 @@ void exec()
                      Par.hist->GetXaxis()->FindBin(x)));
                   CutMode.angledLine1Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
                      Par.hist->GetYaxis()->FindBin(y)));
+
+                  CutMode.tanAlpha2.push_back(0.);
+                  CutMode.shiftY2.push_back(0.);
                   
                   Par.isMin[4] = true;
                   PrintInfo("Setting the second point of the first line");
-                  if (Par.isMin[4]) drawdm(true);
+                  if (Par.isMin[4]) DrawDM(true);
                }
                else
                {
@@ -527,10 +549,10 @@ void exec()
                      Par.hist->GetXaxis()->FindBin(x)));
                   CutMode.angledLine2Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
                      Par.hist->GetYaxis()->FindBin(y)));
-                  
+                   
                   Par.isMin[4] = true;
                   PrintInfo("Setting the second point of the second line");
-                  if (Par.isMin[4]) drawdm(true);
+                  if (Par.isMin[4]) DrawDM(true);
                }
 				}
             break;
@@ -561,7 +583,7 @@ void exec()
                         
                      PrintInfo("Deleting last minimum point");
                   }
-                  if (Par.isMin[0]) drawdm(true);
+                  if (Par.isMin[0]) DrawDM(true);
                   Par.isMin[0] = true;
                   gPad->Update();
                }
@@ -583,7 +605,7 @@ void exec()
                      CutMode.lineXMin.pop_back();
                      PrintInfo("Deleting last line");
                   }
-                  if (Par.isMin[1]) drawdm(true);
+                  if (Par.isMin[1]) DrawDM(true);
                   Par.isMin[1] = true;
                   gPad->Update();
                }
@@ -604,7 +626,7 @@ void exec()
                      CutMode.lineYMin.pop_back();
                      PrintInfo("Deleting last line");
                   }
-                  if (Par.isMin[2]) drawdm(true);
+                  if (Par.isMin[2]) DrawDM(true);
                   Par.isMin[2] = true;
                   gPad->Update();
                }
@@ -629,7 +651,7 @@ void exec()
                         
                      PrintInfo("Deleting last minimum point");
                   }
-                  if (Par.isMin[3]) drawdm(true);
+                  if (Par.isMin[3]) DrawDM(true);
                   Par.isMin[3] = true;
                   gPad->Update();
                }
@@ -646,6 +668,8 @@ void exec()
                         CutMode.angledLine1Y1.pop_back();
                         CutMode.angledLine1X2.pop_back();
                         CutMode.angledLine1Y2.pop_back();
+                        CutMode.tanAlpha1.pop_back();
+                        CutMode.shiftY1.pop_back();
 
                         PrintInfo("Deleting last minimum and maximum points");
                      }
@@ -653,15 +677,17 @@ void exec()
                      {
                         CutMode.angledLine1X1.pop_back();
                         CutMode.angledLine1Y1.pop_back();
+                        CutMode.tanAlpha1.pop_back();
+                        CutMode.shiftY1.pop_back();
                            
                         PrintInfo("Deleting last minimum point");
                      }
-                     if (Par.isMin[4]) drawdm(true);
+                     if (Par.isMin[4]) DrawDM(true);
                      Par.isMin[4] = true;
                      gPad->Update();
                   }
                }
-               else if (CutMode.angledLine1X1.size() > 0)
+               else if (CutMode.angledLine2X1.size() > 0)
                {
                   if (Par.isMin[4])
                   {
@@ -669,6 +695,8 @@ void exec()
                      CutMode.angledLine2Y1.pop_back();
                      CutMode.angledLine2X2.pop_back();
                      CutMode.angledLine2Y2.pop_back();
+                     CutMode.tanAlpha2.pop_back();
+                     CutMode.shiftY2.pop_back();
 
                      PrintInfo("Deleting last minimum and maximum points");
                   }
@@ -676,10 +704,12 @@ void exec()
                   {
                      CutMode.angledLine2X1.pop_back();
                      CutMode.angledLine2Y1.pop_back();
+                     CutMode.tanAlpha2.pop_back();
+                     CutMode.shiftY2.pop_back();
                         
                      PrintInfo("Deleting last minimum point");
                   }
-                  if (Par.isMin[4]) drawdm(true);
+                  if (Par.isMin[4]) DrawDM(true);
                   Par.isMin[4] = true;
                   gPad->Update();
                }
@@ -689,7 +719,7 @@ void exec()
 			break;
          
 		case 'r':
-			drawdm();
+			DrawDM();
 			PrintInfo("Resetting the range of the selected area");
 			break;
          
@@ -779,7 +809,7 @@ void GUIDM()
 
 	TCanvas *canv = new TCanvas("canv");
    
-	drawdm();
+	DrawDM();
 	
 	gPad->AddExec("exec", "exec()");
 }
