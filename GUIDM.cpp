@@ -13,8 +13,8 @@ struct
 	std::vector<double> lineXMin, lineXMax;
 	std::vector<double> lineYMin, lineYMax;
 	std::vector<double> invRectXMin, invRectXMax, invRectYMin, invRectYMax;
-	std::vector<double> angledLine1XMin, angledLine1XMax, angledLine1YMin, angledLine1YMax;
-	std::vector<double> angledLine2XMin, angledLine2XMax, angledLine2YMin, angledLine2YMax;
+	std::vector<double> angledLine1X1, angledLine1X2, angledLine1Y1, angledLine1Y2;
+	std::vector<double> angledLine2X1, angledLine2X2, angledLine2Y1, angledLine2Y2;
 	
 	int currentCutMode = -1;
 } CutMode;
@@ -485,48 +485,53 @@ void exec()
          case 4:
 				if (Par.isMin[4])
 				{
-					CutMode.angledLineXMin.push_back(x);
-					CutMode.angledLineYMin.push_back(y);
-					
-					Par.isMin[4] = false;
+               if (CutMode.angledLine1X2.size() == CutMode.angledLine2X2.size())
+               {
+                  CutMode.angledLine1X1.push_back(Par.hist->GetXaxis()->
+                     GetBinLowEdge(Par.hist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine1Y1.push_back(Par.hist->GetYaxis()->
+                     GetBinLowEdge(Par.hist->GetYaxis()->FindBin(y)));
+                  
+                  Par.isMin[4] = false;
 
-					PrintInfo("Setting the first point");	
+                  PrintInfo("Setting the first point of the first line");	
+               }
+               else
+               {
+                  CutMode.angledLine2X1.push_back(Par.hist->GetXaxis()->
+                     GetBinLowEdge(Par.hist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine2Y1.push_back(Par.hist->GetYaxis()->
+                     GetBinLowEdge(Par.hist->GetYaxis()->FindBin(y)));
+                  
+                  Par.isMin[4] = false;
+
+                  PrintInfo("Setting the second point of the first line");	
+               }
 				}
 				else
 				{
-					if (x >= CutMode.angledLineXMin.back()) 
-					{
-						CutMode.angledLineXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.angledLineXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.angledLineXMin.back()));
-					}
-					else 
-					{
-						CutMode.angledLineXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.angledLineXMin.back())));
-						CutMode.angledLineXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(x));
-					}
-					
-					if (y >= CutMode.angledLineYMin.back()) 
-					{
-						CutMode.angledLineYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.angledLineYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.angledLineYMin.back()));
-					}
-					else 
-					{
-						CutMode.angledLineYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.angledLineYMin.back())));
-						CutMode.angledLineYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(y));
-					}
-
-					Par.isMin[4] = true;
-					PrintInfo("Setting the second point");
-					if (Par.isMin[4]) drawdm(true);
+               if (CutMode.angledLine1X2.size() == CutMode.angledLine2X2.size())
+               {
+                  CutMode.angledLine1X2.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+                     Par.hist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine1Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+                     Par.hist->GetYaxis()->FindBin(y)));
+                  
+                  Par.isMin[4] = true;
+                  PrintInfo("Setting the second point of the first line");
+                  if (Par.isMin[4]) drawdm(true);
+               }
+               else
+               {
+                  CutMode.angledLine2X2.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
+                     Par.hist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine2Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
+                     Par.hist->GetYaxis()->FindBin(y)));
+                  
+                  Par.isMin[4] = true;
+                  PrintInfo("Setting the second point of the second line");
+                  if (Par.isMin[4]) drawdm(true);
+               }
 				}
             break;
 		}
@@ -631,21 +636,46 @@ void exec()
                else PrintInfo("Cannot delete last point since the current number of points is 0");
                break;
             case 4:
-               if (CutMode.angledLineXMin.size() != 0)
+               if (CutMode.angledLine1X1.size() > CutMode.angledLine2X1.size())
+               {
+                  if (CutMode.angledLine1X1.size() != 0)
+                  {
+                     if (Par.isMin[4])
+                     {
+                        CutMode.angledLine1X1.pop_back();
+                        CutMode.angledLine1Y1.pop_back();
+                        CutMode.angledLine1X2.pop_back();
+                        CutMode.angledLine1Y2.pop_back();
+
+                        PrintInfo("Deleting last minimum and maximum points");
+                     }
+                     else
+                     {
+                        CutMode.angledLine1X1.pop_back();
+                        CutMode.angledLine1Y1.pop_back();
+                           
+                        PrintInfo("Deleting last minimum point");
+                     }
+                     if (Par.isMin[4]) drawdm(true);
+                     Par.isMin[4] = true;
+                     gPad->Update();
+                  }
+               }
+               else if (CutMode.angledLine1X1.size() > 0)
                {
                   if (Par.isMin[4])
                   {
-                     CutMode.angledLineXMin.pop_back();
-                     CutMode.angledLineYMin.pop_back();
-                     CutMode.angledLineXMax.pop_back();
-                     CutMode.angledLineYMax.pop_back();
+                     CutMode.angledLine2X1.pop_back();
+                     CutMode.angledLine2Y1.pop_back();
+                     CutMode.angledLine2X2.pop_back();
+                     CutMode.angledLine2Y2.pop_back();
 
                      PrintInfo("Deleting last minimum and maximum points");
                   }
                   else
                   {
-                     CutMode.angledLineXMin.pop_back();
-                     CutMode.angledLineYMin.pop_back();
+                     CutMode.angledLine2X1.pop_back();
+                     CutMode.angledLine2Y1.pop_back();
                         
                      PrintInfo("Deleting last minimum point");
                   }
