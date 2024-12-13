@@ -1,7 +1,8 @@
 #include "IOTools.hpp"
 #include "StrTools.hpp"
 
-#include "DataCutsSelector.hpp"
+//#include "DataCutsSelector.hpp"
+#include "DeadAreasCuts.h"
 
 #include "MathTools.hpp"
 #include "IOTools.hpp"
@@ -786,14 +787,15 @@ void exec()
             }
             for (int i = 0; i < CutMode.shiftY2.size(); i++)
             {
-               std::cout << "if (" + Par.yValName + " > " << CutMode.shiftY1[i]
-            const double y1Cut = Pol1(CutMode.shiftY1[k], CutMode.tanAlpha1[k], xval);
-            const double y2Cut = Pol1(CutMode.shiftY2[k], CutMode.tanAlpha2[k], xval);
-				if (yval > Minimum(y1Cut, y2Cut) && yval < Maximum(y1Cut, y2Cut)) 
-            double Pol1(const double par0, const double par1, const double x)
-            {
-               return par0 + x*par1;
-            }
+               if ((CutMode.tanAlpha1[i] > 0 && CutMode.tanAlpha2[i] > 0) ||
+                   (CutMode.tanAlpha1[i] < 0 && CutMode.tanAlpha2[i] < 0))
+               {
+                  std::cout << "if (" + Par.yValName + " > " << CutMode.shiftY1[i] << 
+                               " + " + Par.xValName + "*" << CutMode.tanAlpha1[i] <<
+                               " && " + Par.yValName + " < " << CutMode.shiftY2[i] << 
+                               " + " + Par.xValName + "*" << CutMode.tanAlpha2[i] <<
+                               ") return true;" <<std::endl;
+               }
             }
             break;
             
@@ -833,14 +835,14 @@ void exec()
 void GUIDM()
 {
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCe0");
+	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCe1");
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
 
-   DataCutsSelector dSel("Run14HeAu200MB");
+   //DataCutsSelector dSel("Run14HeAu200MB");
 	
-	CutDeadAreas(Par.hist, dSel.fIsDeadDC, 1., 1.);
+	CutDeadAreas(Par.hist, &Run14HeAu200MBCuts::IsDeadDC, 1., -1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
 	//CutDeadAreas(Par.hist, &IsDeadPC2);
 	//CutDeadAreas(Par.hist, &IsDeadPC3, 1.);
