@@ -1788,13 +1788,13 @@ namespace Run14HeAu200MBCuts
    
    bool IsDeadDC(const double phi, const double zed, const double board, const double alpha)
    {
-      if (alpha > -0.102667 + board*0.266667) return true;
-      if (alpha < 0.0957352 + board*-0.206272)  return true;
-      if (alpha > 14.3202 + board*-0.181185) return true;
-      if (alpha < -87.2597 + board*1.1122) return true;
-
-      if (phi < 1.5)
+      if (phi > 1.5)
       {
+         if (alpha > -0.102667 + board*0.266667) return true;
+         if (alpha < 0.0957352 + board*-0.206272)  return true;
+         if (alpha > 14.3202 + board*-0.181185) return true;
+         if (alpha < -87.2597 + board*1.1122) return true;
+         
          if (zed >= 0)
          {
             if (alpha > -6.6834 + board*0.310027 && alpha < -7.09342 + board*0.347317) return true;
@@ -1814,7 +1814,50 @@ namespace Run14HeAu200MBCuts
             if (alpha < -16.2884 + board*0.517073 && alpha > -19.709 + board*0.55935) return true;
             if (alpha < -15.0165 + board*0.546341 && alpha > -10.0039 + board*0.356098) return true;
             if (alpha > 3.66712 + board*-0.456585 && alpha < 6.08358 + board*-0.539837) return true;
-            if (alpha > 0 && alpha > 15.4388 + board*-0.44878 && alpha < 22.8834 + board*-0.62439) return true;
+            if (alpha > 0. && alpha > 15.4388 + board*-0.44878 && 
+                alpha < 22.8834 + board*-0.62439) return true;
+            if (alpha > 0. && alpha > 6.45502 + board*-0.107317 && 
+                alpha < 6.06966 + board*-0.097561) return true;
+         }
+      }
+      else
+      {
+         if (alpha > -0.71322 + board*0.165854) return true;
+         if (alpha < 1.62663 + board*-0.390244) return true;
+         if (alpha > 65.1375 + board*-0.839024) return true;
+         if (alpha < -11.9492 + board*0.15122) return true;
+         
+         if (zed >= 0)
+         {
+            if (alpha < -4.67151 + board*0.520325 && alpha > -5.55649 + board*0.546341) return true;
+            if (alpha > 6.31318 + board*-0.304878 && alpha < 6.15108 + board*-0.284878) return true;
+            if (alpha < -19.712 + board*0.8 && alpha > -11.9702 + board*0.458537) return true;
+            if (alpha < -15.0711 + board*0.456585 && alpha > -16.6123 + board*0.487805) return true;
+            if (alpha < -25.7918 + board*0.741463 && alpha > -25.2103 + board*0.702439) return true;
+            if (alpha < -26.2051 + board*0.536585 && alpha > -32.087 + board*0.630894) return true;
+            if (alpha > 8.47415 + board*-0.243902 && alpha < 12.593 + board*-0.292683) return true;
+            if (alpha < -24.8661 + board*0.643902 && alpha > -19.9127 + board*0.461789) return true;
+            if (alpha > 9.26263 + board*-0.390244 && alpha < 16.5577 + board*-0.630894) return true;
+            if (alpha > 15.3738 + board*-0.279675 && alpha < 32.2756 + board*-0.539837) return true;
+            if (alpha < -19.1533 + board*0.342547 && alpha > -32.7472 + board*0.565854) return true;
+            if (alpha < -27.4379 + board*0.442276 && alpha > -25.4605 + board*0.386341) return true;
+            if (alpha < -28.9814 + board*0.409756 && alpha > -35.8149 + board*0.478049) return true;
+            if (alpha > 0. && alpha > 20.345 + board*-0.292683 && 
+                alpha < 19.1742 + board*-0.273171) return true;
+         }
+         else
+         {
+            if (alpha < -9.028 + board*0.533333 && alpha > -9.7874 + board*0.538537) return true;
+            if (alpha > 4.94498 + board*-0.292683 && alpha < 6.04644 + board*-0.331707) return true;
+            if (alpha > 6.25234 + board*-0.302439 && alpha < 7.60376 + board*-0.32892) return true;
+            if (alpha > 6.53424 + board*-0.273171 && alpha < 8.39234 + board*-0.323035) return true;
+            if (alpha < -10.347 + board*0.414634 && alpha > -10.9841 + board*0.421951) return true;
+            if (alpha < -16.4177 + board*0.497561 && alpha > -22.3426 + board*0.656911) return true;
+            if (alpha > 12.0949 + board*-0.344715 && alpha < 15.4352 + board*-0.358537) return true;
+            if (alpha < -28.6937 + board*0.589268 && alpha > -32.5245 + board*0.639024) return true;
+            if (alpha > 14.3998 + board*-0.261463 && alpha < 21.3267 + board*-0.347967) return true;
+            if (alpha < -22.1929 + board*0.396748 && alpha > -20.6637 + board*0.323902) return true;
+            if (alpha < -42.3668 + board*0.634146 && alpha > -32.7348 + board*0.437073) return true;
          }
       }
       return false;

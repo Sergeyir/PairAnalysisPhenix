@@ -787,8 +787,15 @@ void exec()
             }
             for (int i = 0; i < CutMode.shiftY2.size(); i++)
             {
-               if ((CutMode.tanAlpha1[i] > 0 && CutMode.tanAlpha2[i] > 0) ||
-                   (CutMode.tanAlpha1[i] < 0 && CutMode.tanAlpha2[i] < 0))
+               if ((CutMode.tanAlpha1[i] > 0 && CutMode.tanAlpha2[i] > 0))
+               {
+                  std::cout << "if (" + Par.yValName + " < " << CutMode.shiftY1[i] << 
+                               " + " + Par.xValName + "*" << CutMode.tanAlpha1[i] <<
+                               " && " + Par.yValName + " > " << CutMode.shiftY2[i] << 
+                               " + " + Par.xValName + "*" << CutMode.tanAlpha2[i] <<
+                               ") return true;" <<std::endl;
+               }
+               else if ((CutMode.tanAlpha1[i] < 0 && CutMode.tanAlpha2[i] < 0))
                {
                   std::cout << "if (" + Par.yValName + " > " << CutMode.shiftY1[i] << 
                                " + " + Par.xValName + "*" << CutMode.tanAlpha1[i] <<
@@ -835,7 +842,7 @@ void exec()
 void GUIDM()
 {
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCe1");
+	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCw1");
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
