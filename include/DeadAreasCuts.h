@@ -14,8 +14,8 @@
  **/
 //------------------------------------------------------------------------------------------------
 
-#ifndef DEAD_AREAS_CUTS_HPP
-#define DEAD_AREAS_CUTS_HPP
+#ifndef DEAD_AREAS_CUTS_H
+#define DEAD_AREAS_CUTS_H
 
 namespace Run7AuAu200Cuts
 {
@@ -1905,4 +1905,4 @@ namespace Run14HeAu200MBCuts
    }
 }
 
-#endif /* DEAD_AREAS_CUTS_HPP */
+#endif /* DEAD_AREAS_CUTS_H */
