@@ -1865,6 +1865,13 @@ namespace Run14HeAu200MBCuts
 
    bool IsDeadPC1(const double phi, const double pc1z, const double pc1phi)
    {
+      const int pc1zBin = static_cast<int>((pc1z + 90.)/360.);
+      const int pc1phiBin = static_cast<int>((pc1phi - 2.05)/170.);
+      
+      if (phi > 1.5)
+      {
+         
+      }
       return false;
    }
 

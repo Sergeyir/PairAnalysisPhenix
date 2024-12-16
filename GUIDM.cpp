@@ -30,8 +30,8 @@ struct
 	//TFile file = TFile("../data/PHENIX_sim/Run7AuAu200/hotmaps.root");
 	TH2F *hist;
 
-	std::string xValName = "board";
-	std::string yValName = "alpha";
+	std::string xValName;
+	std::string yValName;
 } Par;
 
 double Pol1(const double par0, const double par1, const double x)
@@ -115,37 +115,37 @@ void DrawDM(bool is_fixed_range = false)
 	{
 		for (int j = 0; j < histDM->GetYaxis()->GetNbins(); j++)
 		{
-			double xval = histDM->GetXaxis()->GetBinCenter(i);
-			double yval = histDM->GetYaxis()->GetBinCenter(j);
+			double valX = histDM->GetXaxis()->GetBinCenter(i);
+			double valY = histDM->GetYaxis()->GetBinCenter(j);
 			
 			for (int k = 0; k < CutMode.rectXMax.size(); k++)
 			{
-				if (xval > CutMode.rectXMin[k] && xval < CutMode.rectXMax[k] && 
-					yval > CutMode.rectYMin[k] && yval < CutMode.rectYMax[k]) 
+				if (valX > CutMode.rectXMin[k] && valX < CutMode.rectXMax[k] && 
+					valY > CutMode.rectYMin[k] && valY < CutMode.rectYMax[k]) 
 					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineXMax.size(); k++)
 			{
-				if (xval > CutMode.lineXMin[k] && xval < CutMode.lineXMax[k]) 
+				if (valX > CutMode.lineXMin[k] && valX < CutMode.lineXMax[k]) 
 					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
-				if (yval > CutMode.lineYMin[k] && yval < CutMode.lineYMax[k]) 
+				if (valY > CutMode.lineYMin[k] && valY < CutMode.lineYMax[k]) 
 					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
 			{
-				if (xval < CutMode.invRectXMin[k] || xval > CutMode.invRectXMax[k] ||
-					yval < CutMode.invRectYMin[k] || yval > CutMode.invRectYMax[k]) 
+				if (valX < CutMode.invRectXMin[k] || valX > CutMode.invRectXMax[k] ||
+					valY < CutMode.invRectYMin[k] || valY > CutMode.invRectYMax[k]) 
 					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.shiftY2.size(); k++)
 			{ 
-            const double y1Cut = Pol1(CutMode.shiftY1[k], CutMode.tanAlpha1[k], xval);
-            const double y2Cut = Pol1(CutMode.shiftY2[k], CutMode.tanAlpha2[k], xval);
+            const double y1Cut = Pol1(CutMode.shiftY1[k], CutMode.tanAlpha1[k], valX);
+            const double y2Cut = Pol1(CutMode.shiftY2[k], CutMode.tanAlpha2[k], valX);
             
-				if (yval > Minimum(y1Cut, y2Cut) && yval < Maximum(y1Cut, y2Cut)) 
+				if (valY > Minimum(y1Cut, y2Cut) && valY < Maximum(y1Cut, y2Cut)) 
             {
 					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
             }
@@ -754,6 +754,7 @@ void exec()
             break;
             
          case 'p':
+            
             for (int i = 0; i < CutMode.invRectXMax.size(); i++)
             {
                std::cout <<
@@ -763,6 +764,43 @@ void exec()
                   " || " + Par.yValName + " > " << CutMode.invRectYMax[i] <<
                   ") return true;" << std::endl;
             }
+            
+            for (int i = 1; i <= hist->GetYaxis()->GetNbins(); i++)
+            {
+               const double valY = hist->GetYaxis()->GetBinCenter(j);
+               bool skipY = false;
+
+               for (int k = 0; k < cutmode.invrectxmax.size(); i++)
+               {
+                  if (valY < cutmode.invrectymin[k] || valY > cutmode.invrectymax[k])
+                  {
+                     skipY = true;
+                     break;
+                  }
+               }
+               if (skipY) continue;
+               
+               for (int j = 1; j <= hist->GetXaxis()->GetNbins(); j++)
+               {
+                  const double valX = hist->GetXaxis()->GetBinCenter(i);
+                  bool skipX = false;
+                  
+                  for (int k = 0; k < cutmode.invrectxmax.size(); i++)
+                  {
+                     if (valX < cutmode.invrectxmin[k] || valX > cutmode.invrectxmax[k])
+                     {
+                        skipX = true;
+                        break;
+                     }
+                  }
+                  
+                  if (cut_func(valX, valY)) 
+                  {
+                     hist->SetBinContent(i, j, 0.);
+                  }
+               }
+            }
+            /*
             for (int i = 0; i < CutMode.lineXMax.size(); i++)
             {
                std::cout <<
@@ -774,7 +812,7 @@ void exec()
             {
                std::cout <<
                   "if (" + Par.yValName + " > " << CutMode.lineYMin[i] <<
-                  " && " + Par.yValName + " < " << CutMode.lineYMin[i] <<
+                  " && " + Par.yValName + " < " << CutMode.lineYMax[i] <<
                   ") return true;" << std::endl;
             }
             for (int i = 0; i < CutMode.rectXMax.size(); i++)
@@ -804,6 +842,7 @@ void exec()
                                ") return true;" <<std::endl;
                }
             }
+            */
             break;
             
          case '0':
@@ -841,20 +880,33 @@ void exec()
 
 void GUIDM()
 {
+   using namespace Run14HeAu200MBCuts;
+   
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("Heatmap: DCw1");
+	Par.hist = (TH2F *) Par.file.Get("Heatmap: PC1e");
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
 
    //DataCutsSelector dSel("Run14HeAu200MB");
-	
-	CutDeadAreas(Par.hist, &Run14HeAu200MBCuts::IsDeadDC, 1., -1.);
-	//CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
+
+   //DC
+	//Par.xValName = "board"; Par.yValName = "alpha";
+	//CutDeadAreas(Par.hist, &IsDeadDC, 1., -1.);
+   //PC1
+	Par.xValName = "pc1z"; Par.yValName = "pc1phi";
+	CutDeadAreas(Par.hist, &IsDeadPC1, 2.);
+   //PC2
+	//Par.xValName = "pc2z"; Par.yValName = "pc2phi";
 	//CutDeadAreas(Par.hist, &IsDeadPC2);
+   //PC3
+	//Par.xValName = "pc3z"; Par.yValName = "pc3phi";
 	//CutDeadAreas(Par.hist, &IsDeadPC3, 1.);
+   //EMCal
 	//CutDeadAreas(Par.hist, &IsDeadEMCal, 2., 1., 3);
+   //TOFe
 	//CutDeadAreas(Par.hist, &IsDeadTOFe, -1.);
+   //TOFw
 	//CutDeadAreas(Par.hist, &IsDeadTOFw, -1.);
 
 	TCanvas *canv = new TCanvas("canv");
