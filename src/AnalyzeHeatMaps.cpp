@@ -43,6 +43,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       Print("Error: Number of events is equal or less than 0!");
       exit(1);
    }
+
    
    TH1F *origPtHist = (TH1F *) simInputFile.Get("orig_pt");
    
@@ -58,7 +59,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    double eventNormWeight = 1.;
    if (Par.doUseWeightFunc)
    {
-      TH1F *centrHist = (TH1F *) realDataFile.Get("central_bin");
+      TH1F *centrHist = (TH1F *) realDataFile.Get("centrality");
       
       eventNormWeight = origPtHist->Integral(
          origPtHist->GetXaxis()->FindBin(Par.pTMin), 
@@ -68,6 +69,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       //this normalization is needed to merge 2 files with flat pT distribution with different ranges
       eventNormWeight *= (Par.pTMax - Par.pTMin)/(upPtBound-lowPtBound);
    }
+   Print("bruh");
    
    box.AddEntry("Run name", Par.runName);
    box.AddEntry("Orig particle", part);
@@ -85,11 +87,13 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    
    box.Print();
    
+   /*
    //tsallis weight function
    std::unique_ptr<TF1> weightFunc = std::make_unique<TF1>(TF1("weightFunc", 
       "[0]*x^([5]-1)*(1 + ([1] - 1)*(sqrt([4] + x^2)^([5]) - [2])/[3])^(-1./([1]-1.))"));
    weightFunc->SetParameters(
       ReadFileIntoArray("../input/SimAnalysis/Spectra/" + Par.system + "/" + part + ".txt", 6));
+      */
    
    ROOT::EnableImplicitMT(Par.nThreads);
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
@@ -150,7 +154,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
          
          if (Par.doUseWeightFunc) 
          {
-            eventWeight = weightFunc->Eval(origPt)/eventNormWeight;
+            eventWeight = 1;//weightFunc->Eval(origPt)/eventNormWeight;
          }
          else eventWeight = 1.;
          
@@ -185,8 +189,8 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             const double phi = T.phi(i);
             double board;
             
-            if (phi>1.5) board = ((3.72402-phi+0.008047*cos(phi+0.87851))/0.01963496);
-            else board = ((0.573231 + phi - 0.0046 * cos(phi + 0.05721)) / 0.01963496);
+            if (phi > M_PI/2.) board = ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496);
+            else board = ((0.573231 + phi - 0.0046 * cos(phi + 0.05721))/0.01963496);
 
             double particleWeight = eventWeight;
 
@@ -229,15 +233,31 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                }
             }
             
-            if (IsDeadDC(phi, zed, board, alpha)) continue;
+            //if (IsDeadDC(phi, zed, board, alpha)) continue;
 
-            double pc1phi = atan2(T.ppc1y(i), T.ppc1x(i));
-            if (phi >= 1.5 && pc1phi < 0) pc1phi += M_PI*2.;
+            const double pc1phi = atan2(T.ppc1y(i), T.ppc1x(i));
             
-            if (phi < 1.5) distrPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
-            else distrPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
+            if (phi < M_PI/2.) 
+            {
+               distrPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
+               //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
+            }
+            else
+            {
+               if (pc1phi < 0)
+               {
+                  distrPC1e->Fill(T.ppc1z(i), pc1phi + 2.*M_PI, particleWeight);
+                  //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi + 2.*M_PI)) continue;
+               }
+               else
+               {
+                  distrPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
+                  //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
+               }
+            }
+
+            continue;
             
-            if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
 
             distrOrigPTVsRecPT->Fill(origPt, pT, eventWeight);
             
@@ -372,10 +392,12 @@ void HeatMapper()
    }
    if (Par.doUseWeightFunc)
    {
+      /*
       for (std::string part : Par.partQueue)
       {
          CheckInputFile("../input/SimAnalysis/Spectra/" + Par.system + "/" + part + ".txt");
       }
+      */
    }
    
    if (Par.doReweightAlpha)
@@ -502,7 +524,7 @@ void HeatMapper()
       Par.runName + "/heatmaps/");
    system(("mkdir -p " + Par.outputDir + Par.runName + "/heatmaps").c_str());
    system(("rm -r " + Par.outputDir + Par.runName + "/heatmaps/*").c_str());
-   
+
    int num = 1;
    for (std::string part : Par.partQueue)
    {

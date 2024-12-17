@@ -29,9 +29,11 @@ struct
 	TFile file = TFile("data/Real/Run14HeAu200/sum.root");
 	//TFile file = TFile("../data/PHENIX_sim/Run7AuAu200/hotmaps.root");
 	TH2F *hist;
+   TH2F *histDM;
 
 	std::string xValName;
 	std::string yValName;
+   const std::string tab = "   ";
 } Par;
 
 double Pol1(const double par0, const double par1, const double x)
@@ -109,36 +111,36 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 
 void DrawDM(bool is_fixed_range = false)
 {
-	TH2F *histDM = (TH2F *) Par.hist->Clone();
+	Par.histDM = (TH2F *) Par.hist->Clone();
 	
-	for (int i = 0; i < histDM->GetXaxis()->GetNbins(); i++)
+	for (int i = 0; i < Par.histDM->GetXaxis()->GetNbins(); i++)
 	{
-		for (int j = 0; j < histDM->GetYaxis()->GetNbins(); j++)
+		for (int j = 0; j < Par.histDM->GetYaxis()->GetNbins(); j++)
 		{
-			double valX = histDM->GetXaxis()->GetBinCenter(i);
-			double valY = histDM->GetYaxis()->GetBinCenter(j);
+			double valX = Par.histDM->GetXaxis()->GetBinCenter(i);
+			double valY = Par.histDM->GetYaxis()->GetBinCenter(j);
 			
 			for (int k = 0; k < CutMode.rectXMax.size(); k++)
 			{
 				if (valX > CutMode.rectXMin[k] && valX < CutMode.rectXMax[k] && 
 					valY > CutMode.rectYMin[k] && valY < CutMode.rectYMax[k]) 
-					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineXMax.size(); k++)
 			{
 				if (valX > CutMode.lineXMin[k] && valX < CutMode.lineXMax[k]) 
-					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
 				if (valY > CutMode.lineYMin[k] && valY < CutMode.lineYMax[k]) 
-					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
 			{
 				if (valX < CutMode.invRectXMin[k] || valX > CutMode.invRectXMax[k] ||
 					valY < CutMode.invRectYMin[k] || valY > CutMode.invRectYMax[k]) 
-					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
 			}
 			for (int k = 0; k < CutMode.shiftY2.size(); k++)
 			{ 
@@ -147,7 +149,7 @@ void DrawDM(bool is_fixed_range = false)
             
 				if (valY > Minimum(y1Cut, y2Cut) && valY < Maximum(y1Cut, y2Cut)) 
             {
-					histDM->SetBinContent(histDM->GetBin(i, j), 0.);
+					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
             }
 			}
 		}
@@ -155,21 +157,21 @@ void DrawDM(bool is_fixed_range = false)
 
 	if (is_fixed_range)
 	{
-		const int xMin = histDM->GetXaxis()->FindBin(gPad->GetUxmin());
-		const int xMax = histDM->GetXaxis()->FindBin(gPad->GetUxmax())-1;
-		const int yMin = histDM->GetYaxis()->FindBin(gPad->GetUymin())+1;
-		const int yMax = histDM->GetYaxis()->FindBin(gPad->GetUymax())-1;
+		const int xMin = Par.histDM->GetXaxis()->FindBin(gPad->GetUxmin());
+		const int xMax = Par.histDM->GetXaxis()->FindBin(gPad->GetUxmax())-1;
+		const int yMin = Par.histDM->GetYaxis()->FindBin(gPad->GetUymin())+1;
+		const int yMax = Par.histDM->GetYaxis()->FindBin(gPad->GetUymax())-1;
 		
-		histDM->GetXaxis()->SetRange(xMin, xMax);
-		histDM->GetYaxis()->SetRange(yMin, yMax);
+		Par.histDM->GetXaxis()->SetRange(xMin, xMax);
+		Par.histDM->GetYaxis()->SetRange(yMin, yMax);
 	}
 	
-	histDM->Draw("COLZ");
+	Par.histDM->Draw("COLZ");
 	gPad->Modified();
 	gPad->Update();
    gPad->GetFrame()->SetBit(TBox::kCannotMove);
 
-	PrintInfo("Data lost " + to_string((1.-histDM->Integral()/Par.orig_integral)*100.) + "\%");
+	PrintInfo("Data lost " + to_string((1. - Par.histDM->Integral()/Par.orig_integral)*100.) + "\%");
 }
 
 void SetTLineStyle(TLine *line, const EColor color=kRed)
@@ -754,96 +756,131 @@ void exec()
             break;
             
          case 'p':
-            
+         {
+            // Printing inverse box cut first
             for (int i = 0; i < CutMode.invRectXMax.size(); i++)
             {
-               std::cout <<
+               std::cout << Par.tab <<
                   "if (" + Par.xValName + " < " << CutMode.invRectXMin[i] <<
                   " || " + Par.yValName + " < " << CutMode.invRectYMin[i] <<
-                  " ||" << std::endl << "    " + Par.xValName + " > " << CutMode.invRectXMax[i] <<
-                  " || " + Par.yValName + " > " << CutMode.invRectYMax[i] <<
-                  ") return true;" << std::endl;
+                  " ||" << std::endl << Par.tab << "    " + Par.xValName + " > " << 
+                  CutMode.invRectXMax[i] << " || " + Par.yValName + 
+                  " > " << CutMode.invRectYMax[i] << ") return true;" << std::endl;
             }
             
-            for (int i = 1; i <= hist->GetYaxis()->GetNbins(); i++)
-            {
-               const double valY = hist->GetYaxis()->GetBinCenter(j);
-               bool skipY = false;
+            // Determining bin ranges along X and Y axis
+            int minXBin = 1, minYBin = 1;
+            int maxXBin = Par.histDM->GetXaxis()->GetNbins();
+            int maxYBin = Par.histDM->GetYaxis()->GetNbins();
 
-               for (int k = 0; k < cutmode.invrectxmax.size(); i++)
+            if (CutMode.invRectXMax.size() != 0)
+            {
+               // needs to be finished; for now it only makes the switch statements to bot be printed
+               minXBin = maxXBin + 1;
+               minYBin = maxYBin + 1;
+            }
+            else
+            {
+               for (int i = 1; i <= Par.histDM->GetXaxis()->GetNbins(); i++)
                {
-                  if (valY < cutmode.invrectymin[k] || valY > cutmode.invrectymax[k])
+                  bool isSelected = false;
+                  for (int j = 1; j <= Par.histDM->GetYaxis()->GetNbins(); j++)
                   {
-                     skipY = true;
-                     break;
-                  }
-               }
-               if (skipY) continue;
-               
-               for (int j = 1; j <= hist->GetXaxis()->GetNbins(); j++)
-               {
-                  const double valX = hist->GetXaxis()->GetBinCenter(i);
-                  bool skipX = false;
-                  
-                  for (int k = 0; k < cutmode.invrectxmax.size(); i++)
-                  {
-                     if (valX < cutmode.invrectxmin[k] || valX > cutmode.invrectxmax[k])
+                     if (Par.hist->GetBinContent(i, j) > 1e-7)
                      {
-                        skipX = true;
+                        minXBin = i;
+                        isSelected = true;
                         break;
                      }
                   }
-                  
-                  if (cut_func(valX, valY)) 
+                  if (isSelected) break;
+               }
+               for (int i = 1; i <= Par.histDM->GetYaxis()->GetNbins(); i++)
+               {
+                  bool isSelected = false;
+                  for (int j = 1; j <= Par.histDM->GetXaxis()->GetNbins(); j++)
                   {
-                     hist->SetBinContent(i, j, 0.);
+                     if (Par.hist->GetBinContent(j, i) > 1e-7)
+                     {
+                        minYBin = i;
+                        isSelected = true;
+                        break;
+                     }
                   }
+                  if (isSelected) break;
                }
-            }
-            /*
-            for (int i = 0; i < CutMode.lineXMax.size(); i++)
-            {
-               std::cout <<
-                  "if (" + Par.xValName + " > " << CutMode.lineXMin[i] <<
-                  " && " + Par.xValName + " < " << CutMode.lineXMax[i] <<
-                  ") return true;" << std::endl;
-            }
-            for (int i = 0; i < CutMode.lineYMin.size(); i++)
-            {
-               std::cout <<
-                  "if (" + Par.yValName + " > " << CutMode.lineYMin[i] <<
-                  " && " + Par.yValName + " < " << CutMode.lineYMax[i] <<
-                  ") return true;" << std::endl;
-            }
-            for (int i = 0; i < CutMode.rectXMax.size(); i++)
-            {
-               std::cout << "if (" + Par.xValName + " > " << CutMode.rectXMin[i] <<
-                  " && " + Par.yValName + " > " << CutMode.rectYMin[i] <<
-                  " &&" << std::endl << "    " + Par.xValName + " < " << CutMode.rectXMax[i] <<
-                  " && " + Par.yValName + " < " << CutMode.rectYMax[i] <<
-                  ") return true;" << std::endl;
-            }
-            for (int i = 0; i < CutMode.shiftY2.size(); i++)
-            {
-               if ((CutMode.tanAlpha1[i] > 0 && CutMode.tanAlpha2[i] > 0))
+               for (int i = Par.histDM->GetXaxis()->GetNbins(); i >= minXBin; i--)
                {
-                  std::cout << "if (" + Par.yValName + " < " << CutMode.shiftY1[i] << 
-                               " + " + Par.xValName + "*" << CutMode.tanAlpha1[i] <<
-                               " && " + Par.yValName + " > " << CutMode.shiftY2[i] << 
-                               " + " + Par.xValName + "*" << CutMode.tanAlpha2[i] <<
-                               ") return true;" <<std::endl;
+                  bool isSelected = false;
+                  for (int j = maxYBin; j >= minYBin; j--)
+                  {
+                     if (Par.hist->GetBinContent(i, j) > 1e-7)
+                     {
+                        maxXBin = i;
+                        isSelected = true;
+                        break;
+                     }
+                  }
+                  if (isSelected) break;
                }
-               else if ((CutMode.tanAlpha1[i] < 0 && CutMode.tanAlpha2[i] < 0))
+               for (int i = Par.histDM->GetYaxis()->GetNbins(); i >= minYBin; i--)
                {
-                  std::cout << "if (" + Par.yValName + " > " << CutMode.shiftY1[i] << 
-                               " + " + Par.xValName + "*" << CutMode.tanAlpha1[i] <<
-                               " && " + Par.yValName + " < " << CutMode.shiftY2[i] << 
-                               " + " + Par.xValName + "*" << CutMode.tanAlpha2[i] <<
-                               ") return true;" <<std::endl;
+                  bool isSelected = false;
+                  for (int j = maxXBin; j >= minXBin; j--)
+                  {
+                     if (Par.hist->GetBinContent(j, i) > 1e-7)
+                     {
+                        maxYBin = i;
+                        isSelected = true;
+                        break;
+                     }
+                  }
+                  if (isSelected) break;
                }
             }
-            */
+            
+            // Printing all other cuts
+            std::cout << "switch(" << Par.yValName << "Bin)" << std::endl;
+            std::cout << "{" << std::endl;
+            
+            for (int i = minYBin; i <= maxYBin; i++)
+            {
+               unsigned int numberOfCuts = 0;
+               unsigned int numberOfEmptyBins = 0;
+               
+               for (int j = minXBin; j <= maxXBin; j++)
+               {
+                  if (Par.histDM->GetBinContent(j, i) < 1e-7) numberOfCuts++;
+                  if (Par.hist->GetBinContent(j, i) < 1e-7) numberOfEmptyBins++;
+               }
+               
+               if (numberOfEmptyBins == numberOfCuts) continue;
+               
+               if (numberOfCuts != maxXBin - minXBin + 1)
+               {
+                  std::cout << Par.tab << "case " << i << ": switch(" << Par.xValName << "Bin) {";
+
+                  for (int j = minXBin; j <= maxXBin; j++)
+                  {
+                     if (Par.histDM->GetBinContent(j, i) < 1e-7 && 
+                         Par.hist->GetBinContent(j, i) > 1e-7)
+                     {
+                        std::cout << "case " << j << ": ";
+                     }
+                  }
+
+                  std::cout << "return true; break;} ";
+               }
+               else 
+               {
+                  std::cout << Par.tab << "case " << i << ": return true; ";
+               }
+               std::cout << "break;" << std::endl;
+            }
+
+            std::cout << "}" << std::endl;
             break;
+         }
             
          case '0':
             Print("Deactivating cutting mode");
@@ -883,7 +920,7 @@ void GUIDM()
    using namespace Run14HeAu200MBCuts;
    
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("Heatmap: PC1e");
+	Par.hist = (TH2F *) Par.file.Get("Heatmap: PC1w");
 	Par.hist->SetTitle(Par.hist->GetName());
 
 	Par.orig_integral = Par.hist->Integral();
@@ -895,7 +932,7 @@ void GUIDM()
 	//CutDeadAreas(Par.hist, &IsDeadDC, 1., -1.);
    //PC1
 	Par.xValName = "pc1z"; Par.yValName = "pc1phi";
-	CutDeadAreas(Par.hist, &IsDeadPC1, 2.);
+	CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
    //PC2
 	//Par.xValName = "pc2z"; Par.yValName = "pc2phi";
 	//CutDeadAreas(Par.hist, &IsDeadPC2);

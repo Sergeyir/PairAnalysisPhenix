@@ -19,6 +19,7 @@
 
 #include "../include/IdentFun.hpp"
 
+/*
 double GetEMCalId(const double pt, const int id, const int charge, 
                   const double phi, const int sector)
 {   
@@ -228,5 +229,6 @@ int GetTOFwPID(const double pt, const int charge, const double m2)
          
    return PartId.noPID;
 }
+*/
 
 #endif /* IDENT_FUN */

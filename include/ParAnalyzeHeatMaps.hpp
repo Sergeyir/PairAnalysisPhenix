@@ -24,24 +24,25 @@
 
 #include "Particles.hpp"
 
-#include "DeadAreasCuts.hpp"
+#include "DeadAreasCuts.h"
 
-#include "RunConfiguration.hpp"
+using namespace Run14HeAu200MBCuts;
 
 struct
 {
-   const std::string run = NUMBERED_RUN_NAME;
-   const std::string system = COLLISION_SYSTEM_NAME;
+   const std::string run = "Run14";
+   const std::string system = "HeAu200";
    const bool doUseWeightFunc = true;
    bool doReweightAlpha = true;
    
-   const std::string simDataDir = "../data/Sim/";
-   const std::string realDataDir = "../data/Analysis/";
-   const std::string outputDir = "../data/PostSim/";
+   const std::string simDataDir = "data/Sim/";
+   const std::string realDataDir = "data/Real/";
+   const std::string outputDir = "data/PostSim/";
    
-   std::vector<std::string> partQueue = {"pion", "kaon", "apion", "akaon", "proton", "aproton"};
-   std::vector<std::string> magfQueue = {"+-", "-+"};
-   std::vector<std::string> auxNameQueue = {"_lpt", "_hpt"};
+   std::vector<std::string> partQueue = {"pion"};//, "kaon", "apion", "akaon", "proton", "aproton"};
+   std::vector<std::string> magfQueue = {""};
+   //std::vector<std::string> magfQueue = {"+-", "-+"};
+   std::vector<std::string> auxNameQueue = {"_lpt"};//, "_hpt"};
    
    const double pTMin = 0.3;
    const double pTMax = 8.;
