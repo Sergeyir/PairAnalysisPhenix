@@ -1870,7 +1870,7 @@ namespace Run14HeAu200MBCuts
       if (phi > M_PI/2.)
       {
          if (pc1z < -83.5 || pc1phi < 2.17 ||
-             pc1z > 84. || pc1phi > 3.71) return true;
+             pc1z > 84.0 || pc1phi > 3.71) return true;
          
          const short pc1zBin = static_cast<short>((pc1z + 90.)*2.) + 1;
          const short pc1phiBin = static_cast<short>((pc1phi - 2.05)*100.) + 1;
