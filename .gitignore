@@ -2,6 +2,7 @@ data/
 output/
 bin/
 lib/
+tmp/
 backup/
 __pycache__
 tmp/

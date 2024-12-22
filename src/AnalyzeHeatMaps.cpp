@@ -168,14 +168,14 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             const double the0 = T.the0(i);
             const double pT = (T.mom(i))*sin(the0);
 
-            if (pT < Par.pTMin || pT > Par.pTMax) continue;
+            if (pT < Par.pTMin) continue;
             if (IsQualityCut(T.qual(i))) continue;
             
             int charge = T.charge(i);
             if (charge != -1 && charge != 1) continue;
 
             const double zed = T.zed(i);
-            if (abs(zed) > 75 && abs(zed) < 3) continue;
+            if (fabs(zed) > 75 && fabs(zed) < 3) continue;
             
             if (!(fabs(the0)<100 &&
                ((bbcz > 0 && ((bbcz - 250*tan(the0 - 3.1416/2)) > 2 ||
@@ -194,7 +194,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
 
             double particleWeight = eventWeight;
 
-            if (phi > 1.5)
+            if (phi > M_PI/2.)
             {
                if (zed >=0) 
                {
@@ -274,9 +274,9 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                const double pc3z = T.ppc3z(i) - T.pc3dz(i);
                double pc3phi = atan2(T.ppc3y(i), T.ppc3x(i) - T.pc3dphi(i));
                
-               if (phi > 1.5) 
+               if (phi > M_PI/2.) 
                {
-                  if (pc3phi < 0) pc3phi += 6.2831853;
+                  if (pc3phi < 0) pc3phi += M_PI*2.;
                   distrPC3e->Fill(pc3z, pc3phi, particleWeight);
                }
                else distrPC3w->Fill(pc3z, pc3phi, particleWeight);
@@ -334,7 +334,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
                {   
                   if (T.ecore(i) > 0.25)
                   {
-                     if (phi > 1.5) 
+                     if (phi > M_PI) 
                      {
                         if (zed >= 0) distrEMCalePos[T.sect(i)]->Fill(
                            T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
@@ -404,7 +404,7 @@ void HeatMapper()
    {
       std::string realDataInputFileName = Par.realDataDir + Par.runName + "/sum.root";
       std::string alphaReweightInputFileName = Par.outputDir + 
-         Par.runName + "/heatmaps/all.root";
+         Par.runName + "/Heatmaps/all.root";
       
       CheckInputFile(realDataInputFileName);
       if (CheckInputFile(alphaReweightInputFileName, false)) 
@@ -521,9 +521,9 @@ void HeatMapper()
    }
    
    PrintInfo("Clearing output directory: " + Par.outputDir + 
-      Par.runName + "/heatmaps/");
-   system(("mkdir -p " + Par.outputDir + Par.runName + "/heatmaps").c_str());
-   system(("rm -r " + Par.outputDir + Par.runName + "/heatmaps/*").c_str());
+      Par.runName + "/Heatmaps/");
+   system(("mkdir -p " + Par.outputDir + Par.runName + "/Heatmaps").c_str());
+   system(("rm -r " + Par.outputDir + Par.runName + "/Heatmaps/*").c_str());
 
    int num = 1;
    for (std::string part : Par.partQueue)
@@ -539,7 +539,7 @@ void HeatMapper()
          //wiriting the result
          const std::string outputFileName = 
             Par.outputDir + Par.runName + 
-            "/heatmaps/" + part + magf + ".root";
+            "/Heatmaps/" + part + magf + ".root";
          
          TFile outfile(outputFileName.c_str(), "RECREATE");
          outfile.cd();
@@ -552,8 +552,8 @@ void HeatMapper()
    PrintInfo("Merging output files into one");
 
    system(("hadd -f " + Par.outputDir + 
-      Par.runName + "/heatmaps/all.root " + Par.outputDir + 
-      Par.runName + "/heatmaps/*.root").c_str());
+      Par.runName + "/Heatmaps/all.root " + Par.outputDir + 
+      Par.runName + "/Heatmaps/*.root").c_str());
 }
 
 //main calls the same function CINT would call

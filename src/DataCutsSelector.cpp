@@ -35,15 +35,15 @@ DataCutsSelector::DataCutsSelector(const std::string &datasetName, bool printInf
    }
    else if (datasetName == "Run14HeAu200MB")
    {
-      fIsDeadDC = &Run14HeAu200MBCuts::IsDeadDC;
-      fIsDeadPC1 = &Run14HeAu200MBCuts::IsDeadPC1;
-      fIsDeadPC2 = &Run14HeAu200MBCuts::IsDeadPC2;
-      fIsDeadPC3 = &Run14HeAu200MBCuts::IsDeadPC3;
-      fIsDeadEMCal = &Run14HeAu200MBCuts::IsDeadEMCal;
-      fIsBadSlat = &Run14HeAu200MBCuts::IsBadSlat;
-      fIsBadStripTOFw = &Run14HeAu200MBCuts::IsBadStripTOFw;
-      fIsDeadTOFe = &Run14HeAu200MBCuts::IsDeadTOFe;
-      fIsDeadTOFw = &Run14HeAu200MBCuts::IsDeadTOFw;
+      fIsDeadDC = &Run14HeAu200Cuts::IsDeadDC;
+      fIsDeadPC1 = &Run14HeAu200Cuts::IsDeadPC1;
+      fIsDeadPC2 = &Run14HeAu200Cuts::IsDeadPC2;
+      fIsDeadPC3 = &Run14HeAu200Cuts::IsDeadPC3;
+      fIsDeadEMCal = &Run14HeAu200Cuts::IsDeadEMCal;
+      fIsBadSlat = &Run14HeAu200Cuts::IsBadSlat;
+      fIsBadStripTOFw = &Run14HeAu200Cuts::IsBadStripTOFw;
+      fIsDeadTOFe = &Run14HeAu200Cuts::IsDeadTOFe;
+      fIsDeadTOFw = &Run14HeAu200Cuts::IsDeadTOFw;
    }
    else PrintError("Dataset name " + datasetName + " is not defined in DataCutsSelector");
 }

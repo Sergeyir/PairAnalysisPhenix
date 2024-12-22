@@ -26,7 +26,7 @@
 
 #include "DeadAreasCuts.h"
 
-using namespace Run14HeAu200MBCuts;
+using namespace Run14HeAu200Cuts;
 
 struct
 {
@@ -39,7 +39,7 @@ struct
    const std::string realDataDir = "data/Real/";
    const std::string outputDir = "data/PostSim/";
    
-   std::vector<std::string> partQueue = {"pion"};//, "kaon", "apion", "akaon", "proton", "aproton"};
+   std::vector<std::string> partQueue = {"pion", "apion"};//, "kaon", "apion", "akaon", "proton", "aproton"};
    std::vector<std::string> magfQueue = {""};
    //std::vector<std::string> magfQueue = {"+-", "-+"};
    std::vector<std::string> auxNameQueue = {"_lpt"};//, "_hpt"};

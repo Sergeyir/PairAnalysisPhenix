@@ -24,12 +24,19 @@ struct
 
 struct 
 {
-	double orig_integral;
+	double origIntegral;
 	std::array<bool, 5> isMin = {true, true, true, true, true};
-	TFile file = TFile("data/Real/Run14HeAu200/sum.root");
-	//TFile file = TFile("../data/PHENIX_sim/Run7AuAu200/hotmaps.root");
-	TH2F *hist;
-   TH2F *histDM;
+	TFile realFile = TFile("data/Real/Run14HeAu200/sum.root");
+	TFile simFile = TFile("data/PostSim/Run14HeAu200/Heatmaps/all.root");
+   
+	//TFile file = TFile("data/Real/Run15pp200/sum.root");
+	TH2F *realHist;
+   TH2F *realHistDM;
+	TH2F *simHist;
+   TH2F *simHistDM;
+
+   bool useSimHist = true;
+   bool isCurrentSim = false;
 
 	std::string xValName;
 	std::string yValName;
@@ -111,36 +118,49 @@ void CutDeadAreas(TH2F *hist, bool (*cut_func)(const double, const double, const
 
 void DrawDM(bool is_fixed_range = false)
 {
-	Par.histDM = (TH2F *) Par.hist->Clone();
+	Par.realHistDM = (TH2F *) Par.realHist->Clone();
+	if (Par.useSimHist) Par.simHistDM = (TH2F *) Par.simHist->Clone();
 	
-	for (int i = 0; i < Par.histDM->GetXaxis()->GetNbins(); i++)
+	for (int i = 0; i < Par.realHistDM->GetXaxis()->GetNbins(); i++)
 	{
-		for (int j = 0; j < Par.histDM->GetYaxis()->GetNbins(); j++)
+		for (int j = 0; j < Par.realHistDM->GetYaxis()->GetNbins(); j++)
 		{
-			double valX = Par.histDM->GetXaxis()->GetBinCenter(i);
-			double valY = Par.histDM->GetYaxis()->GetBinCenter(j);
+			double valX = Par.realHistDM->GetXaxis()->GetBinCenter(i);
+			double valY = Par.realHistDM->GetYaxis()->GetBinCenter(j);
 			
 			for (int k = 0; k < CutMode.rectXMax.size(); k++)
 			{
 				if (valX > CutMode.rectXMin[k] && valX < CutMode.rectXMax[k] && 
 					valY > CutMode.rectYMin[k] && valY < CutMode.rectYMax[k]) 
-					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
+            {
+					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
+					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
+            }
 			}
 			for (int k = 0; k < CutMode.lineXMax.size(); k++)
 			{
 				if (valX > CutMode.lineXMin[k] && valX < CutMode.lineXMax[k]) 
-					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
+            {
+					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
+					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
+            }
 			}
 			for (int k = 0; k < CutMode.lineYMin.size(); k++)
 			{
 				if (valY > CutMode.lineYMin[k] && valY < CutMode.lineYMax[k]) 
-					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
+            {
+					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
+					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
+            }
 			}
 			for (int k = 0; k < CutMode.invRectXMax.size(); k++)
 			{
 				if (valX < CutMode.invRectXMin[k] || valX > CutMode.invRectXMax[k] ||
 					valY < CutMode.invRectYMin[k] || valY > CutMode.invRectYMax[k]) 
-					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
+            {
+					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
+					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
+            }
 			}
 			for (int k = 0; k < CutMode.shiftY2.size(); k++)
 			{ 
@@ -149,7 +169,8 @@ void DrawDM(bool is_fixed_range = false)
             
 				if (valY > Minimum(y1Cut, y2Cut) && valY < Maximum(y1Cut, y2Cut)) 
             {
-					Par.histDM->SetBinContent(Par.histDM->GetBin(i, j), 0.);
+					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
+					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
             }
 			}
 		}
@@ -157,21 +178,40 @@ void DrawDM(bool is_fixed_range = false)
 
 	if (is_fixed_range)
 	{
-		const int xMin = Par.histDM->GetXaxis()->FindBin(gPad->GetUxmin());
-		const int xMax = Par.histDM->GetXaxis()->FindBin(gPad->GetUxmax())-1;
-		const int yMin = Par.histDM->GetYaxis()->FindBin(gPad->GetUymin())+1;
-		const int yMax = Par.histDM->GetYaxis()->FindBin(gPad->GetUymax())-1;
+		const int xMin = Par.realHistDM->GetXaxis()->FindBin(gPad->GetUxmin());
+		const int xMax = Par.realHistDM->GetXaxis()->FindBin(gPad->GetUxmax())-1;
+		const int yMin = Par.realHistDM->GetYaxis()->FindBin(gPad->GetUymin())+1;
+		const int yMax = Par.realHistDM->GetYaxis()->FindBin(gPad->GetUymax())-1;
 		
-		Par.histDM->GetXaxis()->SetRange(xMin, xMax);
-		Par.histDM->GetYaxis()->SetRange(yMin, yMax);
+		Par.realHistDM->GetXaxis()->SetRange(xMin, xMax);
+		Par.realHistDM->GetYaxis()->SetRange(yMin, yMax);
+		if (Par.useSimHist) 
+      {
+         Par.simHistDM->GetXaxis()->SetRange(xMin, xMax);
+		   Par.simHistDM->GetYaxis()->SetRange(yMin, yMax);
+      }
 	}
 	
-	Par.histDM->Draw("COLZ");
+	if (!Par.isCurrentSim)
+   {
+      Par.realHistDM->Draw("COLZ");
+   }
+   else
+   {
+      Par.simHistDM->Draw("COLZ");
+   }
 	gPad->Modified();
 	gPad->Update();
    gPad->GetFrame()->SetBit(TBox::kCannotMove);
 
-	PrintInfo("Data lost " + to_string((1. - Par.histDM->Integral()/Par.orig_integral)*100.) + "\%");
+	PrintInfo("Real data lost " + 
+             to_string((1. - Par.realHistDM->Integral()/Par.origIntegral)*100.) + "\%");
+   
+   if (Par.useSimHist)
+   {
+      PrintInfo("Sim data lost " + 
+                to_string((1. - Par.realHistDM->Integral()/Par.origIntegral)*100.) + "\%");
+   }
 }
 
 void SetTLineStyle(TLine *line, const EColor color=kRed)
@@ -218,8 +258,8 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
       {
          if (Par.isMin[currentCutMode]) return;
          
-         const double yMin = Par.hist->GetYaxis()->GetBinLowEdge(1);
-         yMax = Par.hist->GetYaxis()->GetBinUpEdge(Par.hist->GetYaxis()->GetNbins());
+         const double yMin = Par.realHist->GetYaxis()->GetBinLowEdge(1);
+         yMax = Par.realHist->GetYaxis()->GetBinUpEdge(Par.realHist->GetYaxis()->GetNbins());
          
          TLine line1 = TLine(CutMode.lineXMin.back(), yMin, CutMode.lineXMin.back(), yMax);
          TLine line2 = TLine(xMax, yMin, xMax, yMax);
@@ -240,8 +280,8 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
       {
          if (Par.isMin[currentCutMode]) return;
          
-         const double xMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
-         xMax = Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+         const double xMin = Par.realHist->GetXaxis()->GetBinLowEdge(1);
+         xMax = Par.realHist->GetXaxis()->GetBinUpEdge(Par.realHist->GetXaxis()->GetNbins());
          
          TLine line1 = TLine(xMin, CutMode.lineYMin.back(), xMax, CutMode.lineYMin.back());
          TLine line2 = TLine(xMin, yMax, xMax, yMax);
@@ -286,9 +326,9 @@ void DrawCutLines(double xMax, double yMax, const int currentCutMode)
 			break;
       }
       case 4:
-         const double lineXMin = Par.hist->GetXaxis()->GetBinLowEdge(1);
+         const double lineXMin = Par.realHist->GetXaxis()->GetBinLowEdge(1);
          const double lineXMax = 
-            Par.hist->GetXaxis()->GetBinUpEdge(Par.hist->GetXaxis()->GetNbins());
+            Par.realHist->GetXaxis()->GetBinUpEdge(Par.realHist->GetXaxis()->GetNbins());
          
          if (CutMode.angledLine1X1.size() > CutMode.angledLine2X1.size())
          {
@@ -382,32 +422,32 @@ void exec()
 				{
 					if (x >= CutMode.rectXMin.back()) 
 					{
-						CutMode.rectXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.rectXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.rectXMin.back()));
+						CutMode.rectXMax.push_back(Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(x)));
+						CutMode.rectXMin.back() = Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.rectXMin.back()));
 					}
 					else 
 					{
-						CutMode.rectXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.rectXMin.back())));
-						CutMode.rectXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(x));
+						CutMode.rectXMax.push_back(Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.rectXMin.back())));
+						CutMode.rectXMin.back() = Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(x));
 					}
 					
 					if (y >= CutMode.rectYMin.back()) 
 					{
-						CutMode.rectYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.rectYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.rectYMin.back()));
+						CutMode.rectYMax.push_back(Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(y)));
+						CutMode.rectYMin.back() = Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.rectYMin.back()));
 					}
 					else 
 					{
-						CutMode.rectYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.rectYMin.back())));
-						CutMode.rectYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(y));
+						CutMode.rectYMax.push_back(Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.rectYMin.back())));
+						CutMode.rectYMin.back() = Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(y));
 					}
 
 					Par.isMin[0] = true;
@@ -429,17 +469,17 @@ void exec()
 				{
 					if (x >= CutMode.lineXMin.back()) 
 					{
-						CutMode.lineXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.lineXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.lineXMin.back()));
+						CutMode.lineXMax.push_back(Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(x)));
+						CutMode.lineXMin.back() = Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.lineXMin.back()));
 					}
 					else 
 					{
-						CutMode.lineXMax.push_back(Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.lineXMin.back())));
-						CutMode.lineXMin.back() = Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(x));
+						CutMode.lineXMax.push_back(Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.lineXMin.back())));
+						CutMode.lineXMin.back() = Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(x));
 					}
 
 					Par.isMin[1] = true;
@@ -461,17 +501,17 @@ void exec()
 				{
 					if (y >= CutMode.lineYMin.back()) 
 					{
-						CutMode.lineYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back()));
+						CutMode.lineYMax.push_back(Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(y)));
+						CutMode.lineYMin.back() = Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.lineYMin.back()));
 					}
 					else 
 					{
-						CutMode.lineYMax.push_back(Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.lineYMin.back())));
-						CutMode.lineYMin.back() = Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(y));
+						CutMode.lineYMax.push_back(Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.lineYMin.back())));
+						CutMode.lineYMin.back() = Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(y));
 					}
 
 					Par.isMin[2] = true;
@@ -494,32 +534,32 @@ void exec()
 				{
 					if (x >= CutMode.invRectXMin.back()) 
 					{
-						CutMode.invRectXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(x)));
-						CutMode.invRectXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.invRectXMin.back()));
+						CutMode.invRectXMax.push_back(Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(x)));
+						CutMode.invRectXMin.back() = Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMin.back()));
 					}
 					else 
 					{
-						CutMode.invRectXMax.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-							Par.hist->GetXaxis()->FindBin(CutMode.invRectXMin.back())));
-						CutMode.invRectXMin.back() = Par.hist->GetXaxis()->GetBinUpEdge(
-							Par.hist->GetXaxis()->FindBin(x));
+						CutMode.invRectXMax.push_back(Par.realHist->GetXaxis()->GetBinLowEdge(
+							Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMin.back())));
+						CutMode.invRectXMin.back() = Par.realHist->GetXaxis()->GetBinUpEdge(
+							Par.realHist->GetXaxis()->FindBin(x));
 					}
 					
 					if (y >= CutMode.invRectYMin.back()) 
 					{
-						CutMode.invRectYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(y)));
-						CutMode.invRectYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.invRectYMin.back()));
+						CutMode.invRectYMax.push_back(Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(y)));
+						CutMode.invRectYMin.back() = Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMin.back()));
 					}
 					else 
 					{
-						CutMode.invRectYMax.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-							Par.hist->GetYaxis()->FindBin(CutMode.invRectYMin.back())));
-						CutMode.invRectYMin.back() = Par.hist->GetYaxis()->GetBinUpEdge(
-							Par.hist->GetYaxis()->FindBin(y));
+						CutMode.invRectYMax.push_back(Par.realHist->GetYaxis()->GetBinLowEdge(
+							Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMin.back())));
+						CutMode.invRectYMin.back() = Par.realHist->GetYaxis()->GetBinUpEdge(
+							Par.realHist->GetYaxis()->FindBin(y));
 					}
 
 					Par.isMin[3] = true;
@@ -532,20 +572,20 @@ void exec()
 				{
                if (CutMode.angledLine1X1.size() == CutMode.angledLine2X2.size())
                {
-                  CutMode.angledLine1X1.push_back(Par.hist->GetXaxis()->
-                     GetBinLowEdge(Par.hist->GetXaxis()->FindBin(x)));
-                  CutMode.angledLine1Y1.push_back(Par.hist->GetYaxis()->
-                     GetBinLowEdge(Par.hist->GetYaxis()->FindBin(y)));
+                  CutMode.angledLine1X1.push_back(Par.realHist->GetXaxis()->
+                     GetBinLowEdge(Par.realHist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine1Y1.push_back(Par.realHist->GetYaxis()->
+                     GetBinLowEdge(Par.realHist->GetYaxis()->FindBin(y)));
                   
                   Par.isMin[4] = false;
                   PrintInfo("Setting the first point of the first line");	
                }
                else
                {
-                  CutMode.angledLine2X1.push_back(Par.hist->GetXaxis()->
-                     GetBinLowEdge(Par.hist->GetXaxis()->FindBin(x)));
-                  CutMode.angledLine2Y1.push_back(Par.hist->GetYaxis()->
-                     GetBinLowEdge(Par.hist->GetYaxis()->FindBin(y)));
+                  CutMode.angledLine2X1.push_back(Par.realHist->GetXaxis()->
+                     GetBinLowEdge(Par.realHist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine2Y1.push_back(Par.realHist->GetYaxis()->
+                     GetBinLowEdge(Par.realHist->GetYaxis()->FindBin(y)));
 
                   Par.isMin[4] = false;
                   PrintInfo("Setting the second point of the first line");	
@@ -555,10 +595,10 @@ void exec()
 				{
                if (CutMode.angledLine1X2.size() == CutMode.angledLine2X2.size())
                {
-                  CutMode.angledLine1X2.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-                     Par.hist->GetXaxis()->FindBin(x)));
-                  CutMode.angledLine1Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-                     Par.hist->GetYaxis()->FindBin(y)));
+                  CutMode.angledLine1X2.push_back(Par.realHist->GetXaxis()->GetBinLowEdge(
+                     Par.realHist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine1Y2.push_back(Par.realHist->GetYaxis()->GetBinLowEdge(
+                     Par.realHist->GetYaxis()->FindBin(y)));
 
                   CutMode.tanAlpha1.push_back((CutMode.angledLine1Y1.back() - 
                                                CutMode.angledLine1Y2.back())/
@@ -573,10 +613,10 @@ void exec()
                }
                else
                {
-                  CutMode.angledLine2X2.push_back(Par.hist->GetXaxis()->GetBinLowEdge(
-                     Par.hist->GetXaxis()->FindBin(x)));
-                  CutMode.angledLine2Y2.push_back(Par.hist->GetYaxis()->GetBinLowEdge(
-                     Par.hist->GetYaxis()->FindBin(y)));
+                  CutMode.angledLine2X2.push_back(Par.realHist->GetXaxis()->GetBinLowEdge(
+                     Par.realHist->GetXaxis()->FindBin(x)));
+                  CutMode.angledLine2Y2.push_back(Par.realHist->GetYaxis()->GetBinLowEdge(
+                     Par.realHist->GetYaxis()->FindBin(y)));
 
                   CutMode.tanAlpha2.push_back((CutMode.angledLine2Y1.back() - 
                                                CutMode.angledLine2Y2.back())/
@@ -769,24 +809,37 @@ void exec()
             }
             
             // Determining bin ranges along X and Y axis
-            int minXBin = 1, minYBin = 1;
-            int maxXBin = Par.histDM->GetXaxis()->GetNbins();
-            int maxYBin = Par.histDM->GetYaxis()->GetNbins();
+            int minXBin = 1;
+            int minYBin = 1;
+            int maxXBin = Par.realHistDM->GetXaxis()->GetNbins();
+            int maxYBin = Par.realHistDM->GetYaxis()->GetNbins();
 
             if (CutMode.invRectXMax.size() != 0)
             {
-               // needs to be finished; for now it only makes the switch statements to bot be printed
-               minXBin = maxXBin + 1;
-               minYBin = maxYBin + 1;
+               for (unsigned long i = 0; i < CutMode.invRectXMax.size(); i++)
+               {
+                  minXBin = Maximum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMin[i]), 
+                                    minXBin);
+                  minYBin = Maximum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMin[i]), 
+                                    minYBin);
+                  maxXBin = Minimum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMax[i]), 
+                                    maxXBin);
+                  maxYBin = Minimum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMax[i]), 
+                                    maxYBin);
+               }
+               minXBin++;
+               minYBin++;
+               maxXBin--;
+               maxYBin--;
             }
             else
             {
-               for (int i = 1; i <= Par.histDM->GetXaxis()->GetNbins(); i++)
+               for (int i = 1; i <= Par.realHistDM->GetXaxis()->GetNbins(); i++)
                {
                   bool isSelected = false;
-                  for (int j = 1; j <= Par.histDM->GetYaxis()->GetNbins(); j++)
+                  for (int j = 1; j <= Par.realHistDM->GetYaxis()->GetNbins(); j++)
                   {
-                     if (Par.hist->GetBinContent(i, j) > 1e-7)
+                     if (Par.realHist->GetBinContent(i, j) > 1e-7)
                      {
                         minXBin = i;
                         isSelected = true;
@@ -795,12 +848,12 @@ void exec()
                   }
                   if (isSelected) break;
                }
-               for (int i = 1; i <= Par.histDM->GetYaxis()->GetNbins(); i++)
+               for (int i = 1; i <= Par.realHistDM->GetYaxis()->GetNbins(); i++)
                {
                   bool isSelected = false;
-                  for (int j = 1; j <= Par.histDM->GetXaxis()->GetNbins(); j++)
+                  for (int j = 1; j <= Par.realHistDM->GetXaxis()->GetNbins(); j++)
                   {
-                     if (Par.hist->GetBinContent(j, i) > 1e-7)
+                     if (Par.realHist->GetBinContent(j, i) > 1e-7)
                      {
                         minYBin = i;
                         isSelected = true;
@@ -809,12 +862,12 @@ void exec()
                   }
                   if (isSelected) break;
                }
-               for (int i = Par.histDM->GetXaxis()->GetNbins(); i >= minXBin; i--)
+               for (int i = Par.realHistDM->GetXaxis()->GetNbins(); i >= minXBin; i--)
                {
                   bool isSelected = false;
                   for (int j = maxYBin; j >= minYBin; j--)
                   {
-                     if (Par.hist->GetBinContent(i, j) > 1e-7)
+                     if (Par.realHist->GetBinContent(i, j) > 1e-7)
                      {
                         maxXBin = i;
                         isSelected = true;
@@ -823,12 +876,12 @@ void exec()
                   }
                   if (isSelected) break;
                }
-               for (int i = Par.histDM->GetYaxis()->GetNbins(); i >= minYBin; i--)
+               for (int i = Par.realHistDM->GetYaxis()->GetNbins(); i >= minYBin; i--)
                {
                   bool isSelected = false;
                   for (int j = maxXBin; j >= minXBin; j--)
                   {
-                     if (Par.hist->GetBinContent(j, i) > 1e-7)
+                     if (Par.realHist->GetBinContent(j, i) > 1e-7)
                      {
                         maxYBin = i;
                         isSelected = true;
@@ -838,23 +891,23 @@ void exec()
                   if (isSelected) break;
                }
             }
-            
+
             // Printing all other cuts
             std::cout << "switch(" << Par.yValName << "Bin)" << std::endl;
             std::cout << "{" << std::endl;
             
             for (int i = minYBin; i <= maxYBin; i++)
             {
-               unsigned int numberOfCuts = 0;
                unsigned int numberOfEmptyBins = 0;
+               unsigned int numberOfCuts = 0;
                
                for (int j = minXBin; j <= maxXBin; j++)
                {
-                  if (Par.histDM->GetBinContent(j, i) < 1e-7) numberOfCuts++;
-                  if (Par.hist->GetBinContent(j, i) < 1e-7) numberOfEmptyBins++;
+                  if (Par.realHistDM->GetBinContent(j, i) < 1e-7) numberOfCuts++;
+                  if (Par.realHist->GetBinContent(j, i) < 1e-7) numberOfEmptyBins++;
                }
                
-               if (numberOfEmptyBins == numberOfCuts) continue;
+               //if (numberOfEmptyBins == numberOfCuts) continue;
                
                if (numberOfCuts != maxXBin - minXBin + 1)
                {
@@ -862,8 +915,7 @@ void exec()
 
                   for (int j = minXBin; j <= maxXBin; j++)
                   {
-                     if (Par.histDM->GetBinContent(j, i) < 1e-7 && 
-                         Par.hist->GetBinContent(j, i) > 1e-7)
+                     if (Par.realHistDM->GetBinContent(j, i) < 1e-7)
                      {
                         std::cout << "case " << j << ": ";
                      }
@@ -877,8 +929,24 @@ void exec()
                }
                std::cout << "break;" << std::endl;
             }
-
+            
             std::cout << "}" << std::endl;
+            break;
+         }
+
+         case 's':
+         {
+            if (Par.useSimHist)
+            {
+               Par.isCurrentSim = !Par.isCurrentSim;
+               if (Par.isCurrentSim) PrintInfo("Showing sim histogram");
+               else PrintInfo("Showing real data histogram");
+            }
+            else
+            {
+               PrintInfo("Cannot show sim histogram since the option for it was not specified");
+            }
+            DrawDM();
             break;
          }
             
@@ -917,34 +985,36 @@ void exec()
 
 void GUIDM()
 {
-   using namespace Run14HeAu200MBCuts;
+   using namespace Run14HeAu200Cuts;
    
 	gStyle->SetOptStat(0);
-	Par.hist = (TH2F *) Par.file.Get("Heatmap: PC1w");
-	Par.hist->SetTitle(Par.hist->GetName());
+	Par.realHist = (TH2F *) Par.realFile.Get("Heatmap: DCe, zed>=0");
+	if (Par.useSimHist) Par.simHist = (TH2F *) Par.simFile.Get("Heatmap: DCe, zed>=0");
+	//Par.realHist->SetTitle(Par.realHist->GetName());
 
-	Par.orig_integral = Par.hist->Integral();
+	Par.origIntegral = Par.realHist->Integral();
 
    //DataCutsSelector dSel("Run14HeAu200MB");
 
    //DC
-	//Par.xValName = "board"; Par.yValName = "alpha";
-	//CutDeadAreas(Par.hist, &IsDeadDC, 1., -1.);
+	Par.xValName = "board"; Par.yValName = "alpha";
+	CutDeadAreas(Par.realHist, &IsDeadDC, 2., 1.);
+	if (Par.useSimHist) CutDeadAreas(Par.simHist, &IsDeadDC, 2., 1.);
    //PC1
-	Par.xValName = "pc1z"; Par.yValName = "pc1phi";
-	CutDeadAreas(Par.hist, &IsDeadPC1, 1.);
+	//Par.xValName = "pc1z"; Par.yValName = "pc1phi";
+	//CutDeadAreas(Par.realHist, &IsDeadPC1, 1.);
    //PC2
 	//Par.xValName = "pc2z"; Par.yValName = "pc2phi";
-	//CutDeadAreas(Par.hist, &IsDeadPC2);
+	//CutDeadAreas(Par.realHist, &IsDeadPC2);
    //PC3
 	//Par.xValName = "pc3z"; Par.yValName = "pc3phi";
-	//CutDeadAreas(Par.hist, &IsDeadPC3, 1.);
+	//CutDeadAreas(Par.realHist, &IsDeadPC3, 1.);
    //EMCal
-	//CutDeadAreas(Par.hist, &IsDeadEMCal, 2., 1., 3);
+	//CutDeadAreas(Par.realHist, &IsDeadEMCal, 2., 1., 3);
    //TOFe
-	//CutDeadAreas(Par.hist, &IsDeadTOFe, -1.);
+	//CutDeadAreas(Par.realHist, &IsDeadTOFe, -1.);
    //TOFw
-	//CutDeadAreas(Par.hist, &IsDeadTOFw, -1.);
+	//CutDeadAreas(Par.realHist, &IsDeadTOFw, -1.);
 
 	TCanvas *canv = new TCanvas("canv");
    

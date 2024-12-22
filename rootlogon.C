@@ -10,6 +10,9 @@
    gSystem->Load("CppTools/lib/Box.so");
    gSystem->Load("CppTools/lib/Table.so");
 
+   gSystem->Load("ROOTTools/lib/TCanvasPrinter.so");
+   gSystem->Load("ROOTTools/lib/GUIFit.so");
+
    gSystem->Load("ProgressBar/lib/PBar.so");
 
    gSystem->Load("lib/DataCutsSelector.so");

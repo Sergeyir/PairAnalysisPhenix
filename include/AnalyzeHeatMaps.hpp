@@ -46,23 +46,23 @@ struct ThrContainer
       100, 0., 10., Par.pTNBins, Par.pTMin, Par.pTMax);
       
    ThrObj<TH2F> distrDCe0 = ThrObj<TH2F>
-      ("dceast0", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrDCe1 = ThrObj<TH2F>
-      ("dceast1", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Heatmap: DCe, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrDCw0 = ThrObj<TH2F>
-      ("dcwest0", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Heatmap: DCw, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrDCw1 = ThrObj<TH2F>
-      ("dcwest1", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Heatmap: DCw, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
 
    //unscaled alpha
    ThrObj<TH2F> distrUnscaledDCe0 = ThrObj<TH2F>
-      ("unscaled_dceast0", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrUnscaledDCe1 = ThrObj<TH2F>
-      ("unscaled_dceast1", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrUnscaledDCw0 = ThrObj<TH2F>
-      ("unscaled_dcwest0", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> distrUnscaledDCw1 = ThrObj<TH2F>
-      ("unscaled_dcwest1", "map", 400, -1.5, 80.5, 200, -0.3, 0.3);
+      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
 
    ThrObj<TH2F> distrPC1e = ThrObj<TH2F>
       ("pc1e_z_vs_phi", "z vs phi", 180, -90., 90., 330, 2.1, 3.75);
