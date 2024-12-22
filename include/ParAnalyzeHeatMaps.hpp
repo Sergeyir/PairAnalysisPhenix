@@ -42,7 +42,7 @@ struct
    std::vector<std::string> partQueue = {"pion", "apion"};//, "kaon", "apion", "akaon", "proton", "aproton"};
    std::vector<std::string> magfQueue = {""};
    //std::vector<std::string> magfQueue = {"+-", "-+"};
-   std::vector<std::string> auxNameQueue = {"_lpt"};//, "_hpt"};
+   std::vector<std::string> auxNameQueue = {"_lpt", "_hpt"};
    
    const double pTMin = 0.3;
    const double pTMax = 8.;
