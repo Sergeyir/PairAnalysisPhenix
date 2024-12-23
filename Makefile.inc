@@ -2,6 +2,9 @@ CXX=g++
 CXX_COMMON_LIB=-Wall -Werror -Wpedantic -pipe -O2 -fPIC -c
 CXX_COMMON_EXE=-Wall -Wpedantic -pipe -O2 -g -ldl
 
+JSON_INCLUDE=-I /usr/include/jsoncpp
+JSON_LIB=-ljsoncpp
+
 CPP_TOOLS_LIB_DIR=./CppTools/lib
 CPP_TOOLS_SRC_DIR=./CppTools/src
 CPP_TOOLS_INCLUDE=-I ./CppTools/include

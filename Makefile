@@ -234,6 +234,15 @@ AnalyzeResonance: src/AnalyzeResonance.cpp all_libs bin
 	$(ROOT_TOOLS_INCLUDE) \
 	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB)
 
+CalibrateSigmalizedResiduals: src/CalibrateSigmalizedResiduals.cpp all_libs bin
+	@$(ECHO) Building CXX executable $@
+	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
+	$(JSON_INCLUDE) $(JSON_LIB) \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) $(ROOT_TOOLS_LIB)
+
 # other
 
 bin:
