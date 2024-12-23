@@ -17,8 +17,8 @@ PBAR_SRC_DIR=./ProgressBar/src
 PBAR_INCLUDE=-I ./ProgressBar/include
 PBAR_LIB=-L ./ProgressBar/lib -lPBar
 
-ANALYSIS_INCLUDE=-I ./include
-SIM_LIB=-L ./SimAnalysis/lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun -lIdentFun
+PAIR_ANALYSIS_INCLUDE=-I ./include
+PAIR_ANALYSIS_LIB=-L ./lib -lEffTreeReader -lEmbTreeReader -lSTrackFun -lPTrackFun -lIdentFun
 
 ROOT_INCLUDE=-I${ROOT_PATH}/include
 ROOT_CONFIG=${ROOT_PATH}/bin/root-config

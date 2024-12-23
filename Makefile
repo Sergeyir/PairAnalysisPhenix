@@ -33,7 +33,7 @@ all: all_libs exe_targets
 	@echo "All done"
 
 exe_targets: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
-all_libs: 	 CppToolsLib ROOTToolsLib PBarLib AnalysisLib
+all_libs: 	 CppToolsLib ROOTToolsLib PBarLib PairAnalysisLib
 
 # CppTools target groups
 
@@ -58,13 +58,13 @@ PBar: 			 	 $(PBAR_LIB_DIR)/PBar.so $(PBAR_LIB_DIR)/libPBar.a
 
 # current repository target groups (Analysis)
 
-AnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataCutsSelector
-EffTreeReader:	 	 lib/EffTreeReader.so lib/libEffTreeReader.a
-EmbTreeReader:	 	 lib/EmbTreeReader.so lib/libEmbTreeReader.a
-STrackFun:	 	 	 lib/STrackFun.so lib/libSTrackFun.a
-PTrackFun:	 	 	 lib/PTrackFun.so lib/libPTrackFun.a
-IdentFun:	 	 	 lib/IdentFun.so lib/libIdentFun.a
-DataCutsSelector:	 lib/DataCutsSelector.so lib/libDataCutsSelector.a
+PairAnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataCutsSelector
+EffTreeReader:	 	 	 lib/EffTreeReader.so lib/libEffTreeReader.a
+EmbTreeReader:	 	 	 lib/EmbTreeReader.so lib/libEmbTreeReader.a
+STrackFun:	 	 	 	 lib/STrackFun.so lib/libSTrackFun.a
+PTrackFun:	 	 	 	 lib/PTrackFun.so lib/libPTrackFun.a
+IdentFun:	 	 	 	 lib/IdentFun.so lib/libIdentFun.a
+DataCutsSelector:	 	 lib/DataCutsSelector.so lib/libDataCutsSelector.a
 
 # CppTools sumbodule targets
 
@@ -185,7 +185,7 @@ lib/PTrackFun.o: src/PTrackFun.cpp | lib
 
 lib/IdentFun.o: src/IdentFun.cpp | lib
 	@$(ECHO) Building CXX object $@
-	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(ANALYSIS_INCLUDE) \
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ $(PAIR_ANALYSIS_INCLUDE) \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	-L./lib -lSTrackFun
@@ -197,16 +197,6 @@ lib/%.so: lib/%.o
 lib/lib%.a: lib/%.o
 	@$(ECHO) Building CXX static library $@
 	ar rcs $@ $<
-	
-AnalyzeEmbedding: src/AnalyzeEmbedding.cpp all_libs bin
-	@$(ECHO) Building CXX executable $@
-	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) \
-	$(ANALYSIS_INCLUDE) $(SIM_LIB) \
-	-L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 AnalyzeHeatMaps: src/AnalyzeHeatMaps.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
@@ -215,8 +205,16 @@ AnalyzeHeatMaps: src/AnalyzeHeatMaps.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(ANALYSIS_INCLUDE) $(SIM_LIB) \
-	-L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
+	$(PAIR_ANALYSIS_INCLUDE) $(PAIR_ANALYSIS_LIB) 
+	
+AnalyzeEmbedding: src/AnalyzeEmbedding.cpp all_libs bin
+	@$(ECHO) Building CXX executable $@
+	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
+	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
+	$(PBAR_INCLUDE) $(PBAR_LIB) \
+	$(ROOT_TOOLS_INCLUDE) \
+	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB) \
 
 AnalyzeSingleTrack: src/AnalyzeSingleTrack.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
@@ -225,8 +223,7 @@ AnalyzeSingleTrack: src/AnalyzeSingleTrack.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(ANALYSIS_INCLUDE) $(SIM_LIB) \
-	-L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
+	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB)
 
 AnalyzeResonance: src/AnalyzeResonance.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
@@ -235,25 +232,7 @@ AnalyzeResonance: src/AnalyzeResonance.cpp all_libs bin
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
 	$(ROOT_TOOLS_INCLUDE) \
-	$(ANALYSIS_INCLUDE) $(SIM_LIB) \
-	-L$(ANALYSIS_LIB_DIR) -lDeadAreasCuts
-
-# Analysis targets
-
-$(ANALYSIS_LIB_DIR):
-	mkdir -p $@
-
-$(ANALYSIS_LIB_DIR)/DeadAreasCuts.o: $(ANALYSIS_SRC_DIR)/DeadAreasCuts.cpp | $(ANALYSIS_LIB_DIR)
-	@$(ECHO) Building CXX object $@
-	$(CXX) $< $(CXX_COMMON_LIB) -o $@
-
-$(ANALYSIS_LIB_DIR)/%.so: $(ANALYSIS_LIB_DIR)/%.o
-	@$(ECHO) Building CXX shared library $@
-	$(CXX) -shared -o $@ $<
-
-$(ANALYSIS_LIB_DIR)/lib%.a: $(ANALYSIS_LIB_DIR)/%.o
-	@$(ECHO) Building CXX static library $@
-	ar rcs $@ $<
+	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB)
 
 # other
 

@@ -313,16 +313,16 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    
                if (IsMatch(tofwsdphi, tofwsdz, 3., 3.))
                {
-                  distrStripTOFw->Fill(T.striptofw(i), particleWeight*Par.correctionTOFw);
+                  distrStripTOFw->Fill(T.striptofw(i), particleWeight);
                   if (!IsBadStripTOFw(static_cast<int>(T.striptofw(i))))
                   {
                      if (zed >=0) 
                      {
-                        distrTOFw0->Fill(board, alpha, particleWeight*Par.correctionTOFw);
+                        distrTOFw0->Fill(board, alpha, particleWeight);
                      }
                      else 
                      {
-                        distrTOFw1->Fill(board, alpha, particleWeight*Par.correctionTOFw);
+                        distrTOFw1->Fill(board, alpha, particleWeight);
                      }
                   }
                }
@@ -556,7 +556,6 @@ void HeatMapper()
       Par.runName + "/Heatmaps/*.root").c_str());
 }
 
-//main calls the same function CINT would call
 int main()
 {
    HeatMapper();

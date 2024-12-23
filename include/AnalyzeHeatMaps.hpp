@@ -20,6 +20,9 @@
 
 #include <signal.h>
 
+#include "json/json.h"
+#include "json/value.h"
+
 #include "ParAnalyzeHeatMaps.hpp"
 
 #include "IOTools.hpp"
@@ -32,104 +35,91 @@
 #include "STrackFun.hpp"
 #include "EffTreeReader.hpp"
 
+#include "DeadAreasCuts.h"
+
 #include "ROOT/TTreeProcessorMT.hxx"
 
-//container for storing heat maps ThrObj histograms for different detectors
+//container for storing ThrObj objects that store TThreadedObject objects
 struct ThrContainer
 {
-   ThrObj<TH1F> distrOrigPT = ThrObj<TH1F>
-      ("orig","orig", Par.pTNBins, Par.pTMin, Par.pTMax);
+   ThrObj<TH1F> distrOrigPT = 
+      ThrObj<TH1F>("orig p_{T}", "pT", 100., 0., 10.);
 
-   //original generated pT before simulation vs reconstructed pT in the simulation
-   ThrObj<TH2F> distrOrigPTVsRecPT = ThrObj<TH2F>
-      ("orig_pt_vs_pt","orig_pt vs pt", 
-      100, 0., 10., Par.pTNBins, Par.pTMin, Par.pTMax);
+   //original generated pT vs reconstructed pT in the simulation
+   ThrObj<TH2F> distrOrigPTVsRecPT = 
+      ThrObj<TH2F>("orig pT vs rec pT","p_{T}^{orig} vs p_{T}^{rec}", 
+                   100, 0., 10., 100, 0., 10.);
       
-   ThrObj<TH2F> distrDCe0 = ThrObj<TH2F>
-      ("Heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrDCe1 = ThrObj<TH2F>
-      ("Heatmap: DCe, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrDCw0 = ThrObj<TH2F>
-      ("Heatmap: DCw, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrDCw1 = ThrObj<TH2F>
-      ("Heatmap: DCw, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapDCe0 = 
+      ThrObj<TH2F>("Heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapDCe1 = 
+      ThrObj<TH2F>("Heatmap: DCe, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapDCw0 = 
+      ThrObj<TH2F>("Heatmap: DCw, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapDCw1 = 
+      ThrObj<TH2F>("Heatmap: DCw, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
 
-   //unscaled alpha
-   ThrObj<TH2F> distrUnscaledDCe0 = ThrObj<TH2F>
-      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrUnscaledDCe1 = ThrObj<TH2F>
-      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrUnscaledDCw0 = ThrObj<TH2F>
-      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
-   ThrObj<TH2F> distrUnscaledDCw1 = ThrObj<TH2F>
-      ("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+   // DC heatmaps without alpha scaling: needed for alpha scaling
+   ThrObj<TH2F> heatmapUnscaledDCe0 = 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+                   400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapUnscaledDCe1 = 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+                   400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapUnscaledDCw0 = 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+                   400, 0., 80., 195, -0.39, 0.39);
+   ThrObj<TH2F> heatmapUnscaledDCw1 = 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+                   400, 0., 80., 195, -0.39, 0.39);
 
-   ThrObj<TH2F> distrPC1e = ThrObj<TH2F>
-      ("pc1e_z_vs_phi", "z vs phi", 180, -90., 90., 330, 2.1, 3.75);
-   ThrObj<TH2F> distrPC1w = ThrObj<TH2F>
-      ("pc1w_z_vs_phi", "z vs phi", 180, -90., 90., 330, -0.6, 1.05);
+   ThrObj<TH2F> heatmapPC1e = 
+      ThrObj<TH2F>("Heatmap: PC1e", "pc1z vs pc1phi", 360, -90., 90.,170, 2.05, 3.75);
+   ThrObj<TH2F> heatmapPC1w = 
+      ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 360, -90., 90., 160, -0.55, 1.05);
 
    ThrObj<TH2F> distrPC2 = ThrObj<TH2F>
-      ("pc2_z_vs_phi", "z vs phi", 160, -160., 160., 330, -0.6, 1.05);
+      ("Heatmap: PC2", "pc3z vs pc3phi", 320, -160., 160., 330, -0.6, 1.05);
 
    ThrObj<TH2F> distrPC3e = ThrObj<TH2F>
-      ("pc3e_z_vs_phi", "z vs phi", 190, -190., 190., 320, 2.15, 3.75);
+      ("Heatmap: PC3e", "pc3z vs pc3phi", 380, -190., 190., 170, 2.1, 3.8);
    ThrObj<TH2F> distrPC3w = ThrObj<TH2F>
-      ("pc3w_z_vs_phi", "z vs phi", 190, -190., 190., 330, -0.6, 1.05);
+      ("Heatmap: PC3w", "pc3z vs pc3phi", 380, -190., 190., 170, -0.65, 1.05);
 
-   //positive tracks in EMCale
-   std::array<ThrObj<TH2F>, 4> distrEMCalePos = 
-   {
-      ThrObj<TH2F>("emcale0_pos", "y vs z", 100, -300., -90., 210, -30., 210.),
-      ThrObj<TH2F>("emcale1_pos", "y vs z", 100, -110., 110., 210, -30., 210.),
-      ThrObj<TH2F>("emcale2_pos", "y vs z", 100, 90., 300., 210, -30., 210.),
-      ThrObj<TH2F>("emcale3_pos", "y vs z", 100, 280., 440., 210, -30., 210.)
-   };
+   ThrObj<TH2F> heatmapTOFe = 
+      ThrObj<TH2F>("Heatmap: TOFe", "ptofy vs ptofz", 185, -280., 90., 195, -195., 195.);
 
-   std::array<ThrObj<TH2F>, 4> distrEMCaleNeg = 
+   ThrObj<TH2F> heatmapTOFw0 = 
+      ThrObj<TH2F>("Heatmap: TOFw, ptofy < 100", "ptofy vs ptofz", 90, -55., 35., 195, -195., 195.);
+   ThrObj<TH2F> heatmapTOFw1 = 
+      ThrObj<TH2F>("Heatmap: TOFw, ptofy > 100", "ptofy vs ptofz", 85, 185., 270., 195, -195., 195.);
+
+   std::array<ThrObj<TH2F>, 4> heatmapEMCale = 
    {
-      ThrObj<TH2F>("emcale0_neg", "y vs z", 100, -300., -90., 210, -210., 30.),
-      ThrObj<TH2F>("emcale1_neg", "y vs z", 100, -110., 110., 210, -210., 30.),
-      ThrObj<TH2F>("emcale2_neg", "y vs z", 100, 90., 300., 210, -210., 30.),
-      ThrObj<TH2F>("emcale3_neg", "y vs z", 100, 280., 440., 210, -210., 30.)
-   };
-   
-   std::array<ThrObj<TH2F>, 4> distrEMCalwPos = 
-   {
-      ThrObj<TH2F>("emcalw0_pos", "y vs z", 100, -300., -90., 210, -30., 210.),
-      ThrObj<TH2F>("emcalw1_pos", "y vs z", 100, -110., 110., 210, -30., 210.),
-      ThrObj<TH2F>("emcalw2_pos", "y vs z", 100, 90., 300., 210, -30., 210.),
-      ThrObj<TH2F>("emcalw3_pos", "y vs z", 100, 280., 440., 210, -30., 210.)
+      ThrObj<TH2F>("Heatmap: EMCale0", "pemcy vs pemcz", 200, -300., -90., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale1", "pemcy vs pemcz", 200, -110., 110., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale2", "pemcy vs pemcz", 200, 90., 300., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale3", "pemcy vs pemcz", 200, 280., 440., 205, -205., 205.)
    };
 
-   std::array<ThrObj<TH2F>, 4> distrEMCalwNeg = 
+   std::array<ThrObj<TH2F>, 4> heatmapEMCalw = 
    {
-      ThrObj<TH2F>("emcalw0_neg", "y vs z", 100, -300., -90., 210, -210., 30.),
-      ThrObj<TH2F>("emcalw1_neg", "y vs z", 100, -110., 110., 210, -210., 30.),
-      ThrObj<TH2F>("emcalw2_neg", "y vs z", 100, 90., 300., 210, -210., 30.),
-      ThrObj<TH2F>("emcalw3_neg", "y vs z", 100, 280., 440., 210, -210., 30.)
+      ThrObj<TH2F>("Heatmap: EMCalw0", "pemcy vs pemcz", 200, -300., -90., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 200, -110., 110., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 200, 90., 300., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 200, 280., 440., 205, -205., 205.)
    };
+
 
    ThrObj<TH1F> distrStripTOFw = ThrObj<TH1F>
       ("strip_tofw", "strip", 550, 0., 550.);
    ThrObj<TH1F> distrSlatTOFe = ThrObj<TH1F>
       ("slat", "slat", 1000, 0., 1000.);
 
-   ThrObj<TH2F> distrTOFe0 = ThrObj<TH2F>
-      ("tofe0", "tofe0", 200, -300., 100., 200, -40., 210.);
-   ThrObj<TH2F> distrTOFe1 = ThrObj<TH2F>
-      ("tofe1", "tofe1", 200, -300., 100., 200, -210., 40.);
-
-   ThrObj<TH2F> distrTOFw0 = ThrObj<TH2F>
-      ("tofw0", "tofw0", 200, 15, 68, 200, -0.3, 0.3);
-   ThrObj<TH2F> distrTOFw1 = ThrObj<TH2F>
-      ("tofw1", "tofw1", 200, 15, 68, 200, -0.3, 0.3);
 };
 
-//auxName can be used to specify different statistics of the same dataset e.g. low pT or high pT
 void Analyze(ThrContainer *thrContainer, const std::string& part, const std::string& magf, 
              const std::string& auxName, const int procNum); 
-void HeatMapper(); //for ROOT CINT call
-int main(); //main calls HeatMapper - the same CINT would called; used in compiled binary
+int main();
 
 #endif /*ANALYZE_HEAT_MAPS_HPP*/
