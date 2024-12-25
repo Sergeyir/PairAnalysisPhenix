@@ -41,9 +41,9 @@ int main(int argc, char **argv)
 
    TFile inputFile(inputFileName.c_str());
 
-   TH3F *distrDPhi = static_cast<TH3F *>(inputFile.Get("dphi vs pT vs zed: EMCale0, charge < 0"));
-   distrDPhi->RebinZ(3);
-   distrDPhi->RebinY(2);
+   TH3F *distrDPhi = static_cast<TH3F *>(inputFile.Get("dphi vs pT vs centrality: PC2, charge<0, -15<zDC<0"));
+   //distrDPhi->RebinZ(3);
+   //distrDPhi->RebinY(2);
 
    TF1 fitFuncGaus("gaus", "gaus");
    fitFuncGaus.SetParameters(1., 0., 0.02);
@@ -92,11 +92,13 @@ int main(int argc, char **argv)
                   j < distrDPhi->GetYaxis()->GetNbins())
          {
             distrDPhiProj = distrDPhi->ProjectionX("", j, j + 1, i, i);
+            distrDPhiProj->Rebin(2);
             j++;
          }
          else if (j < distrDPhi->GetYaxis()->GetNbins() - 4)
          {
             distrDPhiProj = distrDPhi->ProjectionX("", j, j + 4, i, i);
+            distrDPhiProj->Rebin(4);
             j += 4;
          }
          else continue;
