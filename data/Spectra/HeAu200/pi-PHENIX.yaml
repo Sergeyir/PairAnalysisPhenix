@@ -25,9 +25,10 @@ independent_variables:
   - {low: 3.05, high: 3.4}
   - {low: 3.4, high: 3.8}
   - {low: 3.8, high: 4.2}
+dependent_variables:
 - header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
   qualifiers:
-  - {name: '#pi^{-}$', value: '0-88\%'}
+  - {name: '#pi^{-}', value: '0-88\%'}
   - {name: '$p_T$', value: '$^3He+Au$ $0-88\%$'}
   values:
   - value: 1.22674
@@ -124,7 +125,7 @@ independent_variables:
     - {symerror: 1.11733e-09, label: 'sys.'}
 - header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
   qualifiers:
-  - {name: '#pi^{-}$', value: '0-20\%'}
+  - {name: '#pi^{-}', value: '0-20\%'}
   - {name: '$p_T$', value: '$^3He+Au$ $0-20\%$'}
   values:
   - value: 2.19999
@@ -221,7 +222,7 @@ independent_variables:
     - {symerror: 4.48626e-09, label: 'sys.'}
 - header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
   qualifiers:
-  - {name: '#pi^{-}$', value: '20-40\%'}
+  - {name: '#pi^{-}', value: '20-40\%'}
   - {name: '$p_T$', value: '$^3He+Au$ $20-40\%$'}
   values:
   - value: 1.65759
@@ -318,7 +319,7 @@ independent_variables:
     - {symerror: 2.15322e-09, label: 'sys.'}
 - header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
   qualifiers:
-  - {name: '#pi^{-}$', value: '40-60\%'}
+  - {name: '#pi^{-}', value: '40-60\%'}
   - {name: '$p_T$', value: '$^3He+Au$ $40-60\%$'}
   values:
   - value: 1.05911
@@ -415,7 +416,7 @@ independent_variables:
     - {symerror: 6.17172e-10, label: 'sys.'}
 - header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
   qualifiers:
-  - {name: '#pi^{-}$', value: '60-88\%'}
+  - {name: '#pi^{-}', value: '60-88\%'}
   - {name: '$p_T$', value: '$^3He+Au$ $60-88\%$'}
   values:
   - value: 0.45954

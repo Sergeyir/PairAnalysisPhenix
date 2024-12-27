@@ -3,6 +3,8 @@
    gInterpreter->AddIncludePath("CppTools/include");
    gInterpreter->AddIncludePath("ROOTTools/include");
    gInterpreter->AddIncludePath("ProgressBar/include");
+   gInterpreter->AddIncludePath("yaml-cpp/include");
+   gInterpreter->AddIncludePath("/usr/include/jsoncpp"); // for debian
    
    gSystem->Load("CppTools/lib/ErrorHandler.so");
    gSystem->Load("CppTools/lib/StrTools.so");
@@ -14,6 +16,10 @@
    gSystem->Load("ROOTTools/lib/GUIFit.so");
 
    gSystem->Load("ProgressBar/lib/PBar.so");
+
+   gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
+
+   gSystem->Load("libjsoncpp.so");
 
    gSystem->Load("lib/DataCutsSelector.so");
 }

@@ -25,6 +25,7 @@ independent_variables:
   - {low: 3.05, high: 3.4}
   - {low: 3.4, high: 3.8}
   - {low: 3.8, high: 4.2}
+dependent_variables:
 - header: {name: 'Invariant $p_T$ spectra measured for $\bar{p}$ ($^3He+Au$)'}
   qualifiers:
   - {name: '#bar{p}', value: '0-88\%'}

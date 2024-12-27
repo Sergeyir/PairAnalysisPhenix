@@ -17,6 +17,7 @@ independent_variables:
   - {low: 1.7, high: 1.8}
   - {low: 1.8, high: 1.9}
   - {low: 1.9, high: 2.025}
+dependent_variables:
 - header: {name: 'Invariant $p_T$ spectra measured for $K^-$ ($^3He+Au$)'}
   qualifiers:
   - {name: 'K^{-}', value: '0-88\%'}

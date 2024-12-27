@@ -33,7 +33,7 @@ all: all_libs exe_targets
 	@echo "All done"
 
 exe_targets: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
-all_libs: 	 CppToolsLib ROOTToolsLib PBarLib PairAnalysisLib
+all_libs: 	 CppToolsLib ROOTToolsLib PBarLib YamlCPP PairAnalysisLib
 
 # CppTools target groups
 
@@ -55,6 +55,9 @@ GUIFit: 			 	 $(ROOT_TOOLS_LIB_DIR)/GUIFit.so $(ROOT_TOOLS_LIB_DIR)/libGUIFit.a
 
 PBarLib: 		 	 PBar
 PBar: 			 	 $(PBAR_LIB_DIR)/PBar.so $(PBAR_LIB_DIR)/libPBar.a
+
+# yaml-cpp
+YamlCPP:			 	 yaml-cpp/build/libyaml-cpp.so
 
 # current repository target groups (Analysis)
 
@@ -152,6 +155,13 @@ $(PBAR_LIB_DIR)/%.so: $(PBAR_LIB_DIR)/%.o
 $(PBAR_LIB_DIR)/lib%.a: $(PBAR_LIB_DIR)/%.o
 	@$(ECHO) Building CXX static library $@
 	ar rcs $@ $<
+
+# yaml-cpp
+
+yaml-cpp/build/libyaml-cpp.so:
+	@$(ECHO) Building CXX shared library $@
+	mkdir -p ./yaml-cpp/build && cmake -S ./yaml-cpp -B ./yaml-cpp/build \
+	-DYAML_BUILD_SHARED_LIBS=on && cd ./yaml-cpp/build && make -j4
 
 # Current repository targets (Analysis)
 
@@ -254,6 +264,7 @@ clean:
 	rm -rf CppTools/lib ; \
 	rm -rf ROOTTools/lib ; \
 	rm -rf ProgressBar/lib ; \
+	rm -rf yaml-cpp/build ; \
 	rm -rf lib
 
 endif
