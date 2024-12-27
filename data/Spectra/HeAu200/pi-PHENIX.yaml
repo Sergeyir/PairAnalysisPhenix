@@ -1,0 +1,512 @@
+source: 'PRC109, 054910'
+independent_variables:
+- header: {name: '$p_T$'}
+  values:
+  - {low: 0.5, high: 0.6}
+  - {low: 0.6, high: 0.7}
+  - {low: 0.7, high: 0.8}
+  - {low: 0.8, high: 0.9}
+  - {low: 0.9, high: 1}
+  - {low: 1, high: 1.1}
+  - {low: 1.1, high: 1.2}
+  - {low: 1.2, high: 1.3}
+  - {low: 1.3, high: 1.4}
+  - {low: 1.4, high: 1.5}
+  - {low: 1.5, high: 1.6}
+  - {low: 1.6, high: 1.7}
+  - {low: 1.7, high: 1.8}
+  - {low: 1.8, high: 1.9}
+  - {low: 1.9, high: 2.025}
+  - {low: 2.025, high: 2.2}
+  - {low: 2.2, high: 2.4}
+  - {low: 2.4, high: 2.6}
+  - {low: 2.6, high: 2.8}
+  - {low: 2.8, high: 3.05}
+  - {low: 3.05, high: 3.4}
+  - {low: 3.4, high: 3.8}
+  - {low: 3.8, high: 4.2}
+- header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: '#pi^{-}$', value: '0-88\%'}
+  - {name: '$p_T$', value: '$^3He+Au$ $0-88\%$'}
+  values:
+  - value: 1.22674
+    errors:
+    - {symerror: 0.00038921, label: 'stat.'}
+    - {symerror: 0.00221337, label: 'sys.'}
+  - value: 0.729522
+    errors:
+    - {symerror: 0.000278188, label: 'stat.'}
+    - {symerror: 0.000782755, label: 'sys.'}
+  - value: 0.456754
+    errors:
+    - {symerror: 0.000206488, label: 'stat.'}
+    - {symerror: 0.00030684, label: 'sys.'}
+  - value: 0.289469
+    errors:
+    - {symerror: 0.000155599, label: 'stat.'}
+    - {symerror: 0.00012324, label: 'sys.'}
+  - value: 0.190521
+    errors:
+    - {symerror: 0.000120332, label: 'stat.'}
+    - {symerror: 5.33868e-05, label: 'sys.'}
+  - value: 0.126255
+    errors:
+    - {symerror: 9.39056e-05, label: 'stat.'}
+    - {symerror: 2.32193e-05, label: 'sys.'}
+  - value: 0.0867717
+    errors:
+    - {symerror: 7.49766e-05, label: 'stat.'}
+    - {symerror: 1.09675e-05, label: 'sys.'}
+  - value: 0.0605251
+    errors:
+    - {symerror: 6.05425e-05, label: 'stat.'}
+    - {symerror: 5.3361e-06, label: 'sys.'}
+  - value: 0.0428661
+    errors:
+    - {symerror: 4.94241e-05, label: 'stat.'}
+    - {symerror: 2.67658e-06, label: 'sys.'}
+  - value: 0.0306849
+    errors:
+    - {symerror: 4.06796e-05, label: 'stat.'}
+    - {symerror: 1.37152e-06, label: 'sys.'}
+  - value: 0.0222458
+    errors:
+    - {symerror: 3.37794e-05, label: 'stat.'}
+    - {symerror: 6.85863e-07, label: 'sys.'}
+  - value: 0.0163236
+    errors:
+    - {symerror: 2.82818e-05, label: 'stat.'}
+    - {symerror: 3.69295e-07, label: 'sys.'}
+  - value: 0.0122447
+    errors:
+    - {symerror: 2.39879e-05, label: 'stat.'}
+    - {symerror: 2.07796e-07, label: 'sys.'}
+  - value: 0.00919231
+    errors:
+    - {symerror: 2.03902e-05, label: 'stat.'}
+    - {symerror: 1.17109e-07, label: 'sys.'}
+  - value: 0.00708195
+    errors:
+    - {symerror: 1.75861e-05, label: 'stat.'}
+    - {symerror: 6.95099e-08, label: 'sys.'}
+  - value: 0.0049547
+    errors:
+    - {symerror: 1.4475e-05, label: 'stat.'}
+    - {symerror: 3.02043e-08, label: 'sys.'}
+  - value: 0.00469469
+    errors:
+    - {symerror: 1.3884e-05, label: 'stat.'}
+    - {symerror: 2.71174e-08, label: 'sys.'}
+  - value: 0.00317343
+    errors:
+    - {symerror: 1.1262e-05, label: 'stat.'}
+    - {symerror: 1.23906e-08, label: 'sys.'}
+  - value: 0.00239913
+    errors:
+    - {symerror: 9.67196e-06, label: 'stat.'}
+    - {symerror: 7.08178e-09, label: 'sys.'}
+  - value: 0.00183052
+    errors:
+    - {symerror: 8.35374e-06, label: 'stat.'}
+    - {symerror: 4.12272e-09, label: 'sys.'}
+  - value: 0.00139337
+    errors:
+    - {symerror: 7.21393e-06, label: 'stat.'}
+    - {symerror: 2.96533e-09, label: 'sys.'}
+  - value: 0.00108379
+    errors:
+    - {symerror: 6.38882e-06, label: 'stat.'}
+    - {symerror: 1.79402e-09, label: 'sys.'}
+  - value: 0.000855303
+    errors:
+    - {symerror: 5.6796e-06, label: 'stat.'}
+    - {symerror: 1.11733e-09, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: '#pi^{-}$', value: '0-20\%'}
+  - {name: '$p_T$', value: '$^3He+Au$ $0-20\%$'}
+  values:
+  - value: 2.19999
+    errors:
+    - {symerror: 0.00107908, label: 'stat.'}
+    - {symerror: 0.00711853, label: 'sys.'}
+  - value: 1.3216
+    errors:
+    - {symerror: 0.000775186, label: 'stat.'}
+    - {symerror: 0.00256891, label: 'sys.'}
+  - value: 0.836906
+    errors:
+    - {symerror: 0.000578666, label: 'stat.'}
+    - {symerror: 0.00103016, label: 'sys.'}
+  - value: 0.535662
+    errors:
+    - {symerror: 0.000438214, label: 'stat.'}
+    - {symerror: 0.000422017, label: 'sys.'}
+  - value: 0.355782
+    errors:
+    - {symerror: 0.000340438, label: 'stat.'}
+    - {symerror: 0.000186173, label: 'sys.'}
+  - value: 0.237651
+    errors:
+    - {symerror: 0.00026673, label: 'stat.'}
+    - {symerror: 8.22679e-05, label: 'sys.'}
+  - value: 0.164402
+    errors:
+    - {symerror: 0.000213662, label: 'stat.'}
+    - {symerror: 3.93702e-05, label: 'sys.'}
+  - value: 0.115469
+    errors:
+    - {symerror: 0.000173126, label: 'stat.'}
+    - {symerror: 1.94215e-05, label: 'sys.'}
+  - value: 0.081955
+    errors:
+    - {symerror: 0.000141483, label: 'stat.'}
+    - {symerror: 9.78371e-06, label: 'sys.'}
+  - value: 0.0590261
+    errors:
+    - {symerror: 0.000116808, label: 'stat.'}
+    - {symerror: 5.07505e-06, label: 'sys.'}
+  - value: 0.0429898
+    errors:
+    - {symerror: 9.72178e-05, label: 'stat.'}
+    - {symerror: 2.56137e-06, label: 'sys.'}
+  - value: 0.0316937
+    errors:
+    - {symerror: 8.15868e-05, label: 'stat.'}
+    - {symerror: 1.39216e-06, label: 'sys.'}
+  - value: 0.0238253
+    errors:
+    - {symerror: 6.92745e-05, label: 'stat.'}
+    - {symerror: 7.86716e-07, label: 'sys.'}
+  - value: 0.0178963
+    errors:
+    - {symerror: 5.89015e-05, label: 'stat.'}
+    - {symerror: 4.43882e-07, label: 'sys.'}
+  - value: 0.0138509
+    errors:
+    - {symerror: 5.09176e-05, label: 'stat.'}
+    - {symerror: 2.65887e-07, label: 'sys.'}
+  - value: 0.00973901
+    errors:
+    - {symerror: 4.20148e-05, label: 'stat.'}
+    - {symerror: 1.16698e-07, label: 'sys.'}
+  - value: 0.00921954
+    errors:
+    - {symerror: 4.02811e-05, label: 'stat.'}
+    - {symerror: 1.04581e-07, label: 'sys.'}
+  - value: 0.00624559
+    errors:
+    - {symerror: 3.27093e-05, label: 'stat.'}
+    - {symerror: 4.79933e-08, label: 'sys.'}
+  - value: 0.00473269
+    errors:
+    - {symerror: 2.8124e-05, label: 'stat.'}
+    - {symerror: 2.75582e-08, label: 'sys.'}
+  - value: 0.00366201
+    errors:
+    - {symerror: 2.44618e-05, label: 'stat.'}
+    - {symerror: 1.64996e-08, label: 'sys.'}
+  - value: 0.0027925
+    errors:
+    - {symerror: 2.11432e-05, label: 'stat.'}
+    - {symerror: 1.19104e-08, label: 'sys.'}
+  - value: 0.00219408
+    errors:
+    - {symerror: 1.88196e-05, label: 'stat.'}
+    - {symerror: 7.35265e-09, label: 'sys.'}
+  - value: 0.00171385
+    errors:
+    - {symerror: 1.66448e-05, label: 'stat.'}
+    - {symerror: 4.48626e-09, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: '#pi^{-}$', value: '20-40\%'}
+  - {name: '$p_T$', value: '$^3He+Au$ $20-40\%$'}
+  values:
+  - value: 1.65759
+    errors:
+    - {symerror: 0.000961797, label: 'stat.'}
+    - {symerror: 0.00404114, label: 'sys.'}
+  - value: 0.989706
+    errors:
+    - {symerror: 0.000688827, label: 'stat.'}
+    - {symerror: 0.00144066, label: 'sys.'}
+  - value: 0.621206
+    errors:
+    - {symerror: 0.000511929, label: 'stat.'}
+    - {symerror: 0.000567571, label: 'sys.'}
+  - value: 0.394362
+    errors:
+    - {symerror: 0.000386092, label: 'stat.'}
+    - {symerror: 0.000228738, label: 'sys.'}
+  - value: 0.260063
+    errors:
+    - {symerror: 0.000298874, label: 'stat.'}
+    - {symerror: 9.94731e-05, label: 'sys.'}
+  - value: 0.172774
+    errors:
+    - {symerror: 0.000233531, label: 'stat.'}
+    - {symerror: 4.34819e-05, label: 'sys.'}
+  - value: 0.118924
+    errors:
+    - {symerror: 0.000186599, label: 'stat.'}
+    - {symerror: 2.06011e-05, label: 'sys.'}
+  - value: 0.0830057
+    errors:
+    - {symerror: 0.000150725, label: 'stat.'}
+    - {symerror: 1.00361e-05, label: 'sys.'}
+  - value: 0.0590869
+    errors:
+    - {symerror: 0.000123357, label: 'stat.'}
+    - {symerror: 5.08551e-06, label: 'sys.'}
+  - value: 0.0421658
+    errors:
+    - {symerror: 0.000101375, label: 'stat.'}
+    - {symerror: 2.58984e-06, label: 'sys.'}
+  - value: 0.0306027
+    errors:
+    - {symerror: 8.42257e-05, label: 'stat.'}
+    - {symerror: 1.29796e-06, label: 'sys.'}
+  - value: 0.0224727
+    errors:
+    - {symerror: 7.05445e-05, label: 'stat.'}
+    - {symerror: 6.99926e-07, label: 'sys.'}
+  - value: 0.0168867
+    errors:
+    - {symerror: 5.98865e-05, label: 'stat.'}
+    - {symerror: 3.95213e-07, label: 'sys.'}
+  - value: 0.0127364
+    errors:
+    - {symerror: 5.10234e-05, label: 'stat.'}
+    - {symerror: 2.24819e-07, label: 'sys.'}
+  - value: 0.00980018
+    errors:
+    - {symerror: 4.39793e-05, label: 'stat.'}
+    - {symerror: 1.3311e-07, label: 'sys.'}
+  - value: 0.00684802
+    errors:
+    - {symerror: 3.61767e-05, label: 'stat.'}
+    - {symerror: 5.76985e-08, label: 'sys.'}
+  - value: 0.00650167
+    errors:
+    - {symerror: 3.47346e-05, label: 'stat.'}
+    - {symerror: 5.20097e-08, label: 'sys.'}
+  - value: 0.00439275
+    errors:
+    - {symerror: 2.81679e-05, label: 'stat.'}
+    - {symerror: 2.37414e-08, label: 'sys.'}
+  - value: 0.00333844
+    errors:
+    - {symerror: 2.42547e-05, label: 'stat.'}
+    - {symerror: 1.37126e-08, label: 'sys.'}
+  - value: 0.00251183
+    errors:
+    - {symerror: 2.0803e-05, label: 'stat.'}
+    - {symerror: 7.76274e-09, label: 'sys.'}
+  - value: 0.00193132
+    errors:
+    - {symerror: 1.80552e-05, label: 'stat.'}
+    - {symerror: 5.69701e-09, label: 'sys.'}
+  - value: 0.00148078
+    errors:
+    - {symerror: 1.58757e-05, label: 'stat.'}
+    - {symerror: 3.34905e-09, label: 'sys.'}
+  - value: 0.00118734
+    errors:
+    - {symerror: 1.4226e-05, label: 'stat.'}
+    - {symerror: 2.15322e-09, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: '#pi^{-}$', value: '40-60\%'}
+  - {name: '$p_T$', value: '$^3He+Au$ $40-60\%$'}
+  values:
+  - value: 1.05911
+    errors:
+    - {symerror: 0.000772798, label: 'stat.'}
+    - {symerror: 0.0016498, label: 'sys.'}
+  - value: 0.622512
+    errors:
+    - {symerror: 0.000549137, label: 'stat.'}
+    - {symerror: 0.000569959, label: 'sys.'}
+  - value: 0.384941
+    errors:
+    - {symerror: 0.000405078, label: 'stat.'}
+    - {symerror: 0.00021794, label: 'sys.'}
+  - value: 0.241321
+    errors:
+    - {symerror: 0.000303592, label: 'stat.'}
+    - {symerror: 8.56523e-05, label: 'sys.'}
+  - value: 0.157305
+    errors:
+    - {symerror: 0.000233652, label: 'stat.'}
+    - {symerror: 3.63942e-05, label: 'sys.'}
+  - value: 0.102869
+    errors:
+    - {symerror: 0.000181133, label: 'stat.'}
+    - {symerror: 1.54142e-05, label: 'sys.'}
+  - value: 0.07004
+    errors:
+    - {symerror: 0.000143945, label: 'stat.'}
+    - {symerror: 7.14569e-06, label: 'sys.'}
+  - value: 0.0484514
+    errors:
+    - {symerror: 0.000115753, label: 'stat.'}
+    - {symerror: 3.41952e-06, label: 'sys.'}
+  - value: 0.0341207
+    errors:
+    - {symerror: 9.42277e-05, label: 'stat.'}
+    - {symerror: 1.69585e-06, label: 'sys.'}
+  - value: 0.0243547
+    errors:
+    - {symerror: 7.74449e-05, label: 'stat.'}
+    - {symerror: 8.64007e-07, label: 'sys.'}
+  - value: 0.0175391
+    errors:
+    - {symerror: 6.40942e-05, label: 'stat.'}
+    - {symerror: 4.26339e-07, label: 'sys.'}
+  - value: 0.0127822
+    errors:
+    - {symerror: 5.34796e-05, label: 'stat.'}
+    - {symerror: 2.26439e-07, label: 'sys.'}
+  - value: 0.00953086
+    errors:
+    - {symerror: 4.52243e-05, label: 'stat.'}
+    - {symerror: 1.25894e-07, label: 'sys.'}
+  - value: 0.00712402
+    errors:
+    - {symerror: 3.83583e-05, label: 'stat.'}
+    - {symerror: 7.03382e-08, label: 'sys.'}
+  - value: 0.00546861
+    errors:
+    - {symerror: 3.30232e-05, label: 'stat.'}
+    - {symerror: 4.14472e-08, label: 'sys.'}
+  - value: 0.0038146
+    errors:
+    - {symerror: 2.71407e-05, label: 'stat.'}
+    - {symerror: 1.79033e-08, label: 'sys.'}
+  - value: 0.00358741
+    errors:
+    - {symerror: 2.59352e-05, label: 'stat.'}
+    - {symerror: 1.58342e-08, label: 'sys.'}
+  - value: 0.00241489
+    errors:
+    - {symerror: 2.09935e-05, label: 'stat.'}
+    - {symerror: 7.17512e-09, label: 'sys.'}
+  - value: 0.00180083
+    errors:
+    - {symerror: 1.79065e-05, label: 'stat.'}
+    - {symerror: 3.99006e-09, label: 'sys.'}
+  - value: 0.00137284
+    errors:
+    - {symerror: 1.54593e-05, label: 'stat.'}
+    - {symerror: 2.31885e-09, label: 'sys.'}
+  - value: 0.00103882
+    errors:
+    - {symerror: 1.33105e-05, label: 'stat.'}
+    - {symerror: 1.64823e-09, label: 'sys.'}
+  - value: 0.000809328
+    errors:
+    - {symerror: 1.17977e-05, label: 'stat.'}
+    - {symerror: 1.00043e-09, label: 'sys.'}
+  - value: 0.000635673
+    errors:
+    - {symerror: 1.04631e-05, label: 'stat.'}
+    - {symerror: 6.17172e-10, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $\pi^-$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: '#pi^{-}$', value: '60-88\%'}
+  - {name: '$p_T$', value: '$^3He+Au$ $60-88\%$'}
+  values:
+  - value: 0.45954
+    errors:
+    - {symerror: 0.000435543, label: 'stat.'}
+    - {symerror: 0.000310595, label: 'sys.'}
+  - value: 0.262376
+    errors:
+    - {symerror: 0.000305031, label: 'stat.'}
+    - {symerror: 0.00010125, label: 'sys.'}
+  - value: 0.157731
+    errors:
+    - {symerror: 0.000221858, label: 'stat.'}
+    - {symerror: 3.65917e-05, label: 'sys.'}
+  - value: 0.0963934
+    errors:
+    - {symerror: 0.000164169, label: 'stat.'}
+    - {symerror: 1.36661e-05, label: 'sys.'}
+  - value: 0.0610716
+    errors:
+    - {symerror: 0.000124564, label: 'stat.'}
+    - {symerror: 5.48564e-06, label: 'sys.'}
+  - value: 0.0393318
+    errors:
+    - {symerror: 9.583e-05, label: 'stat.'}
+    - {symerror: 2.25341e-06, label: 'sys.'}
+  - value: 0.0264482
+    errors:
+    - {symerror: 7.56827e-05, label: 'stat.'}
+    - {symerror: 1.01893e-06, label: 'sys.'}
+  - value: 0.0179744
+    errors:
+    - {symerror: 6.03228e-05, label: 'stat.'}
+    - {symerror: 4.70609e-07, label: 'sys.'}
+  - value: 0.0124766
+    errors:
+    - {symerror: 4.8752e-05, label: 'stat.'}
+    - {symerror: 2.26748e-07, label: 'sys.'}
+  - value: 0.00875379
+    errors:
+    - {symerror: 3.9726e-05, label: 'stat.'}
+    - {symerror: 1.1162e-07, label: 'sys.'}
+  - value: 0.0062028
+    errors:
+    - {symerror: 3.26124e-05, label: 'stat.'}
+    - {symerror: 5.33232e-08, label: 'sys.'}
+  - value: 0.00450719
+    errors:
+    - {symerror: 2.71715e-05, label: 'stat.'}
+    - {symerror: 2.81548e-08, label: 'sys.'}
+  - value: 0.00335083
+    errors:
+    - {symerror: 2.29434e-05, label: 'stat.'}
+    - {symerror: 1.55613e-08, label: 'sys.'}
+  - value: 0.00248099
+    errors:
+    - {symerror: 1.9368e-05, label: 'stat.'}
+    - {symerror: 8.53083e-09, label: 'sys.'}
+  - value: 0.00187505
+    errors:
+    - {symerror: 1.65448e-05, label: 'stat.'}
+    - {symerror: 4.87265e-09, label: 'sys.'}
+  - value: 0.00128233
+    errors:
+    - {symerror: 1.34639e-05, label: 'stat.'}
+    - {symerror: 2.02317e-09, label: 'sys.'}
+  - value: 0.00123549
+    errors:
+    - {symerror: 1.30225e-05, label: 'stat.'}
+    - {symerror: 1.87807e-09, label: 'sys.'}
+  - value: 0.00082688
+    errors:
+    - {symerror: 1.05107e-05, label: 'stat.'}
+    - {symerror: 8.41235e-10, label: 'sys.'}
+  - value: 0.000618493
+    errors:
+    - {symerror: 8.97877e-06, label: 'stat.'}
+    - {symerror: 4.70656e-10, label: 'sys.'}
+  - value: 0.0004593
+    errors:
+    - {symerror: 7.65075e-06, label: 'stat.'}
+    - {symerror: 2.59554e-10, label: 'sys.'}
+  - value: 0.000335981
+    errors:
+    - {symerror: 6.47675e-06, label: 'stat.'}
+    - {symerror: 1.72412e-10, label: 'sys.'}
+  - value: 0.000258722
+    errors:
+    - {symerror: 5.70726e-06, label: 'stat.'}
+    - {symerror: 1.02237e-10, label: 'sys.'}
+  - value: 0.00020765
+    errors:
+    - {symerror: 5.11665e-06, label: 'stat.'}
+    - {symerror: 6.58572e-11, label: 'sys.'}

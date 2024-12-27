@@ -1,0 +1,344 @@
+source: 'PRC109, 054910'
+independent_variables:
+- header: {name: '$p_T$'}
+  values:
+  - {low: 0.5, high: 0.6}
+  - {low: 0.6, high: 0.7}
+  - {low: 0.7, high: 0.8}
+  - {low: 0.8, high: 0.9}
+  - {low: 0.9, high: 1}
+  - {low: 1, high: 1.1}
+  - {low: 1.1, high: 1.2}
+  - {low: 1.2, high: 1.3}
+  - {low: 1.3, high: 1.4}
+  - {low: 1.4, high: 1.5}
+  - {low: 1.5, high: 1.6}
+  - {low: 1.6, high: 1.7}
+  - {low: 1.7, high: 1.8}
+  - {low: 1.8, high: 1.9}
+  - {low: 1.9, high: 2.025}
+- header: {name: 'Invariant $p_T$ spectra measured for $K^+$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: 'K^{+}', value: '0-88'}
+  - {name: '$p_T$', value: '$^3He+Au$ $0-88\%$'}
+  values:
+  - value: 0.187472
+    errors:
+    - {symerror: 0.000275235, label: 'stat.'}
+    - {symerror: 3.9763e-05, label: 'sys.'}
+  - value: 0.142119
+    errors:
+    - {symerror: 0.000201922, label: 'stat.'}
+    - {symerror: 2.28512e-05, label: 'sys.'}
+  - value: 0.109977
+    errors:
+    - {symerror: 0.000157228, label: 'stat.'}
+    - {symerror: 1.36839e-05, label: 'sys.'}
+  - value: 0.0769338
+    errors:
+    - {symerror: 0.00011713, label: 'stat.'}
+    - {symerror: 6.69636e-06, label: 'sys.'}
+  - value: 0.0531054
+    errors:
+    - {symerror: 8.91877e-05, label: 'stat.'}
+    - {symerror: 3.19067e-06, label: 'sys.'}
+  - value: 0.0368137
+    errors:
+    - {symerror: 6.84291e-05, label: 'stat.'}
+    - {symerror: 1.62912e-06, label: 'sys.'}
+  - value: 0.0273233
+    errors:
+    - {symerror: 5.5554e-05, label: 'stat.'}
+    - {symerror: 8.97428e-07, label: 'sys.'}
+  - value: 0.020537
+    errors:
+    - {symerror: 4.61903e-05, label: 'stat.'}
+    - {symerror: 5.06999e-07, label: 'sys.'}
+  - value: 0.0145806
+    errors:
+    - {symerror: 3.63165e-05, label: 'stat.'}
+    - {symerror: 2.55556e-07, label: 'sys.'}
+  - value: 0.0108115
+    errors:
+    - {symerror: 2.98e-05, label: 'stat.'}
+    - {symerror: 1.40508e-07, label: 'sys.'}
+  - value: 0.00855996
+    errors:
+    - {symerror: 2.60462e-05, label: 'stat.'}
+    - {symerror: 1.07768e-07, label: 'sys.'}
+  - value: 0.00640924
+    errors:
+    - {symerror: 2.11995e-05, label: 'stat.'}
+    - {symerror: 6.04173e-08, label: 'sys.'}
+  - value: 0.00505211
+    errors:
+    - {symerror: 1.79636e-05, label: 'stat.'}
+    - {symerror: 3.754e-08, label: 'sys.'}
+  - value: 0.00409308
+    errors:
+    - {symerror: 1.58277e-05, label: 'stat.'}
+    - {symerror: 2.46405e-08, label: 'sys.'}
+  - value: 0.00297514
+    errors:
+    - {symerror: 1.29405e-05, label: 'stat.'}
+    - {symerror: 1.30186e-08, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $K^+$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: 'K^{+}', value: '0-20'}
+  - {name: '$p_T$', value: '$^3He+Au$ $0-20\%$'}
+  values:
+  - value: 0.340662
+    errors:
+    - {symerror: 0.000768127, label: 'stat.'}
+    - {symerror: 0.000131296, label: 'sys.'}
+  - value: 0.260738
+    errors:
+    - {symerror: 0.000566232, label: 'stat.'}
+    - {symerror: 7.69156e-05, label: 'sys.'}
+  - value: 0.2045
+    errors:
+    - {symerror: 0.000443876, label: 'stat.'}
+    - {symerror: 4.73141e-05, label: 'sys.'}
+  - value: 0.144515
+    errors:
+    - {symerror: 0.000332355, label: 'stat.'}
+    - {symerror: 2.36282e-05, label: 'sys.'}
+  - value: 0.100554
+    errors:
+    - {symerror: 0.000254081, label: 'stat.'}
+    - {symerror: 1.14394e-05, label: 'sys.'}
+  - value: 0.0702273
+    errors:
+    - {symerror: 0.00019567, label: 'stat.'}
+    - {symerror: 5.92851e-06, label: 'sys.'}
+  - value: 0.0526001
+    errors:
+    - {symerror: 0.00015958, label: 'stat.'}
+    - {symerror: 3.32588e-06, label: 'sys.'}
+  - value: 0.0397927
+    errors:
+    - {symerror: 0.000133113, label: 'stat.'}
+    - {symerror: 1.90345e-06, label: 'sys.'}
+  - value: 0.0282735
+    errors:
+    - {symerror: 0.000104699, label: 'stat.'}
+    - {symerror: 9.60931e-07, label: 'sys.'}
+  - value: 0.0211294
+    errors:
+    - {symerror: 8.62488e-05, label: 'stat.'}
+    - {symerror: 5.3667e-07, label: 'sys.'}
+  - value: 0.0167547
+    errors:
+    - {symerror: 7.54417e-05, label: 'stat.'}
+    - {symerror: 4.12878e-07, label: 'sys.'}
+  - value: 0.012551
+    errors:
+    - {symerror: 6.14182e-05, label: 'stat.'}
+    - {symerror: 2.31688e-07, label: 'sys.'}
+  - value: 0.00982994
+    errors:
+    - {symerror: 5.18761e-05, label: 'stat.'}
+    - {symerror: 1.42118e-07, label: 'sys.'}
+  - value: 0.00790233
+    errors:
+    - {symerror: 4.55309e-05, label: 'stat.'}
+    - {symerror: 9.18456e-08, label: 'sys.'}
+  - value: 0.00572752
+    errors:
+    - {symerror: 3.71721e-05, label: 'stat.'}
+    - {symerror: 4.82482e-08, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $K^+$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: 'K^{+}', value: '20-40'}
+  - {name: '$p_T$', value: '$^3He+Au$ $20-40\%$'}
+  values:
+  - value: 0.254149
+    errors:
+    - {symerror: 0.000681266, label: 'stat.'}
+    - {symerror: 7.30772e-05, label: 'sys.'}
+  - value: 0.192997
+    errors:
+    - {symerror: 0.000500229, label: 'stat.'}
+    - {symerror: 4.21411e-05, label: 'sys.'}
+  - value: 0.149415
+    errors:
+    - {symerror: 0.000389595, label: 'stat.'}
+    - {symerror: 2.52576e-05, label: 'sys.'}
+  - value: 0.104995
+    errors:
+    - {symerror: 0.000290892, label: 'stat.'}
+    - {symerror: 1.24721e-05, label: 'sys.'}
+  - value: 0.072738
+    errors:
+    - {symerror: 0.000221898, label: 'stat.'}
+    - {symerror: 5.98587e-06, label: 'sys.'}
+  - value: 0.0506072
+    errors:
+    - {symerror: 0.000170561, label: 'stat.'}
+    - {symerror: 3.07863e-06, label: 'sys.'}
+  - value: 0.0374264
+    errors:
+    - {symerror: 0.000138221, label: 'stat.'}
+    - {symerror: 1.6838e-06, label: 'sys.'}
+  - value: 0.0281022
+    errors:
+    - {symerror: 0.000114866, label: 'stat.'}
+    - {symerror: 9.49323e-07, label: 'sys.'}
+  - value: 0.0200159
+    errors:
+    - {symerror: 9.04568e-05, label: 'stat.'}
+    - {symerror: 4.81597e-07, label: 'sys.'}
+  - value: 0.0147865
+    errors:
+    - {symerror: 7.40875e-05, label: 'stat.'}
+    - {symerror: 2.62824e-07, label: 'sys.'}
+  - value: 0.0117559
+    errors:
+    - {symerror: 6.48893e-05, label: 'stat.'}
+    - {symerror: 2.03264e-07, label: 'sys.'}
+  - value: 0.00886779
+    errors:
+    - {symerror: 5.30113e-05, label: 'stat.'}
+    - {symerror: 1.15659e-07, label: 'sys.'}
+  - value: 0.00694604
+    errors:
+    - {symerror: 4.47778e-05, label: 'stat.'}
+    - {symerror: 7.09614e-08, label: 'sys.'}
+  - value: 0.00565576
+    errors:
+    - {symerror: 3.95527e-05, label: 'stat.'}
+    - {symerror: 4.70468e-08, label: 'sys.'}
+  - value: 0.00413713
+    errors:
+    - {symerror: 3.24403e-05, label: 'stat.'}
+    - {symerror: 2.51736e-08, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $K^+$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: 'K^{+}', value: '40-60'}
+  - {name: '$p_T$', value: '$^3He+Au$ $40-60\%$'}
+  values:
+  - value: 0.159636
+    errors:
+    - {symerror: 0.000542736, label: 'stat.'}
+    - {symerror: 2.88315e-05, label: 'sys.'}
+  - value: 0.12009
+    errors:
+    - {symerror: 0.000396641, label: 'stat.'}
+    - {symerror: 1.63161e-05, label: 'sys.'}
+  - value: 0.0915009
+    errors:
+    - {symerror: 0.000306464, label: 'stat.'}
+    - {symerror: 9.47226e-06, label: 'sys.'}
+  - value: 0.0630478
+    errors:
+    - {symerror: 0.000226586, label: 'stat.'}
+    - {symerror: 4.49723e-06, label: 'sys.'}
+  - value: 0.0429303
+    errors:
+    - {symerror: 0.000171358, label: 'stat.'}
+    - {symerror: 2.08513e-06, label: 'sys.'}
+  - value: 0.029384
+    errors:
+    - {symerror: 0.000130641, label: 'stat.'}
+    - {symerror: 1.0379e-06, label: 'sys.'}
+  - value: 0.0217349
+    errors:
+    - {symerror: 0.00010588, label: 'stat.'}
+    - {symerror: 5.6787e-07, label: 'sys.'}
+  - value: 0.0161992
+    errors:
+    - {symerror: 8.7663e-05, label: 'stat.'}
+    - {symerror: 3.15442e-07, label: 'sys.'}
+  - value: 0.0114697
+    errors:
+    - {symerror: 6.88302e-05, label: 'stat.'}
+    - {symerror: 1.58138e-07, label: 'sys.'}
+  - value: 0.00846105
+    errors:
+    - {symerror: 5.63344e-05, label: 'stat.'}
+    - {symerror: 8.60565e-08, label: 'sys.'}
+  - value: 0.00659168
+    errors:
+    - {symerror: 4.8842e-05, label: 'stat.'}
+    - {symerror: 6.39058e-08, label: 'sys.'}
+  - value: 0.00494228
+    errors:
+    - {symerror: 3.97809e-05, label: 'stat.'}
+    - {symerror: 3.59255e-08, label: 'sys.'}
+  - value: 0.0039833
+    errors:
+    - {symerror: 3.40852e-05, label: 'stat.'}
+    - {symerror: 2.33364e-08, label: 'sys.'}
+  - value: 0.00321382
+    errors:
+    - {symerror: 2.99703e-05, label: 'stat.'}
+    - {symerror: 1.51911e-08, label: 'sys.'}
+  - value: 0.00236487
+    errors:
+    - {symerror: 2.46541e-05, label: 'stat.'}
+    - {symerror: 8.22549e-09, label: 'sys.'}
+- header: {name: 'Invariant $p_T$ spectra measured for $K^+$ ($^3He+Au$)'}
+  qualifiers:
+  - {name: 'K^{+}', value: '60-88'}
+  - {name: '$p_T$', value: '$^3He+Au$ $60-88\%$'}
+  values:
+  - value: 0.0667895
+    errors:
+    - {symerror: 0.000300367, label: 'stat.'}
+    - {symerror: 5.04686e-06, label: 'sys.'}
+  - value: 0.0487827
+    errors:
+    - {symerror: 0.000216298, label: 'stat.'}
+    - {symerror: 2.69238e-06, label: 'sys.'}
+  - value: 0.0362771
+    errors:
+    - {symerror: 0.000165104, label: 'stat.'}
+    - {symerror: 1.48891e-06, label: 'sys.'}
+  - value: 0.0243843
+    errors:
+    - {symerror: 0.000120567, label: 'stat.'}
+    - {symerror: 6.72704e-07, label: 'sys.'}
+  - value: 0.0162078
+    errors:
+    - {symerror: 9.00867e-05, label: 'stat.'}
+    - {symerror: 2.97204e-07, label: 'sys.'}
+  - value: 0.0109226
+    errors:
+    - {symerror: 6.81493e-05, label: 'stat.'}
+    - {symerror: 1.43413e-07, label: 'sys.'}
+  - value: 0.0078641
+    errors:
+    - {symerror: 5.44924e-05, label: 'stat.'}
+    - {symerror: 7.43416e-08, label: 'sys.'}
+  - value: 0.00580005
+    errors:
+    - {symerror: 4.48808e-05, label: 'stat.'}
+    - {symerror: 4.04387e-08, label: 'sys.'}
+  - value: 0.0040622
+    errors:
+    - {symerror: 3.50477e-05, label: 'stat.'}
+    - {symerror: 1.98361e-08, label: 'sys.'}
+  - value: 0.00293803
+    errors:
+    - {symerror: 2.8403e-05, label: 'stat.'}
+    - {symerror: 1.03764e-08, label: 'sys.'}
+  - value: 0.00234706
+    errors:
+    - {symerror: 2.49363e-05, label: 'stat.'}
+    - {symerror: 8.1021e-09, label: 'sys.'}
+  - value: 0.00169406
+    errors:
+    - {symerror: 1.99273e-05, label: 'stat.'}
+    - {symerror: 4.2209e-09, label: 'sys.'}
+  - value: 0.00135457
+    errors:
+    - {symerror: 1.70066e-05, label: 'stat.'}
+    - {symerror: 2.69867e-09, label: 'sys.'}
+  - value: 0.00114127
+    errors:
+    - {symerror: 1.52809e-05, label: 'stat.'}
+    - {symerror: 1.91569e-09, label: 'sys.'}
+  - value: 0.000800045
+    errors:
+    - {symerror: 1.22692e-05, label: 'stat.'}
+    - {symerror: 9.41405e-10, label: 'sys.'}
