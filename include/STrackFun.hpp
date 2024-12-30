@@ -32,19 +32,8 @@ bool IsHit(const double dval);
 bool IsMatch(const double sdphi, const double sdz, 
              const double sdphiMax = 2., const double sdzMax = 2.);
 double TransformProb(double prob);
-void CutDCDeadAreas(TH2F *hist, 
-                    bool (*cutFunc)(const double, const double, const double, const double), 
-                    const double phi, const double zed);
 bool IsQualityCut(const int qual);
 double GetM2Mean(const double pt, const double *par);
 double GetM2Sigma(const double pt, const double m2Mean, const double *par);
-double GetTOFwsdphi(const int field, const float mom, const float tofwdphi, 
-                    const int charge, const int strip);
-double GetTOFwsdz(const int field, const double mom, const double tofwdz, 
-                  const int charge, const int strip);
-float RecalTOFwsdphi(const int field, const double mom, const double tofwsdphi, 
-                     const int charge, const int strip);
-float RecalTOFwsdz(const int field, const double mom, const double tofwsdz, 
-                   const int charge, const int strip);
 
 #endif /*S_TRACK_FUN_HPP*/

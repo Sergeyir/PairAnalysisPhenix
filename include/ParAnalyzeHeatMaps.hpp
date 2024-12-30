@@ -22,10 +22,6 @@
 #include "TFile.h"
 #include "TH1.h"
 
-#include "Particles.hpp"
-
-#include "DeadAreasCuts.h"
-
 using namespace Run14HeAu200Cuts;
 
 struct

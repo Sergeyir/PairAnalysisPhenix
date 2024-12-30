@@ -47,29 +47,25 @@ class EffTreeReader
    //TOFe variables
    Double_t tofdz(Int_t i);
    Double_t tofdphi(Int_t i);
-   Double_t tofsdz(Int_t i);
-   Double_t tofsdphi(Int_t i);
    Double_t ptofy(Int_t i);
    Double_t ptofz(Int_t i);
-
-   //TOFw
-   Double_t tofwdz(Int_t i);
-   Double_t tofwdphi(Int_t i);
-   Double_t tofwsdz(Int_t i);
-   Double_t tofwsdphi(Int_t i);
-   Double_t ttofw(Int_t i);
-   Double_t pltofw(Int_t i);
-   Double_t striptofw(Int_t i);
    Double_t slat(Int_t i);
    Double_t pltof(Int_t i);
    Double_t ttof(Int_t i);
    Double_t etof(Int_t i);
 
+   //TOFw
+   Double_t tofwdz(Int_t i);
+   Double_t tofwdphi(Int_t i);
+   Double_t ptofwy(Int_t i);
+   Double_t ptofwz(Int_t i);
+   Double_t ttofw(Int_t i);
+   Double_t pltofw(Int_t i);
+   Double_t striptofw(Int_t i);
+
    //EMCal
    Double_t emcdz(Int_t i);
    Double_t emcdphi(Int_t i);
-   Double_t emcsdz(Int_t i);
-   Double_t emcsdphi(Int_t i);
    Double_t ecore(Int_t i);
    Int_t sect(Int_t i);
    Double_t pemcy(Int_t i);
@@ -85,8 +81,6 @@ class EffTreeReader
    //PC2
    Double_t pc2dz(Int_t i);
    Double_t pc2dphi(Int_t i);
-   Double_t pc2sdz(Int_t i);
-   Double_t pc2sdphi(Int_t i);
 
    Double_t ppc2x(Int_t i);
    Double_t ppc2y(Int_t i);
@@ -95,8 +89,6 @@ class EffTreeReader
    //PC3
    Double_t pc3dz(Int_t i);
    Double_t pc3dphi(Int_t i);
-   Double_t pc3sdz(Int_t i);
-   Double_t pc3sdphi(Int_t i);
    Double_t ppc3x(Int_t i);
    Double_t ppc3y(Int_t i);
    Double_t ppc3z(Int_t i);
@@ -132,29 +124,25 @@ class EffTreeReader
    //TOFe variables branches
    std::unique_ptr<TTreeReaderArray<float>> b_tofdz;
    std::unique_ptr<TTreeReaderArray<float>> b_tofdphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_tofsdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_tofsdphi;
    std::unique_ptr<TTreeReaderArray<float>> b_ptofy;
    std::unique_ptr<TTreeReaderArray<float>> b_ptofz;
-
-   //TOFw variables branches
-   std::unique_ptr<TTreeReaderArray<float>> b_tofwdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_tofwdphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_tofwsdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_tofwsdphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_ttofw;
-   std::unique_ptr<TTreeReaderArray<float>> b_pltofw;
-   std::unique_ptr<TTreeReaderArray<int>> b_striptofw;
    std::unique_ptr<TTreeReaderArray<int>> b_slat;
    std::unique_ptr<TTreeReaderArray<float>> b_pltof;
    std::unique_ptr<TTreeReaderArray<float>> b_ttof;
    std::unique_ptr<TTreeReaderArray<float>> b_etof;
+
+   //TOFw variables branches
+   std::unique_ptr<TTreeReaderArray<float>> b_tofwdz;
+   std::unique_ptr<TTreeReaderArray<float>> b_tofwdphi;
+   std::unique_ptr<TTreeReaderArray<float>> b_ptofwy;
+   std::unique_ptr<TTreeReaderArray<float>> b_ptofwz;
+   std::unique_ptr<TTreeReaderArray<float>> b_ttofw;
+   std::unique_ptr<TTreeReaderArray<float>> b_pltofw;
+   std::unique_ptr<TTreeReaderArray<int>> b_striptofw;
    
    //EMCal variables branches
    std::unique_ptr<TTreeReaderArray<float>> b_emcdz;
    std::unique_ptr<TTreeReaderArray<float>> b_emcdphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_emcsdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_emcsdphi;
    std::unique_ptr<TTreeReaderArray<float>> b_pemcy;
    std::unique_ptr<TTreeReaderArray<float>> b_pemcz;
    std::unique_ptr<TTreeReaderArray<float>> b_plemc;
@@ -170,8 +158,6 @@ class EffTreeReader
    //PC2 variables branches
    std::unique_ptr<TTreeReaderArray<float>> b_pc2dz;
    std::unique_ptr<TTreeReaderArray<float>> b_pc2dphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_pc2sdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_pc2sdphi;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc2x;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc2y;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc2z;
@@ -179,8 +165,6 @@ class EffTreeReader
    //PC3 variables branches
    std::unique_ptr<TTreeReaderArray<float>> b_pc3dz;
    std::unique_ptr<TTreeReaderArray<float>> b_pc3dphi;
-   std::unique_ptr<TTreeReaderArray<float>> b_pc3sdz;
-   std::unique_ptr<TTreeReaderArray<float>> b_pc3sdphi;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc3x;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc3y;
    std::unique_ptr<TTreeReaderArray<float>> b_ppc3z;

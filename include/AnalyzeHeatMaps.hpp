@@ -19,11 +19,12 @@
 #define ANALYZE_HEAT_MAPS_HPP
 
 #include <signal.h>
+#include <thread>
+
+#include "TFile.h"
 
 #include "json/json.h"
 #include "json/value.h"
-
-#include "ParAnalyzeHeatMaps.hpp"
 
 #include "IOTools.hpp"
 #include "StrTools.hpp"
@@ -35,15 +36,47 @@
 #include "STrackFun.hpp"
 #include "EffTreeReader.hpp"
 
-#include "DeadAreasCuts.h"
+#include "DataMethodsSelector.hpp"
 
 #include "ROOT/TTreeProcessorMT.hxx"
+
+struct Parameters
+{
+   const std::string simDataDir = "data/SimTrees/";
+   const std::string realDataDir = "data/Real/";
+   const std::string outputDir = "data/PostSim/";
+   
+   std::string collisionSystemName;
+   std::string runName;
+   
+   bool doUseWeightFunc;
+   bool doReweightAlpha;
+   
+   std::vector<std::string> partQueue;
+   std::vector<std::string> magfQueue;
+   std::vector<std::string> pTRangeQueue;
+
+   double pTMin, pTMax;
+
+   double correctionTOFw;
+
+   int numberOfThreads;
+
+   DataMethodsSelector dms;
+
+   TH1F *alphaReweightDCe0;
+   TH1F *alphaReweightDCe1;
+   TH1F *alphaReweightDCw0;
+   TH1F *alphaReweightDCw1;
+   
+   void Init(const std::string inputFileName, const int nThr);
+};
 
 //container for storing ThrObj objects that store TThreadedObject objects
 struct ThrContainer
 {
    ThrObj<TH1F> distrOrigPT = 
-      ThrObj<TH1F>("orig p_{T}", "pT", 100., 0., 10.);
+      ThrObj<TH1F>("orig pT", "p_{T}", 100., 0., 10.);
 
    //original generated pT vs reconstructed pT in the simulation
    ThrObj<TH2F> distrOrigPTVsRecPT = 
@@ -64,35 +97,35 @@ struct ThrContainer
       ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCe1 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zed<0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCw0 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCw, zed>=0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCw1 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCw, zed<0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
 
    ThrObj<TH2F> heatmapPC1e = 
       ThrObj<TH2F>("Heatmap: PC1e", "pc1z vs pc1phi", 360, -90., 90.,170, 2.05, 3.75);
    ThrObj<TH2F> heatmapPC1w = 
-      ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 360, -90., 90., 160, -0.55, 1.05);
+      ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 360, -90., 90., 160, -0.6, 1.05);
 
-   ThrObj<TH2F> distrPC2 = ThrObj<TH2F>
+   ThrObj<TH2F> heatmapPC2 = ThrObj<TH2F>
       ("Heatmap: PC2", "pc3z vs pc3phi", 320, -160., 160., 330, -0.6, 1.05);
 
-   ThrObj<TH2F> distrPC3e = ThrObj<TH2F>
+   ThrObj<TH2F> heatmapPC3e = ThrObj<TH2F>
       ("Heatmap: PC3e", "pc3z vs pc3phi", 380, -190., 190., 170, 2.1, 3.8);
-   ThrObj<TH2F> distrPC3w = ThrObj<TH2F>
+   ThrObj<TH2F> heatmapPC3w = ThrObj<TH2F>
       ("Heatmap: PC3w", "pc3z vs pc3phi", 380, -190., 190., 170, -0.65, 1.05);
 
    ThrObj<TH2F> heatmapTOFe = 
       ThrObj<TH2F>("Heatmap: TOFe", "ptofy vs ptofz", 185, -280., 90., 195, -195., 195.);
 
    ThrObj<TH2F> heatmapTOFw0 = 
-      ThrObj<TH2F>("Heatmap: TOFw, ptofy < 100", "ptofy vs ptofz", 90, -55., 35., 195, -195., 195.);
+      ThrObj<TH2F>("Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 90, -55., 35., 195, -195., 195.);
    ThrObj<TH2F> heatmapTOFw1 = 
-      ThrObj<TH2F>("Heatmap: TOFw, ptofy > 100", "ptofy vs ptofz", 85, 185., 270., 195, -195., 195.);
+      ThrObj<TH2F>("Heatmap: TOFw, ptofy>100", "ptofy vs ptofz", 85, 185., 270., 195, -195., 195.);
 
    std::array<ThrObj<TH2F>, 4> heatmapEMCale = 
    {
@@ -112,14 +145,13 @@ struct ThrContainer
 
 
    ThrObj<TH1F> distrStripTOFw = ThrObj<TH1F>
-      ("strip_tofw", "strip", 550, 0., 550.);
+      ("strip: TOFw", "striptofw", 512, 0., 512.);
    ThrObj<TH1F> distrSlatTOFe = ThrObj<TH1F>
-      ("slat", "slat", 1000, 0., 1000.);
-
+      ("slat: TOFe", "slat", 960, 0., 960.);
 };
 
-void Analyze(ThrContainer *thrContainer, const std::string& part, const std::string& magf, 
-             const std::string& auxName, const int procNum); 
-int main();
+void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
+                          const std::string& magf, const std::string& auxName, const int procNum); 
+int main(int argc, char **argv);
 
 #endif /*ANALYZE_HEAT_MAPS_HPP*/

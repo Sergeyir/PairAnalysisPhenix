@@ -21,7 +21,7 @@
 
 namespace Run7AuAu200Cuts
 {
-   bool IsDeadDC(const double phi, const double zed, 
+   bool IsDeadDC(const double phi, const double zDC, 
                  const double board, const double alpha) // Run7AuAu200
    {
       if (alpha > (0.276 * board - (0.2))) 	return true;
@@ -29,7 +29,7 @@ namespace Run7AuAu200Cuts
       if (alpha > (-0.242 * board + (19.2)))	return true;
       if (alpha < (0.242 * board + (-19.3)))	return true;	
       
-      if (phi > M_PI/2. && zed >= 0)
+      if (phi > M_PI/2. && zDC >= 0)
       {
          if (!( (alpha<(-0.36*board+0.36*3.5)) || 
             (alpha>(-0.36*board+0.36*4)) ) && alpha > 0) return true;
@@ -53,7 +53,7 @@ namespace Run7AuAu200Cuts
             (alpha>(-0.4*board+0.36*59.5)) ) && alpha < 0) return true;
       }		    
           
-      if (phi > M_PI/2. && zed < 0) 
+      if (phi > M_PI/2. && zDC < 0) 
       {
          if (!( (alpha<(-0.36*board+0.36*3)) || 
             (alpha>(-0.36*board+0.36*3.5)) )) return true;
@@ -83,7 +83,7 @@ namespace Run7AuAu200Cuts
             (alpha>(-0.4*board+0.36*80.8)) )) return true;
       }
             
-      if (phi < 1.5 && zed >= 0)
+      if (phi < 1.5 && zDC >= 0)
       {
          if (!( (alpha>(0.5*board-0.36*13)) || 
             (alpha<(0.5*board-0.36*15.8)) )) return true;
@@ -103,7 +103,7 @@ namespace Run7AuAu200Cuts
          if ( !(alpha > 10000*(board-76.5)) ) return true;
       }
          
-      if (phi < 1.5 && zed < 0)
+      if (phi < 1.5 && zDC < 0)
       {
          if (!( (alpha>(0.38*board-0.36*4)) || 
             (alpha<(0.38*board-0.36*4.5)) )) return true;
@@ -1191,10 +1191,10 @@ namespace Run7AuAu200Cuts
       return false;
    }
 
-   bool IsDeadEMCal(const double phi, const double zed, const int sect, 
+   bool IsDeadEMCal(const double phi, const double zDC, const int sect, 
                     const double pemcy, const double pemcz) // Run7AuAu200
    {
-      if (phi >= 1.5 && zed >= 0)
+      if (phi >= 1.5 && zDC >= 0)
       {
          switch (sect)
          {
@@ -1254,7 +1254,7 @@ namespace Run7AuAu200Cuts
                break;
          }
       }
-      else if (phi >= 1.5 && zed < 0)
+      else if (phi >= 1.5 && zDC < 0)
       {
          switch (sect)
          {
@@ -1325,7 +1325,7 @@ namespace Run7AuAu200Cuts
                break;
          }
       }
-      else if (phi < 1.5 && zed >= 0)
+      else if (phi < 1.5 && zDC >= 0)
       {
          switch (sect)
          {
@@ -1653,10 +1653,10 @@ namespace Run7AuAu200Cuts
       return false;
    }
 
-   bool IsDeadTOFe(const double zed, const double tofy, const double tofz) // Run7AuAu200
+   bool IsDeadTOFe(const double zDC, const double tofy, const double tofz) // Run7AuAu200
    {
       if (tofy < -270 || tofy > 82) return true;
-      if (zed >= 0)
+      if (zDC >= 0)
       {
          if (tofz < 3.75 || tofz > 172.5) return true;
          if (tofy > -120 && tofy < -78) return true;
@@ -1750,7 +1750,7 @@ namespace Run7AuAu200Cuts
       return false;
    }
 
-   bool IsDeadTOFw(const double zed, const double board, const double alpha) // Run7AuAu200
+   bool IsDeadTOFw(const double zDC, const double board, const double alpha) // Run7AuAu200
    {
       if (board > 60.845 || board < 19.505) return true;
       if (alpha > (board-24.)*0.033 || alpha < (board-58.3)*0.034) return true;
@@ -1760,7 +1760,7 @@ namespace Run7AuAu200Cuts
       if (alpha > (board-29.6)*0.17 && alpha < (board-29.3)*0.17) return true;
       if (alpha > (board-49.3)*0.17 && alpha < (board-49.)*0.17) return true;
       if (alpha > (board-59.4)*0.17 && alpha < (board-59.1)*0.17) return true;
-      if (zed >= 0)
+      if (zDC >= 0)
       {
          if (board > 56.87 && board < 57.93) return true;
          if (board > 55.015 && board < 56.075) return true;
@@ -1777,7 +1777,7 @@ namespace Run7AuAu200Cuts
 
 namespace Run14HeAu200Cuts
 {
-   bool IsDeadDC(const double phi, const double zed, 
+   bool IsDeadDC(const double phi, const double zDC, 
                  const double board, const double alpha) // Run14HeAu200
    {
       const short boardBin = static_cast<short>((board)*5.) + 1;
@@ -1785,7 +1785,7 @@ namespace Run14HeAu200Cuts
       
       if (phi > M_PI/2.)
       {
-         if (zed >= 0)
+         if (zDC >= 0)
          {
             if (board < 1.2 || alpha < -0.374 ||
                 board > 78.4 || alpha > 0.378) return true;
@@ -1988,7 +1988,7 @@ namespace Run14HeAu200Cuts
       }
       else
       {
-         if (zed >= 0)
+         if (zDC >= 0)
          {
          }
          else
@@ -2337,7 +2337,7 @@ namespace Run14HeAu200Cuts
       return false;
    }
 
-   bool IsDeadEMCal(const double phi, const double zed, const int sect, 
+   bool IsDeadEMCal(const double phi, const double zDC, const int sect, 
                     const double pemcy, const double pemcz) // Run14HeAu200
    {
         return false;
@@ -2353,12 +2353,12 @@ namespace Run14HeAu200Cuts
       return false;
    }
 
-   bool IsDeadTOFe(const double zed, const double tofy, const double tofz) // Run14HeAu200
+   bool IsDeadTOFe(const double zDC, const double tofy, const double tofz) // Run14HeAu200
    {
       return false;
    }
 
-   bool IsDeadTOFw(const double zed, const double board, const double alpha) // Run14HeAu200
+   bool IsDeadTOFw(const double zDC, const double board, const double alpha) // Run14HeAu200
    {
         return false;
    }

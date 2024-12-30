@@ -165,7 +165,8 @@ void FitSpectra()
    }
    fitInfo["fit_parameters"] = fitPar;
 
-   const std::string outputFileName = "data/Spectra/" + Par.collisionSystem + "/" + Par.particleName + "Fit.json";
+   const std::string outputFileName = "data/Spectra/" + Par.collisionSystem + 
+                                      "/" + Par.particleName + "Fit.json";
    std::ofstream outputFile(outputFileName, std::ofstream::binary);
    outputFile << fitInfo;
 }

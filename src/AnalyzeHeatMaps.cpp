@@ -20,18 +20,52 @@
 
 #include "../include/AnalyzeHeatMaps.hpp"
 
-//auxName can be used to specify different statistics of the same dataset e.g. low pT or high pT
-void Analyze(ThrContainer *thrContainer, const std::string& part, const std::string& magf, 
-             const std::string &auxName, const int procNum)  
+void Parameters::Init(const std::string inputFileName, const int nThr)
+{
+   CheckInputFile(inputFileName);
+
+   numberOfThreads = nThr;
+
+   std::ifstream inputJSON(inputFileName.c_str(), std::ifstream::binary);
+   Json::Value inputJSONContents;
+   inputJSON >> inputJSONContents;
+
+   collisionSystemName = inputJSONContents["COLLISION_SYSTEM"]["name"].asString();
+   runName = inputJSONContents["RUN"]["name"].asString();
+
+   for (auto particle : inputJSONContents["SIM"]["HEATMAPS"]["particles"])
+   {
+      partQueue.push_back(particle["name"].asString());
+   }
+   for (auto magf : inputJSONContents["RUN"]["magnetic_field"])
+   {
+      magfQueue.push_back(magf["name"].asString());
+   }
+   for (auto pTRange : inputJSONContents["SIM"]["HEATMAPS"]["pt_ranges"])
+   {
+      pTRangeQueue.push_back(pTRange["name"].asString());
+   }
+
+   pTMin = inputJSONContents["SIM"]["pt_min"].asDouble();
+   pTMax = inputJSONContents["SIM"]["pt_max"].asDouble();
+
+   dms.Init(runName);
+}
+
+Parameters Par;
+
+//pTRange can be used to specify different statistics of the same dataset e.g. low pT or high pT
+void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
+                          const std::string& magf, const std::string &pTRange, const int procNum)  
 {   
    Box box = Box("Parameters of run " + std::to_string(procNum) + 
       " out of " + std::to_string(Par.partQueue.size()*
-      Par.magfQueue.size()*Par.auxNameQueue.size()));
+      Par.magfQueue.size()*Par.pTRangeQueue.size()));
 
    std::string simInputFileName = Par.simDataDir + 
-      Par.runName + "/SingleTrack/" + part + magf + auxName + ".root";
+      Par.runName + "/SingleTrack/" + part + magf + pTRange + ".root";
    std::string realDataFileName = Par.realDataDir + 
-      Par.runName + "/sum" + magf + ".root";
+      Par.runName + "/SingleTrack/sum" + magf + ".root";
 
    TFile simInputFile = TFile(simInputFileName.c_str());
    TFile realDataFile = TFile(realDataFileName.c_str());
@@ -69,11 +103,10 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       //this normalization is needed to merge 2 files with flat pT distribution with different ranges
       eventNormWeight *= (Par.pTMax - Par.pTMin)/(upPtBound-lowPtBound);
    }
-   Print("bruh");
    
    box.AddEntry("Run name", Par.runName);
    box.AddEntry("Orig particle", part);
-   box.AddEntry("Magnetic field", magf);
+   if (magf != "") box.AddEntry("Magnetic field", magf);
    box.AddEntry("Orig pT distribution span", 
       DtoStr(lowPtBound) + " < pT < " + DtoStr(upPtBound));
    box.AddEntry("Use weight function", Par.doUseWeightFunc);
@@ -83,7 +116,7 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    box.AddEntry("Maximum p_T, GeV", Par.pTMax);
    box.AddEntry("Number of events to be analyzed, 1e6", nevents/1e6, 3);
 
-   box.AddEntry("Number of threads", Par.nThreads);
+   box.AddEntry("Number of threads", Par.numberOfThreads);
    
    box.Print();
    
@@ -92,10 +125,10 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    std::unique_ptr<TF1> weightFunc = std::make_unique<TF1>(TF1("weightFunc", 
       "[0]*x^([5]-1)*(1 + ([1] - 1)*(sqrt([4] + x^2)^([5]) - [2])/[3])^(-1./([1]-1.))"));
    weightFunc->SetParameters(
-      ReadFileIntoArray("../input/SimAnalysis/Spectra/" + Par.system + "/" + part + ".txt", 6));
+      ReadFileIntoArray("../input/SimAnalysis/Spectra/" + Par.collisionSystemName + "/" + part + ".txt", 6));
       */
    
-   ROOT::EnableImplicitMT(Par.nThreads);
+   ROOT::EnableImplicitMT(Par.numberOfThreads);
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
    
    double ncalls = 0.;
@@ -107,40 +140,37 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
       std::shared_ptr<TH1F> distrOrigPT = thrContainer->distrOrigPT.Get();
       std::shared_ptr<TH2F> distrOrigPTVsRecPT = thrContainer->distrOrigPTVsRecPT.Get();
       
-      std::shared_ptr<TH2F> distrDCe0 = thrContainer->distrDCe0.Get();
-      std::shared_ptr<TH2F> distrDCe1 = thrContainer->distrDCe1.Get();
-      std::shared_ptr<TH2F> distrDCw0 = thrContainer->distrDCw0.Get();
-      std::shared_ptr<TH2F> distrDCw1 = thrContainer->distrDCw1.Get();
-
-      std::shared_ptr<TH2F> distrUnscaledDCe0 = thrContainer->distrUnscaledDCe0.Get();
-      std::shared_ptr<TH2F> distrUnscaledDCw0 = thrContainer->distrUnscaledDCw0.Get();
-      std::shared_ptr<TH2F> distrUnscaledDCe1 = thrContainer->distrUnscaledDCe1.Get();
-      std::shared_ptr<TH2F> distrUnscaledDCw1 = thrContainer->distrUnscaledDCw1.Get();
-
-      std::shared_ptr<TH2F> distrPC1e = thrContainer->distrPC1e.Get();
-      std::shared_ptr<TH2F> distrPC1w = thrContainer->distrPC1w.Get();
+      std::shared_ptr<TH2F> heatmapDCe0 = thrContainer->heatmapDCe0.Get();
+      std::shared_ptr<TH2F> heatmapDCe1 = thrContainer->heatmapDCe1.Get();
+      std::shared_ptr<TH2F> heatmapDCw0 = thrContainer->heatmapDCw0.Get();
+      std::shared_ptr<TH2F> heatmapDCw1 = thrContainer->heatmapDCw1.Get();
       
-      std::shared_ptr<TH2F> distrPC2 = thrContainer->distrPC2.Get();
-      std::shared_ptr<TH2F> distrPC3e = thrContainer->distrPC3e.Get();
-      std::shared_ptr<TH2F> distrPC3w = thrContainer->distrPC3w.Get();
+      std::shared_ptr<TH2F> heatmapUnscaledDCe0 = thrContainer->heatmapUnscaledDCe0.Get();
+      std::shared_ptr<TH2F> heatmapUnscaledDCw0 = thrContainer->heatmapUnscaledDCw0.Get();
+      std::shared_ptr<TH2F> heatmapUnscaledDCe1 = thrContainer->heatmapUnscaledDCe1.Get();
+      std::shared_ptr<TH2F> heatmapUnscaledDCw1 = thrContainer->heatmapUnscaledDCw1.Get();
       
-      std::array<std::shared_ptr<TH2F>, 4> distrEMCalePos, distrEMCaleNeg, distrEMCalwPos, distrEMCalwNeg;
-
+      std::shared_ptr<TH2F> heatmapPC1e = thrContainer->heatmapPC1e.Get();
+      std::shared_ptr<TH2F> heatmapPC1w = thrContainer->heatmapPC1w.Get();
+      
+      std::shared_ptr<TH2F> heatmapPC2 = thrContainer->heatmapPC2.Get();
+      std::shared_ptr<TH2F> heatmapPC3e = thrContainer->heatmapPC3e.Get();
+      std::shared_ptr<TH2F> heatmapPC3w = thrContainer->heatmapPC3w.Get();
+      
+      std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale, heatmapEMCalw;
+      
       std::shared_ptr<TH1F> distrStripTOFw = thrContainer->distrStripTOFw.Get();
       std::shared_ptr<TH1F> distrSlatTOFe = thrContainer->distrSlatTOFe.Get();
       
-      std::shared_ptr<TH2F> distrTOFe0 = thrContainer->distrTOFe0.Get();
-      std::shared_ptr<TH2F> distrTOFe1 = thrContainer->distrTOFe1.Get();
+      std::shared_ptr<TH2F> heatmapTOFe = thrContainer->heatmapTOFe.Get();
       
-      std::shared_ptr<TH2F> distrTOFw0 = thrContainer->distrTOFw0.Get();
-      std::shared_ptr<TH2F> distrTOFw1 = thrContainer->distrTOFw1.Get();
-
+      std::shared_ptr<TH2F> heatmapTOFw0 = thrContainer->heatmapTOFw0.Get();
+      std::shared_ptr<TH2F> heatmapTOFw1 = thrContainer->heatmapTOFw1.Get();
+      
       for (int i = 0; i < 4; i++)
       {
-         distrEMCalePos[i] = thrContainer->distrEMCalePos[i].Get();
-         distrEMCaleNeg[i] = thrContainer->distrEMCaleNeg[i].Get();
-         distrEMCalwPos[i] = thrContainer->distrEMCalwPos[i].Get();
-         distrEMCalwNeg[i] = thrContainer->distrEMCalwNeg[i].Get();
+         heatmapEMCale[i] = thrContainer->heatmapEMCale[i].Get();
+         heatmapEMCalw[i] = thrContainer->heatmapEMCalw[i].Get();
       }
    
       EffTreeReader T(reader);
@@ -198,88 +228,75 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             {
                if (zed >=0) 
                {
-                  distrUnscaledDCe0->Fill(board, alpha, eventWeight);
+                  heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCe0->GetBinContent(
                      Par.alphaReweightDCe0->FindBin(alpha));
-                  distrDCe0->Fill(board, alpha, particleWeight);
+                  heatmapDCe0->Fill(board, alpha, particleWeight);
                }
                else 
                {
-                  distrUnscaledDCe1->Fill(board, alpha, eventWeight);
+                  heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCe1->GetBinContent(
                      Par.alphaReweightDCe1->FindBin(alpha));
-                  distrDCe1->Fill(board, alpha, particleWeight);
+                  heatmapDCe1->Fill(board, alpha, particleWeight);
                }
             }
             else
             {
                if (zed >=0) 
                {
-                  distrUnscaledDCw0->Fill(board, alpha, eventWeight);
+                  heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCw0->GetBinContent(
                      Par.alphaReweightDCw0->FindBin(alpha));
-                  distrDCw0->Fill(board, alpha, particleWeight);
+                  heatmapDCw0->Fill(board, alpha, particleWeight);
                }
                else 
                {
-                  distrUnscaledDCw1->Fill(board, alpha, eventWeight);
+                  heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
                   if (Par.doReweightAlpha) particleWeight *= 
                      Par.alphaReweightDCw1->GetBinContent(
                      Par.alphaReweightDCw1->FindBin(alpha));
-                  distrDCw1->Fill(board, alpha, particleWeight);
+                  heatmapDCw1->Fill(board, alpha, particleWeight);
                }
             }
             
-            //if (IsDeadDC(phi, zed, board, alpha)) continue;
-
+            distrOrigPTVsRecPT->Fill(origPt, pT, eventWeight);
             const double pc1phi = atan2(T.ppc1y(i), T.ppc1x(i));
             
             if (phi < M_PI/2.) 
             {
-               distrPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
-               //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
+               heatmapPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
             }
             else
             {
-               if (pc1phi < 0)
-               {
-                  distrPC1e->Fill(T.ppc1z(i), pc1phi + 2.*M_PI, particleWeight);
-                  //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi + 2.*M_PI)) continue;
-               }
-               else
-               {
-                  distrPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
-                  //if (IsDeadPC1(phi, T.ppc1z(i), pc1phi)) continue;
-               }
+               if (pc1phi < 0) heatmapPC1e->Fill(T.ppc1z(i), pc1phi + 2.*M_PI, particleWeight);
+               else heatmapPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
             }
-
-            continue;
             
-
-            distrOrigPTVsRecPT->Fill(origPt, pT, eventWeight);
-            
-            if (IsMatch(T.pc2sdz(i), T.pc2sdphi(i), 2., 2.))
+            if (IsMatch(Par.dms.GetPC2SDPhi(T.pc2dphi(i), pT, charge), 
+                        Par.dms.GetPC2SDZ(T.pc2dz(i), pT, charge), 2., 2.))
             {
                const double pc2z = T.ppc2z(i) - T.pc2dz(i);
                const double pc2phi = atan2(T.ppc2y(i), T.ppc2x(i)) - T.pc2dphi(i);
                
-               distrPC2->Fill(pc2z, pc2phi, particleWeight);
+               heatmapPC2->Fill(pc2z, pc2phi, particleWeight);
             }
 
-            if (IsMatch(T.pc3sdz(i), T.pc3sdphi(i), 2., 2.))
+            if (IsMatch(Par.dms.GetPC3SDPhi(phi, T.pc3dphi(i), pT, charge), 
+                        Par.dms.GetPC3SDZ(phi, T.pc3dz(i), pT, charge), 2., 2.))
             {
                const double pc3z = T.ppc3z(i) - T.pc3dz(i);
                double pc3phi = atan2(T.ppc3y(i), T.ppc3x(i) - T.pc3dphi(i));
                
                if (phi > M_PI/2.) 
                {
-                  if (pc3phi < 0) pc3phi += M_PI*2.;
-                  distrPC3e->Fill(pc3z, pc3phi, particleWeight);
+                  if (pc3phi < 0) heatmapPC3e->Fill(pc3z, pc3phi + 2.*M_PI, particleWeight);
+                  else heatmapPC3e->Fill(pc3z, pc3phi, particleWeight);
                }
-               else distrPC3w->Fill(pc3z, pc3phi, particleWeight);
+               else heatmapPC3w->Fill(pc3z, pc3phi, particleWeight);
             }
             
             if (IsHit(T.tofdz(i)))
@@ -289,40 +306,29 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
 
                distrSlatTOFe->Fill(T.slat(i), particleWeight);
                
-               if (IsMatch(T.tofsdz(i), T.tofsdphi(i), 2., 2.) && 
-                  !IsBadSlat(T.slat(i)) &&
+               if (IsMatch(Par.dms.GetTOFeSDPhi(T.tofdphi(i), pT, charge), 
+                           Par.dms.GetTOFeSDZ(T.tofdz(i), pT, charge), 2., 2.) && 
+                  !Par.dms.IsBadSlat(T.slat(i)) &&
                   T.etof(i) > eloss) 
                {
-                  if (zed >= 0) 
-                  {
-                     distrTOFe0->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
-                  }
-                  else 
-                  {
-                     distrTOFe1->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
-                  }
+                  heatmapTOFe->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
                }
             }
             else if (IsHit(T.tofwdz(i)))
             {
-               double tofwsdphi = GetTOFwsdphi(0, T.mom(i), T.tofwdphi(i), charge, T.striptofw(i));
-               double tofwsdz = GetTOFwsdz(0, T.mom(i), T.tofwdz(i), charge, T.striptofw(i));
-
-               tofwsdphi = RecalTOFwsdphi(0, T.mom(i), tofwsdphi, charge, T.striptofw(i));
-               tofwsdz = RecalTOFwsdz(0, T.mom(i), tofwsdz, charge, T.striptofw(i));
-   
-               if (IsMatch(tofwsdphi, tofwsdz, 3., 3.))
+               if (IsMatch(Par.dms.GetTOFwSDPhi(T.tofwdphi(i), pT, charge), 
+                           Par.dms.GetTOFwSDZ(T.tofwdz(i), pT, charge), 2., 2.))
                {
                   distrStripTOFw->Fill(T.striptofw(i), particleWeight);
-                  if (!IsBadStripTOFw(static_cast<int>(T.striptofw(i))))
+                  if (!Par.dms.IsBadStripTOFw(static_cast<int>(T.striptofw(i))))
                   {
-                     if (zed >=0) 
+                     if (T.ptofwy(i) < 100.) 
                      {
-                        distrTOFw0->Fill(board, alpha, particleWeight);
+                        heatmapTOFw0->Fill(T.ptofwy(i), T.ptofwz(i), particleWeight);
                      }
                      else 
                      {
-                        distrTOFw1->Fill(board, alpha, particleWeight);
+                        heatmapTOFw1->Fill(T.ptofwy(i), T.ptofwz(i), particleWeight);
                      }
                   }
                }
@@ -330,23 +336,20 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
             
             if (IsHit(T.emcdz(i)))
             {
-               if (IsMatch(T.emcsdz(i), T.emcsdphi(i), 2., 2.))
+               if (IsMatch(Par.dms.GetEMCSDPhi(phi, T.emcdphi(i), pT, charge, T.sect(i)), 
+                           Par.dms.GetEMCSDZ(phi, T.emcdz(i), pT, charge, T.sect(i)), 2., 2.))
                {   
                   if (T.ecore(i) > 0.25)
                   {
-                     if (phi > M_PI) 
+                     if (phi > M_PI/2.) 
                      {
-                        if (zed >= 0) distrEMCalePos[T.sect(i)]->Fill(
-                           T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
-                        else distrEMCaleNeg[T.sect(i)]->Fill(
-                           T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
+                        heatmapEMCale[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
+                                                     T.ecore(i)*particleWeight);
                      }
                      else
                      {   
-                        if (zed >= 0) distrEMCalwPos[T.sect(i)]->Fill(
-                           T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
-                        else distrEMCalwNeg[T.sect(i)]->Fill(
-                           T.pemcy(i), T.pemcz(i), T.ecore(i)*particleWeight);
+                        heatmapEMCalw[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
+                                                     T.ecore(i)*particleWeight);
                      }
                   }
                }
@@ -374,19 +377,30 @@ void Analyze(ThrContainer *thrContainer, const std::string& part, const std::str
    pBarThread.join();
 }
 
-//for ROOT CINT call
-void HeatMapper()
+int main(int argc, char **argv)
 {
+
+   if (argc < 2 || argc > 3) 
+   {
+      const std::string errMsg = 
+         "Expected 1-2 parameters while " + std::to_string(argc) + 
+         " parameter(s) were provided \n Usage: bin/AnalyzeHeatMaps inputJSONName numberOfThreads=std::thread::hardware_concurrency()";
+      PrintError(errMsg);
+   }
+   
+   if (argc == 2) Par.Init(argv[1], std::thread::hardware_concurrency());
+   else Par.Init(argv[1], std::stoi(argv[2]));
+   
    for (std::string magf : Par.magfQueue)
    {
-      CheckInputFile(Par.realDataDir + Par.runName + "/sum" + magf + ".root");
+      CheckInputFile(Par.realDataDir + Par.runName + "/SingleTrack/sum" + magf + ".root");
       
       for (std::string part : Par.partQueue)
       {
-         for (std::string auxName : Par.auxNameQueue)
+         for (std::string pTRange : Par.pTRangeQueue)
          {
             CheckInputFile(Par.simDataDir + Par.runName + 
-               "/SingleTrack/" + part + magf + auxName + ".root");
+               "/SingleTrack/" + part + magf + pTRange + ".root");
          }
       }
    }
@@ -395,14 +409,14 @@ void HeatMapper()
       /*
       for (std::string part : Par.partQueue)
       {
-         CheckInputFile("../input/SimAnalysis/Spectra/" + Par.system + "/" + part + ".txt");
+         CheckInputFile("../input/SimAnalysis/Spectra/" + Par.collisionSystemName + "/" + part + ".txt");
       }
       */
    }
    
    if (Par.doReweightAlpha)
    {
-      std::string realDataInputFileName = Par.realDataDir + Par.runName + "/sum.root";
+      std::string realDataInputFileName = Par.realDataDir + Par.runName + "/SingleTrack/sum.root";
       std::string alphaReweightInputFileName = Par.outputDir + 
          Par.runName + "/Heatmaps/all.root";
       
@@ -422,15 +436,35 @@ void HeatMapper()
          TH2F *simDCw0 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest0");
          TH2F *simDCw1 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest1");
 
-         CutDCDeadAreas(realDataDCe0, &IsDeadDC, 2., 1.);
-         CutDCDeadAreas(realDataDCe1, &IsDeadDC, 2., -1.);
-         CutDCDeadAreas(realDataDCw0, &IsDeadDC, 1., 1.);
-         CutDCDeadAreas(realDataDCw1, &IsDeadDC, 1., -1.);
+         for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j < realDataDCe0->GetYaxis()->GetNbins(); j++)
+            {
+               const double xVal = realDataDCe0->GetXaxis()->GetBinCenter(i);
+               const double yVal = realDataDCe0->GetYaxis()->GetBinCenter(i);
 
-         CutDCDeadAreas(simDCe0, &IsDeadDC, 2., 1.);
-         CutDCDeadAreas(simDCe1, &IsDeadDC, 2., -1.);
-         CutDCDeadAreas(simDCw0, &IsDeadDC, 1., 1.);
-         CutDCDeadAreas(simDCw1, &IsDeadDC, 1., -1.);
+               if (Par.dms.IsDeadDC(2., 1., xVal, yVal))
+               {
+                  realDataDCe0->SetBinContent(i, j, 0.);
+                  simDCe0->SetBinContent(i, j, 0.);
+               }
+               if (Par.dms.IsDeadDC(2., -1., xVal, yVal))
+               {
+                  realDataDCe1->SetBinContent(i, j, 0.);
+                  simDCe1->SetBinContent(i, j, 0.);
+               }
+               if (Par.dms.IsDeadDC(1., 1., xVal, yVal))
+               {
+                  realDataDCw0->SetBinContent(i, j, 0.);
+                  simDCw0->SetBinContent(i, j, 0.);
+               }
+               if (Par.dms.IsDeadDC(1., -1., xVal, yVal))
+               {
+                  realDataDCw1->SetBinContent(i, j, 0.);
+                  simDCw1->SetBinContent(i, j, 0.);
+               }
+            }
+         }
 
          Par.alphaReweightDCe0 = (TH1F *)
             realDataDCe0->ProjectionY("dce0_reweight",
@@ -531,9 +565,9 @@ void HeatMapper()
       for (std::string magf : Par.magfQueue)
       {
          ThrContainer thrContainer;
-         for (std::string auxName : Par.auxNameQueue)
+         for (std::string pTRange : Par.pTRangeQueue)
          {
-            Analyze(&thrContainer, part, magf, auxName, num);
+            AnalyzeConfiguration(&thrContainer, part, magf, pTRange, num);
             num++;
          }
          //wiriting the result
@@ -554,12 +588,8 @@ void HeatMapper()
    system(("hadd -f " + Par.outputDir + 
       Par.runName + "/Heatmaps/all.root " + Par.outputDir + 
       Par.runName + "/Heatmaps/*.root").c_str());
-}
 
-int main()
-{
-   HeatMapper();
    return 0;
 }
 
-#endif
+#endif /* ANALYZE_HEAT_MAPS_CPP */

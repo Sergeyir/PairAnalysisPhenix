@@ -38,36 +38,36 @@ all_libs: 	 CppToolsLib ROOTToolsLib PBarLib YamlCPP PairAnalysisLib
 # CppTools target groups
 
 CppToolsLib: 	 	 ErrorHandler StrTools Time IOTools Box Table
-ErrorHandler: 	 	 $(CPP_TOOLS_LIB_DIR)/ErrorHandler.so $(CPP_TOOLS_LIB_DIR)/libErrorHandler.a
-StrTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/StrTools.so $(CPP_TOOLS_LIB_DIR)/libStrTools.a
-Time: 		  	 	 $(CPP_TOOLS_LIB_DIR)/Time.so $(CPP_TOOLS_LIB_DIR)/libTime.a
-IOTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/IOTools.so $(CPP_TOOLS_LIB_DIR)/libIOTools.a
-Box: 			  	 	 $(CPP_TOOLS_LIB_DIR)/Box.so $(CPP_TOOLS_LIB_DIR)/libBox.a
-Table: 		  	 	 $(CPP_TOOLS_LIB_DIR)/Table.so $(CPP_TOOLS_LIB_DIR)/libTable.a
+ErrorHandler: 	 	 $(CPP_TOOLS_LIB_DIR)/libErrorHandler.so
+StrTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/libStrTools.so
+Time: 		  	 	 $(CPP_TOOLS_LIB_DIR)/libTime.so
+IOTools: 	  	 	 $(CPP_TOOLS_LIB_DIR)/libIOTools.so
+Box: 			  	 	 $(CPP_TOOLS_LIB_DIR)/libBox.so
+Table: 		  	 	 $(CPP_TOOLS_LIB_DIR)/libTable.so
 
 # ROOTTools target groups
 
 ROOTToolsLib: 	 	 TCanvasPrinter GUIFit
-TCanvasPrinter: 	 $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.so $(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.a
-GUIFit: 			 	 $(ROOT_TOOLS_LIB_DIR)/GUIFit.so $(ROOT_TOOLS_LIB_DIR)/libGUIFit.a
+TCanvasPrinter: 	 $(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.so
+GUIFit: 			 	 $(ROOT_TOOLS_LIB_DIR)/libGUIFit.so
 
 # ProgressBar target groups
 
 PBarLib: 		 	 PBar
-PBar: 			 	 $(PBAR_LIB_DIR)/PBar.so $(PBAR_LIB_DIR)/libPBar.a
+PBar: 			 	 $(PBAR_LIB_DIR)/libPBar.so
 
 # yaml-cpp
 YamlCPP:			 	 yaml-cpp/build/libyaml-cpp.so
 
 # current repository target groups (Analysis)
 
-PairAnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataCutsSelector
-EffTreeReader:	 	 	 lib/EffTreeReader.so lib/libEffTreeReader.a
-EmbTreeReader:	 	 	 lib/EmbTreeReader.so lib/libEmbTreeReader.a
-STrackFun:	 	 	 	 lib/STrackFun.so lib/libSTrackFun.a
-PTrackFun:	 	 	 	 lib/PTrackFun.so lib/libPTrackFun.a
-IdentFun:	 	 	 	 lib/IdentFun.so lib/libIdentFun.a
-DataCutsSelector:	 	 lib/DataCutsSelector.so lib/libDataCutsSelector.a
+PairAnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataMethodsSelector
+EffTreeReader:	 	 	 lib/libEffTreeReader.so
+EmbTreeReader:	 	 	 lib/libEmbTreeReader.so
+STrackFun:	 	 	 	 lib/libSTrackFun.so
+PTrackFun:	 	 	 	 lib/libPTrackFun.so
+IdentFun:	 	 	 	 lib/libIdentFun.so
+DataMethodsSelector:	 lib/libDataMethodsSelector.so
 
 # CppTools sumbodule targets
 
@@ -103,13 +103,9 @@ $(CPP_TOOLS_LIB_DIR)/Table.o: $(CPP_TOOLS_SRC_DIR)/Table.cpp $(CPP_TOOLS_LIB_DIR
 	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
 	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools -lIOTools
 
-$(CPP_TOOLS_LIB_DIR)/%.so: $(CPP_TOOLS_LIB_DIR)/%.o
+$(CPP_TOOLS_LIB_DIR)/lib%.so: $(CPP_TOOLS_LIB_DIR)/%.o
 	@$(ECHO) Building CXX shared library $@
 	$(CXX) -shared -o $@ $<
-
-$(CPP_TOOLS_LIB_DIR)/lib%.a: $(CPP_TOOLS_LIB_DIR)/%.o
-	@$(ECHO) Building CXX static library $@
-	ar rcs $@ $<
 
 # ROOTTools sumbodule targets
 
@@ -131,13 +127,9 @@ $(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) -L$(CPP_TOOLS_LIB_DIR) -l ErrorHandler -lIOTools
 
-$(ROOT_TOOLS_LIB_DIR)/%.so: $(ROOT_TOOLS_LIB_DIR)/%.o
+$(ROOT_TOOLS_LIB_DIR)/lib%.so: $(ROOT_TOOLS_LIB_DIR)/%.o
 	@$(ECHO) Building CXX shared library $@
 	$(CXX) -shared -o $@ $<
-
-$(ROOT_TOOLS_LIB_DIR)/lib%.a: $(ROOT_TOOLS_LIB_DIR)/%.o
-	@$(ECHO) Building CXX static library $@
-	ar rcs $@ $<
 
 # ProgressBar sumbodule targets
 
@@ -148,13 +140,9 @@ $(PBAR_LIB_DIR)/PBar.o: $(PBAR_SRC_DIR)/PBar.cpp | $(PBAR_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@
 
-$(PBAR_LIB_DIR)/%.so: $(PBAR_LIB_DIR)/%.o
+$(PBAR_LIB_DIR)/lib%.so: $(PBAR_LIB_DIR)/%.o
 	@$(ECHO) Building CXX shared library $@
 	$(CXX) -shared -o $@ $<
-
-$(PBAR_LIB_DIR)/lib%.a: $(PBAR_LIB_DIR)/%.o
-	@$(ECHO) Building CXX static library $@
-	ar rcs $@ $<
 
 # yaml-cpp
 
@@ -168,7 +156,7 @@ yaml-cpp/build/libyaml-cpp.so:
 lib:
 	mkdir -p $@
 
-lib/DataCutsSelector.o: src/DataCutsSelector.cpp | lib
+lib/DataMethodsSelector.o: src/DataMethodsSelector.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB)
@@ -200,17 +188,14 @@ lib/IdentFun.o: src/IdentFun.cpp | lib
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	-L./lib -lSTrackFun
 
-lib/%.so: lib/%.o
+lib/lib%.so: lib/%.o
 	@$(ECHO) Building CXX shared library $@
 	$(CXX) -shared -o $@ $<
-
-lib/lib%.a: lib/%.o
-	@$(ECHO) Building CXX static library $@
-	ar rcs $@ $<
 
 AnalyzeHeatMaps: src/AnalyzeHeatMaps.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
+	$(JSON_INCLUDE) $(JSON_LIB) \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
 	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
 	$(PBAR_INCLUDE) $(PBAR_LIB) \
@@ -264,7 +249,6 @@ clean:
 	rm -rf CppTools/lib ; \
 	rm -rf ROOTTools/lib ; \
 	rm -rf ProgressBar/lib ; \
-	rm -rf yaml-cpp/build ; \
 	rm -rf lib
 
 endif
