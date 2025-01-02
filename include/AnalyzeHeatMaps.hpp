@@ -84,26 +84,26 @@ struct ThrContainer
                    100, 0., 10., 100, 0., 10.);
       
    ThrObj<TH2F> heatmapDCe0 = 
-      ThrObj<TH2F>("Heatmap: DCe, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+      ThrObj<TH2F>("Heatmap: DCe, zDC>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapDCe1 = 
-      ThrObj<TH2F>("Heatmap: DCe, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+      ThrObj<TH2F>("Heatmap: DCe, zDC<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapDCw0 = 
-      ThrObj<TH2F>("Heatmap: DCw, zed>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+      ThrObj<TH2F>("Heatmap: DCw, zDC>=0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapDCw1 = 
-      ThrObj<TH2F>("Heatmap: DCw, zed<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
+      ThrObj<TH2F>("Heatmap: DCw, zDC<0", "board vs alpha", 400, 0., 80., 195, -0.39, 0.39);
 
    // DC heatmaps without alpha scaling: needed for alpha scaling
    ThrObj<TH2F> heatmapUnscaledDCe0 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCe, zed>=0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zDC>=0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCe1 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCe, zed<0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCe, zDC<0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCw0 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCw, zed>=0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCw, zDC>=0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
    ThrObj<TH2F> heatmapUnscaledDCw1 = 
-      ThrObj<TH2F>("Unscaled heatmap: DCw, zed<0", "board vs alpha", 
+      ThrObj<TH2F>("Unscaled heatmap: DCw, zDC<0", "board vs alpha", 
                    400, 0., 80., 195, -0.39, 0.39);
 
    ThrObj<TH2F> heatmapPC1e = 

@@ -26,7 +26,7 @@ struct
 {
 	double origIntegral;
 	std::array<bool, 5> isMin = {true, true, true, true, true};
-	TFile realFile = TFile("data/Real/Run14HeAu200/sum.root");
+	TFile realFile = TFile("data/Real/Run14HeAu200/SingleTrack/sum.root");
 	TFile simFile = TFile("data/PostSim/Run14HeAu200/Heatmaps/all.root");
    
 	//TFile file = TFile("data/Real/Run15pp200/sum.root");
@@ -988,8 +988,8 @@ void GUIDM()
    using namespace Run14HeAu200Cuts;
    
 	gStyle->SetOptStat(0);
-	Par.realHist = (TH2F *) Par.realFile.Get("Heatmap: DCe, zed>=0");
-	if (Par.useSimHist) Par.simHist = (TH2F *) Par.simFile.Get("Heatmap: DCe, zed>=0");
+	Par.realHist = (TH2F *) Par.realFile.Get("Heatmap: DCe, zDC>=0");
+	if (Par.useSimHist) Par.simHist = (TH2F *) Par.simFile.Get("Heatmap: DCe, zDC>=0");
 	//Par.realHist->SetTitle(Par.realHist->GetName());
 
 	Par.origIntegral = Par.realHist->Integral();

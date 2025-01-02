@@ -128,7 +128,9 @@
             {"name": "pi+"},
             {"name": "pi-"},
             {"name": "k+"},
-            {"name": "k-"}
+            {"name": "k-"},
+            {"name": "p"},
+            {"name": "pbar"}
          ],
          "pt_ranges":
          [

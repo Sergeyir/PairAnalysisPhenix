@@ -7,7 +7,7 @@ struct
 	std::string runName = "Run14HeAu200";
 	Table table{6};
 
-	TFile *dataFile = TFile::Open(("data/Real/" + runName + "/sum.root").c_str());
+	TFile *dataFile = TFile::Open(("data/Real/" + runName + "/SingleTrack/sum.root").c_str());
 	TFile *simFile = TFile::Open(("data/PostSim/" + runName + "/Heatmaps/all.root").c_str());
 
 	const int sysNDiv = 4;
@@ -334,6 +334,9 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
+
+   if (!dataDistr || dataDistr == NULL) PrintError(histName + " does not exist in real data file");
+   if (!dataDistr || simDistr == NULL) PrintError(histName + " does not exist in sim data file");
    
    CheckHists(dataDistr, simDistr);
    
@@ -372,6 +375,9 @@ double  GetUncertainty(const std::string& histName, const std::string &detectorN
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
    
+   if (!dataDistr || dataDistr == NULL) PrintError(histName + " does not exist in real data file");
+   if (!dataDistr || simDistr == NULL) PrintError(histName + " does not exist in sim data file");
+   
    CheckHists(dataDistr, simDistr);
    
    TH2F *dataCutDistr = static_cast<TH2F *>(dataDistr->Clone());
@@ -408,6 +414,9 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
+
+   if (!dataDistr || dataDistr == NULL) PrintError(histName + " does not exist in real data file");
+   if (!dataDistr || simDistr == NULL) PrintError(histName + " does not exist in sim data file");
    
    CheckHists(dataDistr, simDistr);
    
@@ -446,6 +455,9 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
+
+   if (!dataDistr || dataDistr == NULL) PrintError(histName + " does not exist in real data file");
+   if (!dataDistr || simDistr == NULL) PrintError(histName + " does not exist in sim data file");
    
    CheckHists(dataDistr, simDistr);
    
@@ -483,7 +495,7 @@ void DM()
 	
 	gErrorIgnoreLevel = kWarning;
 
-	CheckInputFile("data/Real/" + Par.runName + "/sum.root");
+	CheckInputFile("data/Real/" + Par.runName + "/SingleTrack/sum.root");
 	CheckInputFile("data/PostSim/" + Par.runName + "/Heatmaps/");
 
 	system(("mkdir -p data/Deadmaps/" + Par.runName).c_str());
@@ -495,16 +507,16 @@ void DM()
 	Par.table.PrintHeader("detector", "sys", "sys x", "sys y", "data lost", "MC lost");
 
    const double sysDCe0 = 
-      GetUncertainty("Heatmap: DCe, zed>=0", "DCe0", "DCe, z#geq0", "board", "#alpha", false,
+      GetUncertainty("Heatmap: DCe, zDC>=0", "DCe0", "DCe, z#geq0", "board", "#alpha", false,
                      &IsDeadDC, 2., 1.);
    const double sysDCe1 = 
-      GetUncertainty("Heatmap: DCe, zed<0", "DCe1", "DCe, z<0", "board", "#alpha", false,
+      GetUncertainty("Heatmap: DCe, zDC<0", "DCe1", "DCe, z<0", "board", "#alpha", false,
                      &IsDeadDC, 2., -1.);
    const double sysDCw0 = 
-      GetUncertainty("Heatmap: DCw, zed>=0", "DCw0", "DCw, z#geq0", "board", "#alpha", false,
+      GetUncertainty("Heatmap: DCw, zDC>=0", "DCw0", "DCw, z#geq0", "board", "#alpha", false,
                      &IsDeadDC, 1., 1.);
    const double sysDCw1 = 
-      GetUncertainty("Heatmap: DCw, zed<0", "DCw1", "DCw, z<0", "board", "#alpha", false,
+      GetUncertainty("Heatmap: DCw, zDC<0", "DCw1", "DCw, z<0", "board", "#alpha", false,
                      &IsDeadDC, 1., -1.);
 
    /*

@@ -63,7 +63,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       Par.magfQueue.size()*Par.pTRangeQueue.size()));
 
    std::string simInputFileName = Par.simDataDir + 
-      Par.runName + "/SingleTrack/" + part + magf + pTRange + ".root";
+      Par.runName + "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
    std::string realDataFileName = Par.realDataDir + 
       Par.runName + "/SingleTrack/sum" + magf + ".root";
 
@@ -400,7 +400,7 @@ int main(int argc, char **argv)
          for (std::string pTRange : Par.pTRangeQueue)
          {
             CheckInputFile(Par.simDataDir + Par.runName + 
-               "/SingleTrack/" + part + magf + pTRange + ".root");
+               "/SingleTrack/" + part + "_" + pTRange + magf + ".root");
          }
       }
    }
@@ -571,9 +571,11 @@ int main(int argc, char **argv)
             num++;
          }
          //wiriting the result
-         const std::string outputFileName = 
+         std::string outputFileName = 
             Par.outputDir + Par.runName + 
-            "/Heatmaps/" + part + magf + ".root";
+            "/Heatmaps/" + part;
+         if (magf != "") outputFileName += "magf";
+         outputFileName += magf + ".root";
          
          TFile outfile(outputFileName.c_str(), "RECREATE");
          outfile.cd();
