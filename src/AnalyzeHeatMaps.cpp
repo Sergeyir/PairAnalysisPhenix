@@ -23,9 +23,9 @@
 void Parameters::Init(const std::string inputFileName, const int nThr)
 {
    CheckInputFile(inputFileName);
-
+   
    numberOfThreads = nThr;
-
+   
    std::ifstream inputJSON(inputFileName.c_str(), std::ifstream::binary);
    Json::Value inputJSONContents;
    inputJSON >> inputJSONContents;
@@ -49,12 +49,54 @@ void Parameters::Init(const std::string inputFileName, const int nThr)
    pTMin = inputJSONContents["SIM"]["pt_min"].asDouble();
    pTMax = inputJSONContents["SIM"]["pt_max"].asDouble();
 
+   reweightForSpectra = inputJSONContents["SIM"]["HEATMAPS"]["reweight_for_spectra"].asBool();
+   reweightForAlpha = inputJSONContents["SIM"]["HEATMAPS"]["reweight_for_alpha"].asBool();
+
    dms.Init(runName);
 }
 
 Parameters Par;
 
-//pTRange can be used to specify different statistics of the same dataset e.g. low pT or high pT
+TH2F *GetDCHeatmap(TFile *file, const std::string& histName)
+{
+   TH2F *hist = (TH2F *) file->Get(histName.c_str());
+   if (!hist) PrintError("Histogram " + histName + " does not exist in file " + 
+                         (std::string) file->GetName());
+   // ROOT things to make histograms to not be automaticaly deleted when the file is closed
+   hist->SetDirectory(0);
+   return hist;
+}
+
+void CheckHistsAxis(TH2F *hist1, TH2F *hist2)
+{
+   // heatmaps from real data and sim are required to have the same axis ranges and number of bins
+   if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
+   {
+      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                 (std::string) hist2->GetName() + "\" have different number of bins on X axis");
+   }
+   if (hist1->GetYaxis()->GetNbins() != hist2->GetYaxis()->GetNbins())
+   {
+      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                 (std::string) hist2->GetName() + "\" have different number of bins on Y axis");
+   }
+   if (fabs(hist1->GetXaxis()->GetBinLowEdge(1) - hist2->GetXaxis()->GetBinLowEdge(1)) > 1e-7 ||
+       fabs(hist1->GetXaxis()->GetBinLowEdge(hist1->GetXaxis()->GetNbins()) - 
+            hist2->GetXaxis()->GetBinLowEdge(hist2->GetXaxis()->GetNbins())) > 1e-7)
+   {
+      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                 (std::string) hist2->GetName() + "\" have different ranges on X axis");
+   }
+   if (fabs(hist1->GetYaxis()->GetBinLowEdge(1) - hist2->GetYaxis()->GetBinLowEdge(1)) > 1e-7 ||
+       fabs(hist1->GetYaxis()->GetBinLowEdge(hist1->GetYaxis()->GetNbins()) - 
+            hist2->GetYaxis()->GetBinLowEdge(hist2->GetYaxis()->GetNbins())) > 1e-7)
+   {
+      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                 (std::string) hist2->GetName() + "\" have different ranges on Y axis");
+   }
+}
+
+// pTRange can be used to specify different statistics of the same dataset e.g. low pT or high pT
 void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
                           const std::string& magf, const std::string &pTRange, const int procNum)  
 {   
@@ -62,22 +104,21 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       " out of " + std::to_string(Par.partQueue.size()*
       Par.magfQueue.size()*Par.pTRangeQueue.size()));
 
-   std::string simInputFileName = Par.simDataDir + 
+   std::string simInputFileName = "data/SimTrees/" + 
       Par.runName + "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
-   std::string realDataFileName = Par.realDataDir + 
+   std::string realDataFileName = "data/Real/" + 
       Par.runName + "/SingleTrack/sum" + magf + ".root";
 
    TFile simInputFile = TFile(simInputFileName.c_str());
    TFile realDataFile = TFile(realDataFileName.c_str());
    
    const double nevents = static_cast<double>(((TTree *) simInputFile.Get("Tree"))->GetEntries());
-
+   
    if (nevents <= 0)
    {
       Print("Error: Number of events is equal or less than 0!");
       exit(1);
    }
-
    
    TH1F *origPtHist = (TH1F *) simInputFile.Get("orig_pt");
    
@@ -91,9 +132,11 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       origPtHist->FindLastBinAbove(origPtThreshold));
    
    double eventNormWeight = 1.;
-   if (Par.doUseWeightFunc)
+   if (Par.reweightForSpectra)
    {
       TH1F *centrHist = (TH1F *) realDataFile.Get("centrality");
+      if (!centrHist) PrintError((std::string) "Histogram \"centrality\" does not exist in file" + 
+                                 realDataFile.GetName());
       
       eventNormWeight = origPtHist->Integral(
          origPtHist->GetXaxis()->FindBin(Par.pTMin), 
@@ -109,8 +152,8 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
    if (magf != "") box.AddEntry("Magnetic field", magf);
    box.AddEntry("Orig pT distribution span", 
       DtoStr(lowPtBound) + " < pT < " + DtoStr(upPtBound));
-   box.AddEntry("Use weight function", Par.doUseWeightFunc);
-   box.AddEntry("Reweight alpha", Par.doReweightAlpha);
+   box.AddEntry("Use weight function", Par.reweightForSpectra);
+   box.AddEntry("Reweight alpha", Par.reweightForAlpha);
    
    box.AddEntry("Minimum p_T, GeV", Par.pTMin);
    box.AddEntry("Maximum p_T, GeV", Par.pTMax);
@@ -119,14 +162,26 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
    box.AddEntry("Number of threads", Par.numberOfThreads);
    
    box.Print();
-   
-   /*
-   //tsallis weight function
-   std::unique_ptr<TF1> weightFunc = std::make_unique<TF1>(TF1("weightFunc", 
-      "[0]*x^([5]-1)*(1 + ([1] - 1)*(sqrt([4] + x^2)^([5]) - [2])/[3])^(-1./([1]-1.))"));
-   weightFunc->SetParameters(
-      ReadFileIntoArray("../input/SimAnalysis/Spectra/" + Par.collisionSystemName + "/" + part + ".txt", 6));
-      */
+
+   // weight function for spectra
+   std::unique_ptr<TF1> weightFunc;
+   if (Par.reweightForSpectra)
+   { 
+      std::ifstream inputWeightFunc(("data/Spectra/" + Par.collisionSystemName + "/" + 
+                                     part + "Fit.json").c_str(), std::ifstream::binary);
+      Json::Value inputWeightFuncContents;
+      inputWeightFunc >> inputWeightFuncContents;
+
+      weightFunc = std::make_unique<TF1>(
+         "weightFunc", inputWeightFuncContents["fit_function"].asString().c_str());
+      
+      int iPar = 0;
+      for (auto par : inputWeightFuncContents["fit_parameters"])
+      {
+         weightFunc->SetParameter(iPar, par.asDouble());
+         iPar++;
+      }
+   }
    
    ROOT::EnableImplicitMT(Par.numberOfThreads);
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
@@ -182,9 +237,9 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
 
          double eventWeight;
          
-         if (Par.doUseWeightFunc) 
+         if (Par.reweightForSpectra) 
          {
-            eventWeight = 1;//weightFunc->Eval(origPt)/eventNormWeight;
+            eventWeight = weightFunc->Eval(origPt)/eventNormWeight;
          }
          else eventWeight = 1.;
          
@@ -229,7 +284,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                if (zed >=0) 
                {
                   heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
-                  if (Par.doReweightAlpha) particleWeight *= 
+                  if (Par.reweightForAlpha) particleWeight *= 
                      Par.alphaReweightDCe0->GetBinContent(
                      Par.alphaReweightDCe0->FindBin(alpha));
                   heatmapDCe0->Fill(board, alpha, particleWeight);
@@ -237,7 +292,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                else 
                {
                   heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
-                  if (Par.doReweightAlpha) particleWeight *= 
+                  if (Par.reweightForAlpha) particleWeight *= 
                      Par.alphaReweightDCe1->GetBinContent(
                      Par.alphaReweightDCe1->FindBin(alpha));
                   heatmapDCe1->Fill(board, alpha, particleWeight);
@@ -248,7 +303,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                if (zed >=0) 
                {
                   heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
-                  if (Par.doReweightAlpha) particleWeight *= 
+                  if (Par.reweightForAlpha) particleWeight *= 
                      Par.alphaReweightDCw0->GetBinContent(
                      Par.alphaReweightDCw0->FindBin(alpha));
                   heatmapDCw0->Fill(board, alpha, particleWeight);
@@ -256,7 +311,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                else 
                {
                   heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
-                  if (Par.doReweightAlpha) particleWeight *= 
+                  if (Par.reweightForAlpha) particleWeight *= 
                      Par.alphaReweightDCw1->GetBinContent(
                      Par.alphaReweightDCw1->FindBin(alpha));
                   heatmapDCw1->Fill(board, alpha, particleWeight);
@@ -390,52 +445,55 @@ int main(int argc, char **argv)
    
    if (argc == 2) Par.Init(argv[1], std::thread::hardware_concurrency());
    else Par.Init(argv[1], std::stoi(argv[2]));
+
+   if (Par.reweightForSpectra)
+   {
+      for (std::string part : Par.partQueue)
+      {
+         CheckInputFile("data/Spectra/" + Par.collisionSystemName + "/" + part + "Fit.json");
+      }
+   }
    
    for (std::string magf : Par.magfQueue)
    {
-      CheckInputFile(Par.realDataDir + Par.runName + "/SingleTrack/sum" + magf + ".root");
-      
+      CheckInputFile("data/Real/" + Par.runName + "/SingleTrack/sum" + magf + ".root");
       for (std::string part : Par.partQueue)
       {
          for (std::string pTRange : Par.pTRangeQueue)
          {
-            CheckInputFile(Par.simDataDir + Par.runName + 
+            CheckInputFile("data/SimTrees/" + Par.runName + 
                "/SingleTrack/" + part + "_" + pTRange + magf + ".root");
          }
       }
    }
-   if (Par.doUseWeightFunc)
-   {
-      /*
-      for (std::string part : Par.partQueue)
-      {
-         CheckInputFile("../input/SimAnalysis/Spectra/" + Par.collisionSystemName + "/" + part + ".txt");
-      }
-      */
-   }
    
-   if (Par.doReweightAlpha)
+   if (Par.reweightForAlpha)
    {
-      std::string realDataInputFileName = Par.realDataDir + Par.runName + "/SingleTrack/sum.root";
-      std::string alphaReweightInputFileName = Par.outputDir + 
-         Par.runName + "/Heatmaps/all.root";
+      std::string realDataInputFileName = "data/Real/" + Par.runName + "/SingleTrack/sum.root";
+      std::string alphaReweightInputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/all.root";
       
       CheckInputFile(realDataInputFileName);
+      
       if (CheckInputFile(alphaReweightInputFileName, false)) 
       {
          TFile realDataInputFile(realDataInputFileName.c_str());
          TFile alphaReweightInputFile(alphaReweightInputFileName.c_str());
 
-         TH2F *realDataDCe0 = (TH2F *) realDataInputFile.Get("dceast0");
-         TH2F *realDataDCe1 = (TH2F *) realDataInputFile.Get("dceast1");
-         TH2F *realDataDCw0 = (TH2F *) realDataInputFile.Get("dcwest0");
-         TH2F *realDataDCw1 = (TH2F *) realDataInputFile.Get("dcwest1");
-         
-         TH2F *simDCe0 = (TH2F *) alphaReweightInputFile.Get("unscaled_dceast0");
-         TH2F *simDCe1 = (TH2F *) alphaReweightInputFile.Get("unscaled_dceast1");
-         TH2F *simDCw0 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest0");
-         TH2F *simDCw1 = (TH2F *) alphaReweightInputFile.Get("unscaled_dcwest1");
+         TH2F *realDataDCe0 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCe, zDC>=0");
+         TH2F *realDataDCe1 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCe, zDC<0");
+         TH2F *realDataDCw0 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCw, zDC>=0");
+         TH2F *realDataDCw1 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCw, zDC<0");
 
+         TH2F *simDCe0 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCe, zDC>=0");
+         TH2F *simDCe1 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCe, zDC<0");
+         TH2F *simDCw0 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCw, zDC>=0");
+         TH2F *simDCw1 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCw, zDC<0");
+         
+         CheckHistsAxis(realDataDCe0, simDCe0);
+         CheckHistsAxis(realDataDCe1, simDCe1);
+         CheckHistsAxis(realDataDCw0, simDCw0);
+         CheckHistsAxis(realDataDCw1, simDCw1);
+         
          for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
          {
             for (int j = 1; j < realDataDCe0->GetYaxis()->GetNbins(); j++)
@@ -526,7 +584,7 @@ int main(int argc, char **argv)
             }
          }
 
-         std::string alphaReweightOutputFileName = Par.outputDir + 
+         std::string alphaReweightOutputFileName = "data/PostSim/" + 
             Par.runName + "/alpha_reweight.root";
          TFile alphaReweightOutputFile = TFile(alphaReweightOutputFileName.c_str(), "RECREATE");
 
@@ -537,27 +595,24 @@ int main(int argc, char **argv)
          Par.alphaReweightDCw0->Write();
          Par.alphaReweightDCw1->Write();
 
-         //decoupling histograms from the open file directory
-         //so they would not be deleted at the end of the scope
          Par.alphaReweightDCe0->SetDirectory(0);
          Par.alphaReweightDCe1->SetDirectory(0);
          Par.alphaReweightDCw0->SetDirectory(0);
-         Par.alphaReweightDCw1->SetDirectory(0);         
-
+         Par.alphaReweightDCw1->SetDirectory(0);
+         
          alphaReweightOutputFile.Close();
          PrintInfo("File " + alphaReweightOutputFileName + " was written");
       }
       else 
       {
          PrintInfo("alpha reweight is now disabled");
-         Par.doReweightAlpha = false;
+         Par.reweightForAlpha = false;
       }
    }
    
-   PrintInfo("Clearing output directory: " + Par.outputDir + 
-      Par.runName + "/Heatmaps/");
-   system(("mkdir -p " + Par.outputDir + Par.runName + "/Heatmaps").c_str());
-   system(("rm -r " + Par.outputDir + Par.runName + "/Heatmaps/*").c_str());
+   PrintInfo("Clearing output directory: data/PostSim/" + Par.runName + "/Heatmaps/");
+   system(("mkdir -p data/PostSim/" + Par.runName + "/Heatmaps").c_str());
+   system(("rm -r data/PostSim/" + Par.runName + "/Heatmaps/*").c_str());
 
    int num = 1;
    for (std::string part : Par.partQueue)
@@ -570,10 +625,8 @@ int main(int argc, char **argv)
             AnalyzeConfiguration(&thrContainer, part, magf, pTRange, num);
             num++;
          }
-         //wiriting the result
-         std::string outputFileName = 
-            Par.outputDir + Par.runName + 
-            "/Heatmaps/" + part;
+         // wriiting the result
+         std::string outputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/" + part;
          if (magf != "") outputFileName += "magf";
          outputFileName += magf + ".root";
          
@@ -587,9 +640,9 @@ int main(int argc, char **argv)
 
    PrintInfo("Merging output files into one");
 
-   system(("hadd -f " + Par.outputDir + 
-      Par.runName + "/Heatmaps/all.root " + Par.outputDir + 
-      Par.runName + "/Heatmaps/*.root").c_str());
+   system(("hadd -f data/PostSim/" + 
+           Par.runName + "/Heatmaps/all.root data/PostSim/" + 
+           Par.runName + "/Heatmaps/*.root").c_str());
 
    return 0;
 }

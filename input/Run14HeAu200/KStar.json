@@ -121,8 +121,8 @@
       "correction_tofw": 1.0,
       "HEATMAPS":
       {
-         "reweight_pt_for_spectra": false,
-         "reweight_alpha": false,
+         "reweight_for_spectra": true,
+         "reweight_for_alpha": true,
          "particles":
          [
             {"name": "pi+"},

@@ -42,15 +42,13 @@
 
 struct Parameters
 {
-   const std::string simDataDir = "data/SimTrees/";
-   const std::string realDataDir = "data/Real/";
    const std::string outputDir = "data/PostSim/";
    
    std::string collisionSystemName;
    std::string runName;
    
-   bool doUseWeightFunc;
-   bool doReweightAlpha;
+   bool reweightForSpectra;
+   bool reweightForAlpha;
    
    std::vector<std::string> partQueue;
    std::vector<std::string> magfQueue;
@@ -149,6 +147,9 @@ struct ThrContainer
    ThrObj<TH1F> distrSlatTOFe = ThrObj<TH1F>
       ("slat: TOFe", "slat", 960, 0., 960.);
 };
+
+TH2F *GetDCHeatmap(TFile *file, const std::string& histName);
+void CheckHistsAxis(TH2F *hist1, TH2F *hist2);
 
 void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
                           const std::string& magf, const std::string& auxName, const int procNum); 
