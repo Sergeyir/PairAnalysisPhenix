@@ -86,19 +86,17 @@ $(CPP_TOOLS_LIB_DIR)/Time.o: $(CPP_TOOLS_SRC_DIR)/Time.cpp | $(CPP_TOOLS_LIB_DIR
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@
 
-$(CPP_TOOLS_LIB_DIR)/IOTools.o: $(CPP_TOOLS_SRC_DIR)/IOTools.cpp \
-										  $(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
-										  $(CPP_TOOLS_LIB_DIR)/StrTools.o
+$(CPP_TOOLS_LIB_DIR)/IOTools.o: $(CPP_TOOLS_SRC_DIR)/IOTools.cpp | ErrorHandler StrTools
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
 	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools
 
-$(CPP_TOOLS_LIB_DIR)/Box.o: $(CPP_TOOLS_SRC_DIR)/Box.cpp $(CPP_TOOLS_LIB_DIR)/IOTools.o
+$(CPP_TOOLS_LIB_DIR)/Box.o: $(CPP_TOOLS_SRC_DIR)/Box.cpp | IOTools
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
 	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools -lIOTools
 
-$(CPP_TOOLS_LIB_DIR)/Table.o: $(CPP_TOOLS_SRC_DIR)/Table.cpp $(CPP_TOOLS_LIB_DIR)/IOTools.o
+$(CPP_TOOLS_LIB_DIR)/Table.o: $(CPP_TOOLS_SRC_DIR)/Table.cpp | IOTools
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) $(CPP_TOOLS_INCLUDE) -o $@ \
 	-L $(CPP_TOOLS_LIB_DIR) -lErrorHandler -lStrTools -lIOTools
@@ -118,10 +116,8 @@ $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.o: $(ROOT_TOOLS_SRC_DIR)/TCanvasPrinter.cpp
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-$(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp \
-										$(CPP_TOOLS_LIB_DIR)/ErrorHandler.o \
-										$(CPP_TOOLS_LIB_DIR)/IOTools.o | \
-										$(CPP_TOOLS_LIB_DIR)
+$(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp | ErrorHandler IOTools \
+										  $(CPP_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
 	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \

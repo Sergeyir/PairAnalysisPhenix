@@ -66,6 +66,11 @@ struct Parameters
    TH1F *alphaReweightDCe1;
    TH1F *alphaReweightDCw0;
    TH1F *alphaReweightDCw1;
+
+   unsigned long numberOfEvents = 0;
+   // parameter for monitorign progress
+   unsigned long numberOfCalls = 0;
+   ProgressBar pBar{"BLOCK"};
    
    void Init(const std::string inputFileName, const int nThr);
 };
@@ -143,9 +148,11 @@ struct ThrContainer
 
 
    ThrObj<TH1F> distrStripTOFw = ThrObj<TH1F>
-      ("strip: TOFw", "striptofw", 512, 0., 512.);
+      ("strip: TOFw", "strip number", 512, 0., 512.);
    ThrObj<TH1F> distrSlatTOFe = ThrObj<TH1F>
-      ("slat: TOFe", "slat", 960, 0., 960.);
+      ("slat: TOFe", "slat number", 960, 0., 960.);
+   ThrObj<TH2F> distrELossTOFe = ThrObj<TH2F>
+      ("ELoss: TOFe", "#beta vs E_{TOFe}", 100, 0., 1., 100, 0., 0.03);
 };
 
 TH2F *GetDCHeatmap(TFile *file, const std::string& histName);

@@ -98,11 +98,8 @@ void CheckHistsAxis(TH2F *hist1, TH2F *hist2)
 
 // pTRange can be used to specify different statistics of the same dataset e.g. low pT or high pT
 void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
-                          const std::string& magf, const std::string &pTRange, const int procNum)  
+                          const std::string& magf, const std::string &pTRange)  
 {   
-   Box box = Box("Parameters of run " + std::to_string(procNum) + 
-      " out of " + std::to_string(Par.partQueue.size()*
-      Par.magfQueue.size()*Par.pTRangeQueue.size()));
 
    std::string simInputFileName = "data/SimTrees/" + 
       Par.runName + "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
@@ -111,15 +108,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
 
    TFile simInputFile = TFile(simInputFileName.c_str());
    TFile realDataFile = TFile(realDataFileName.c_str());
-   
-   const double nevents = static_cast<double>(((TTree *) simInputFile.Get("Tree"))->GetEntries());
-   
-   if (nevents <= 0)
-   {
-      Print("Error: Number of events is equal or less than 0!");
-      exit(1);
-   }
-   
+    
    TH1F *origPtHist = (TH1F *) simInputFile.Get("orig_pt");
    
    //thredhold is needed since there can be a little noise in the historgram
@@ -146,23 +135,13 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       //this normalization is needed to merge 2 files with flat pT distribution with different ranges
       eventNormWeight *= (Par.pTMax - Par.pTMin)/(upPtBound-lowPtBound);
    }
-   
-   box.AddEntry("Run name", Par.runName);
-   box.AddEntry("Orig particle", part);
-   if (magf != "") box.AddEntry("Magnetic field", magf);
-   box.AddEntry("Orig pT distribution span", 
-      DtoStr(lowPtBound) + " < pT < " + DtoStr(upPtBound));
-   box.AddEntry("Use weight function", Par.reweightForSpectra);
-   box.AddEntry("Reweight alpha", Par.reweightForAlpha);
-   
-   box.AddEntry("Minimum p_T, GeV", Par.pTMin);
-   box.AddEntry("Maximum p_T, GeV", Par.pTMax);
-   box.AddEntry("Number of events to be analyzed, 1e6", nevents/1e6, 3);
 
-   box.AddEntry("Number of threads", Par.numberOfThreads);
+   /*
+   Par.pBar.HandleOutput(ErrorHandlerSnippet::INFO + "Processing file " + 
+                         simInputFileName + " with original pT distribution: " +
+                         DtoStr(lowPtBound) + " < pT < " + DtoStr(upPtBound));
+                         */
    
-   box.Print();
-
    // weight function for spectra
    std::unique_ptr<TF1> weightFunc;
    if (Par.reweightForSpectra)
@@ -186,10 +165,6 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
    ROOT::EnableImplicitMT(Par.numberOfThreads);
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
    
-   double ncalls = 0.;
-
-   bool isProcessFinished = false;
-
    auto ProcessMP = [&](TTreeReader &reader)
    {   
       std::shared_ptr<TH1F> distrOrigPT = thrContainer->distrOrigPT.Get();
@@ -216,6 +191,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       
       std::shared_ptr<TH1F> distrStripTOFw = thrContainer->distrStripTOFw.Get();
       std::shared_ptr<TH1F> distrSlatTOFe = thrContainer->distrSlatTOFe.Get();
+      std::shared_ptr<TH2F> distrELossTOFe = thrContainer->distrELossTOFe.Get();
       
       std::shared_ptr<TH2F> heatmapTOFe = thrContainer->heatmapTOFe.Get();
       
@@ -232,7 +208,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
    
       while (reader.Next())
       {   
-         ncalls += 1.;
+         Par.numberOfCalls++;
          const double origPt = sqrt(pow(T.mom_orig(0), 2) + pow(T.mom_orig(1), 2));
 
          double eventWeight;
@@ -360,6 +336,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                const double eloss = 0.0014*pow(beta, -1.66);
 
                distrSlatTOFe->Fill(T.slat(i), particleWeight);
+               distrELossTOFe->Fill(beta, T.etof(i));
                
                if (IsMatch(Par.dms.GetTOFeSDPhi(T.tofdphi(i), pT, charge), 
                            Par.dms.GetTOFeSDZ(T.tofdz(i), pT, charge), 2., 2.) && 
@@ -414,22 +391,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       }
    };
 
-   auto PbarCall = [&]()
-   {
-      ProgressBar pbar = ProgressBar("BLOCK");
-      
-      while (!isProcessFinished)
-      {
-         pbar.Print(ncalls/nevents);
-         std::this_thread::sleep_for(std::chrono::milliseconds(20));
-      }
-      pbar.Print(1.);
-   };
-   
-   std::thread pBarThread(PbarCall);
    tp.Process(ProcessMP);
-   isProcessFinished = true;
-   pBarThread.join();
 }
 
 int main(int argc, char **argv)
@@ -461,12 +423,21 @@ int main(int argc, char **argv)
       {
          for (std::string pTRange : Par.pTRangeQueue)
          {
-            CheckInputFile("data/SimTrees/" + Par.runName + 
-               "/SingleTrack/" + part + "_" + pTRange + magf + ".root");
+            const std::string simInputFileName = "data/SimTrees/" + Par.runName + 
+               "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
+            CheckInputFile(simInputFileName);
+            const unsigned long numberOfEvents = 
+               static_cast<unsigned long>(((TTree *) TFile::Open(simInputFileName.c_str())->
+                                                        Get("Tree"))->GetEntries());
+            if (numberOfEvents <= 0)
+            {
+               PrintError("Number of events is equal or less than 0 in file " + simInputFileName);
+            }
+            Par.numberOfEvents += numberOfEvents;
          }
       }
    }
-   
+    
    if (Par.reweightForAlpha)
    {
       std::string realDataInputFileName = "data/Real/" + Par.runName + "/SingleTrack/sum.root";
@@ -609,12 +580,45 @@ int main(int argc, char **argv)
          Par.reweightForAlpha = false;
       }
    }
-   
+
    PrintInfo("Clearing output directory: data/PostSim/" + Par.runName + "/Heatmaps/");
    system(("mkdir -p data/PostSim/" + Par.runName + "/Heatmaps").c_str());
    system(("rm -r data/PostSim/" + Par.runName + "/Heatmaps/*").c_str());
 
-   int num = 1;
+   Box box = Box("Parameters");
+   
+   box.AddEntry("Run name", Par.runName);
+   box.AddEntry("Particles list", Par.partQueue);
+   if (Par.magfQueue.size() == 1 && Par.magfQueue.front() == "")
+   {
+      box.AddEntry("Magnetic field list", "run default");
+   }
+   else box.AddEntry("Magnetic field list", Par.magfQueue);
+   box.AddEntry("pT ranges list", Par.pTRangeQueue);
+   box.AddEntry("Minimum p_T, GeV", Par.pTMin);
+   box.AddEntry("Maximum p_T, GeV", Par.pTMax);
+   box.AddEntry("Reweight for pT spectra", Par.reweightForSpectra);
+   box.AddEntry("Reweight for alpha", Par.reweightForAlpha);
+   box.AddEntry("Number of threads", Par.numberOfThreads);
+   box.AddEntry("Number of events to be analyzed, 1e6", 
+                static_cast<double>(Par.numberOfEvents)/1e6, 3);
+   box.Print();
+
+   bool isProcessFinished = false;
+
+   auto pBarCall = [&]()
+   {
+      while (!isProcessFinished)
+      {
+         Par.pBar.Print(static_cast<double>(Par.numberOfCalls)/
+                        static_cast<double>(Par.numberOfEvents));
+         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+      }
+      Par.pBar.Print(1.);
+   };
+   
+   std::thread pBarThread(pBarCall);
+   
    for (std::string part : Par.partQueue)
    {
       for (std::string magf : Par.magfQueue)
@@ -622,8 +626,7 @@ int main(int argc, char **argv)
          ThrContainer thrContainer;
          for (std::string pTRange : Par.pTRangeQueue)
          {
-            AnalyzeConfiguration(&thrContainer, part, magf, pTRange, num);
-            num++;
+            AnalyzeConfiguration(&thrContainer, part, magf, pTRange);
          }
          // wriiting the result
          std::string outputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/" + part;
@@ -634,9 +637,12 @@ int main(int argc, char **argv)
          outfile.cd();
          ThrObjHolder.Write();
          outfile.Close();
-         PrintInfo("File " + outputFileName + " was written");
+         Par.pBar.HandleOutput(ErrorHandlerSnippet::INFO + "File " + outputFileName + " was written");
       }
    }
+
+   isProcessFinished = true;
+   pBarThread.join();
 
    PrintInfo("Merging output files into one");
 

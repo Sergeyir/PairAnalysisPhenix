@@ -122,7 +122,7 @@
       "HEATMAPS":
       {
          "reweight_for_spectra": true,
-         "reweight_for_alpha": true,
+         "reweight_for_alpha": false,
          "particles":
          [
             {"name": "pi+"},
