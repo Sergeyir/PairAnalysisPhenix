@@ -7,7 +7,7 @@ struct
 
 void ELossTOFe()
 {
-   TH2F *eloss = (TH2F *) Par.dataFile->Get("ELoss: TOFe");
+   TH2F *eloss = (TH2F *) Par.simFile->Get("ELoss: TOFe");
    eloss->Draw("COLZ");
 
    gPad->SetLogz();

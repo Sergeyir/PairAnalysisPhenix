@@ -125,17 +125,11 @@
          "reweight_for_alpha": false,
          "particles":
          [
-            {"name": "pi+"},
-            {"name": "pi-"},
-            {"name": "k+"},
-            {"name": "k-"},
-            {"name": "p"},
-            {"name": "pbar"}
+            {"name": "pi+"}
          ],
          "pt_ranges":
          [
-            {"name": "lpt"},
-            {"name": "hpt"}
+            {"name": "lpt"}
          ]
       }
    }

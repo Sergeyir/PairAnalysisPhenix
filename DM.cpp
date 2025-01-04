@@ -98,45 +98,49 @@ double CalculateUncertaintyFromProj(TH1F *dataCutDistr, TH1F *simCutDistr)
 double CalculateUncertainty1Proj(TH2F *dataDistr, TH2F *simDistr, 
                                  TH2F *dataCutDistr, TH2F* simCutDistr, 
                                  const std::string& detectorName, const std::string& title, 
-                                 const std::string& xTitle, const std::string& yTitle)
+                                 const std::string& xTitle, const std::string& yTitle,
+                                 const int rebinX)
 {   
 	SetHistStyle(dataDistr, title, xTitle, yTitle);
 	SetHistStyle(simDistr, "MC " + title, xTitle, yTitle);
 	SetHistStyle(dataCutDistr, "Cut " + title, xTitle, yTitle);
 	SetHistStyle(simCutDistr, "Cut MC " + title, xTitle, yTitle);
 	
-	TH1F *dataCutDistr_proj = (TH1F*) dataCutDistr->ProjectionX(((std::string) dataCutDistr->GetName() + "_data").c_str(), 1, dataCutDistr->GetYaxis()->GetNbins());
-	TH1F *simCutDistr_proj = (TH1F*) simCutDistr->ProjectionX(((std::string) simCutDistr->GetName() + "_sim").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
+	TH1F *dataCutDistrProj = (TH1F*) dataCutDistr->ProjectionX(((std::string) dataCutDistr->GetName() + "_data").c_str(), 1, dataCutDistr->GetYaxis()->GetNbins());
+	TH1F *simCutDistrProj = (TH1F*) simCutDistr->ProjectionX(((std::string) simCutDistr->GetName() + "_sim").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
 
-	dataCutDistr_proj->Scale(1./dataCutDistr_proj->Integral(
-		1, dataCutDistr_proj->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistr_proj->Scale(1./simCutDistr_proj->Integral(
-		1, simCutDistr_proj->GetXaxis()->GetNbins()), "nosw2");
+   dataCutDistrProj->RebinX(rebinX);
+   simCutDistrProj->RebinX(rebinX);
 
-	dataCutDistr_proj->SetFillColorAlpha(kOrange-4, 0.5);
-	
-	TLegend proj_legend = TLegend(0.4, 0.78, 0.9, 0.88);
-	proj_legend.SetNColumns(2);
-	
-	proj_legend.SetLineColorAlpha(0, 0);
-	proj_legend.SetFillColorAlpha(0, 0);
-	
-	dataCutDistr_proj->SetLineColor(kRed-3);
-	simCutDistr_proj->SetLineColor(kAzure-3);
+	dataCutDistrProj->Scale(1./dataCutDistrProj->Integral(
+		1, dataCutDistrProj->GetXaxis()->GetNbins()), "nosw2");
+	simCutDistrProj->Scale(1./simCutDistrProj->Integral(
+		1, simCutDistrProj->GetXaxis()->GetNbins()), "nosw2");
 
-	dataCutDistr_proj->SetLineWidth(2);
-	simCutDistr_proj->SetLineWidth(2);
-
-	proj_legend.AddEntry(dataCutDistr_proj, "data");
-	proj_legend.AddEntry(simCutDistr_proj, "MC");
+	dataCutDistrProj->SetFillColorAlpha(kOrange-4, 0.5);
 	
-	dataCutDistr_proj->SetTitle((title + " projections data vs MC").c_str());
-	dataCutDistr_proj->GetXaxis()->SetTitle(xTitle.c_str());
-
-	dataCutDistr_proj->SetMaximum(dataCutDistr_proj->GetMaximum()*1.3);
+	TLegend projLegend = TLegend(0.4, 0.78, 0.9, 0.88);
+	projLegend.SetNColumns(2);
 	
-	dataCutDistr_proj->GetXaxis()->SetLabelSize(0.05);
-	dataCutDistr_proj->GetYaxis()->SetLabelSize(0.05);
+	projLegend.SetLineColorAlpha(0, 0);
+	projLegend.SetFillColorAlpha(0, 0);
+	
+	dataCutDistrProj->SetLineColor(kRed-3);
+	simCutDistrProj->SetLineColor(kAzure-3);
+
+	dataCutDistrProj->SetLineWidth(2);
+	simCutDistrProj->SetLineWidth(2);
+
+	projLegend.AddEntry(dataCutDistrProj, "data");
+	projLegend.AddEntry(simCutDistrProj, "MC");
+	
+	dataCutDistrProj->SetTitle((title + " projections data vs MC").c_str());
+	dataCutDistrProj->GetXaxis()->SetTitle(xTitle.c_str());
+
+	dataCutDistrProj->SetMaximum(dataCutDistrProj->GetMaximum()*1.3);
+	
+	dataCutDistrProj->GetXaxis()->SetLabelSize(0.05);
+	dataCutDistrProj->GetYaxis()->SetLabelSize(0.05);
 	
 	TCanvas canv = TCanvas("canv", "canv", 900, 450);
 	canv.Divide(2);
@@ -157,30 +161,30 @@ double CalculateUncertainty1Proj(TH2F *dataDistr, TH2F *simDistr,
 
 	PrintCanvas(&canv, "output/Deadmaps/" + Par.runName + "/" + detectorName);
 
-	TCanvas proj_canv = TCanvas("proj_canv", "canv", 1800, 600);
+	TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 600);
 
-	proj_canv.Divide(3, 1);
+	projCanv.Divide(3, 1);
 
-	proj_canv.cd(1);
+	projCanv.cd(1);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetRightMargin(0.12);
 	dataCutDistr->Clone()->Draw("colz");
 
-	proj_canv.cd(2);
+	projCanv.cd(2);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetRightMargin(0.12);
 	simCutDistr->Clone()->Draw("colz");
 
-	proj_canv.cd(3);
+	projCanv.cd(3);
 	gPad->SetLeftMargin(0.13);
-	dataCutDistr_proj->Draw();
-	simCutDistr_proj->Draw("SAME HIST");
+	dataCutDistrProj->Draw();
+	simCutDistrProj->Draw("SAME HIST");
 
-	proj_legend.Draw();
+	projLegend.Draw();
 
-	PrintCanvas(&proj_canv, "output/Systematics/" + Par.runName + "/" + detectorName);
+	PrintCanvas(&projCanv, "output/Systematics/" + Par.runName + "/" + detectorName);
 	
-	const double uncertainty = CalculateUncertaintyFromProj(dataCutDistr_proj, simCutDistr_proj);
+	const double uncertainty = CalculateUncertaintyFromProj(dataCutDistrProj, simCutDistrProj);
 	
 	const double data_lost = (1. - dataCutDistr->Integral()/dataDistr->Integral())*100.;
 	const double sim_lost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
@@ -197,72 +201,78 @@ double CalculateUncertainty1Proj(TH2F *dataDistr, TH2F *simDistr,
 double CalculateUncertainty2Proj(TH2F *dataDistr, TH2F *simDistr, 
                                  TH2F *dataCutDistr, TH2F* simCutDistr, 
                                  const std::string& detectorName, const std::string& title, 
-                                 const std::string& xTitle, const std::string& yTitle)
+                                 const std::string& xTitle, const std::string& yTitle,
+                                 const int rebinX, const int rebinY)
 {
 	SetHistStyle(dataDistr, title, xTitle, yTitle);
 	SetHistStyle(simDistr, "MC " + title, xTitle, yTitle);
 	SetHistStyle(dataCutDistr, "Cut " + title, xTitle, yTitle);
 	SetHistStyle(simCutDistr, "Cut MC " + title, xTitle, yTitle);
 	
-	TH1F *dataCutDistr_proj_x = (TH1F*) dataCutDistr->ProjectionX(
+	TH1F *dataCutDistrProjX = (TH1F*) dataCutDistr->ProjectionX(
 		(title + "_data_x").c_str(), 1, dataCutDistr->GetXaxis()->GetNbins());
-	TH1F *dataCutDistr_proj_y = (TH1F*) dataCutDistr->ProjectionY(
+	TH1F *dataCutDistrProjY = (TH1F*) dataCutDistr->ProjectionY(
 		(title + "_data_y").c_str(), 1, dataCutDistr->GetYaxis()->GetNbins());
-	TH1F *simCutDistr_proj_x = (TH1F*) simCutDistr->ProjectionX(
+	TH1F *simCutDistrProjX = (TH1F*) simCutDistr->ProjectionX(
 		(title + "_sim_x").c_str(), 1, simCutDistr->GetXaxis()->GetNbins());
-	TH1F *simCutDistr_proj_y = (TH1F*) simCutDistr->ProjectionY(
+	TH1F *simCutDistrProjY = (TH1F*) simCutDistr->ProjectionY(
 		(title + "_sim_y").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
 
-	dataCutDistr_proj_x->SetFillColorAlpha(kOrange-4, 0.5);
-	dataCutDistr_proj_y->SetFillColorAlpha(kOrange-4, 0.5);
+   dataCutDistrProjX->RebinX(rebinX);
+   simCutDistrProjX->RebinX(rebinX);
+   dataCutDistrProjY->RebinX(rebinY);
+   simCutDistrProjY->RebinX(rebinY);
+
+	dataCutDistrProjX->SetFillColorAlpha(kOrange-4, 0.5);
+	dataCutDistrProjY->SetFillColorAlpha(kOrange-4, 0.5);
 	
-	dataCutDistr_proj_x->Scale(1./dataCutDistr_proj_x->Integral(1, dataCutDistr_proj_x->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistr_proj_x->Scale(1./simCutDistr_proj_x->Integral(1, simCutDistr_proj_x->GetXaxis()->GetNbins()), "nosw2");
+	dataCutDistrProjX->Scale(1./dataCutDistrProjX->Integral(1, dataCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
+	simCutDistrProjX->Scale(1./simCutDistrProjX->Integral(1, simCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
 	
-	dataCutDistr_proj_y->Scale(1./dataCutDistr_proj_y->Integral(1, dataCutDistr_proj_y->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistr_proj_y->Scale(1./simCutDistr_proj_y->Integral(1, simCutDistr_proj_y->GetXaxis()->GetNbins()), "nosw2");
+	dataCutDistrProjY->Scale(1./dataCutDistrProjY->Integral(1, dataCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
+	simCutDistrProjY->Scale(1./simCutDistrProjY->Integral(1, simCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
 
-	TLegend proj_x_legend = TLegend(0.4, 0.78, 0.9, 0.88);
-	TLegend proj_y_legend = TLegend(0.4, 0.78, 0.9, 0.88);
+	TLegend projXLegend = TLegend(0.4, 0.78, 0.9, 0.88);
+	TLegend projYLegend = TLegend(0.4, 0.78, 0.9, 0.88);
 	
-	proj_x_legend.SetNColumns(2);
-	proj_y_legend.SetNColumns(2);
+	projXLegend.SetNColumns(2);
+	projYLegend.SetNColumns(2);
 	
-	proj_x_legend.SetLineColorAlpha(0, 0);
-	proj_x_legend.SetFillColorAlpha(0, 0);
-	proj_y_legend.SetLineColorAlpha(0, 0);
-	proj_y_legend.SetFillColorAlpha(0, 0);
+	projXLegend.SetLineColorAlpha(0, 0);
+	projXLegend.SetFillColorAlpha(0, 0);
+	projYLegend.SetLineColorAlpha(0, 0);
+	projYLegend.SetFillColorAlpha(0, 0);
 	
-	dataCutDistr_proj_x->SetLineColor(kRed-3);
-	dataCutDistr_proj_y->SetLineColor(kRed-3);
-	simCutDistr_proj_x->SetLineColor(kAzure-3);
-	simCutDistr_proj_y->SetLineColor(kAzure-3);
+	dataCutDistrProjX->SetLineColor(kRed-3);
+	dataCutDistrProjY->SetLineColor(kRed-3);
+	simCutDistrProjX->SetLineColor(kAzure-3);
+	simCutDistrProjY->SetLineColor(kAzure-3);
 
-	dataCutDistr_proj_x->SetLineWidth(2);
-	dataCutDistr_proj_y->SetLineWidth(2);
-	simCutDistr_proj_x->SetLineWidth(2);
-	simCutDistr_proj_y->SetLineWidth(2);
+	dataCutDistrProjX->SetLineWidth(2);
+	dataCutDistrProjY->SetLineWidth(2);
+	simCutDistrProjX->SetLineWidth(2);
+	simCutDistrProjY->SetLineWidth(2);
 
-	proj_x_legend.AddEntry(dataCutDistr_proj_x, "data");
-	proj_x_legend.AddEntry(simCutDistr_proj_x, "MC");
+	projXLegend.AddEntry(dataCutDistrProjX, "data");
+	projXLegend.AddEntry(simCutDistrProjX, "MC");
 
-	proj_y_legend.AddEntry(dataCutDistr_proj_y, "data");
-	proj_y_legend.AddEntry(simCutDistr_proj_y, "MC");
+	projYLegend.AddEntry(dataCutDistrProjY, "data");
+	projYLegend.AddEntry(simCutDistrProjY, "MC");
 	
-	dataCutDistr_proj_x->SetTitle((title + " X projections data vs MC").c_str());
-	dataCutDistr_proj_x->GetXaxis()->SetTitle(xTitle.c_str());
+	dataCutDistrProjX->SetTitle((title + " X projections data vs MC").c_str());
+	dataCutDistrProjX->GetXaxis()->SetTitle(xTitle.c_str());
 
-	dataCutDistr_proj_y->SetTitle((title + " Y projections data vs MC").c_str());
-	dataCutDistr_proj_y->GetXaxis()->SetTitle(yTitle.c_str());
+	dataCutDistrProjY->SetTitle((title + " Y projections data vs MC").c_str());
+	dataCutDistrProjY->GetXaxis()->SetTitle(yTitle.c_str());
 
-	dataCutDistr_proj_x->SetMaximum(dataCutDistr_proj_x->GetMaximum()*1.3);
-	dataCutDistr_proj_y->SetMaximum(dataCutDistr_proj_y->GetMaximum()*1.3);
+	dataCutDistrProjX->SetMaximum(dataCutDistrProjX->GetMaximum()*1.3);
+	dataCutDistrProjY->SetMaximum(dataCutDistrProjY->GetMaximum()*1.3);
 
-	dataCutDistr_proj_x->GetXaxis()->SetLabelSize(0.05);
-	dataCutDistr_proj_x->GetYaxis()->SetLabelSize(0.05);
+	dataCutDistrProjX->GetXaxis()->SetLabelSize(0.05);
+	dataCutDistrProjX->GetYaxis()->SetLabelSize(0.05);
 
-	dataCutDistr_proj_y->GetXaxis()->SetLabelSize(0.05);
-	dataCutDistr_proj_y->GetYaxis()->SetLabelSize(0.05);
+	dataCutDistrProjY->GetXaxis()->SetLabelSize(0.05);
+	dataCutDistrProjY->GetYaxis()->SetLabelSize(0.05);
 	
 	TCanvas canv = TCanvas("canv", "canv", 900, 450);
 	canv.Divide(2);
@@ -279,48 +289,48 @@ double CalculateUncertainty2Proj(TH2F *dataDistr, TH2F *simDistr,
 
 	PrintCanvas(&canv, "output/Deadmaps/" + Par.runName + "/" + detectorName);
 
-	TCanvas proj_canv = TCanvas("proj_canv", "canv", 1800, 900);
+	TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 900);
 	
-	proj_canv.cd();
+	projCanv.cd();
 	gPad->Divide(2, 2);
 	
-	proj_canv.cd(1);
+	projCanv.cd(1);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetRightMargin(0.12);
 	dataCutDistr->Draw("colz");
 	
-	proj_canv.cd(3);
+	projCanv.cd(3);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetRightMargin(0.12);
 	simCutDistr->Draw("colz");
 	
-	proj_canv.cd(2);
+	projCanv.cd(2);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetBottomMargin(0.11);
-	dataCutDistr_proj_x->Draw();
-	simCutDistr_proj_x->Draw("SAME HIST");
-	proj_x_legend.Draw();
+	dataCutDistrProjX->Draw();
+	simCutDistrProjX->Draw("SAME HIST");
+	projXLegend.Draw();
 
-	proj_canv.cd(4);
+	projCanv.cd(4);
 	gPad->SetLeftMargin(0.12);
 	gPad->SetBottomMargin(0.11);
-	dataCutDistr_proj_y->Draw();
-	simCutDistr_proj_y->Draw("SAME HIST");
-	proj_y_legend.Draw();
+	dataCutDistrProjY->Draw();
+	simCutDistrProjY->Draw("SAME HIST");
+	projYLegend.Draw();
 
-	PrintCanvas(&proj_canv, "output/Systematics/" + Par.runName + "/" + detectorName);
+	PrintCanvas(&projCanv, "output/Systematics/" + Par.runName + "/" + detectorName);
 
-	const double uncertainty_x = CalculateUncertaintyFromProj(dataCutDistr_proj_x, simCutDistr_proj_x);
-	const double uncertainty_y = CalculateUncertaintyFromProj(dataCutDistr_proj_y, simCutDistr_proj_y);
-	const double uncertainty = RMS(uncertainty_x, uncertainty_y);
+	const double uncertaintyX = CalculateUncertaintyFromProj(dataCutDistrProjX, simCutDistrProjX);
+	const double uncertaintyY = CalculateUncertaintyFromProj(dataCutDistrProjY, simCutDistrProjY);
+	const double uncertainty = RMS(uncertaintyX, uncertaintyY);
 
 	const double data_lost = (1. - dataCutDistr->Integral()/dataDistr->Integral())*100.;
 	const double sim_lost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
 
 	Par.table.PrintRow(detectorName, 
 		DtoStr(uncertainty*100., 3), 
-		DtoStr(uncertainty_x*100., 3), 
-		DtoStr(uncertainty_y*100., 3), 
+		DtoStr(uncertaintyX*100., 3), 
+		DtoStr(uncertaintyY*100., 3), 
 		DtoStr(data_lost, 3) + "%",
 		DtoStr(sim_lost, 3) + "%");
 
@@ -330,7 +340,8 @@ double CalculateUncertainty2Proj(TH2F *dataDistr, TH2F *simDistr,
 double GetUncertainty(const std::string& histName, const std::string &detectorName, 
                       const std::string &title, const std::string xTitle, 
                       const std::string yTitle, bool sysCalc2Proj, 
-                      bool (*cut_func)(const double, const double))
+                      bool (*cut_func)(const double, const double),
+                      const int rebinX, const int rebinY)
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
@@ -342,7 +353,7 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    
    TH2F *dataCutDistr = static_cast<TH2F *>(dataDistr->Clone());
    TH2F *simCutDistr = static_cast<TH2F *>(simDistr->Clone());
-   
+
 	for (int i = 1; i <= dataDistr->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= dataDistr->GetYaxis()->GetNbins(); j++)
@@ -360,17 +371,17 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    if (!sysCalc2Proj) 
    {
       return CalculateUncertainty1Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                       detectorName, title, xTitle, yTitle);
+                                       detectorName, title, xTitle, yTitle, rebinX);
    }
    return CalculateUncertainty2Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                    detectorName, title, xTitle, yTitle);
+                                    detectorName, title, xTitle, yTitle, rebinX, rebinY);
 }
 
 double  GetUncertainty(const std::string& histName, const std::string &detectorName, 
                        const std::string &title, const std::string xTitle, 
                        const std::string yTitle, bool sysCalc2Proj, 
                        bool (*cut_func)(const double, const double, const double), 
-                       const double auxVal)
+                       const double auxVal, const int rebinX, const int rebinY)
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
@@ -382,7 +393,7 @@ double  GetUncertainty(const std::string& histName, const std::string &detectorN
    
    TH2F *dataCutDistr = static_cast<TH2F *>(dataDistr->Clone());
    TH2F *simCutDistr = static_cast<TH2F *>(simDistr->Clone());
-   
+
 	for (int i = 1; i <= dataDistr->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= dataDistr->GetYaxis()->GetNbins(); j++)
@@ -400,17 +411,18 @@ double  GetUncertainty(const std::string& histName, const std::string &detectorN
    if (!sysCalc2Proj) 
    {
       return CalculateUncertainty1Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                       detectorName, title, xTitle, yTitle);
+                                       detectorName, title, xTitle, yTitle, rebinX);
    }
    return CalculateUncertainty2Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                    detectorName, title, xTitle, yTitle);
+                                    detectorName, title, xTitle, yTitle, rebinX, rebinY);
 }
 
 double GetUncertainty(const std::string& histName, const std::string &detectorName, 
                       const std::string &title, const std::string xTitle, 
                       const std::string yTitle, bool sysCalc2Proj, 
                       bool (*cut_func)(const double, const double, const double, const double), 
-                      const double auxVal1, const double auxVal2)
+                      const double auxVal1, const double auxVal2, 
+                      const int rebinX, const int rebinY)
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
@@ -422,7 +434,7 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    
    TH2F *dataCutDistr = static_cast<TH2F *>(dataDistr->Clone());
    TH2F *simCutDistr = static_cast<TH2F *>(simDistr->Clone());
-   
+
 	for (int i = 1; i <= dataDistr->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= dataDistr->GetYaxis()->GetNbins(); j++)
@@ -440,10 +452,10 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    if (!sysCalc2Proj) 
    {
       return CalculateUncertainty1Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                       detectorName, title, xTitle, yTitle);
+                                       detectorName, title, xTitle, yTitle, rebinX);
    }
    return CalculateUncertainty2Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                    detectorName, title, xTitle, yTitle);
+                                    detectorName, title, xTitle, yTitle, rebinX, rebinY);
 }
 
 double GetUncertainty(const std::string& histName, const std::string &detectorName, 
@@ -451,7 +463,8 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
                       const std::string yTitle, bool sysCalc2Proj, 
                       bool (*cut_func)(const double, const double, const int, 
                                        const double, const double), 
-                      const double auxVal1, const double auxVal2, const int auxVal3)
+                      const double auxVal1, const double auxVal2, const int auxVal3,
+                      const int rebinX, const int rebinY)
 {
    TH2F *dataDistr = static_cast<TH2F *>(Par.dataFile->Get(histName.c_str()));
    TH2F *simDistr = static_cast<TH2F *>(Par.simFile->Get(histName.c_str()));
@@ -463,7 +476,7 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    
    TH2F *dataCutDistr = static_cast<TH2F *>(dataDistr->Clone());
    TH2F *simCutDistr = static_cast<TH2F *>(simDistr->Clone());
-   
+
 	for (int i = 1; i <= dataDistr->GetXaxis()->GetNbins(); i++)
 	{
 		for (int j = 1; j <= dataDistr->GetYaxis()->GetNbins(); j++)
@@ -482,10 +495,10 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
    if (!sysCalc2Proj) 
    {
       return CalculateUncertainty1Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                       detectorName, title, xTitle, yTitle);
+                                       detectorName, title, xTitle, yTitle, rebinX);
    }
    return CalculateUncertainty2Proj(dataDistr, simDistr, dataCutDistr, simCutDistr, 
-                                    detectorName, title, xTitle, yTitle);
+                                    detectorName, title, xTitle, yTitle, rebinX, rebinY);
 }
 
 void DM()
@@ -508,16 +521,16 @@ void DM()
 
    const double sysDCe0 = 
       GetUncertainty("Heatmap: DCe, zDC>=0", "DCe0", "DCe, z#geq0", "board", "#alpha", false,
-                     &IsDeadDC, 2., 1.);
+                     &IsDeadDC, 2., 1., 2);
    const double sysDCe1 = 
       GetUncertainty("Heatmap: DCe, zDC<0", "DCe1", "DCe, z<0", "board", "#alpha", false,
-                     &IsDeadDC, 2., -1.);
+                     &IsDeadDC, 2., -1., 2);
    const double sysDCw0 = 
       GetUncertainty("Heatmap: DCw, zDC>=0", "DCw0", "DCw, z#geq0", "board", "#alpha", false,
-                     &IsDeadDC, 1., 1.);
+                     &IsDeadDC, 1., 1., 2);
    const double sysDCw1 = 
       GetUncertainty("Heatmap: DCw, zDC<0", "DCw1", "DCw, z<0", "board", "#alpha", false,
-                     &IsDeadDC, 1., -1.);
+                     &IsDeadDC, 1., -1., 2);
 
    /*
 	TH2F *dceast0_data_cut = CutDeadAreas((TH2F *) dceast0_data->Clone(), &IsDeadDC, 2., 1.);
