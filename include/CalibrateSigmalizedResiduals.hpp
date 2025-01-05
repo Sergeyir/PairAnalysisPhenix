@@ -37,5 +37,8 @@
 #include "TCanvasPrinter.hpp"
 
 int main(int argc, char **argv);
+void PerformFits(const std::string& runName, const std::string& detectorName, 
+                 const std::string& variableName, const int zDCMin, const int zDCMax,
+                 const bool isPositive);
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_HPP */
