@@ -25,7 +25,7 @@ int main(int argc, char **argv)
    {
       PrintError("Expected 1 parameters while " + std::to_string(argc - 1) + " were provided");
    }
-
+   
    const std::string inputJSONName = argv[1];
    CheckInputFile(inputJSONName);
    std::ifstream inputJSON(inputJSONName.c_str(), std::ifstream::binary);
@@ -35,20 +35,45 @@ int main(int argc, char **argv)
 
    ROOT::EnableImplicitMT();
    gErrorIgnoreLevel = kWarning;
-
+   gStyle->SetOptStat(0);
+   
    const std::string runName = inputJSONContents["RUN"]["name"].asString();
 
    PrintInfo("Clearing output directory");
-   system(("rm -r output/TrackResiduals/" + runName + "/*").c_str());
+   system(("rm -r output/ResidualsCal/" + runName + "/*").c_str());
 
-   for (auto detector : inputJSONContents["RUN"]["uncalibrated_sigmalized_residuals_detectors"])
+   Par.centralityMin = inputJSONContents["COLLISION_SYSTEM"]["centrality_min"].asDouble();
+   Par.centralityMax = inputJSONContents["COLLISION_SYSTEM"]["centrality_max"].asDouble();
+
+   ProgressBar pBar("WAVE");
+   
+   const unsigned long numberOfIterations = 
+      inputJSONContents["RUN"]["uncalibrated_sigmalized_residuals_detectors"].size()*
+      Par.zDCMin.size()*2.;
+   
+   unsigned long nCalls = 0.;
+
+   for (const auto& detector : 
+        inputJSONContents["RUN"]["uncalibrated_sigmalized_residuals_detectors"])
    {
-      for (int zDC = -60; zDC < 45; zDC += 15)
+      for (unsigned long i = 0; i < Par.zDCMin.size(); i++)
       {
-         PerformFits(runName, detector["name"].asString(), "dphi", zDC, zDC + 15, true);
-         PerformFits(runName, detector["name"].asString(), "dphi", zDC, zDC + 15, false);
-         PerformFits(runName, detector["name"].asString(), "dz", zDC, zDC + 15, true);
-         PerformFits(runName, detector["name"].asString(), "dz", zDC, zDC + 15, false);
+         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
+         PerformFits(runName, detector["name"].asString(), "dphi", 
+                     Par.zDCMin[i], Par.zDCMax[i], true);
+         nCalls++;
+         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
+         PerformFits(runName, detector["name"].asString(), "dphi", 
+                     Par.zDCMin[i], Par.zDCMax[i], false);
+         nCalls++;
+         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
+         PerformFits(runName, detector["name"].asString(), "dz", 
+                     Par.zDCMin[i], Par.zDCMax[i], true);
+         nCalls++;
+         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
+         PerformFits(runName, detector["name"].asString(), "dz", 
+                     Par.zDCMin[i], Par.zDCMax[i], false);
+         nCalls++;
       }
    }
 }
@@ -58,7 +83,7 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
                  const std::string& dValName, const int zDCMin, const int zDCMax,
                  const bool isPositive)
 { 
-   Print(runName, detectorName, dValName, zDCMin, zDCMax, isPositive);
+   //Print(runName, detectorName, dValName, zDCMin, zDCMax, isPositive);
    const std::string inputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    CheckInputFile(inputFileName);
    TFile inputFile(inputFileName.c_str());
@@ -104,82 +129,53 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
    fitFuncGaus.SetLineColorAlpha(kAzure-3, 0.9);
    fitFuncGaus.SetLineWidth(3);
    fitFuncGaus.SetLineStyle(2);
- 
+   
+   /*
    for (int i = 1; i <= distrDVal->GetZaxis()->GetNbins(); i++)
    {
-      std::string outputDir = "output/TrackResiduals/" + runName + "/" + detectorName;
+      if (distrDVal->GetZaxis()->GetBinLowEdge(i) > Par.centralityMax) continue;
+      */
+      
+      std::string outputDir = "output/ResidualsCal/" + runName + "/" + detectorName;
       if (isPositive) outputDir += "/Pos/";
       else outputDir += "/Neg/";
-      outputDir += "/zDC" + std::to_string(zDCMin) + "_" + std::to_string(zDCMax) + 
-                   "/centr" + std::to_string((i - 1)*5) + std::to_string(i*5) + "/";
+      outputDir += "/zDC" + std::to_string(zDCMin) + "_" + std::to_string(zDCMax) + "/";
+                   //"/centr" + std::to_string((i - 1)*5) + std::to_string(i*5) + "/";
       
       system(("mkdir -p " + outputDir).c_str());
       
       TGraphErrors means, sigmas;
-
+      
       means.SetMarkerStyle(20);
       sigmas.SetMarkerStyle(20);
-
+      
       means.SetMarkerSize(0.5);
       sigmas.SetMarkerSize(0.5);
-
+      
       double meansYMin = 1e31;
       double meansYMax = -1e31;
       double sigmasYMin = 1e31;
       double sigmasYMax = -1e31;
-
-      for (int j = 1; j <= distrDVal->GetYaxis()->GetNbins(); j++)
+      
+      for (unsigned long j = 0; j < Par.pTMin.size(); j++)
       {
-         double pTMin, pTMax;
-         if (distrDVal->GetYaxis()->GetBinCenter(j) < 0.3) continue;
+         TH1D *distrDValProj = distrDVal->
+            ProjectionX("", distrDVal->GetYaxis()->FindBin(Par.pTMin[j] + 1e-3), 
+                        distrDVal->GetYaxis()->FindBin(Par.pTMax[j] + 1e-3), //i, i);
+                        1, distrDVal->GetZaxis()->FindBin(Par.centralityMax - 1e-3));
          
-         TH1D *distrDValProj;
+         if (distrDValProj->Integral(1, distrDValProj->GetXaxis()->GetNbins()) < 
+             Par.minIntegralValue) 
+         {
+            PrintInfo("Integral is insufficient for projection of histogram named \"" + 
+                      (std::string) distrDVal->GetName() + "\" at centrality=" + 
+                      (std::string) "MB" +
+                      /*DtoStr(distrDVal->GetZaxis()->GetBinLowEdge(i), 0) + 
+                      DtoStr(distrDVal->GetZaxis()->GetBinUpEdge(i), 0)*/ + " and pT=" +
+                      DtoStr(Par.pTMin[j], 1) + "-" + DtoStr(Par.pTMax[j], 1));
+            continue;
+         }
          
-         if (distrDVal->GetYaxis()->GetBinCenter(j) < 2.)
-         {
-            distrDValProj = distrDVal->ProjectionX("", j, j, i, i);
-            pTMin = distrDVal->GetYaxis()->GetBinLowEdge(j);
-            pTMax = distrDVal->GetYaxis()->GetBinUpEdge(j);
-         }
-         else if (distrDVal->GetYaxis()->GetBinCenter(j) < 3. && 
-                  j < distrDVal->GetYaxis()->GetNbins())
-         {
-            distrDValProj = distrDVal->ProjectionX("", j, j + 1, i, i);
-            distrDValProj->Rebin(2);
-            pTMin = distrDVal->GetYaxis()->GetBinLowEdge(j);
-            pTMax = distrDVal->GetYaxis()->GetBinUpEdge(j + 1);
-            j++;
-         }
-         else if (distrDVal->GetYaxis()->GetBinCenter(j) < 5. && 
-                  j < distrDVal->GetYaxis()->GetNbins())
-         {
-            distrDValProj = distrDVal->ProjectionX("", j, j + 2, i, i);
-            distrDValProj->Rebin(2);
-            pTMin = distrDVal->GetYaxis()->GetBinLowEdge(j);
-            pTMax = distrDVal->GetYaxis()->GetBinUpEdge(j + 2);
-            j += 2;
-         }
-         else if (distrDVal->GetYaxis()->GetBinCenter(j) < 6. && 
-                  j < distrDVal->GetYaxis()->GetNbins())
-         {
-            distrDValProj = distrDVal->ProjectionX("", j, j + 4, i, i);
-            distrDValProj->Rebin(2);
-            pTMin = distrDVal->GetYaxis()->GetBinLowEdge(j);
-            pTMax = distrDVal->GetYaxis()->GetBinUpEdge(j + 4);
-            j += 4;
-         }
-         else if (j < distrDVal->GetYaxis()->GetNbins() - 9)
-         {
-            distrDValProj = distrDVal->ProjectionX("", j, j + 9, i, i);
-            distrDValProj->Rebin(4);
-            pTMin = distrDVal->GetYaxis()->GetBinLowEdge(j);
-            pTMax = distrDVal->GetYaxis()->GetBinUpEdge(j + 9);
-            j += 9;
-         }
-         else continue;
-
-         if (distrDValProj->Integral(1, distrDValProj->GetXaxis()->GetNbins()) < 1) continue;
-
          double minX = 0., maxX = -1.;
          for (int k = 1; k <= distrDVal->GetXaxis()->GetNbins(); k++)
          {
@@ -189,7 +185,7 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
                break;
             }
          }
-
+         
          for (int k = distrDVal->GetXaxis()->GetNbins(); k > 1; k--)
          {
             if (distrDValProj->GetBinContent(k) > 1e-7)
@@ -201,15 +197,21 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
          
          if (minX > maxX) 
          {
+            PrintWarning("Something wrong with histogram named \"" + 
+                         (std::string) distrDVal->GetName() + "\" at centrality=" + 
+                         (std::string) "MB" + 
+                         /*DtoStr(distrDVal->GetZaxis()->GetBinLowEdge(i), 0) + 
+                         DtoStr(distrDVal->GetZaxis()->GetBinUpEdge(i), 0)*/ + " and pT=" +
+                         DtoStr(Par.pTMin[j], 1) + "-" + DtoStr(Par.pTMax[j], 1));
             continue;
          }
-
+         
          distrDValProj->GetXaxis()->SetRange(distrDValProj->GetXaxis()->FindBin(minX+0.01),
                                              distrDValProj->GetXaxis()->FindBin(maxX-0.01));
-
+         
          fitFuncDVal.SetRange(minX, maxX);
          fitFuncBG.SetRange(minX, maxX);
-
+         
          fitFuncGaus.SetParameter(0, distrDValProj->GetMaximum());
          fitFuncGaus.SetRange(Average(minBinX, minBinX, minBinX, maxBinX), 
                               Average(maxBinX, maxBinX, maxBinX, minBinX));
@@ -241,11 +243,11 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
          fitFuncBG.Draw("SAME");
          fitFuncGaus.Draw("SAME");
          PrintCanvas(&canv, outputDir + dValName + "_pT" + 
-                     DtoStr(pTMin, 1) + "-" + DtoStr(pTMax, 1));
+                     DtoStr(Par.pTMin[j], 1) + "-" + DtoStr(Par.pTMax[j], 1));
          
-         means.AddPoint(distrDVal->GetYaxis()->GetBinCenter(j), fitFuncDVal.GetParameter(1));
+         means.AddPoint(Average(Par.pTMin[j], Par.pTMax[j]), fitFuncDVal.GetParameter(1));
          means.SetPointError(means.GetN() - 1, fitFuncDVal.GetParError(1));
-         sigmas.AddPoint(distrDVal->GetYaxis()->GetBinCenter(j), fitFuncDVal.GetParameter(2));
+         sigmas.AddPoint(Average(Par.pTMin[j], Par.pTMax[j]), fitFuncDVal.GetParameter(2));
          sigmas.SetPointError(sigmas.GetN() - 1, fitFuncDVal.GetParError(2));
 
          meansYMin = Minimum(means.GetPointY(means.GetN() - 1), meansYMin);
@@ -254,7 +256,7 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
          sigmasYMax = Maximum(sigmas.GetPointY(sigmas.GetN() - 1), sigmasYMax);
       }
 
-      if (means.GetN() == 0) continue;
+      if (means.GetN() == 0) PrintError("Graph is empty");
       
       TCanvas meanCanv("means", "means", 600, 600);
       gPad->DrawFrame(0., meansYMin/1.2, 10., meansYMax*1.2);
@@ -262,10 +264,10 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
       PrintCanvas(&meanCanv, outputDir + dValName + "_means");
       
       TCanvas sigmaCanv("sigmas", "sigmas", 600, 600);
-      gPad->DrawFrame(0., 0., 10., sigmasYMax);
+      gPad->DrawFrame(0., 0., 10., sigmasYMax*1.2);
       sigmas.Draw("P");
       PrintCanvas(&sigmaCanv, outputDir + dValName + "_sigmas");
-   }
+   //}
 }
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_CPP */

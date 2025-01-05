@@ -22,6 +22,9 @@
    {
       "name": "HeAu200",
       "name_tex": "HeAu, #sqrt{s_NN}} = 200 GeV",
+      "is_pp": false,
+      "centrality_min": 0.0,
+      "centrality_max": 88.0,
       "centralities":
       [
          {
@@ -84,8 +87,7 @@
             "bias_factor": 0.89,
             "bias_factor_uncertainty": 0.01
          }
-      ],
-      "is_pp": false
+      ]
    },
    "PARTICLE":
    {
@@ -125,11 +127,13 @@
          "reweight_for_alpha": false,
          "particles":
          [
-            {"name": "pi+"}
+            {"name": "pi+"},
+            {"name": "pi-"}
          ],
          "pt_ranges":
          [
-            {"name": "lpt"}
+            {"name": "lpt"},
+            {"name": "hpt"}
          ]
       }
    }

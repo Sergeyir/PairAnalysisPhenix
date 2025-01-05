@@ -637,7 +637,6 @@ int main(int argc, char **argv)
          outfile.cd();
          ThrObjHolder.Write();
          outfile.Close();
-         Par.pBar.HandleOutput(ErrorHandlerSnippet::INFO + "File " + outputFileName + " was written");
       }
    }
 
