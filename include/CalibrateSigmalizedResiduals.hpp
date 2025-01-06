@@ -26,6 +26,7 @@
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TGraphErrors.h"
+#include "TLatex.h"
 
 #include "IOTools.hpp"
 #include "MathTools.hpp"
@@ -39,8 +40,8 @@
 struct
 {
    std::unique_ptr<TFile> inputFile;
-   const std::vector<int> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
-   const std::vector<int> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
+   const std::vector<double> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
+   const std::vector<double> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
    
    /*
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
@@ -62,17 +63,27 @@ struct
                                    3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0,
                                    5.2, 5.4, 5.6, 5.8, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
                                    8.4, 8.8, 9.2, 9.6, 10.0};
+   // number of pT bins whose ranges are listed above
+   // this is needed for the canvas division
+   const int pTXNBins = 7;
+   const int pTYNBins = 6;
    
    const double minIntegralValue = 1e2; // minimum number of entries for 
                                         // the histogram to be approximated
+                                        // if the requirement for this value is not met
+                                        // warning will be printed
    double centralityMin;
    double centralityMax;
    int centralityNBins;
+
+   TLatex texText;
 } Par;
 
 int main(int argc, char **argv);
-void PerformFits(const std::string& runName, const std::string& detectorName, 
-                 const std::string& variableName, const int zDCMin, const int zDCMax,
-                 const bool isPositive);
+void PerformFits(TH3F *hist, TGraphErrors& grMeans, TGraphErrors& grSigmas, 
+                 const std::string& outputFileNameNoExt, const std::string& dValName,
+                 const std::string& detectorName, const std::string& zDCRangeName, 
+                 const double centralityMin, const double centralityMax,
+                 const std::string& chargeName);
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_HPP */

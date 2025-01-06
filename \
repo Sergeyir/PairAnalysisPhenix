@@ -52,8 +52,7 @@ int main(int argc, char **argv)
    }
 
    ROOT::EnableImplicitMT();
-   //ROOT::EnableThreadSafety();
-   
+   ROOT::EnableThreadSafety();
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
    gStyle->SetOptFit(0);
@@ -63,6 +62,7 @@ int main(int argc, char **argv)
    const unsigned long numberOfIterations = 
       inputJSONContents["uncalibrated_sigmalized_residuals_detectors"].size()*
       Par.zDCMin.size()*4.;
+   Print(numberOfIterations);
    
    unsigned long nCalls = 0.;
 
@@ -95,6 +95,7 @@ int main(int argc, char **argv)
             
             for (unsigned long i = 0; i < Par.zDCMin.size(); i++)
             { 
+               Print("bruh");
                pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
                nCalls++;
                
@@ -110,7 +111,7 @@ int main(int argc, char **argv)
                const std::string zDCRangeName = DtoStr(Par.zDCMin[i], 0) + "<zDC<" + 
                                                 DtoStr(Par.zDCMax[i], 0);
                const std::string centralityRangeName = DtoStr(Par.centralityMin, 0) + "-" + 
-                                                       DtoStr(Par.centralityMax, 0) + "%";
+                                                       DtoStr(Par.centralityMax, 0) + "\\%";
                const std::string detectorName = detector["name"].asString();
                const std::string chargeName = (isPositive) ? "charge>0" : "charge<0";
                
@@ -150,7 +151,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
    const double binWidth = hist->GetXaxis()->GetBinWidth(1);
 
    const std::string centralityRangeName = DtoStr(centralityMin, 0) + "-" + 
-                                          DtoStr(centralityMax, 0) + "%";
+                                          DtoStr(centralityMax, 0) + "\\%";
 
    TF1 fitFuncGaus("gaus", "gaus");
    fitFuncGaus.SetParameters(1., 0., binWidth*2.);
@@ -249,12 +250,10 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       
       fitFuncDVal.SetRange(minX, maxX);
       fitFuncBG.SetRange(minX, maxX);
-
-      const double maxBinVal = distrDValProj->GetBinContent(distrDValProj->GetMaximumBin());
       
-      fitFuncGaus.SetParLimits(0, maxBinVal/4., maxBinVal);
-      fitFuncGaus.SetParLimits(4, 0., maxBinVal/1.5);
-      fitFuncBG.SetParLimits(0, 0., maxBinVal/1.5);
+      fitFuncGaus.SetParLimits(0, distrDValProj->GetMaximum()/4., distrDValProj->GetMaximum());
+      fitFuncGaus.SetParLimits(4, 0., distrDValProj->GetMaximum()/1.5);
+      fitFuncBG.SetParLimits(0, 0., distrDValProj->GetMaximum()/1.5);
       fitFuncGaus.SetRange(Average(minBinX, minBinX, minBinX, maxBinX), 
                            Average(maxBinX, maxBinX, maxBinX, minBinX));
       
@@ -281,7 +280,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       distrDValProj->SetMarkerSize(0.7);
       distrDValProj->SetMarkerColorAlpha(kBlack, 0.8);
       distrDValProj->SetLineColorAlpha(kBlack, 0.8);
-      distrDValProj->SetMaximum(maxBinVal*1.2);
+      distrDValProj->SetMaximum(distrDValProj->GetMaximum()*1.1);
       
       gPad->SetLeftMargin(0.155);
       gPad->SetBottomMargin(0.115);
@@ -290,10 +289,10 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       fitFuncDVal.Clone()->Draw("SAME");
       fitFuncBG.Clone()->Draw("SAME");
       fitFuncGaus.Clone()->Draw("SAME");
-      
-      Par.texText.DrawLatexNDC(0.17, 0.85, pTRangeName.c_str());
-      Par.texText.DrawLatexNDC(0.17, 0.79, zDCRangeName.c_str());
-      Par.texText.DrawLatexNDC(0.17, 0.73, centralityRangeName.c_str());
+
+      Par.texText.DrawLatexNDC(0.16, 0.85, pTRangeName.c_str());
+      Par.texText.DrawLatexNDC(0.16, 0.75, zDCRangeName.c_str());
+      Par.texText.DrawLatexNDC(0.8, 0.85, centralityRangeName.c_str());
       
       grMeans.AddPoint(Average(Par.pTMin[i], Par.pTMax[i]), fitFuncDVal.GetParameter(1));
       grMeans.SetPointError(grMeans.GetN() - 1, fitFuncDVal.GetParError(1));
@@ -307,7 +306,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
                  chargeName + " at " + zDCRangeName + ", " + centralityRangeName);
    }
 
-   PrintCanvas(&canv, outputFileNameNoExt, false, true);
+   PrintCanvas(&canv, outputFileNameNoExt);
 }
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_CPP */
