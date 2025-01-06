@@ -131,7 +131,6 @@ int main(int argc, char **argv)
                            fitsOutputFileName, dValName, detector["name"].asString(),
                            zDCRangeName + " [cm]", Par.centralityMin, Par.centralityMax, 
                            chargeName);
-               
             }
          }
       }
@@ -152,34 +151,6 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
    const std::string centralityRangeName = DtoStr(centralityMin, 0) + "-" + 
                                           DtoStr(centralityMax, 0) + "%";
 
-   TF1 fitFuncGaus("gaus", "gaus");
-   fitFuncGaus.SetParameters(1., 0., binWidth*2.);
-   fitFuncGaus.SetParLimits(1, Average(minBinX, minBinX, maxBinX), 
-                               Average(maxBinX, maxBinX, minBinX));
-   fitFuncGaus.SetParLimits(2, binWidth, Average(maxBinX, maxBinX, minBinX));
-   
-   TF1 fitFuncDVal("fitFunc", "gaus(0) + gaus(3)");
-   fitFuncDVal.SetParameters(1., 0., binWidth*2.);
-   fitFuncDVal.SetParLimits(1, Average(minBinX, minBinX, maxBinX), 
-                               Average(maxBinX, maxBinX, minBinX));
-   fitFuncDVal.SetParLimits(2, binWidth, Average(maxBinX, maxBinX, minBinX));
-   fitFuncDVal.SetParLimits(4, minBinX, maxBinX);
-   fitFuncDVal.SetParLimits(5, Average(maxBinX, maxBinX, minBinX), maxBinX);
-   
-   TF1 fitFuncBG("bg", "gaus");
-   fitFuncBG.SetParameters(1., 0., Average(maxBinX, maxBinX, maxBinX, minBinX));
-   fitFuncBG.SetParLimits(1, minBinX*2., maxBinX*2.);
-   fitFuncBG.SetParLimits(2, Average(maxBinX, maxBinX, minBinX), maxBinX*2.);
-
-   fitFuncDVal.SetLineColorAlpha(kRed+1, 0.6);
-   //fitFuncDVal.SetLineWidth(2);
-   fitFuncBG.SetLineColorAlpha(kGreen+1, 0.9);
-   //fitFuncBG.SetLineWidth(3);
-   fitFuncBG.SetLineStyle(2);
-   fitFuncGaus.SetLineColorAlpha(kAzure-3, 0.9);
-   //fitFuncGaus.SetLineWidth(3);
-   fitFuncGaus.SetLineStyle(2);
-
    TCanvas canv("dval vs pT", "", Par.pTXNBins*400, Par.pTYNBins*400);
    canv.Divide(Par.pTXNBins, Par.pTYNBins);
 
@@ -189,7 +160,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
    {
       canv.cd(iCanv);
       iCanv++;
-      
+   
       TH1D *distrDValProj = hist->
          ProjectionX(((std::string) hist->GetName() + "_projX").c_str(), 
                      hist->GetYaxis()->FindBin(Par.pTMin[i] + 1e-6), 
@@ -198,8 +169,8 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
                      hist->GetZaxis()->FindBin(centralityMax - 1e-6));
 
 
-      const std::string pTRangeName = DtoStr(Par.pTMin[i]) + "<pT<" + 
-                                      DtoStr(Par.pTMax[i]) + " [GeV/c]";
+      const std::string pTRangeName = DtoStr(Par.pTMin[i], 1) + "<pT<" + 
+                                      DtoStr(Par.pTMax[i], 1) + " [GeV/c]";
       
       if (distrDValProj->Integral(1, distrDValProj->GetXaxis()->GetNbins()) < 
           Par.minIntegralValue) 
@@ -237,6 +208,32 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
          continue;
       }
 
+      TF1 fitFuncGaus("gaus", "gaus");
+      fitFuncGaus.SetParameters(1., 0., binWidth*2.);
+      fitFuncGaus.SetParLimits(1, minBinX/5., maxBinX/5.);
+      fitFuncGaus.SetParLimits(2, binWidth, maxBinX/5.);
+      
+      TF1 fitFuncDVal("fitFunc", "gaus(0) + gaus(3)");
+      fitFuncDVal.SetParameters(1., 0., binWidth*2.);
+      fitFuncDVal.SetParLimits(1, minX/10., maxX/10.);
+      fitFuncDVal.SetParLimits(2, binWidth, Average(maxX, maxX, minX));
+      fitFuncDVal.SetParLimits(4, minX*2., maxX*2.);
+      fitFuncDVal.SetParLimits(5, maxX/3., maxX*2.);
+      
+      TF1 fitFuncBG("bg", "gaus");
+      fitFuncBG.SetParameters(1., 0., Average(maxBinX, maxBinX, maxBinX, minBinX));
+      fitFuncBG.SetParLimits(1, minX*2., maxX*2.);
+      fitFuncBG.SetParLimits(2, maxX/3., maxX*2.);
+      
+      fitFuncDVal.SetLineColorAlpha(kRed+1, 0.6);
+      //fitFuncDVal.SetLineWidth(2);
+      fitFuncBG.SetLineColorAlpha(kGreen+1, 0.9);
+      //fitFuncBG.SetLineWidth(3);
+      fitFuncBG.SetLineStyle(2);
+      fitFuncGaus.SetLineColorAlpha(kAzure-3, 0.9);
+      //fitFuncGaus.SetLineWidth(3);
+      fitFuncGaus.SetLineStyle(2);
+
       distrDValProj->GetXaxis()->SetTitle(dValName.c_str());
       distrDValProj->SetTitle("");
       distrDValProj->SetTitleSize(0.06, "X");
@@ -247,21 +244,21 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       distrDValProj->GetXaxis()->SetRange(distrDValProj->GetXaxis()->FindBin(minX+0.01),
                                           distrDValProj->GetXaxis()->FindBin(maxX-0.01));
       
-      fitFuncDVal.SetRange(minX, maxX);
-      fitFuncBG.SetRange(minX, maxX);
-
       const double maxBinVal = distrDValProj->GetBinContent(distrDValProj->GetMaximumBin());
       
-      fitFuncGaus.SetParLimits(0, maxBinVal/4., maxBinVal);
-      fitFuncGaus.SetParLimits(4, 0., maxBinVal/1.5);
-      fitFuncBG.SetParLimits(0, 0., maxBinVal/1.5);
-      fitFuncGaus.SetRange(Average(minBinX, minBinX, minBinX, maxBinX), 
-                           Average(maxBinX, maxBinX, maxBinX, minBinX));
+      //const int expMean = distrDValProj->GetXaxis()->GetBinCenter(distrDValProj->GetMaximumBin());
+      fitFuncGaus.SetParLimits(0, maxBinVal/5., maxBinVal);
+      fitFuncDVal.SetParLimits(0, maxBinVal/5., maxBinVal);
+      fitFuncDVal.SetParLimits(4, 0., maxBinVal);
+      fitFuncBG.SetParLimits(0, 0., maxBinVal);
+      
+      fitFuncGaus.SetRange(minBinX/5., maxBinX/5.);
+      fitFuncBG.SetRange(minBinX, maxBinX);
       
       distrDValProj->Fit(&fitFuncGaus, "RQMBN");
       distrDValProj->Fit(&fitFuncBG, "RQMBN");
 
-      fitFuncGaus.SetRange(minX, maxX);
+      fitFuncGaus.SetRange(minBinX, maxBinX);
       
       for (int k = 0; k < 3; k++)
       {
@@ -269,12 +266,24 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
          fitFuncDVal.SetParameter(k + 3, fitFuncBG.GetParameter(k));
       }
       
+      fitFuncDVal.SetRange(minBinX, maxBinX);
       distrDValProj->Fit(&fitFuncDVal, "RQMBN");
 
-      for (int k = 0; k < 3; k++)
+      for (unsigned short j = 1; j <= Par.fitNTries; j++)
       {
-         fitFuncGaus.SetParameter(k, fitFuncDVal.GetParameter(k));
-         fitFuncBG.SetParameter(k, fitFuncDVal.GetParameter(k + 3));
+         for (int k = 0; k < fitFuncDVal.GetNpar(); k++)
+         {
+            fitFuncDVal.SetParLimits(k, fitFuncDVal.GetParameter(k)/(1. + 1./static_cast<double>(j)),
+                                     fitFuncDVal.GetParameter(k)*(1. + 1./static_cast<double>(j)));
+         }
+         
+         distrDValProj->Fit(&fitFuncDVal, "RQMBN");
+      }
+
+      for (int j = 0; j < 3; j++)
+      {
+         fitFuncGaus.SetParameter(j, fitFuncDVal.GetParameter(j));
+         fitFuncBG.SetParameter(j, fitFuncDVal.GetParameter(j + 3));
       }
       
       distrDValProj->SetMarkerStyle(20);
@@ -293,20 +302,21 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       
       Par.texText.DrawLatexNDC(0.17, 0.85, pTRangeName.c_str());
       Par.texText.DrawLatexNDC(0.17, 0.79, zDCRangeName.c_str());
-      Par.texText.DrawLatexNDC(0.17, 0.73, centralityRangeName.c_str());
+      Par.texText.DrawLatexNDC(0.17, 0.73, chargeName.c_str());
+      Par.texText.DrawLatexNDC(0.17, 0.66, centralityRangeName.c_str());
       
       grMeans.AddPoint(Average(Par.pTMin[i], Par.pTMax[i]), fitFuncDVal.GetParameter(1));
       grMeans.SetPointError(grMeans.GetN() - 1, fitFuncDVal.GetParError(1));
       grSigmas.AddPoint(Average(Par.pTMin[i], Par.pTMax[i]), fitFuncDVal.GetParameter(2));
       grSigmas.SetPointError(grSigmas.GetN() - 1, fitFuncDVal.GetParError(2));
    }
-
+   
    if (grMeans.GetN() == 0) 
    {
       PrintError("Graph is empty for " + dValName + ", " + detectorName + ", " + 
                  chargeName + " at " + zDCRangeName + ", " + centralityRangeName);
    }
-
+   
    PrintCanvas(&canv, outputFileNameNoExt, false, true);
 }
 

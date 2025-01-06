@@ -53,19 +53,19 @@ struct
                                    */
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
                                    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 
-                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0,
+                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.0,
                                    3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0,
-                                   5.2, 5.4, 5.6, 5.8, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
-                                   8.4, 8.8, 9.2, 9.6};
+                                   5.2, 5.6, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
+                                   8.4, 9.0, 9.5};
    const std::vector<double> pTMax{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
                                    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 
-                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3.0,
+                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.0,
                                    3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0,
-                                   5.2, 5.4, 5.6, 5.8, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
-                                   8.4, 8.8, 9.2, 9.6, 10.0};
+                                   5.2, 5.6, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
+                                   8.4, 9.0, 9.5, 10.0};
    // number of pT bins whose ranges are listed above
    // this is needed for the canvas division
-   const int pTXNBins = 7;
+   const int pTXNBins = 8;
    const int pTYNBins = 6;
    
    const double minIntegralValue = 1e2; // minimum number of entries for 
@@ -75,6 +75,8 @@ struct
    double centralityMin;
    double centralityMax;
    int centralityNBins;
+
+   const unsigned short fitNTries = 0;
 
    TLatex texText;
 } Par;
