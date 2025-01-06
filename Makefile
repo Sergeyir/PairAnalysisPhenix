@@ -61,13 +61,15 @@ YamlCPP:			 	 yaml-cpp/build/libyaml-cpp.so
 
 # current repository target groups (Analysis)
 
-PairAnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun IdentFun DataMethodsSelector
+PairAnalysisLib: 		 EffTreeReader EmbTreeReader STrackFun PTrackFun \
+							 IdentFun DataMethodsSelector InputReader
 EffTreeReader:	 	 	 lib/libEffTreeReader.so
 EmbTreeReader:	 	 	 lib/libEmbTreeReader.so
 STrackFun:	 	 	 	 lib/libSTrackFun.so
 PTrackFun:	 	 	 	 lib/libPTrackFun.so
 IdentFun:	 	 	 	 lib/libIdentFun.so
 DataMethodsSelector:	 lib/libDataMethodsSelector.so
+InputReader:	 		 lib/libInputReader.so
 
 # CppTools sumbodule targets
 
@@ -152,6 +154,13 @@ yaml-cpp/build/libyaml-cpp.so:
 lib:
 	mkdir -p $@
 
+lib/InputReader.o: src/InputReader.cpp | lib ErrorHandler YamlCPP
+	@$(ECHO) Building CXX object $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(JSON_INCLUDE) $(JSON_LIB) \
+	$(YAML_INCLUDE) $(YAML_LIB) \
+	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB)
+
 lib/DataMethodsSelector.o: src/DataMethodsSelector.cpp | lib
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
@@ -191,48 +200,27 @@ lib/lib%.so: lib/%.o
 AnalyzeHeatMaps: src/AnalyzeHeatMaps.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(JSON_INCLUDE) $(JSON_LIB) \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) \
-	$(PAIR_ANALYSIS_INCLUDE) $(PAIR_ANALYSIS_LIB) 
+	$(ALL_INCLUDE) $(ALL_LIB)
 	
 AnalyzeEmbedding: src/AnalyzeEmbedding.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) \
-	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB) \
+	$(ALL_INCLUDE) $(ALL_LIB)
 
 AnalyzeSingleTrack: src/AnalyzeSingleTrack.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) \
-	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB)
+	$(ALL_INCLUDE) $(ALL_LIB)
 
 AnalyzeResonance: src/AnalyzeResonance.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) \
-	$(PAIR_ANALYSIS_INCLUDE) $(SIM_LIB)
+	$(ALL_INCLUDE) $(ALL_LIB)
 
 CalibrateSigmalizedResiduals: src/CalibrateSigmalizedResiduals.cpp all_libs bin
 	@$(ECHO) Building CXX executable $@
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(JSON_INCLUDE) $(JSON_LIB) \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
-	$(CPP_TOOLS_INCLUDE) $(CPP_TOOLS_LIB) \
-	$(PBAR_INCLUDE) $(PBAR_LIB) \
-	$(ROOT_TOOLS_INCLUDE) $(ROOT_TOOLS_LIB)
+	$(ALL_INCLUDE) $(ALL_LIB)
 
 # other
 

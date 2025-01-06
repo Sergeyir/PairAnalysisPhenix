@@ -26,54 +26,61 @@ int main(int argc, char **argv)
       PrintError("Expected 1 parameters while " + std::to_string(argc - 1) + " were provided");
    }
    
-   const std::string inputJSONName = argv[1];
-   CheckInputFile(inputJSONName);
-   std::ifstream inputJSON(inputJSONName.c_str(), std::ifstream::binary);
- 
-   Json::Value inputJSONContents;
-   inputJSON >> inputJSONContents;
+   InputJSONReader inputJSONContents{argv[1], "main"};
+   inputJSONContents.CheckStatus("main");
+   
+   const std::string runName = inputJSONContents["run_name"].asString();
+
+   if (inputJSONContents["uncalibrated_sigmalized_residuals_detectors"].size() == 0)
+   {
+      PrintInfo("No detectors are specified for calibrations");
+      PrintInfo("Exiting the program");
+      exit(1);
+   }
+
+   if (!inputJSONContents["is_pp"].asBool())
+   {
+      Par.centralityMin = inputJSONContents["centrality_min"].asDouble();
+      Par.centralityMax = inputJSONContents["centrality_max"].asDouble();
+      Par.centralityNBins = ceil((Par.centralityMax - Par.centralityMin)/5.);
+   }
+   else
+   {
+      Par.centralityMin = 0.;
+      Par.centralityMax = 100.;
+      Par.centralityNBins = 1.;
+   }
 
    ROOT::EnableImplicitMT();
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
-   
-   const std::string runName = inputJSONContents["RUN"]["name"].asString();
-
-   PrintInfo("Clearing output directory");
-   system(("rm -r output/ResidualsCal/" + runName + "/*").c_str());
-
-   Par.centralityMin = inputJSONContents["COLLISION_SYSTEM"]["centrality_min"].asDouble();
-   Par.centralityMax = inputJSONContents["COLLISION_SYSTEM"]["centrality_max"].asDouble();
 
    ProgressBar pBar("WAVE");
    
    const unsigned long numberOfIterations = 
-      inputJSONContents["RUN"]["uncalibrated_sigmalized_residuals_detectors"].size()*
-      Par.zDCMin.size()*2.;
+      inputJSONContents["uncalibrated_sigmalized_residuals_detectors"].size()*
+      Par.zDCMin.size()*4.;
    
    unsigned long nCalls = 0.;
 
+   const std::string inputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
+   Par.inputFile = std::unique_ptr<TFile>(TFile::Open(inputFileName.c_str(), "READ"));
+
    for (const auto& detector : 
-        inputJSONContents["RUN"]["uncalibrated_sigmalized_residuals_detectors"])
+        inputJSONContents["uncalibrated_sigmalized_residuals_detectors"])
    {
-      for (unsigned long i = 0; i < Par.zDCMin.size(); i++)
+      for (const std::string& dValName : std::vector<std::string>{"dz", "dphi"})
       {
-         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
-         PerformFits(runName, detector["name"].asString(), "dphi", 
-                     Par.zDCMin[i], Par.zDCMax[i], true);
-         nCalls++;
-         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
-         PerformFits(runName, detector["name"].asString(), "dphi", 
-                     Par.zDCMin[i], Par.zDCMax[i], false);
-         nCalls++;
-         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
-         PerformFits(runName, detector["name"].asString(), "dz", 
-                     Par.zDCMin[i], Par.zDCMax[i], true);
-         nCalls++;
-         pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
-         PerformFits(runName, detector["name"].asString(), "dz", 
-                     Par.zDCMin[i], Par.zDCMax[i], false);
-         nCalls++;
+         for (const bool isPositive : std::vector<bool>{true, false})
+         {
+            for (unsigned long i = 0; i < Par.zDCMin.size(); i++)
+            {
+               pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
+               PerformFits(runName, detector["name"].asString(), dValName, 
+                           Par.zDCMin[i], Par.zDCMax[i], isPositive);
+               nCalls++;
+            }
+         }
       }
    }
 }
@@ -84,10 +91,9 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
                  const bool isPositive)
 { 
    //Print(runName, detectorName, dValName, zDCMin, zDCMax, isPositive);
-   const std::string inputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    CheckInputFile(inputFileName);
    TFile inputFile(inputFileName.c_str());
-
+   
    const std::string zDCRangeName = std::to_string(zDCMin) + "<zDC<" + std::to_string(zDCMax);
    const std::string chargeName = (isPositive) ? "charge>0" : "charge<0";
 
@@ -118,8 +124,8 @@ void PerformFits(const std::string& runName, const std::string& detectorName,
    
    TF1 fitFuncBG("bg", "gaus");
    fitFuncBG.SetParameters(1., 0., Average(maxBinX, maxBinX, maxBinX, minBinX));
-   fitFuncBG.SetParLimits(1, minBinX, maxBinX);
-   fitFuncBG.SetParLimits(2, Average(maxBinX, maxBinX, minBinX), maxBinX);
+   fitFuncBG.SetParLimits(1, minBinX*2., maxBinX*2.);
+   fitFuncBG.SetParLimits(2, Average(maxBinX, maxBinX, minBinX), maxBinX*2.);
 
    fitFuncDVal.SetLineColorAlpha(kRed+1, 0.7);
    fitFuncDVal.SetLineWidth(5);

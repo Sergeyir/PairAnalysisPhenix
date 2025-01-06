@@ -21,5 +21,6 @@
 
    gSystem->Load("libjsoncpp.so");
 
+   gSystem->Load("lib/libInputReader.so");
    gSystem->Load("lib/libDataMethodsSelector.so");
 }

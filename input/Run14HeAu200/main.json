@@ -1,0 +1,24 @@
+{
+   "status": "main",
+   "collision_system_name": "HeAu200",
+   "collision_system_name_tex": "HeAu, #sqrt{s_NN}} = 200 GeV",
+   "is_pp": false,
+   "centrality_min": 0.0,
+   "centrality_max": 88.0,
+   "run_name": "Run14HeAu200",
+   "magnetic_field":
+   [
+      {"name": ""}
+   ],
+   "uncalibrated_sigmalized_residuals_detectors":
+   [
+      {"name": "EMCale0"},
+      {"name": "EMCale1"},
+      {"name": "EMCale2"},
+      {"name": "EMCale3"},
+      {"name": "EMCalw0"},
+      {"name": "EMCalw1"},
+      {"name": "EMCalw2"},
+      {"name": "EMCalw3"}
+   ]
+}

@@ -17,10 +17,7 @@
 #ifndef CALIBRATE_SIGMALIZED_RESIDUALS_HPP
 #define CALIBRATE_SIGMALIZED_RESIDUALS_HPP
 
-#include <array>
-
-#include "json/json.h"
-#include "json/value.h"
+#include <memory>
 
 #include "TFile.h"
 #include "TH1.h"
@@ -30,7 +27,6 @@
 #include "TStyle.h"
 #include "TGraphErrors.h"
 
-#include "ErrorHandler.hpp"
 #include "IOTools.hpp"
 #include "MathTools.hpp"
 
@@ -38,8 +34,11 @@
 
 #include "PBar.hpp"
 
+#include "InputReader.hpp"
+
 struct
 {
+   std::unique_ptr<TFile> inputFile;
    const std::vector<int> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
    const std::vector<int> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
    
@@ -68,6 +67,7 @@ struct
                                         // the histogram to be approximated
    double centralityMin;
    double centralityMax;
+   int centralityNBins;
 } Par;
 
 int main(int argc, char **argv);

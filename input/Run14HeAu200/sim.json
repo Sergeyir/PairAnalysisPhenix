@@ -1,0 +1,22 @@
+{
+   "status": "sim",
+   "pt_min": 0.3,
+   "pt_max": 10.0,
+   "use_rough_dphi_dz_cut": true,
+   "correction_tofw": 1.0,
+   "HEATMAPS":
+   {
+      "reweight_for_spectra": true,
+      "reweight_for_alpha": false,
+      "particles":
+      [
+         {"name": "pi+"},
+         {"name": "pi-"}
+      ],
+      "pt_ranges":
+      [
+         {"name": "lpt"},
+         {"name": "hpt"}
+      ]
+   }
+}
