@@ -87,26 +87,18 @@ int main(int argc, char **argv)
       const std::string outputDir = "output/ResidualCal/" + runName + 
                                     "/" + detector["name"].asString() + "/";
       
-      for (const std::string& dValName : std::vector<std::string>{"dz", "dphi"})
+      for (const std::string& dValName : std::vector<std::string>{"dphi", "dz"})
       {
          for (const bool isPositive : std::vector<bool>{true, false})
          {
             std::vector<TGraphErrors> grVMeans, grVSigmas;
+            std::vector<TF1> fVMeans, fVSigmas;
             
             for (unsigned long i = 0; i < Par.zDCMin.size(); i++)
             { 
                pBar.Print(static_cast<double>(nCalls)/static_cast<double>(numberOfIterations));
                nCalls++;
-               
-               grVMeans.emplace_back();
-               grVSigmas.emplace_back();
-
-               grVMeans.back().SetMarkerStyle(20);
-               grVSigmas.back().SetMarkerStyle(20);
-               
-               grVMeans.back().SetMarkerSize(0.5);
-               grVSigmas.back().SetMarkerSize(0.5);
-
+                
                const std::string zDCRangeName = DtoStr(Par.zDCMin[i], 0) + "<zDC<" + 
                                                 DtoStr(Par.zDCMax[i], 0);
                const std::string centralityRangeName = DtoStr(Par.centralityMin, 0) + "-" + 
@@ -126,12 +118,101 @@ int main(int argc, char **argv)
                                                 "-" + DtoStr(Par.centralityMax, 0) + 
                                                 "_zDC" + DtoStr(Par.zDCMin[i], 0) + 
                                                 "-" + DtoStr(Par.zDCMax[i], 0);
+
+               grVMeans.emplace_back();
+               grVSigmas.emplace_back();
+               
+               fVMeans.emplace_back((zDCRangeName + centralityRangeName + detectorName + 
+                                     chargeName + dValName).c_str(), Par.meansFitFunc.c_str());
+               fVSigmas.emplace_back((zDCRangeName + centralityRangeName + detectorName + 
+                                      chargeName + dValName).c_str(), Par.sigmasFitFunc.c_str());
+               
+               fVMeans.back().SetRange(Par.pTMin.front()/1.05, Par.pTMax.back()*1.05);
+               fVSigmas.back().SetRange(Par.pTMin.front()/1.05, Par.pTMax.back()*1.05);
                
                PerformFits(distrDVal, grVMeans.back(), grVSigmas.back(), 
                            fitsOutputFileName, dValName, detector["name"].asString(),
                            zDCRangeName + " [cm]", Par.centralityMin, Par.centralityMax, 
                            chargeName);
+
+               grVMeans.back().Fit(&fVMeans.back(), "RQMN");
+               grVSigmas.back().Fit(&fVSigmas.back(), "RQMN");
             }
+
+            double meanYMin = 1e31, meanYMax = -1e31;
+            double sigmaYMax = -1e31;
+            
+            for (unsigned long i = 0; i < grVMeans.size(); i++)
+            {
+               meanYMin =
+                  Minimum(meanYMin, TMath::MinElement(grVMeans[i].GetN(), grVMeans[i].GetY()));
+               meanYMax = 
+                  Maximum(meanYMax, TMath::MaxElement(grVMeans[i].GetN(), grVMeans[i].GetY()));
+               sigmaYMax = 
+                  Maximum(sigmaYMax, TMath::MaxElement(grVSigmas[i].GetN(), grVSigmas[i].GetY()));
+            }
+            
+            TCanvas canv("", "", 800, 800);
+            
+            TLegend legend{0.1, 0.7, 0.88, 0.89};
+            legend.SetNColumns(3);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
+            
+            TH1 *meansFrame = 
+               gPad->DrawFrame(0., meanYMin - (meanYMax - meanYMin)*0.05, 
+                               Par.pTMax.back()*1.05, meanYMax + (meanYMax - meanYMin)*0.35);
+            
+            meansFrame->Draw("SAME AXIS X+ Y+");
+            
+            for (unsigned long i = 0; i < grVMeans.size(); i++)
+            {
+               grVMeans[i].SetMarkerStyle(Par.markerStyle[i]);
+               grVMeans[i].SetMarkerSize(1.4);
+               grVMeans[i].SetMarkerColorAlpha(Par.markerColor[i], 0.8);
+               grVMeans[i].SetLineColorAlpha(Par.markerColor[i], 0.8);
+               fVMeans[i].SetLineColorAlpha(Par.markerColor[i], 0.9);
+               fVMeans[i].SetLineStyle(2);
+
+               const std::string zDCRangeName = DtoStr(Par.zDCMin[i], 0) + "<z_{DC}<" + 
+                                                DtoStr(Par.zDCMax[i], 0);
+               
+               legend.AddEntry(&grVMeans[i], zDCRangeName.c_str(), "P");
+               grVMeans[i].Clone()->Draw("SAME P");
+               fVMeans[i].Clone()->Draw("SAME");
+            }
+
+            legend.DrawClone();
+            PrintCanvas(&canv, outputDir + "means_" + dValName + ((isPositive) ? "_pos" : "_neg") +
+                        "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
+            
+            legend.Clear();
+            canv.Clear();
+            
+            TH1 *sigmasFrame = 
+               gPad->DrawFrame(0., 0., Par.pTMax.back()*1.05, sigmaYMax*1.6);
+            sigmasFrame->Draw("SAME AXIS X+ Y+");
+            
+            for (unsigned long i = 0; i < grVSigmas.size(); i++)
+            {
+               grVSigmas[i].SetMarkerStyle(Par.markerStyle[i]);
+               grVSigmas[i].SetMarkerSize(1.4);
+               grVSigmas[i].SetMarkerColorAlpha(Par.markerColor[i], 0.8);
+               grVSigmas[i].SetLineColorAlpha(Par.markerColor[i], 0.8);
+               fVSigmas[i].SetLineColorAlpha(Par.markerColor[i], 0.9);
+               fVSigmas[i].SetLineStyle(2);
+               
+               const std::string zDCRangeName = DtoStr(Par.zDCMin[i], 0) + "<z_{DC}<" + 
+                                                DtoStr(Par.zDCMax[i], 0);
+               
+               legend.AddEntry(&grVSigmas[i], zDCRangeName.c_str(), "P");
+               grVSigmas[i].Clone()->Draw("SAME P");
+               fVSigmas[i].Clone()->Draw("SAME");
+            }
+
+            legend.DrawClone();
+            PrintCanvas(&canv, outputDir + "sigmas_" + dValName + ((isPositive) ? "_pos" : "_neg") +
+                        "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
          }
       }
    }

@@ -27,6 +27,8 @@
 #include "TStyle.h"
 #include "TGraphErrors.h"
 #include "TLatex.h"
+#include "TLegend.h"
+#include "TMath.h"
 
 #include "IOTools.hpp"
 #include "MathTools.hpp"
@@ -42,6 +44,13 @@ struct
    std::unique_ptr<TFile> inputFile;
    const std::vector<double> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
    const std::vector<double> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
+
+   const std::vector<Color_t> markerColor{kAzure+1, kPink+1, kSpring+1, kViolet+1, kOrange+1,
+                                         kBlue+1, kRed+1, kGreen+1, kCyan+1, kMagenta+1};
+   const std::vector<Style_t> markerStyle{24, 25, 27, 28, 26, 32, 28, 27, 25, 24};
+
+   const std::string meansFitFunc = "[0] + [1]/x + [2]/x^2 + [3]/x^3";
+   const std::string sigmasFitFunc = "[0] + [1]/x + [2]/x^2 + [3]/x^3";
    
    /*
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
@@ -75,6 +84,7 @@ struct
    double centralityMin;
    double centralityMax;
    int centralityNBins;
+
 
    const unsigned short fitNTries = 0;
 
