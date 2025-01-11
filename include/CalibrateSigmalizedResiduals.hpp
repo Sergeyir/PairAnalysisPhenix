@@ -21,6 +21,7 @@
 
 #include "TFile.h"
 #include "TH1.h"
+#include "TH2.h"
 #include "TH3.h"
 #include "TF1.h"
 #include "TROOT.h"
@@ -41,16 +42,22 @@
 
 struct
 {
-   std::unique_ptr<TFile> inputFile;
-   const std::vector<double> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
-   const std::vector<double> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
+   const std::array<double, 10> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
+   const std::array<double, 10> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
 
-   const std::vector<Color_t> markerColor{kAzure+1, kPink+1, kSpring+1, kViolet+1, kOrange+1,
-                                         kBlue+1, kRed+1, kGreen+1, kCyan+1, kMagenta+1};
-   const std::vector<Style_t> markerStyle{24, 25, 27, 28, 26, 32, 28, 27, 25, 24};
-
-   const std::string meansFitFunc = "[0] + [1]/x + [2]/x^2 + [3]/x^3";
-   const std::string sigmasFitFunc = "[0] + [1]/x + [2]/x^2 + [3]/x^3";
+   const std::array<Color_t, 10> markerColor{kP10Cyan, kP10Ash, kP10Green, kP10Orange, kP10Brown, 
+                                             kP10Violet, kP10Gray, kP10Red, kP10Yellow, kP10Blue};
+   const std::array<Style_t, 10> markerStyle{24, 25, 27, 28, 26, 32, 24, 25, 27, 28};
+   
+   // Since it is difficult to approximate all distributions and get a reliable result
+   // means and sigmas are sequentially approximated with more intricate functions and 
+   // in wider pT range.
+   const std::vector<std::string> meansFitFunc =
+      {"[0] - [1]*exp(pol1(2)) + [4]*exp(pol1(5))", 
+       "[0] + [1]/x + [2]/x^2 + [3]/x^3 + [4]/x^4 + pol4(5)"};
+   const std::vector<std::string> sigmasFitFunc = 
+      {"[0] - [1]*exp(pol1(2)) + [4]*exp(pol1(5))", 
+       "pol2(0) + [3]*exp(pol2(4))"};
    
    /*
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
@@ -76,6 +83,10 @@ struct
    // this is needed for the canvas division
    const int pTXNBins = 8;
    const int pTYNBins = 6;
+
+   // ranges of pT for sequential approximation of sigmas and means
+   const std::vector<double> pTMinFit = {pTMin[2], pTMin.front(), pTMin.front()};
+   const std::vector<double> pTMaxFit = {2.5, 4.0, pTMax.back()};
    
    const double minIntegralValue = 1e2; // minimum number of entries for 
                                         // the histogram to be approximated
@@ -84,9 +95,8 @@ struct
    double centralityMin;
    double centralityMax;
    int centralityNBins;
-
-
-   const unsigned short fitNTries = 0;
+   
+   const unsigned short fitNTries = 5;
 
    TLatex texText;
 } Par;
