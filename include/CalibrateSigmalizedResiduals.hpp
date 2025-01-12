@@ -56,8 +56,8 @@ struct
       {"[0] - [1]*exp(pol1(2)) + [4]*exp(pol1(5))", 
        "[0] + [1]/x + [2]/x^2 + [3]/x^3 + [4]/x^4 + pol4(5)"};
    const std::vector<std::string> sigmasFitFunc = 
-      {"[0] - [1]*exp(pol1(2)) + [4]*exp(pol1(5))", 
-       "pol2(0) + [3]*exp(pol2(4))"};
+      {"[0] + [1]*exp([2]*x) + [3]*exp([4]*x)", 
+       "[0] + [1]/x + [2]*exp([3]*x"};
    
    /*
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
@@ -85,8 +85,8 @@ struct
    const int pTYNBins = 6;
 
    // ranges of pT for sequential approximation of sigmas and means
-   const std::vector<double> pTMinFit = {pTMin[2], pTMin.front(), pTMin.front()};
-   const std::vector<double> pTMaxFit = {2.5, 4.0, pTMax.back()};
+   const std::vector<double> pTMinFit = {pTMin[2], pTMin.front(), pTMin.front()/1.05};
+   const std::vector<double> pTMaxFit = {2.5, 4.0, pTMax.back()*1.05};
    
    const double minIntegralValue = 1e2; // minimum number of entries for 
                                         // the histogram to be approximated

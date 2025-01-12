@@ -82,16 +82,23 @@ int main(int argc, char **argv)
    Par.texText.SetTextFont(52);
    Par.texText.SetTextSize(0.06);
 
+   const std::string centralityRangeName = DtoStr(Par.centralityMin, 0) + "-" + 
+                                           DtoStr(Par.centralityMax, 0) + "%"; 
+
    for (const auto& detector : 
         inputJSONContents["uncalibrated_sigmalized_residuals_detectors"])
    {
-      const std::string outputDir = "output/ResidualCal/" + runName + 
-                                    "/" + detector["name"].asString() + "/";
+      const std::string outputDir = "output/ResidualCal/" + runName + "/";
+      const std::string detectorName = detector["name"].asString();
+      
+      TFile outputFile((outputDir + detectorName + "/fits.root").c_str(), "RECREATE");
       
       for (const std::string& dValName : std::vector<std::string>{"dphi", "dz"})
       { 
          for (const bool isPositive : std::vector<bool>{true, false})
          {
+            const std::string chargeName = (isPositive) ? "charge>0" : "charge<0";
+            
             // histograms with weights representing means and sigmas; needed for quick inspection
             TH2D meansDistr("means", "#mu", 
                             Par.zDCMin.size(), Par.zDCMin.front(), Par.zDCMax.back(),
@@ -126,18 +133,13 @@ int main(int argc, char **argv)
                 
                const std::string zDCRangeName = DtoStr(Par.zDCMin[i], 0) + "<zDC<" + 
                                                 DtoStr(Par.zDCMax[i], 0);
-               const std::string centralityRangeName = DtoStr(Par.centralityMin, 0) + "-" + 
-                                                       DtoStr(Par.centralityMax, 0) + "%";
-               const std::string detectorName = detector["name"].asString();
-               const std::string chargeName = (isPositive) ? "charge>0" : "charge<0";
-               
                // name of histogram
                const std::string distrDValName = dValName + " vs pT vs centrality: " + 
                                                  detectorName + ", " + chargeName + ", " + 
                                                  zDCRangeName;
                TH3F *distrDVal = static_cast<TH3F *>(inputFile.Get(distrDValName.c_str()));
                
-               std::string fitsOutputFileName = outputDir + dValName + 
+               std::string fitsOutputFileName = outputDir + detectorName + "/" + dValName + 
                                                 ((isPositive) ? "_pos" : "_neg") +
                                                 "_c" + DtoStr(Par.centralityMin, 0) + 
                                                 "-" + DtoStr(Par.centralityMax, 0) + 
@@ -161,9 +163,25 @@ int main(int argc, char **argv)
 
                fVMeans.back().SetRange(Par.pTMin.front()/1.05, Par.pTMax.back()*1.05);
                fVSigmas.back().SetRange(Par.pTMin.front()/1.05, Par.pTMax.back()*1.05);
-
-               grVMeans.back().Fit(&fVMeans.back(), "RQMN");
-               grVSigmas.back().Fit(&fVSigmas.back(), "RQMN");
+               for (short j = 1; j <= Par.fitNTries; j++)
+               {
+                  grVMeans.back().Fit(&fVMeans.back(), "RQMN");
+                  grVSigmas.back().Fit(&fVSigmas.back(), "RQMN");
+                  for (int k = 0; k < fVMeans.back().GetNpar(); k++)
+                  {
+                     fVMeans.back().SetParLimits(k, fVMeans.back().GetParameter(k)/
+                                                  (1. + 5./static_cast<double>(j*j)),
+                                                  fVMeans.back().GetParameter(k)*
+                                                  (1. + 5./static_cast<double>(j*j)));
+                  }
+                  for (int k = 0; k < fVSigmas.back().GetNpar(); k++)
+                  {
+                     fVSigmas.back().SetParLimits(k, fVSigmas.back().GetParameter(k)/
+                                                   (1. + 5./static_cast<double>(j*j)),
+                                                   fVSigmas.back().GetParameter(k)*
+                                                   (1. + 5./static_cast<double>(j*j)));
+                  }
+               }
 
                for (int j = 0; j < grVMeans.back().GetN(); j++)
                {
@@ -181,6 +199,26 @@ int main(int argc, char **argv)
                                                                  fVSigmas.back().Eval(x))/
                                                 grVSigmas.back().GetPointY(j));
                }
+
+               grVMeans.back().Clone()->Write(("data_means_" + dValName + 
+                                               ((isPositive) ? "_pos" : "_neg") +
+                                               "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
+                                               DtoStr(Par.centralityMax, 0)).c_str());
+
+               grVSigmas.back().Clone()->Write(("data_sigmas_" + dValName + 
+                                                ((isPositive) ? "_pos" : "_neg") +
+                                                "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
+                                                DtoStr(Par.centralityMax, 0)).c_str());
+
+               fVMeans.back().Clone()->Write(("fit_means_" + dValName + 
+                                              ((isPositive) ? "_pos" : "_neg") +
+                                              "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
+                                              DtoStr(Par.centralityMax, 0)).c_str());
+
+               fVSigmas.back().Clone()->Write(("fit_sigmas_" + dValName + 
+                                               ((isPositive) ? "_pos" : "_neg") +
+                                               "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
+                                               DtoStr(Par.centralityMax, 0)).c_str());
             }
 
             double meanYMin = 1e31, meanYMax = -1e31;
@@ -236,7 +274,8 @@ int main(int argc, char **argv)
             }
 
             legend.DrawClone();
-            PrintCanvas(&canv, outputDir + "means_" + dValName + ((isPositive) ? "_pos" : "_neg") +
+            PrintCanvas(&canv, outputDir + detectorName + "_means_" + 
+                         dValName + ((isPositive) ? "_pos" : "_neg") +
                         "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
             
             legend.Clear();
@@ -257,7 +296,8 @@ int main(int argc, char **argv)
             }
 
             legend.DrawClone();
-            PrintCanvas(&canv, outputDir + "sigmas_" + dValName + ((isPositive) ? "_pos" : "_neg") +
+            PrintCanvas(&canv, outputDir + detectorName + "_sigmas_" + 
+                        dValName + ((isPositive) ? "_pos" : "_neg") +
                         "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
 
             TCanvas parCanv("", "", 800, 800);
@@ -291,12 +331,13 @@ int main(int argc, char **argv)
             sigmasDiffDistr.GetYaxis()->SetTitle("p_{T}");
             sigmasDiffDistr.Draw("COLZ");
             
-            PrintCanvas(&parCanv, outputDir + "fitPar_" + dValName +  + 
+            PrintCanvas(&parCanv, outputDir + detectorName + "/fitPar_" + dValName +  + 
                         ((isPositive) ? "_pos" : "_neg") + 
                         "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
                         DtoStr(Par.centralityMax, 0));
          }
       }
+      outputFile.Close();
    }
 }
 
