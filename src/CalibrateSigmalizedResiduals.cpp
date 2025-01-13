@@ -30,8 +30,10 @@ int main(int argc, char **argv)
    inputJSONContents.CheckStatus("main");
    
    const std::string runName = inputJSONContents["run_name"].asString();
+
+   const Json::Value calibrationsInput = inputJSONContents["CALIBRATIONS"]["sigmalized_residuals"];
    
-   if (inputJSONContents["uncalibrated_sigmalized_residuals_detectors"].size() == 0)
+   if (calibrationsInput["detectors_to_calibrate"].size() == 0)
    {
       PrintInfo("No detectors are specified for calibrations");
       PrintInfo("Exiting the program");
@@ -40,9 +42,9 @@ int main(int argc, char **argv)
    
    if (!inputJSONContents["is_pp"].asBool())
    {
-      Par.centralityMin = inputJSONContents["centrality_min"].asDouble();
-      Par.centralityMax = inputJSONContents["centrality_max"].asDouble();
-      Par.centralityNBins = ceil((Par.centralityMax - Par.centralityMin)/5.);
+      Par.centralityMin = 80.;//inputJSONContents["centrality_min"].asDouble();
+      Par.centralityMax = 88.;//inputJSONContents["centrality_max"].asDouble();
+      Par.centralityNBins = ceil((Par.centralityMax - Par.centralityMin - 1e-6)/5.);
    }
    else
    {
@@ -62,15 +64,14 @@ int main(int argc, char **argv)
    pBar.SetColor(PBarColor::BOLD_GREEN);
    
    const unsigned long numberOfIterations = 
-      inputJSONContents["uncalibrated_sigmalized_residuals_detectors"].size()*
-      Par.zDCMin.size()*4.;
+      calibrationsInput["detectors_to_calibrate"].size()*Par.zDCMin.size()*4.;
    
    unsigned long nCalls = 0.;
 
    const std::string inputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
 
    for (const auto& detector : 
-        inputJSONContents["uncalibrated_sigmalized_residuals_detectors"])
+        calibrationsInput["detectors_to_calibrate"])
    {
       const std::string outputDir = "output/ResidualCal/" + runName + 
                                     "/" + detector["name"].asString() + "/";
@@ -86,7 +87,7 @@ int main(int argc, char **argv)
                                            DtoStr(Par.centralityMax, 0) + "%"; 
 
    for (const auto& detector : 
-        inputJSONContents["uncalibrated_sigmalized_residuals_detectors"])
+        calibrationsInput["detectors_to_calibrate"])
    {
       const std::string outputDir = "output/ResidualCal/" + runName + "/";
       const std::string detectorName = detector["name"].asString();
@@ -200,25 +201,21 @@ int main(int argc, char **argv)
                                                 grVSigmas.back().GetPointY(j));
                }
 
-               grVMeans.back().Clone()->Write(("data_means_" + dValName + 
-                                               ((isPositive) ? "_pos" : "_neg") +
-                                               "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
-                                               DtoStr(Par.centralityMax, 0)).c_str());
-
-               grVSigmas.back().Clone()->Write(("data_sigmas_" + dValName + 
-                                                ((isPositive) ? "_pos" : "_neg") +
-                                                "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
-                                                DtoStr(Par.centralityMax, 0)).c_str());
-
-               fVMeans.back().Clone()->Write(("fit_means_" + dValName + 
-                                              ((isPositive) ? "_pos" : "_neg") +
-                                              "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
-                                              DtoStr(Par.centralityMax, 0)).c_str());
-
-               fVSigmas.back().Clone()->Write(("fit_sigmas_" + dValName + 
-                                               ((isPositive) ? "_pos" : "_neg") +
-                                               "_c" + DtoStr(Par.centralityMin, 0) + "-" + 
-                                               DtoStr(Par.centralityMax, 0)).c_str());
+               grVMeans.back().Clone()->Write(("Data means: " + dValName + 
+                                               chargeName + ", " + centralityRangeName + 
+                                               "%, " + zDCRangeName).c_str());
+               
+               grVSigmas.back().Clone()->Write(("Data sigmas: " + dValName + 
+                                                chargeName + ", " + centralityRangeName +
+                                                ", " + zDCRangeName).c_str());
+               
+               fVMeans.back().Clone()->Write(("Fit means: " + dValName + 
+                                              chargeName + ", " + centralityRangeName +
+                                              ", " + zDCRangeName).c_str());
+               
+               fVSigmas.back().Clone()->Write(("Fit sigmas: " + dValName + 
+                                               chargeName + ", " + centralityRangeName +
+                                               ", " + zDCRangeName).c_str());
             }
 
             double meanYMin = 1e31, meanYMax = -1e31;
@@ -228,8 +225,10 @@ int main(int argc, char **argv)
             {
                double bVal = (dValName == "dphi") ? 0.04 : 10.; // bound value of dVal for graphs
                
-               meanYMin = Maximum(-bVal, Minimum(meanYMin, TMath::MinElement(grVMeans[i].GetN(),                                                                                  grVMeans[i].GetY())));
-               meanYMax = Minimum(bVal, Maximum(meanYMax, TMath::MaxElement(grVMeans[i].GetN(),                                                                                  grVMeans[i].GetY())));
+               meanYMin = Maximum(-bVal, Minimum(meanYMin, TMath::MinElement(grVMeans[i].GetN(),
+                                                                             grVMeans[i].GetY())));
+               meanYMax = Minimum(bVal, Maximum(meanYMax, TMath::MaxElement(grVMeans[i].GetN(),
+                                                                            grVMeans[i].GetY())));
                sigmaYMax = Minimum(bVal, Maximum(sigmaYMax, TMath::MaxElement(grVSigmas[i].GetN(), 
                                                                               grVSigmas[i].GetY())));
 
@@ -277,6 +276,11 @@ int main(int argc, char **argv)
             PrintCanvas(&canv, outputDir + detectorName + "_means_" + 
                          dValName + ((isPositive) ? "_pos" : "_neg") +
                         "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
+
+            canv.Clone()->Write((dValName + " means: " + 
+                                 chargeName + ", " + 
+                                 DtoStr(Par.centralityMin, 0) + "-" + 
+                                 DtoStr(Par.centralityMax, 0) + "%").c_str());
             
             legend.Clear();
             canv.Clear();
@@ -299,6 +303,11 @@ int main(int argc, char **argv)
             PrintCanvas(&canv, outputDir + detectorName + "_sigmas_" + 
                         dValName + ((isPositive) ? "_pos" : "_neg") +
                         "_c" + DtoStr(Par.centralityMin, 0) + "-" + DtoStr(Par.centralityMax, 0));
+
+            canv.Clone()->Write((dValName + " sigmas: " + 
+                                 ((isPositive) ? "pos, " : "neg, ") + 
+                                 DtoStr(Par.centralityMin, 0) + "-" + 
+                                 DtoStr(Par.centralityMax, 0) + "%").c_str());
 
             TCanvas parCanv("", "", 800, 800);
             parCanv.Divide(2, 2);
@@ -451,7 +460,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
          }
          
          fitFuncDVal.SetParLimits(4, minX*2., maxX*2.);
-         fitFuncDVal.SetParLimits(5, maxX/3., maxX*2.);
+         fitFuncDVal.SetParLimits(5, maxX/3., maxX*3.);
          
          fitFuncDVal.SetLineColorAlpha(kRed+1, 0.6);
          fitFuncBG.SetLineColorAlpha(kGreen+1, 0.9);
@@ -569,6 +578,10 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
    }
    
    PrintCanvas(&canv, outputFileNameNoExt, false, true);
+   /*
+   canv.Clone()->Write((dValName + ": " + chargeName + ", " +
+                       centralityRangeName + ", " + zDCRangeName).c_str());
+   */
 }
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_CPP */
