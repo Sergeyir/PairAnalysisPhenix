@@ -168,6 +168,7 @@ int main(int argc, char **argv)
                {
                   grVMeans.back().Fit(&fVMeans.back(), "RQMN");
                   grVSigmas.back().Fit(&fVSigmas.back(), "RQMN");
+                  
                   for (int k = 0; k < fVMeans.back().GetNpar(); k++)
                   {
                      fVMeans.back().SetParLimits(k, fVMeans.back().GetParameter(k)/
@@ -193,9 +194,10 @@ int main(int argc, char **argv)
                   
                   meansDistr.SetBinContent(xBin, yBin, grVMeans.back().GetPointY(j));
                   sigmasDistr.SetBinContent(xBin, yBin, grVSigmas.back().GetPointY(j));
-                  meansDiffDistr.SetBinContent(xBin, yBin, fabs(grVMeans.back().GetPointY(j) - 
-                                                                fVMeans.back().Eval(x))/
-                                               grVMeans.back().GetPointY(j));
+                  meansDiffDistr.SetBinContent(xBin, yBin, 
+                                               fabs((grVMeans.back().GetPointY(j) - 
+                                                     fVMeans.back().Eval(x))/
+                                                    grVMeans.back().GetPointY(j)));
                   sigmasDiffDistr.SetBinContent(xBin, yBin, fabs(grVSigmas.back().GetPointY(j) - 
                                                                  fVSigmas.back().Eval(x))/
                                                 grVSigmas.back().GetPointY(j));
@@ -219,7 +221,7 @@ int main(int argc, char **argv)
             }
 
             double meanYMin = 1e31, meanYMax = -1e31;
-            double sigmaYMax = -1e31;
+            double sigmaYMin = 1e31, sigmaYMax = -1e31;
             
             for (unsigned long i = 0; i < grVMeans.size(); i++)
             {
@@ -229,6 +231,8 @@ int main(int argc, char **argv)
                                                                              grVMeans[i].GetY())));
                meanYMax = Minimum(bVal, Maximum(meanYMax, TMath::MaxElement(grVMeans[i].GetN(),
                                                                             grVMeans[i].GetY())));
+               sigmaYMin = Maximum(0., Minimum(sigmaYMin, TMath::MinElement(grVSigmas[i].GetN(), 
+                                                                            grVSigmas[i].GetY())));
                sigmaYMax = Minimum(bVal, Maximum(sigmaYMax, TMath::MaxElement(grVSigmas[i].GetN(), 
                                                                               grVSigmas[i].GetY())));
 
@@ -251,15 +255,22 @@ int main(int argc, char **argv)
             
             TCanvas canv("", "", 800, 800);
             
-            TLegend legend{0.1, 0.7, 0.88, 0.89};
+            TLegend legend{0.15, 0.7, 0.88, 0.89};
             legend.SetNColumns(3);
             legend.SetLineColorAlpha(0, 0.);
             legend.SetFillColorAlpha(0, 0.);
             
+
+            gPad->SetLeftMargin(0.135);
+            
             TH1 *meansFrame = 
-               gPad->DrawFrame(0., meanYMin - (meanYMax - meanYMin)*0.05, 
+               gPad->DrawFrame(Par.pTMin.front() - 0.1, meanYMin - (meanYMax - meanYMin)*0.05, 
                                Par.pTMax.back()*1.05, meanYMax + (meanYMax - meanYMin)*0.35);
             
+            meansFrame->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            meansFrame->GetYaxis()->SetTitle(("#mu_{" + dValName + "}").c_str());
+            meansFrame->GetXaxis()->SetTitleOffset(1.1);
+            meansFrame->GetYaxis()->SetTitleOffset(2.0);
             meansFrame->Draw("SAME AXIS X+ Y+");
             
             for (unsigned long i = 0; i < grVMeans.size(); i++)
@@ -284,9 +295,12 @@ int main(int argc, char **argv)
             
             legend.Clear();
             canv.Clear();
-            
+
             TH1 *sigmasFrame = 
-               gPad->DrawFrame(0., 0., Par.pTMax.back()*1.05, sigmaYMax*1.6);
+               gPad->DrawFrame(Par.pTMin.front() - 0.1, sigmaYMin/1.1, 
+                               Par.pTMax.back()*1.05, sigmaYMax*1.4);
+            sigmasFrame->GetXaxis()->SetTitle("p_{T} [GeV/c]");
+            sigmasFrame->GetYaxis()->SetTitle(("#sigma_{" + dValName + "}").c_str());
             sigmasFrame->Draw("SAME AXIS X+ Y+");
             
             for (unsigned long i = 0; i < grVSigmas.size(); i++)
@@ -313,14 +327,12 @@ int main(int argc, char **argv)
             parCanv.Divide(2, 2);
             
             parCanv.cd(1);
-            gPad->SetLogz();
             gPad->SetRightMargin(0.13);
             meansDistr.GetXaxis()->SetTitle("z_{DC}");
             meansDistr.GetYaxis()->SetTitle("p_{T}");
             meansDistr.Draw("COLZ");
 
             parCanv.cd(2);
-            gPad->SetLogz();
             gPad->SetRightMargin(0.13);
             sigmasDistr.GetXaxis()->SetTitle("z_{DC}");
             sigmasDistr.GetYaxis()->SetTitle("p_{T}");
@@ -348,6 +360,7 @@ int main(int argc, char **argv)
       }
       outputFile.Close();
    }
+   pBar.Print(1.);
 }
 
 void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
@@ -539,9 +552,10 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
          Par.texText.DrawLatexNDC(0.17, 0.66, centralityRangeName.c_str());
          
          grMeans.AddPoint(pT, fitFuncDVal.GetParameter(1));
-         grMeans.SetPointError(grMeans.GetN() - 1, fitFuncDVal.GetParError(1));
          grSigmas.AddPoint(Average(Par.pTMin[i], Par.pTMax[i]), fitFuncDVal.GetParameter(2));
-         grSigmas.SetPointError(grSigmas.GetN() - 1, fitFuncDVal.GetParError(2));
+         
+         //grMeans.SetPointError(grMeans.GetN() - 1, 0, fitFuncDVal.GetParError(1));
+         //grSigmas.SetPointError(grSigmas.GetN() - 1, 0, fitFuncDVal.GetParError(2));
       }
       if (grMeans.GetN() == 0) 
       {
@@ -550,9 +564,10 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
       }
       
       meansFit->SetRange(pTMin/1.05, pTMax*1.05);
+      sigmasFit->SetRange(pTMin/1.05, pTMax*1.05);
       
-      grMeans.Fit(meansFit, "RQMN");
-      grSigmas.Fit(sigmasFit, "RQMN");
+      grMeans.Fit(meansFit, "RQMNW");
+      grSigmas.Fit(sigmasFit, "RQMNW");
    };
    
    TF1 meansFit("meansFit", Par.meansFitFunc.front().c_str());
@@ -569,7 +584,7 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
    {
       TF1 *oldMeansFit = (TF1 *) meansFit.Clone();
       TF1 *oldSigmasFit = (TF1 *) sigmasFit.Clone();
-
+      
       meansFit.SetCurrent((TF1 *) TF1("meansFit", Par.meansFitFunc[i].c_str()).Clone());
       sigmasFit.SetCurrent((TF1 *) TF1("sigmasFit", Par.sigmasFitFunc[i].c_str()).Clone());
 

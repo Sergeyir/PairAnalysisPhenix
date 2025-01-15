@@ -53,20 +53,20 @@ struct
    // means and sigmas are sequentially approximated with more intricate functions and 
    // in wider pT range.
    const std::vector<std::string> meansFitFunc =
-      {"[0] - [1]*exp(pol1(2)) + [4]*exp(pol1(5))", 
-       "[0] + [1]/x + [2]/x^2 + [3]/x^3 + [4]*exp([5]*x)"};
+      {"[0] - [1]*exp([2]*x) + [3]*exp([4]*x)", 
+       "[0] + [1]/x + [2]/x^2 + [3]/x^3 + [4]/x^4"};
    const std::vector<std::string> sigmasFitFunc = 
       {"[0] + [1]*exp([2]*x) + [3]*exp([4]*x)", 
-       "[0] + [1]/x + [2]*exp([3]*x)"};
+       "[0] + [1]/x + [2]*x"};
    
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
                                    1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 
-                                   1.9, 2.0, 2.2, 2.5, 3.0, 3.5, 4.5, 6.5};
+                                   1.9, 2.0, 2.2, 2.5};//, 3.0, 3.5, 4.5, 6.5};
    const std::vector<double> pTMax{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 
                                    1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
-                                   2.0, 2.2, 2.5, 3.0, 3.5, 4.5, 6.5, 10.0};
-   const int pTXNBins = 8; // number of pT bins whose ranges are listed above;
-   const int pTYNBins = 3; // these are needed for the canvas division
+                                   2.0, 2.2, 2.5, 3.0};//, 3.5, 4.5, 6.5, 10.0};
+   const int pTXNBins = 5; // number of pT bins whose ranges are listed above;
+   const int pTYNBins = 4; // these are needed for the canvas division
    
   /* 
    const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
