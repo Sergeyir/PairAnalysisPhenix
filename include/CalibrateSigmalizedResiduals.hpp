@@ -57,14 +57,11 @@ struct
                                         // the histogram to be approximated
                                         // if the requirement for this value is not met
                                         // warning will be printed
-   double centralityMin;
-   double centralityMax;
-   int centralityNBins;
    
    // number of consequent fits of dphi and dz distributions for better approximation results
    const unsigned short fitNTries = 5;
 
-   // useful snippet to employ for quick TLatex insertions
+   // useful object to employ for quick TLatex insertions
    TLatex texText;
 } Par;
 
@@ -72,6 +69,7 @@ int main(int argc, char **argv);
 void PerformFits(TH3F *hist, TGraphErrors& grMeans, TGraphErrors& grSigmas, 
                  const Json::Value& calibrationInput,
                  const Json::Value& detector, const Json::Value& variable,
-                 const Json::Value& zDCBin, const Json::Value& particleType);
+                 const Json::Value& zDCBin, const Json::Value& particleType,
+                 const Json::Value& centralityBin);
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_HPP */
