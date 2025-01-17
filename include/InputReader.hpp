@@ -36,7 +36,7 @@ class InputJSONReader
    
    InputJSONReader();
    InputJSONReader(const std::string& inputFileOrDir, const std::string& inputType = "");
-   void OpenFile(const std::string& inputFileOrDir, const std::string& inputType);
+   void OpenFile(const std::string& inputFileOrDir, const std::string& inputType = "");
    void CheckStatus(const std::string& status);
    Json::Value operator[](const std::string& field);
    ~InputJSONReader();

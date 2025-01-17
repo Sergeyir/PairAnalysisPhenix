@@ -18,6 +18,7 @@
 #define CALIBRATE_SIGMALIZED_RESIDUALS_HPP
 
 #include <memory>
+#include <algorithm>
 
 #include "TFile.h"
 #include "TH1.h"
@@ -42,53 +43,16 @@
 
 struct
 {
-   const std::array<double, 10> zDCMin{-75, -60, -45, -30, -15, 0, 15, 30, 45, 60};
-   const std::array<double, 10> zDCMax{-60, -45, -30, -15, 0, 15, 30, 45, 60, 75};
+   InputJSONReader inputJSONCal, inputJSONMain;
 
-   const std::array<Color_t, 10> markerColor{kP10Cyan, kP10Ash, kP10Green, kP10Orange, kP10Brown, 
-                                             kP10Violet, kP10Gray, kP10Red, kP10Yellow, kP10Blue};
-   const std::array<Style_t, 10> markerStyle{24, 25, 27, 28, 26, 32, 24, 25, 27, 28};
+   std::string runName;
    
-   // Since it is difficult to approximate all distributions and get a reliable result
-   // means and sigmas are sequentially approximated with more intricate functions and 
-   // in wider pT range.
-   const std::vector<std::string> meansFitFunc =
-      {"[0] - [1]*exp([2]*x) + [3]*exp([4]*x)", 
-       "[0] + [1]/x + [2]/x^2 + [3]/x^3 + [4]/x^4"};
-   const std::vector<std::string> sigmasFitFunc = 
-      {"[0] + [1]*exp([2]*x) + [3]*exp([4]*x)", 
-       "[0] + [1]/x + [2]*x"};
-   
-   const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-                                   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 
-                                   1.9, 2.0, 2.2, 2.5};//, 3.0, 3.5, 4.5, 6.5};
-   const std::vector<double> pTMax{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1, 
-                                   1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 
-                                   2.0, 2.2, 2.5, 3.0};//, 3.5, 4.5, 6.5, 10.0};
-   const int pTXNBins = 5; // number of pT bins whose ranges are listed above;
-   const int pTYNBins = 4; // these are needed for the canvas division
-   
-  /* 
-   const std::vector<double> pTMin{0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-                                   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 
-                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.0,
-                                   3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0,
-                                   5.2, 5.6, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
-                                   8.4, 9.0, 9.5};
-   const std::vector<double> pTMax{0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 
-                                   1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 
-                                   2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 3.0,
-                                   3.2, 3.4, 3.6, 3.8, 4.0, 4.2, 4.4, 4.6, 4.8, 5.0,
-                                   5.2, 5.6, 6.0, 6.4, 6.8, 7.2, 7.6, 8.0,
-                                   8.4, 9.0, 9.5, 10.0};
-   const int pTXNBins = 8; // number of pT bins whose ranges are listed above;
-   const int pTYNBins = 6; // these are needed for the canvas division
-    */
-
-   // ranges of pT for sequential approximation of sigmas and means
-   const std::vector<double> pTMinFit = {pTMin[2], pTMin.front(), pTMin.front()/1.05};
-   const std::vector<double> pTMaxFit = {2.5, 4.0, pTMax.back()*1.05};
-   
+   // function for the first preliminary fit of means and sigmas; 
+   // it is needed to evaluate the parameters limits ranges
+   // the functions listed below are quite good at this first preliminary approximation
+   const std::string meansFitPrelimFunc = "[0] - [1]*exp([2]*x) + [3]*exp([4]*x)";
+   const std::string sigmasFitPrelimFunc = "[0] - [1]*exp([2]*x) + [3]*exp([4]*x)";
+ 
    const double minIntegralValue = 3e2; // minimum number of entries for 
                                         // the histogram to be approximated
                                         // if the requirement for this value is not met
@@ -97,16 +61,17 @@ struct
    double centralityMax;
    int centralityNBins;
    
+   // number of consequent fits of dphi and dz distributions for better approximation results
    const unsigned short fitNTries = 5;
 
+   // useful snippet to employ for quick TLatex insertions
    TLatex texText;
 } Par;
 
 int main(int argc, char **argv);
 void PerformFits(TH3F *hist, TGraphErrors& grMeans, TGraphErrors& grSigmas, 
-                 const std::string& outputFileNameNoExt, const std::string& dValName,
-                 const std::string& detectorName, const std::string& zDCRangeName, 
-                 const double centralityMin, const double centralityMax,
-                 const std::string& chargeName);
+                 const Json::Value& calibrationInput,
+                 const Json::Value& detector, const Json::Value& variable,
+                 const Json::Value& zDCBin, const Json::Value& particleType);
 
 #endif /* CALIBRATE_SIGMALIZED_RESIDUALS_HPP */
