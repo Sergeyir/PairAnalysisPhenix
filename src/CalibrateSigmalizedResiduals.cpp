@@ -78,64 +78,96 @@ int main(int argc, char **argv)
    Par.texText.SetTextFont(52);
    Par.texText.SetTextSize(0.06);
 
+   // ranges for TAxis
+   std::vector<double> pTRanges, centralityRanges;
+   
+   for (const Json::Value& pTBin: calibrationInput["pt_bins"])
+   {
+      pTRanges.push_back(pTBin["min"].asDouble());
+   }
+   pTRanges.push_back(calibrationInput["pt_bins"].back()["max"].asDouble());
+
+   for (const Json::Value& centralityBin: calibrationInput["centrality_bins"])
+   {
+      centralityRanges.push_back(centralityBin["min"].asDouble());
+   }
+   centralityRanges.push_back(calibrationInput["centrality_bins"].back()["max"].asDouble());
+
    for (const Json::Value& detector : calibrationInput["detectors_to_calibrate"])
    {
       const std::string outputDir = "output/ResidualCal/" + Par.runName + "/";
       const std::string detectorName = detector["name"].asString();
       
-      TFile outputFile((outputDir + detectorName + "/fits.root").c_str(), "RECREATE");
+      TFile outputFile((outputDir + detectorName + "/all_fits.root").c_str(), "RECREATE");
 
-      for (const Json::Value& centralityBin : calibrationInput["centrality_bins"])
-      {
-         const std::string centralityRangeName = centralityBin["min"].asString() + "-" + 
-                                                 centralityBin["max"].asString() + "%"; 
-         // same as before but without percent; used for output file names
-         const std::string centralityRangePathName = "_c" + centralityBin["min"].asString() + 
-                                                       "-" + centralityBin["max"].asString(); 
-         
-         for (const Json::Value& variable : calibrationInput["variables_to_calibrate"])
-         { 
-            for (const Json::Value& particleType : calibrationInput["particles_to_calibrate"])
+      for (const Json::Value& variable : calibrationInput["variables_to_calibrate"])
+      { 
+         for (const Json::Value& particleType : calibrationInput["particles_to_calibrate"])
+         {
+            TCanvas canvAllCentr("dval means vs centrality and pT", "", 
+                                 calibrationInput["pt_nbinsx"].asDouble()*400.,
+                                 calibrationInput["pt_nbinsy"].asDouble()*400.);
+            canvAllCentr.Divide(calibrationInput["pt_nbinsx"].asInt(), 
+                                calibrationInput["pt_nbinsy"].asInt());
+            
+            std::vector<TH2D> distrVMeansVsCentralityVsPT, distrVSigmasVsCentralityVsPT;
+            
+            distrVMeansVsCentralityVsPT.resize(calibrationInput["zdc_bins"].size());
+            distrVSigmasVsCentralityVsPT.resize(calibrationInput["zdc_bins"].size());
+            
+            for (const Json::Value& zDCBin : calibrationInput["zdc_bins"])
             {
+               const std::string zDCRangeName = zDCBin["min"].asString() + "<zDC<" + 
+                                                zDCBin["max"].asString();
+               distrVMeansVsCentralityVsPT.
+                  emplace_back((variable["name"].asString() + " means: centrality vs pT " + 
+                                zDCRangeName).c_str(), "",
+                               centralityRanges.size() - 1, &centralityRanges[0],
+                               pTRanges.size() - 1, &pTRanges[0]);
+               distrVSigmasVsCentralityVsPT.
+                  emplace_back((variable["name"].asString() + "sigmas: centrality vs pT" + 
+                                zDCRangeName).c_str(), "",
+                               centralityRanges.size() - 1, &centralityRanges[0],
+                               pTRanges.size() - 1, &pTRanges[0]);
+            }
+            
+            unsigned int iCentralityBin = 0;
+            for (const Json::Value& centralityBin : calibrationInput["centrality_bins"])
+            {
+               const std::string centralityRangeName = centralityBin["min"].asString() + "-" + 
+                                                       centralityBin["max"].asString() + "%"; 
+               // same as before but without percent; used for output file names
+               const std::string centralityRangePathName = 
+                  "_c" + centralityBin["min"].asString() + "-" + centralityBin["max"].asString();
+
+               std::vector<TGraphErrors> grVMeansVsPT, grVSigmasVsPT;
+               std::vector<TF1> fVMeansVsPT, fVSigmasVsPT;
+
                // histograms with weights representing means and sigmas
-               TH2D meansDistr("means", "#mu", 
-                               calibrationInput["zdc_bins"].size(), 
-                               calibrationInput["zdc_bins"].front()["min"].asDouble(), 
-                               calibrationInput["zdc_bins"].back()["max"].asDouble(),
-                               1, 0., 1.);
-               TH2D sigmasDistr("sigmas", "#sigma", 
-                                calibrationInput["zdc_bins"].size(), 
-                                calibrationInput["zdc_bins"].front()["min"].asDouble(), 
-                                calibrationInput["zdc_bins"].back()["max"].asDouble(),
-                                1, 0., 1.);
+               TH2D distrMeansVsZDCVsPT("means", "#mu", 
+                                        calibrationInput["zdc_bins"].size(), 
+                                        calibrationInput["zdc_bins"].front()["min"].asDouble(), 
+                                        calibrationInput["zdc_bins"].back()["max"].asDouble(),
+                                        pTRanges.size() - 1, &pTRanges[0]);
+               TH2D distrSigmasVsZDCVsPT("sigmas", "#sigma", 
+                                         calibrationInput["zdc_bins"].size(), 
+                                         calibrationInput["zdc_bins"].front()["min"].asDouble(), 
+                                         calibrationInput["zdc_bins"].back()["max"].asDouble(),
+                                         pTRanges.size() - 1, &pTRanges[0]);
                // histograms with weights representing the difference between means and sigmas and
                // a fit parameter of means and sigmas
-               TH2D meansDiffDistr("means diff", "#cbar#mu - #mu_{fit}#cbar/#mu", 
-                                   calibrationInput["zdc_bins"].size(), 
-                                   calibrationInput["zdc_bins"].front()["min"].asDouble(), 
-                                   calibrationInput["zdc_bins"].back()["max"].asDouble(),
-                                   1, 0., 1.);
-               TH2D sigmasDiffDistr("sigmas diff", "#cbar#sigma - #sigma_{fit}#cbar/#sigma", 
-                                   calibrationInput["zdc_bins"].size(), 
-                                   calibrationInput["zdc_bins"].front()["min"].asDouble(), 
-                                   calibrationInput["zdc_bins"].back()["max"].asDouble(),
-                                   1, 0., 1.);
-
-               std::vector<double> pTRanges;
-               for (const auto & val: calibrationInput["pt_bins"])
-               {
-                  pTRanges.push_back(val["min"].asDouble());
-               }
-               pTRanges.push_back(pTMax);
-
-               meansDistr.GetYaxis()->Set(pTRanges.size() - 1, &pTRanges[0]);
-               sigmasDistr.GetYaxis()->Set(pTRanges.size() - 1, &pTRanges[0]);
-               meansDiffDistr.GetYaxis()->Set(pTRanges.size() - 1, &pTRanges[0]);
-               sigmasDiffDistr.GetYaxis()->Set(pTRanges.size() - 1, &pTRanges[0]);
-               
-               std::vector<TGraphErrors> grVMeans, grVSigmas;
-               std::vector<TF1> fVMeans, fVSigmas;
-               
+               TH2D distrMeansDiffVsZDCVsPT("means diff", "#cbar#mu - #mu_{fit}#cbar/#mu",
+                                            calibrationInput["zdc_bins"].size(), 
+                                            calibrationInput["zdc_bins"].front()["min"].asDouble(), 
+                                            calibrationInput["zdc_bins"].back()["max"].asDouble(),
+                                            pTRanges.size() - 1, &pTRanges[0]);
+               TH2D distrSigmasDiffVsZDCVsPT("sigmas diff", "#cbar#sigma - #sigma_{fit}#cbar/#sigma",
+                                             calibrationInput["zdc_bins"].size(), 
+                                             calibrationInput["zdc_bins"].front()["min"].asDouble(), 
+                                             calibrationInput["zdc_bins"].back()["max"].asDouble(),
+                                             pTRanges.size() - 1, &pTRanges[0]);
+         
+               unsigned int iZDCBin = 0;
                for (const Json::Value& zDCBin : calibrationInput["zdc_bins"])
                { 
                   pBar.Print(static_cast<double>(numberOfCalls)/
@@ -167,125 +199,145 @@ int main(int argc, char **argv)
                                                    particleType["name_short"].asString() +
                                                    centralityRangePathName + zDCRangePathName;
 
-                  grVMeans.emplace_back();
-                  grVSigmas.emplace_back();
+                  grVMeansVsPT.emplace_back();
+                  grVSigmasVsPT.emplace_back();
                   
-                  fVMeans.emplace_back((zDCRangeName + centralityRangeName + 
+                  fVMeansVsPT.emplace_back((zDCRangeName + centralityRangeName + 
                                         detector["name"].asString() + 
                                         particleType["name"].asString() + 
                                         variable["name"].asString()).c_str(), 
                                        detector["means_fit"].asCString());
-                  fVSigmas.emplace_back((zDCRangeName + centralityRangeName + 
+                  fVSigmasVsPT.emplace_back((zDCRangeName + centralityRangeName + 
                                          detector["name"].asString() + 
                                          particleType["name"].asString() +
                                          variable["name"].asString()).c_str(), 
                                         detector["sigmas_fit"].asCString());
                                  
-                  PerformFits(distrVariable, grVMeans.back(), grVSigmas.back(), calibrationInput, 
-                              detector, variable, zDCBin, particleType, centralityBin);
+                  PerformFits(distrVariable, grVMeansVsPT.back(), grVSigmasVsPT.back(), 
+                              calibrationInput, detector, variable, 
+                              zDCBin, particleType, centralityBin);
                   
-                  fVMeans.back().SetRange(pTMin/1.05, pTMax*1.05);
-                  fVSigmas.back().SetRange(pTMin/1.05, pTMax*1.05);
+                  fVMeansVsPT.back().SetRange(pTMin/1.05, pTMax*1.05);
+                  fVSigmasVsPT.back().SetRange(pTMin/1.05, pTMax*1.05);
                   
                   for (short j = 1; j <= Par.fitNTries; j++)
                   {
-                     grVMeans.back().Fit(&fVMeans.back(), "RQMN");
-                     grVSigmas.back().Fit(&fVSigmas.back(), "RQMN");
+                     grVMeansVsPT.back().Fit(&fVMeansVsPT.back(), "RQMN");
+                     grVSigmasVsPT.back().Fit(&fVSigmasVsPT.back(), "RQMN");
                      
-                     for (int k = 0; k < fVMeans.back().GetNpar(); k++)
+                     for (int k = 0; k < fVMeansVsPT.back().GetNpar(); k++)
                      {
-                        fVMeans.back().SetParLimits(k, fVMeans.back().GetParameter(k)/
-                                                     (1. + 5./static_cast<double>(j*j)),
-                                                     fVMeans.back().GetParameter(k)*
-                                                     (1. + 5./static_cast<double>(j*j)));
+                        fVMeansVsPT.back().SetParLimits(k, fVMeansVsPT.back().GetParameter(k)/
+                                                        (1. + 5./static_cast<double>(j*j)),
+                                                        fVMeansVsPT.back().GetParameter(k)*
+                                                        (1. + 5./static_cast<double>(j*j)));
                      }
-                     for (int k = 0; k < fVSigmas.back().GetNpar(); k++)
+                     for (int k = 0; k < fVSigmasVsPT.back().GetNpar(); k++)
                      {
-                        fVSigmas.back().SetParLimits(k, fVSigmas.back().GetParameter(k)/
-                                                      (1. + 5./static_cast<double>(j*j)),
-                                                      fVSigmas.back().GetParameter(k)*
-                                                      (1. + 5./static_cast<double>(j*j)));
+                        fVSigmasVsPT.back().SetParLimits(k, fVSigmasVsPT.back().GetParameter(k)/
+                                                         (1. + 5./static_cast<double>(j*j)),
+                                                         fVSigmasVsPT.back().GetParameter(k)*
+                                                         (1. + 5./static_cast<double>(j*j)));
                      }
                   }
 
                   // filling 2D histograms with weights as fit parameters means and sigmas
-                  for (int j = 0; j < grVMeans.back().GetN(); j++)
+                  for (int j = 0; j < grVMeansVsPT.back().GetN(); j++)
                   {
-                     const double x = grVMeans.back().GetPointX(j);
-                     const int xBin = meansDistr.GetXaxis()->FindBin(Average(zDCMin, zDCMax));
-                     const int yBin = meansDistr.GetYaxis()->FindBin(x);
+                     const double x = grVMeansVsPT.back().GetPointX(j);
+                     const int xBin = 
+                        distrMeansVsZDCVsPT.GetXaxis()->FindBin(Average(zDCMin, zDCMax));
+                     const int yBin = distrMeansVsZDCVsPT.GetYaxis()->FindBin(x);
                      
-                     meansDistr.SetBinContent(xBin, yBin, grVMeans.back().GetPointY(j));
-                     sigmasDistr.SetBinContent(xBin, yBin, grVSigmas.back().GetPointY(j));
-                     meansDiffDistr.SetBinContent(xBin, yBin, 
-                                                  fabs((grVMeans.back().GetPointY(j) - 
-                                                        fVMeans.back().Eval(x))/
-                                                       grVMeans.back().GetPointY(j)));
-                     sigmasDiffDistr.SetBinContent(xBin, yBin, fabs(grVSigmas.back().GetPointY(j) - 
-                                                                    fVSigmas.back().Eval(x))/
-                                                   grVSigmas.back().GetPointY(j));
+                     distrMeansVsZDCVsPT.
+                        SetBinContent(xBin, yBin, grVMeansVsPT.back().GetPointY(j));
+                     distrSigmasVsZDCVsPT.
+                        SetBinContent(xBin, yBin, grVSigmasVsPT.back().GetPointY(j));
+                     distrMeansDiffVsZDCVsPT.SetBinContent(xBin, yBin, 
+                                                  fabs((grVMeansVsPT.back().GetPointY(j) - 
+                                                        fVMeansVsPT.back().Eval(x))/
+                                                       grVMeansVsPT.back().GetPointY(j)));
+                     distrSigmasDiffVsZDCVsPT.SetBinContent(xBin, yBin, 
+                                                   fabs(grVSigmasVsPT.back().GetPointY(j) - 
+                                                        fVSigmasVsPT.back().Eval(x))/
+                                                   grVSigmasVsPT.back().GetPointY(j));
                   }
 
-                  grVMeans.back().Clone()->
+                  grVMeansVsPT.back().Clone()->
                      Write(("Data means: " + variable["name"].asString() + 
                             ", " + particleType["name"].asString() + ", " + 
                             centralityRangeName + ", " + zDCRangeName).c_str());
                   
-                  grVSigmas.back().Clone()->
+                  grVSigmasVsPT.back().Clone()->
                      Write(("Data sigmas: " + variable["name"].asString() + 
                             ", " + particleType["name"].asString() + ", " + 
                             centralityRangeName + ", " + zDCRangeName).c_str());
                   
-                  fVMeans.back().Clone()->
+                  fVMeansVsPT.back().Clone()->
                      Write(("Fit means: " + variable["name"].asString() + 
                             ", " + particleType["name"].asString() + ", " + 
                             centralityRangeName + ", " + zDCRangeName).c_str());
                   
-                  fVSigmas.back().Clone()->
+                  fVSigmasVsPT.back().Clone()->
                      Write(("Fit sigmas: " + variable["name"].asString() + 
                             ", " + particleType["name"].asString() + ", " + 
                             centralityRangeName + ", " + zDCRangeName).c_str());
+                  iZDCBin++;
                }
 
                double meanYMin = 1e31, meanYMax = -1e31;
                double sigmaYMin = 1e31, sigmaYMax = -1e31;
                
-               for (unsigned long i = 0; i < grVMeans.size(); i++)
+               for (unsigned long i = 0; i < grVMeansVsPT.size(); i++)
                {
-                  meanYMin = 
-                     Minimum(meanYMin, TMath::MinElement(grVMeans[i].GetN(), grVMeans[i].GetY()));
-                  meanYMax = 
-                     Maximum(meanYMax, TMath::MaxElement(grVMeans[i].GetN(), grVMeans[i].GetY()));
-                  sigmaYMin = 
-                     Minimum(sigmaYMin, TMath::MinElement(grVSigmas[i].GetN(), grVSigmas[i].GetY()));
-                  sigmaYMax = 
-                     Maximum(sigmaYMax, TMath::MaxElement(grVSigmas[i].GetN(), grVSigmas[i].GetY()));
+                  meanYMin = Minimum(meanYMin, TMath::MinElement(grVMeansVsPT[i].GetN(), 
+                                                                 grVMeansVsPT[i].GetY()));
+                  meanYMax = Maximum(meanYMax, TMath::MaxElement(grVMeansVsPT[i].GetN(), 
+                                                                 grVMeansVsPT[i].GetY()));
+                  sigmaYMin = Minimum(sigmaYMin, TMath::MinElement(grVSigmasVsPT[i].GetN(), 
+                                                                   grVSigmasVsPT[i].GetY()));
+                  sigmaYMax = Maximum(sigmaYMax, TMath::MaxElement(grVSigmasVsPT[i].GetN(), 
+                                                                   grVSigmasVsPT[i].GetY()));
 
                   const Json::Value zDCBin = calibrationInput["zdc_bins"][static_cast<int>(i)];
                   
-                  grVMeans[i].SetMarkerStyle(zDCBin["marker_style"].asInt());
-                  grVMeans[i].SetMarkerSize(1.4);
-                  grVMeans[i].SetMarkerColorAlpha(zDCBin["color"].asInt(), 0.8);
-                  grVMeans[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.8);
-                  fVMeans[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.9);
-                  fVMeans[i].SetLineStyle(3);
+                  grVMeansVsPT[i].SetMarkerStyle(zDCBin["marker_style"].asInt());
+                  grVMeansVsPT[i].SetMarkerSize(1.4);
+                  grVMeansVsPT[i].SetMarkerColorAlpha(zDCBin["color"].asInt(), 0.8);
+                  grVMeansVsPT[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.8);
+                  fVMeansVsPT[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.9);
+                  fVMeansVsPT[i].SetLineStyle(3);
                   
-                  grVSigmas[i].SetMarkerStyle(zDCBin["marker_style"].asInt());
-                  grVSigmas[i].SetMarkerSize(1.4);
-                  grVSigmas[i].SetMarkerColorAlpha(zDCBin["color"].asInt(), 0.8);
-                  grVSigmas[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.8);
-                  fVSigmas[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.9);
-                  fVSigmas[i].SetLineStyle(2);
+                  grVSigmasVsPT[i].SetMarkerStyle(zDCBin["marker_style"].asInt());
+                  grVSigmasVsPT[i].SetMarkerSize(1.4);
+                  grVSigmasVsPT[i].SetMarkerColorAlpha(zDCBin["color"].asInt(), 0.8);
+                  grVSigmasVsPT[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.8);
+                  fVSigmasVsPT[i].SetLineColorAlpha(zDCBin["color"].asInt(), 0.9);
+                  fVSigmasVsPT[i].SetLineStyle(2);
+
+                  for (int j = 0; j < grVMeansVsPT[i].GetN(); j++)
+                  {
+                     distrVMeansVsCentralityVsPT[iZDCBin].
+                        SetBinContent(iCentralityBin + 1, 
+                                      distrVMeansVsCentralityVsPT[iZDCBin].GetYaxis()->
+                                      FindBin(grVMeansVsPT[i].GetPointX(j)), 
+                                      grVMeansVsPT[i].GetPointY(j));
+                     distrVSigmasVsCentralityVsPT[iZDCBin].
+                        SetBinContent(iCentralityBin + 1, 
+                                      distrVSigmasVsCentralityVsPT[iZDCBin].GetYaxis()->
+                                      FindBin(grVSigmasVsPT[i].GetPointX(j)), 
+                                      grVSigmasVsPT[i].GetPointY(j));
+                  }
                }
                
                TCanvas canv("", "", 800, 800);
+               canv.cd();
                
                TLegend legend{0.15, 0.7, 0.88, 0.89};
                legend.SetNColumns(3);
                legend.SetLineColorAlpha(0, 0.);
                legend.SetFillColorAlpha(0, 0.);
                
-
                gPad->SetLeftMargin(0.135);
                
                TH1 *meansFrame = 
@@ -306,9 +358,9 @@ int main(int argc, char **argv)
                      "<z_{DC}<" + 
                      calibrationInput["zdc_bins"][static_cast<int>(i)]["max"].asString();
                   
-                  legend.AddEntry(&grVMeans[i], zDCRangeName.c_str(), "P");
-                  grVMeans[i].Clone()->Draw("SAME P");
-                  fVMeans[i].Clone()->Draw("SAME");
+                  legend.AddEntry(&grVMeansVsPT[i], zDCRangeName.c_str(), "P");
+                  grVMeansVsPT[i].Clone()->Draw("SAME P");
+                  fVMeansVsPT[i].Clone()->Draw("SAME");
                }
 
                legend.DrawClone();
@@ -339,9 +391,9 @@ int main(int argc, char **argv)
                      "<z_{DC}<" + 
                      calibrationInput["zdc_bins"][static_cast<int>(i)]["max"].asString();
                   
-                  legend.AddEntry(&grVSigmas[i], zDCRangeName.c_str(), "P");
-                  grVSigmas[i].Clone()->Draw("SAME P");
-                  fVSigmas[i].Clone()->Draw("SAME");
+                  legend.AddEntry(&grVSigmasVsPT[i], zDCRangeName.c_str(), "P");
+                  grVSigmasVsPT[i].Clone()->Draw("SAME P");
+                  fVSigmasVsPT[i].Clone()->Draw("SAME");
                }
 
                legend.DrawClone();
@@ -359,34 +411,42 @@ int main(int argc, char **argv)
                
                parCanv.cd(1);
                gPad->SetRightMargin(0.13);
-               meansDistr.GetXaxis()->SetTitle(variable["tex_name"].asCString());
-               meansDistr.GetYaxis()->SetTitle("p_{T}");
-               meansDistr.Draw("COLZ");
+               distrMeansVsZDCVsPT.GetXaxis()->SetTitle(variable["tex_name"].asCString());
+               distrMeansVsZDCVsPT.GetYaxis()->SetTitle("p_{T}");
+               distrMeansVsZDCVsPT.Draw("COLZ");
 
                parCanv.cd(2);
                gPad->SetRightMargin(0.13);
-               sigmasDistr.GetXaxis()->SetTitle(variable["tex_name"].asCString());
-               sigmasDistr.GetYaxis()->SetTitle("p_{T}");
-               sigmasDistr.Draw("COLZ");
+               distrSigmasVsZDCVsPT.GetXaxis()->SetTitle(variable["tex_name"].asCString());
+               distrSigmasVsZDCVsPT.GetYaxis()->SetTitle("p_{T}");
+               distrSigmasVsZDCVsPT.Draw("COLZ");
 
                parCanv.cd(3);
                gPad->SetLogz();
                gPad->SetRightMargin(0.13);
-               meansDiffDistr.GetXaxis()->SetTitle(variable["tex_name"].asCString());
-               meansDiffDistr.GetYaxis()->SetTitle("p_{T}");
-               meansDiffDistr.Draw("COLZ");
+               distrMeansDiffVsZDCVsPT.GetXaxis()->SetTitle(variable["tex_name"].asCString());
+               distrMeansDiffVsZDCVsPT.GetYaxis()->SetTitle("p_{T}");
+               distrMeansDiffVsZDCVsPT.Draw("COLZ");
 
                parCanv.cd(4);
                gPad->SetLogz();
                gPad->SetRightMargin(0.13);
-               sigmasDiffDistr.GetXaxis()->SetTitle(variable["tex_name"].asCString());
-               sigmasDiffDistr.GetYaxis()->SetTitle("p_{T}");
-               sigmasDiffDistr.Draw("COLZ");
+               distrSigmasDiffVsZDCVsPT.GetXaxis()->SetTitle(variable["tex_name"].asCString());
+               distrSigmasDiffVsZDCVsPT.GetYaxis()->SetTitle("p_{T}");
+               distrSigmasDiffVsZDCVsPT.Draw("COLZ");
                
                PrintCanvas(&parCanv, outputDir + detectorName + 
                            "/fitPar_" + variable["name"].asString() + "_" + 
                            particleType["name_short"].asString() + 
                            centralityRangePathName);
+               
+               iCentralityBin++;
+            }
+
+            for (unsigned long i = 0; i < distrVMeansVsCentralityVsPT.size(); i++)
+            {
+               distrVMeansVsCentralityVsPT[i].Write();
+               distrVSigmasVsCentralityVsPT[i].Write();
             }
          }
       }
