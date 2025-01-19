@@ -112,9 +112,6 @@ int main(int argc, char **argv)
             
             std::vector<TH2D> distrVMeansVsCentralityVsPT, distrVSigmasVsCentralityVsPT;
             
-            distrVMeansVsCentralityVsPT.resize(calibrationInput["zdc_bins"].size());
-            distrVSigmasVsCentralityVsPT.resize(calibrationInput["zdc_bins"].size());
-            
             for (const Json::Value& zDCBin : calibrationInput["zdc_bins"])
             {
                const std::string zDCRangeName = zDCBin["min"].asString() + "<zDC<" + 
@@ -288,7 +285,7 @@ int main(int argc, char **argv)
                double meanYMin = 1e31, meanYMax = -1e31;
                double sigmaYMin = 1e31, sigmaYMax = -1e31;
                
-               for (unsigned long i = 0; i < grVMeansVsPT.size(); i++)
+               for (unsigned long i = 0; i < calibrationInput["zdc_bins"].size(); i++)
                {
                   meanYMin = Minimum(meanYMin, TMath::MinElement(grVMeansVsPT[i].GetN(), 
                                                                  grVMeansVsPT[i].GetY()));
@@ -317,14 +314,14 @@ int main(int argc, char **argv)
 
                   for (int j = 0; j < grVMeansVsPT[i].GetN(); j++)
                   {
-                     distrVMeansVsCentralityVsPT[iZDCBin].
+                     distrVMeansVsCentralityVsPT[i].
                         SetBinContent(iCentralityBin + 1, 
-                                      distrVMeansVsCentralityVsPT[iZDCBin].GetYaxis()->
+                                      distrVMeansVsCentralityVsPT[i].GetYaxis()->
                                       FindBin(grVMeansVsPT[i].GetPointX(j)), 
                                       grVMeansVsPT[i].GetPointY(j));
-                     distrVSigmasVsCentralityVsPT[iZDCBin].
+                     distrVSigmasVsCentralityVsPT[i].
                         SetBinContent(iCentralityBin + 1, 
-                                      distrVSigmasVsCentralityVsPT[iZDCBin].GetYaxis()->
+                                      distrVSigmasVsCentralityVsPT[i].GetYaxis()->
                                       FindBin(grVSigmasVsPT[i].GetPointX(j)), 
                                       grVSigmasVsPT[i].GetPointY(j));
                   }
@@ -451,6 +448,7 @@ int main(int argc, char **argv)
          }
       }
       outputFile.Close();
+      break;
    }
    pBar.Print(1.);
 }
