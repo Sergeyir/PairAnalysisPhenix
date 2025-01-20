@@ -5,6 +5,7 @@ backup/
 __pycache__
 tmp/
 
+output
 *:w
 *.pyc
 __*
