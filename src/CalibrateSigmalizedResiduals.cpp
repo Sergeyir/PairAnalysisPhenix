@@ -448,7 +448,7 @@ int main(int argc, char **argv)
          }
       }
       outputFile.Close();
-      break;
+      //break;
    }
    pBar.Print(1.);
 }
@@ -617,10 +617,20 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
          {
             for (int k = 0; k < fitFuncDVal.GetNpar(); k++)
             {
-               fitFuncDVal.SetParLimits(k, fitFuncDVal.GetParameter(k)/
-                                        (1. + 1./static_cast<double>(j)),
-                                        fitFuncDVal.GetParameter(k)*
-                                        (1. + 1./static_cast<double>(j)));
+               if (k != 2) // sigmas cannot be negative 
+               {
+                  fitFuncDVal.SetParLimits(k, fitFuncDVal.GetParameter(k)*
+                                           (1. - 5./static_cast<double>(j*j)),
+                                           fitFuncDVal.GetParameter(k)*
+                                           (1. + 5./static_cast<double>(j*j)));
+               }
+               else
+               {
+                  fitFuncDVal.SetParLimits(k, fitFuncDVal.GetParameter(k)/
+                                           (1. + 5./static_cast<double>(j*j)),
+                                           fitFuncDVal.GetParameter(k)*
+                                           (1. + 5./static_cast<double>(j*j)));
+               }
             }
             
             distrVariableProj->Fit(&fitFuncDVal, "RQMBN");
@@ -655,7 +665,8 @@ void PerformFits(TH3F *hist, TGraphErrors &grMeans, TGraphErrors &grSigmas,
              fabs(fitFuncDVal.GetParameter(2)) < variable["abs_max_fit_val"].asDouble())
          {
             grMeans.AddPoint(pT, fitFuncDVal.GetParameter(1));
-            grSigmas.AddPoint(pT, fitFuncDVal.GetParameter(2));
+            grSigmas.AddPoint(pT, fabs(fitFuncDVal.GetParameter(2)));
+            
             //grMeans.SetPointError(grMeans.GetN() - 1, 0, fitFuncDVal.GetParError(1));
             //grSigmas.SetPointError(grSigmas.GetN() - 1, 0, fitFuncDVal.GetParError(2));
          }
