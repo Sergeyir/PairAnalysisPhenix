@@ -181,8 +181,8 @@ Double_t EffTreeReader::etof(Int_t i) {return (*b_etof)[i];}
 //TOFw
 Double_t EffTreeReader::tofwdz(Int_t i) {return (*b_tofwdz)[i];}
 Double_t EffTreeReader::tofwdphi(Int_t i) {return (*b_tofwdphi)[i];}
-Double_t EffTreeReader::ptofwy(Int_t i) {return (*b_ptofy)[i];}
-Double_t EffTreeReader::ptofwz(Int_t i) {return (*b_ptofz)[i];}
+Double_t EffTreeReader::ptofwy(Int_t i) {return (*b_ptofwy)[i];}
+Double_t EffTreeReader::ptofwz(Int_t i) {return (*b_ptofwz)[i];}
 Double_t EffTreeReader::ttofw(Int_t i) {return (*b_ttofw)[i];}
 Double_t EffTreeReader::pltofw(Int_t i) {return (*b_pltofw)[i];}
 Double_t EffTreeReader::striptofw(Int_t i) {return (*b_striptofw)[i];}

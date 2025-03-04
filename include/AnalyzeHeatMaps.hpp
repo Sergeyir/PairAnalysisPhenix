@@ -110,20 +110,20 @@ struct ThrContainer
                    400, 0., 80., 195, -0.39, 0.39);
 
    ThrObj<TH2F> heatmapPC1e = 
-      ThrObj<TH2F>("Heatmap: PC1e", "pc1z vs pc1phi", 360, -90., 90.,170, 2.05, 3.75);
+      ThrObj<TH2F>("Heatmap: PC1e", "pc1z vs pc1phi", 380, -95., 95., 170, 2.05, 3.75);
    ThrObj<TH2F> heatmapPC1w = 
-      ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 360, -90., 90., 160, -0.6, 1.05);
+      ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 380, -95., 95., 165, -0.6, 1.05);
 
    ThrObj<TH2F> heatmapPC2 = ThrObj<TH2F>
-      ("Heatmap: PC2", "pc3z vs pc3phi", 320, -160., 160., 330, -0.6, 1.05);
+      ("Heatmap: PC2", "pc3z vs pc3phi", 330, -165., 165., 165, -0.6, 1.05);
 
    ThrObj<TH2F> heatmapPC3e = ThrObj<TH2F>
-      ("Heatmap: PC3e", "pc3z vs pc3phi", 380, -190., 190., 170, 2.1, 3.8);
+      ("Heatmap: PC3e", "pc3z vs pc3phi", 390, -195., 195., 170, 2.1, 3.8);
    ThrObj<TH2F> heatmapPC3w = ThrObj<TH2F>
-      ("Heatmap: PC3w", "pc3z vs pc3phi", 380, -190., 190., 170, -0.65, 1.05);
+      ("Heatmap: PC3w", "pc3z vs pc3phi", 390, -195., 195., 170, -0.65, 1.05);
 
    ThrObj<TH2F> heatmapTOFe = 
-      ThrObj<TH2F>("Heatmap: TOFe", "ptofy vs ptofz", 185, -280., 90., 195, -195., 195.);
+      ThrObj<TH2F>("Heatmap: TOFe", "ptofy vs ptofz", 185, -280., 90., 200, -200., 200.);
 
    ThrObj<TH2F> heatmapTOFw0 = 
       ThrObj<TH2F>("Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 90, -55., 35., 195, -195., 195.);
@@ -132,20 +132,35 @@ struct ThrContainer
 
    std::array<ThrObj<TH2F>, 4> heatmapEMCale = 
    {
-      ThrObj<TH2F>("Heatmap: EMCale0", "pemcy vs pemcz", 200, -300., -90., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCale1", "pemcy vs pemcz", 200, -110., 110., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCale2", "pemcy vs pemcz", 200, 90., 300., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCale3", "pemcy vs pemcz", 200, 280., 440., 205, -205., 205.)
+      ThrObj<TH2F>("Heatmap: EMCale0", "pemcy vs pemcz", 200, -295., -95., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale1", "pemcy vs pemcz", 210, -105., 105., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale2", "pemcy vs pemcz", 210, 95., 305., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCale3", "pemcy vs pemcz", 160, 280., 440., 205, -205., 205.)
    };
 
    std::array<ThrObj<TH2F>, 4> heatmapEMCalw = 
    {
-      ThrObj<TH2F>("Heatmap: EMCalw0", "pemcy vs pemcz", 200, -300., -90., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 200, -110., 110., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 200, 90., 300., 205, -205., 205.),
-      ThrObj<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 200, 280., 440., 205, -205., 205.)
+      ThrObj<TH2F>("Heatmap: EMCalw0", "pemcy vs pemcz", 200, -295., -95., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 210, -105., 105., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 210, 95., 305., 205, -205., 205.),
+      ThrObj<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 160, 280., 440., 205, -205., 205.)
    };
 
+   std::array<ThrObj<TH2F>, 4> distrECoreVsPTEMCale = 
+   {
+      ThrObj<TH2F>("Ecore vs pT: EMCale0", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCale1", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCale2", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCale3", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.)
+   };
+
+   std::array<ThrObj<TH2F>, 4> distrECoreVsPTEMCalw = 
+   {
+      ThrObj<TH2F>("Ecore vs pT: EMCalw0", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCalw1", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCalw2", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.),
+      ThrObj<TH2F>("Ecore vs pT: EMCalw3", "E_{core} vs p_{T}", 200, 0., 10., 200, 0., 5.)
+   };
 
    ThrObj<TH1F> distrStripTOFw = ThrObj<TH1F>
       ("strip: TOFw", "strip number", 512, 0., 512.);

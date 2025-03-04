@@ -76,7 +76,7 @@ void DataMethodsSelector::Init(const std::string& datasetName, bool printInfo)
    }
    else 
    {
-      PrintError("Dataset name " + datasetName + " is not defined in DataMethodsSelector");
+      CppTools::PrintError("Dataset name " + datasetName + " is not defined in DataMethodsSelector");
    }
 }
 

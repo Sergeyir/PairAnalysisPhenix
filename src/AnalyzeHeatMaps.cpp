@@ -22,35 +22,42 @@
 
 void Parameters::Init(const std::string inputFileName, const int nThr)
 {
-   CheckInputFile(inputFileName);
+   CppTools::CheckInputFile(inputFileName);
    
    numberOfThreads = nThr;
    
-   std::ifstream inputJSON(inputFileName.c_str(), std::ifstream::binary);
-   Json::Value inputJSONContents;
-   inputJSON >> inputJSONContents;
+   std::ifstream simInputJSON(inputFileName.c_str(), std::ifstream::binary);
+   Json::Value simInputJSONContents;
+   simInputJSON >> simInputJSONContents;
 
-   collisionSystemName = inputJSONContents["COLLISION_SYSTEM"]["name"].asString();
-   runName = inputJSONContents["RUN"]["name"].asString();
+   runName = simInputJSONContents["run_name"].asString();
 
-   for (auto particle : inputJSONContents["SIM"]["HEATMAPS"]["particles"])
+   std::ifstream mainInputJSON("input/" + runName + "/main.json", std::ifstream::binary);
+   Json::Value mainInputJSONContents;
+   mainInputJSON >> mainInputJSONContents;
+
+   collisionSystemName = mainInputJSONContents["collision_system_name"].asString();
+
+   for (auto particle : simInputJSONContents["single_track"]["particles"])
    {
       partQueue.push_back(particle["name"].asString());
    }
-   for (auto magf : inputJSONContents["RUN"]["magnetic_field"])
+   for (auto magf : simInputJSONContents["single_track"]["magnetic_field_configurations"])
    {
       magfQueue.push_back(magf["name"].asString());
    }
-   for (auto pTRange : inputJSONContents["SIM"]["HEATMAPS"]["pt_ranges"])
+   for (auto pTRange : simInputJSONContents["single_track"]["pt_ranges"])
    {
       pTRangeQueue.push_back(pTRange["name"].asString());
    }
 
-   pTMin = inputJSONContents["SIM"]["pt_min"].asDouble();
-   pTMax = inputJSONContents["SIM"]["pt_max"].asDouble();
+   pTMin = simInputJSONContents["single_track"]["pt_min"].asDouble();
+   pTMax = simInputJSONContents["single_track"]["pt_max"].asDouble();
 
-   reweightForSpectra = inputJSONContents["SIM"]["HEATMAPS"]["reweight_for_spectra"].asBool();
-   reweightForAlpha = inputJSONContents["SIM"]["HEATMAPS"]["reweight_for_alpha"].asBool();
+   reweightForSpectra = 
+      simInputJSONContents["single_track"]["heatmaps_options"]["reweight_for_spectra"].asBool();
+   reweightForAlpha = 
+      simInputJSONContents["single_track"]["heatmaps_options"]["reweight_for_alpha"].asBool();
 
    dms.Init(runName);
 }
@@ -60,8 +67,8 @@ Parameters Par;
 TH2F *GetDCHeatmap(TFile *file, const std::string& histName)
 {
    TH2F *hist = (TH2F *) file->Get(histName.c_str());
-   if (!hist) PrintError("Histogram " + histName + " does not exist in file " + 
-                         (std::string) file->GetName());
+   if (!hist) CppTools::PrintError("Histogram " + histName + " does not exist in file " + 
+                                   (std::string) file->GetName());
    // ROOT things to make histograms to not be automaticaly deleted when the file is closed
    hist->SetDirectory(0);
    return hist;
@@ -72,27 +79,27 @@ void CheckHistsAxis(TH2F *hist1, TH2F *hist2)
    // heatmaps from real data and sim are required to have the same axis ranges and number of bins
    if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
    {
-      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                 (std::string) hist2->GetName() + "\" have different number of bins on X axis");
+      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                           (std::string) hist2->GetName() + "\" have different number of bins on X axis");
    }
    if (hist1->GetYaxis()->GetNbins() != hist2->GetYaxis()->GetNbins())
    {
-      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                 (std::string) hist2->GetName() + "\" have different number of bins on Y axis");
+      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                           (std::string) hist2->GetName() + "\" have different number of bins on Y axis");
    }
    if (fabs(hist1->GetXaxis()->GetBinLowEdge(1) - hist2->GetXaxis()->GetBinLowEdge(1)) > 1e-7 ||
        fabs(hist1->GetXaxis()->GetBinLowEdge(hist1->GetXaxis()->GetNbins()) - 
             hist2->GetXaxis()->GetBinLowEdge(hist2->GetXaxis()->GetNbins())) > 1e-7)
    {
-      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                 (std::string) hist2->GetName() + "\" have different ranges on X axis");
+      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                           (std::string) hist2->GetName() + "\" have different ranges on X axis");
    }
    if (fabs(hist1->GetYaxis()->GetBinLowEdge(1) - hist2->GetYaxis()->GetBinLowEdge(1)) > 1e-7 ||
        fabs(hist1->GetYaxis()->GetBinLowEdge(hist1->GetYaxis()->GetNbins()) - 
             hist2->GetYaxis()->GetBinLowEdge(hist2->GetYaxis()->GetNbins())) > 1e-7)
    {
-      PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                 (std::string) hist2->GetName() + "\" have different ranges on Y axis");
+      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
+                           (std::string) hist2->GetName() + "\" have different ranges on Y axis");
    }
 }
 
@@ -124,8 +131,11 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
    if (Par.reweightForSpectra)
    {
       TH1F *centrHist = (TH1F *) realDataFile.Get("centrality");
-      if (!centrHist) PrintError((std::string) "Histogram \"centrality\" does not exist in file" + 
-                                 realDataFile.GetName());
+      if (!centrHist) 
+      {
+         CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
+                              static_cast<std::string>(realDataFile.GetName()));
+      }
       
       eventNormWeight = origPtHist->Integral(
          origPtHist->GetXaxis()->FindBin(Par.pTMin), 
@@ -162,7 +172,7 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       }
    }
    
-   ROOT::EnableImplicitMT(Par.numberOfThreads);
+   ROOT::EnableImplicitMT();
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
    
    auto ProcessMP = [&](TTreeReader &reader)
@@ -188,6 +198,8 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       std::shared_ptr<TH2F> heatmapPC3w = thrContainer->heatmapPC3w.Get();
       
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale, heatmapEMCalw;
+
+      std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCale, distrECoreVsPTEMCalw;
       
       std::shared_ptr<TH1F> distrStripTOFw = thrContainer->distrStripTOFw.Get();
       std::shared_ptr<TH1F> distrSlatTOFe = thrContainer->distrSlatTOFe.Get();
@@ -202,6 +214,8 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
       {
          heatmapEMCale[i] = thrContainer->heatmapEMCale[i].Get();
          heatmapEMCalw[i] = thrContainer->heatmapEMCalw[i].Get();
+         distrECoreVsPTEMCale[i] = thrContainer->distrECoreVsPTEMCale[i].Get();
+         distrECoreVsPTEMCalw[i] = thrContainer->distrECoreVsPTEMCalw[i].Get();
       }
    
       EffTreeReader T(reader);
@@ -371,18 +385,19 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
                if (IsMatch(Par.dms.GetEMCSDPhi(phi, T.emcdphi(i), pT, charge, T.sect(i)), 
                            Par.dms.GetEMCSDZ(phi, T.emcdz(i), pT, charge, T.sect(i)), 2., 2.))
                {   
-                  if (T.ecore(i) > 0.25)
+
+                  if (phi > M_PI/2.) distrECoreVsPTEMCale[T.sect(i)]->Fill(pT, T.ecore(i));
+                  else distrECoreVsPTEMCalw[T.sect(i)]->Fill(pT, T.ecore(i));
+
+                  if (phi > M_PI/2.) 
                   {
-                     if (phi > M_PI/2.) 
-                     {
-                        heatmapEMCale[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
-                                                     T.ecore(i)*particleWeight);
-                     }
-                     else
-                     {   
-                        heatmapEMCalw[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
-                                                     T.ecore(i)*particleWeight);
-                     }
+                     heatmapEMCale[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
+                                                  T.ecore(i)*particleWeight);
+                  }
+                  else
+                  {   
+                     heatmapEMCalw[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
+                                                  T.ecore(i)*particleWeight);
                   }
                }
             }
@@ -402,7 +417,7 @@ int main(int argc, char **argv)
       const std::string errMsg = 
          "Expected 1-2 parameters while " + std::to_string(argc) + 
          " parameter(s) were provided \n Usage: bin/AnalyzeHeatMaps inputJSONName numberOfThreads=std::thread::hardware_concurrency()";
-      PrintError(errMsg);
+      CppTools::PrintError(errMsg);
    }
    
    if (argc == 2) Par.Init(argv[1], std::thread::hardware_concurrency());
@@ -412,26 +427,26 @@ int main(int argc, char **argv)
    {
       for (std::string part : Par.partQueue)
       {
-         CheckInputFile("data/Spectra/" + Par.collisionSystemName + "/" + part + "Fit.json");
+         CppTools::CheckInputFile("data/Spectra/" + Par.collisionSystemName + "/" + part + "Fit.json");
       }
    }
    
    for (std::string magf : Par.magfQueue)
    {
-      CheckInputFile("data/Real/" + Par.runName + "/SingleTrack/sum" + magf + ".root");
+      CppTools::CheckInputFile("data/Real/" + Par.runName + "/SingleTrack/sum" + magf + ".root");
       for (std::string part : Par.partQueue)
       {
          for (std::string pTRange : Par.pTRangeQueue)
          {
             const std::string simInputFileName = "data/SimTrees/" + Par.runName + 
                "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
-            CheckInputFile(simInputFileName);
+            CppTools::CheckInputFile(simInputFileName);
             const unsigned long numberOfEvents = 
                static_cast<unsigned long>(((TTree *) TFile::Open(simInputFileName.c_str())->
                                                         Get("Tree"))->GetEntries());
             if (numberOfEvents <= 0)
             {
-               PrintError("Number of events is equal or less than 0 in file " + simInputFileName);
+               CppTools::PrintError("Number of events is equal or less than 0 in file " + simInputFileName);
             }
             Par.numberOfEvents += numberOfEvents;
          }
@@ -443,9 +458,9 @@ int main(int argc, char **argv)
       std::string realDataInputFileName = "data/Real/" + Par.runName + "/SingleTrack/sum.root";
       std::string alphaReweightInputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/all.root";
       
-      CheckInputFile(realDataInputFileName);
+      CppTools::CheckInputFile(realDataInputFileName);
       
-      if (CheckInputFile(alphaReweightInputFileName, false)) 
+      if (CppTools::CheckInputFile(alphaReweightInputFileName, false)) 
       {
          TFile realDataInputFile(realDataInputFileName.c_str());
          TFile alphaReweightInputFile(alphaReweightInputFileName.c_str());
@@ -572,20 +587,20 @@ int main(int argc, char **argv)
          Par.alphaReweightDCw1->SetDirectory(0);
          
          alphaReweightOutputFile.Close();
-         PrintInfo("File " + alphaReweightOutputFileName + " was written");
+         CppTools::PrintInfo("File " + alphaReweightOutputFileName + " was written");
       }
       else 
       {
-         PrintInfo("alpha reweight is now disabled");
+         CppTools::PrintInfo("alpha reweight is now disabled");
          Par.reweightForAlpha = false;
       }
    }
 
-   PrintInfo("Clearing output directory: data/PostSim/" + Par.runName + "/Heatmaps/");
+   CppTools::PrintInfo("Clearing output directory: data/PostSim/" + Par.runName + "/Heatmaps/");
    system(("mkdir -p data/PostSim/" + Par.runName + "/Heatmaps").c_str());
    system(("rm -r data/PostSim/" + Par.runName + "/Heatmaps/*").c_str());
 
-   Box box = Box("Parameters");
+   CppTools::Box box{"Parameters"};
    
    box.AddEntry("Run name", Par.runName);
    box.AddEntry("Particles list", Par.partQueue);
@@ -643,7 +658,7 @@ int main(int argc, char **argv)
    isProcessFinished = true;
    pBarThread.join();
 
-   PrintInfo("Merging output files into one");
+   CppTools::PrintInfo("Merging output files into one");
 
    system(("hadd -f data/PostSim/" + 
            Par.runName + "/Heatmaps/all.root data/PostSim/" + 

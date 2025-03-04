@@ -217,11 +217,6 @@ AnalyzeResonance: src/AnalyzeResonance.cpp all_libs bin
 	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
 	$(ALL_INCLUDE) $(ALL_LIB)
 
-CalibrateSigmalizedResiduals: src/CalibrateSigmalizedResiduals.cpp all_libs bin
-	@$(ECHO) Building CXX executable $@
-	$(CXX) $< $(CXX_COMMON_EXE) -o bin/$@ \
-	$(ALL_INCLUDE) $(ALL_LIB)
-
 # other
 
 bin:

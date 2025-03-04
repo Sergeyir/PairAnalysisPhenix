@@ -33,7 +33,7 @@ void InputJSONReader::OpenFile(const std::string& inputFileOrDir, const std::str
    const std::filesystem::path inputFilePath(inputFileOrDir);
    if (std::filesystem::is_directory(inputFilePath))
    {
-      if (inputType == "") PrintError("InputJSONReader::OpenFile: File type was not specified");
+      if (inputType == "") CppTools::PrintError("InputJSONReader::OpenFile: File type was not specified");
       inputFileName = inputFileOrDir + "/" + inputType + ".json";
    }
    else
@@ -43,12 +43,12 @@ void InputJSONReader::OpenFile(const std::string& inputFileOrDir, const std::str
       
       if (fileExt != ".json") 
       {
-         PrintError("InputJSONReader::OpenFile: Input file must have .json extention.");
+         CppTools::PrintError("InputJSONReader::OpenFile: Input file must have .json extention.");
       }
       inputFileName = inputFileOrDir;
    }
 
-   CheckInputFile(inputFileName);
+   CppTools::CheckInputFile(inputFileName);
    
    inputFile.open(inputFileName.c_str(), std::ifstream::binary);
    inputFile >> inputFileContents;
@@ -58,7 +58,7 @@ void InputJSONReader::CheckStatus(const std::string& status)
 {
    if (inputFileContents["status"].asString() != status)
    {
-      PrintError("Status mismatch in file " + inputFileName + ": " +
+      CppTools::PrintError("Status mismatch in file " + inputFileName + ": " +
                  inputFileContents["status"].asString() + " vs " + status);
    }
 }
