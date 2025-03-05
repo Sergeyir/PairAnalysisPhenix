@@ -167,7 +167,7 @@ void DrawDM(bool is_fixed_range = false)
             const double y1Cut = Pol1(CutMode.shiftY1[k], CutMode.tanAlpha1[k], valX);
             const double y2Cut = Pol1(CutMode.shiftY2[k], CutMode.tanAlpha2[k], valX);
             
-				if (valY > Minimum(y1Cut, y2Cut) && valY < Maximum(y1Cut, y2Cut)) 
+				if (valY > CppTools::Minimum(y1Cut, y2Cut) && valY < CppTools::Maximum(y1Cut, y2Cut)) 
             {
 					Par.realHistDM->SetBinContent(Par.realHistDM->GetBin(i, j), 0.);
 					if (Par.useSimHist) Par.simHistDM->SetBinContent(Par.simHistDM->GetBin(i, j), 0.);
@@ -204,17 +204,17 @@ void DrawDM(bool is_fixed_range = false)
 	gPad->Update();
    gPad->GetFrame()->SetBit(TBox::kCannotMove);
 
-	PrintInfo("Real data lost " + 
+   CppTools::PrintInfo("Real data lost " + 
              to_string((1. - Par.realHistDM->Integral()/Par.origIntegral)*100.) + "\%");
    
    if (Par.useSimHist)
    {
-      PrintInfo("Sim data lost " + 
+      CppTools::PrintInfo("Sim data lost " + 
                 to_string((1. - Par.realHistDM->Integral()/Par.origIntegral)*100.) + "\%");
    }
 }
 
-void SetTLineStyle(TLine *line, const EColor color=kRed)
+void SetTLineStyle(TLine *line, const color_t color=kRed)
 {
 	line->SetLineColor(color);
 	line->SetLineStyle(2);
@@ -416,7 +416,7 @@ void exec()
 					
 					Par.isMin[0] = false;
 
-					PrintInfo("Setting the first point");	
+               CppTools::PrintInfo("Setting the first point");	
 				}
 				else
 				{
@@ -451,7 +451,7 @@ void exec()
 					}
 
 					Par.isMin[0] = true;
-					PrintInfo("Setting the second point");
+               CppTools::PrintInfo("Setting the second point");
 					if (Par.isMin[0]) DrawDM(true);
 				}
 				break;
@@ -463,7 +463,7 @@ void exec()
 					
 					Par.isMin[1] = false;
 
-					PrintInfo("Setting the first line");	
+               CppTools::PrintInfo("Setting the first line");	
 				}
 				else
 				{
@@ -483,7 +483,7 @@ void exec()
 					}
 
 					Par.isMin[1] = true;
-					PrintInfo("Setting the second point");
+               CppTools::PrintInfo("Setting the second point");
 					if (Par.isMin[1]) DrawDM(true);
 				}
 				break;
@@ -495,7 +495,7 @@ void exec()
 					
 					Par.isMin[2] = false;
 
-					PrintInfo("Setting the first line");	
+               CppTools::PrintInfo("Setting the first line");	
 				}
 				else
 				{
@@ -515,7 +515,7 @@ void exec()
 					}
 
 					Par.isMin[2] = true;
-					PrintInfo("Setting the second point");
+               CppTools::PrintInfo("Setting the second point");
 					if (Par.isMin[2]) DrawDM(true);
 				}
 				break;
@@ -528,7 +528,7 @@ void exec()
 					
 					Par.isMin[3] = false;
 
-					PrintInfo("Setting the first point");	
+               CppTools::PrintInfo("Setting the first point");	
 				}
 				else
 				{
@@ -563,7 +563,7 @@ void exec()
 					}
 
 					Par.isMin[3] = true;
-					PrintInfo("Setting the second point");
+               CppTools::PrintInfo("Setting the second point");
 					if (Par.isMin[3]) DrawDM(true);
 				}
 				break;
@@ -578,7 +578,7 @@ void exec()
                      GetBinLowEdge(Par.realHist->GetYaxis()->FindBin(y)));
                   
                   Par.isMin[4] = false;
-                  PrintInfo("Setting the first point of the first line");	
+                  CppTools::PrintInfo("Setting the first point of the first line");	
                }
                else
                {
@@ -588,7 +588,7 @@ void exec()
                      GetBinLowEdge(Par.realHist->GetYaxis()->FindBin(y)));
 
                   Par.isMin[4] = false;
-                  PrintInfo("Setting the second point of the first line");	
+                  CppTools::PrintInfo("Setting the second point of the first line");	
                }
 				}
 				else
@@ -608,7 +608,7 @@ void exec()
                                             CutMode.angledLine1X2.back()*CutMode.tanAlpha1.back());
 
                   Par.isMin[4] = true;
-                  PrintInfo("Setting the second point of the first line");
+                  CppTools::PrintInfo("Setting the second point of the first line");
                   if (Par.isMin[4]) DrawDM(true);
                }
                else
@@ -626,7 +626,7 @@ void exec()
                                             CutMode.angledLine2X2.back()*CutMode.tanAlpha2.back());
                    
                   Par.isMin[4] = true;
-                  PrintInfo("Setting the second point of the second line");
+                  CppTools::PrintInfo("Setting the second point of the second line");
                   if (Par.isMin[4]) DrawDM(true);
                }
 				}
@@ -650,20 +650,20 @@ void exec()
                         CutMode.rectXMax.pop_back();
                         CutMode.rectYMax.pop_back();
 
-                        PrintInfo("Deleting last minimum and maximum points");
+                        CppTools::PrintInfo("Deleting last minimum and maximum points");
                      }
                      else
                      {
                         CutMode.rectXMin.pop_back();
                         CutMode.rectYMin.pop_back();
                            
-                        PrintInfo("Deleting last minimum point");
+                        CppTools::PrintInfo("Deleting last minimum point");
                      }
                      if (Par.isMin[0]) DrawDM(true);
                      Par.isMin[0] = true;
                      gPad->Update();
                   }
-                  else PrintInfo("Cannot delete last point since the current number of points is 0");
+                  else CppTools::PrintInfo("Cannot delete last point since the current number of points is 0");
                   break;
                
                case 1:
@@ -674,18 +674,18 @@ void exec()
                         CutMode.lineXMin.pop_back();
                         CutMode.lineXMax.pop_back();
 
-                        PrintInfo("Deleting last pair of lines");
+                        CppTools::PrintInfo("Deleting last pair of lines");
                      }
                      else
                      {
                         CutMode.lineXMin.pop_back();
-                        PrintInfo("Deleting last line");
+                        CppTools::PrintInfo("Deleting last line");
                      }
                      if (Par.isMin[1]) DrawDM(true);
                      Par.isMin[1] = true;
                      gPad->Update();
                   }
-                  else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
+                  else CppTools::PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
                   break;
                case 2:
                   if (CutMode.lineYMin.size() != 0)
@@ -695,18 +695,18 @@ void exec()
                         CutMode.lineYMin.pop_back();
                         CutMode.lineYMax.pop_back();
 
-                        PrintInfo("Deleting last pair of lines");
+                        CppTools::PrintInfo("Deleting last pair of lines");
                      }
                      else
                      {
                         CutMode.lineYMin.pop_back();
-                        PrintInfo("Deleting last line");
+                        CppTools::PrintInfo("Deleting last line");
                      }
                      if (Par.isMin[2]) DrawDM(true);
                      Par.isMin[2] = true;
                      gPad->Update();
                   }
-                  else PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
+                  else CppTools::PrintInfo("Cannot delete last line/lines since the current number of lines is 0");
                   break;
                case 3:
                   if (CutMode.invRectXMin.size() != 0)
@@ -718,20 +718,20 @@ void exec()
                         CutMode.invRectXMax.pop_back();
                         CutMode.invRectYMax.pop_back();
 
-                        PrintInfo("Deleting last minimum and maximum points");
+                        CppTools::PrintInfo("Deleting last minimum and maximum points");
                      }
                      else
                      {
                         CutMode.invRectXMin.pop_back();
                         CutMode.invRectYMin.pop_back();
                            
-                        PrintInfo("Deleting last minimum point");
+                        CppTools::PrintInfo("Deleting last minimum point");
                      }
                      if (Par.isMin[3]) DrawDM(true);
                      Par.isMin[3] = true;
                      gPad->Update();
                   }
-                  else PrintInfo("Cannot delete last point since the current number of points is 0");
+                  else CppTools::PrintInfo("Cannot delete last point since the current number of points is 0");
                   break;
                case 4:
                   if (CutMode.angledLine1X1.size() != 0)
@@ -747,14 +747,14 @@ void exec()
                            CutMode.tanAlpha1.pop_back();
                            CutMode.shiftY1.pop_back();
                            
-                           PrintInfo("Deleting last minimum and maximum points");
+                           CppTools::PrintInfo("Deleting last minimum and maximum points");
                         }
                         else
                         {
                            CutMode.angledLine1X1.pop_back();
                            CutMode.angledLine1Y1.pop_back();
                               
-                           PrintInfo("Deleting last minimum point");
+                           CppTools::PrintInfo("Deleting last minimum point");
                         }
                         if (Par.isMin[4]) DrawDM(true);
                         Par.isMin[4] = true;
@@ -771,28 +771,28 @@ void exec()
                            CutMode.tanAlpha2.pop_back();
                            CutMode.shiftY2.pop_back();
 
-                           PrintInfo("Deleting last minimum and maximum points");
+                           CppTools::PrintInfo("Deleting last minimum and maximum points");
                         }
                         else
                         {
                            CutMode.angledLine2X1.pop_back();
                            CutMode.angledLine2Y1.pop_back();
                               
-                           PrintInfo("Deleting last minimum point");
+                           CppTools::PrintInfo("Deleting last minimum point");
                         }
                      }
                      if (Par.isMin[4]) DrawDM(true);
                      Par.isMin[4] = true;
                      gPad->Update();
                   }
-                  else PrintInfo("Cannot delete last point since the current number of points is 0");
+                  else CppTools::PrintInfo("Cannot delete last point since the current number of points is 0");
                   break;
             }
             break;
             
          case 'r':
             DrawDM();
-            PrintInfo("Resetting the range of the selected area");
+            CppTools::PrintInfo("Resetting the range of the selected area");
             break;
             
          case 'p':
@@ -818,13 +818,13 @@ void exec()
             {
                for (unsigned long i = 0; i < CutMode.invRectXMax.size(); i++)
                {
-                  minXBin = Maximum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMin[i]), 
+                  minXBin = CppTools::Maximum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMin[i]), 
                                     minXBin);
-                  minYBin = Maximum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMin[i]), 
+                  minYBin = CppTools::Maximum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMin[i]), 
                                     minYBin);
-                  maxXBin = Minimum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMax[i]), 
+                  maxXBin = CppTools::Minimum(Par.realHist->GetXaxis()->FindBin(CutMode.invRectXMax[i]), 
                                     maxXBin);
-                  maxYBin = Minimum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMax[i]), 
+                  maxYBin = CppTools::Minimum(Par.realHist->GetYaxis()->FindBin(CutMode.invRectYMax[i]), 
                                     maxYBin);
                }
                minXBin++;
@@ -939,44 +939,44 @@ void exec()
             if (Par.useSimHist)
             {
                Par.isCurrentSim = !Par.isCurrentSim;
-               if (Par.isCurrentSim) PrintInfo("Showing sim histogram");
-               else PrintInfo("Showing real data histogram");
+               if (Par.isCurrentSim) CppTools::PrintInfo("Showing sim histogram");
+               else CppTools::PrintInfo("Showing real data histogram");
             }
             else
             {
-               PrintInfo("Cannot show sim histogram since the option for it was not specified");
+               CppTools::PrintInfo("Cannot show sim histogram since the option for it was not specified");
             }
             DrawDM();
             break;
          }
             
          case '0':
-            Print("Deactivating cutting mode");
+         CppTools::Print("Deactivating cutting mode");
             CutMode.currentCutMode = -1;
             break;
             
          case '1':
-            Print("Activating rectangular cutting mode");
+            CppTools::Print("Activating rectangular cutting mode");
             CutMode.currentCutMode = 0;
             break;
             
          case '2':
-            Print("Activating linear cutting mode along x axis");
+            CppTools::Print("Activating linear cutting mode along x axis");
             CutMode.currentCutMode = 1;
             break;
             
          case '3':
-            Print("Activating linear cutting mode along y axis");
+            CppTools::Print("Activating linear cutting mode along y axis");
             CutMode.currentCutMode = 2;
             break;
             
          case '4':
-            Print("Activating inverse rectangular cutting mode");
+            CppTools::Print("Activating inverse rectangular cutting mode");
             CutMode.currentCutMode = 3;
             break;
             
          case '5':
-            Print("Activating angled linear cutting mode");
+            CppTools::Print("Activating angled linear cutting mode");
             CutMode.currentCutMode = 4;
             break;
       }
