@@ -6,21 +6,18 @@
    gInterpreter->AddIncludePath("yaml-cpp/include");
    gInterpreter->AddIncludePath("/usr/include/jsoncpp"); // for debian
    
-   gSystem->Load("CppTools/lib/libErrorHandler.so");
-   gSystem->Load("CppTools/lib/libStrTools.so");
-   gSystem->Load("CppTools/lib/libIOTools.so");
-   gSystem->Load("CppTools/lib/libBox.so");
-   gSystem->Load("CppTools/lib/libTable.so");
+   gSystem->Load("lib/libErrorHandler.so");
+   gSystem->Load("lib/libStrTools.so");
+   gSystem->Load("lib/libIOTools.so");
+   gSystem->Load("lib/libBox.so");
+   gSystem->Load("lib/libTable.so");
 
-   gSystem->Load("ROOTTools/lib/libTCanvasPrinter.so");
-   gSystem->Load("ROOTTools/lib/libGUIFit.so");
+   gSystem->Load("lib/libTCanvasTools.so");
+   gSystem->Load("lib/libGUIDistrCutter2D.so");
 
-   gSystem->Load("ProgressBar/lib/libPBar.so");
+   //gSystem->Load("ProgressBar/lib/libPBar.so");
 
-   gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
+   //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
 
-   gSystem->Load("libjsoncpp.so");
-
-   gSystem->Load("lib/libInputReader.so");
-   gSystem->Load("lib/libDataMethodsSelector.so");
+   //gSystem->Load("libjsoncpp.so");
 }

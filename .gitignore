@@ -2,10 +2,10 @@ output/
 bin/
 lib/
 backup/
-__pycache__
 tmp/
+build/
+output/
 
-output
 *:w
 *.pyc
 __*
@@ -18,3 +18,7 @@ __*
 *.o
 *.so
 *.a
+*.cmake
+
+CMakeCache.txt
+./Makefile

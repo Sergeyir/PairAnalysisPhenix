@@ -33,7 +33,7 @@ all: all_libs exe_targets
 	@echo "All done"
 
 exe_targets: AnalyzeHeatMaps AnalyzeEmbedding AnalyzeSingleTrack AnalyzeResonance
-all_libs: 	 CppToolsLib ROOTToolsLib PBarLib YamlCPP PairAnalysisLib
+all_libs: 	 CppToolsLib ROOTToolsLib PBarLib YamlCPP PairAnalysisLib GUIDistrCutter2D
 
 # CppTools target groups
 
@@ -47,9 +47,10 @@ Table: 		  	 	 $(CPP_TOOLS_LIB_DIR)/libTable.so
 
 # ROOTTools target groups
 
-ROOTToolsLib: 	 	 TCanvasPrinter GUIFit
+ROOTToolsLib: 	 	 TCanvasPrinter ThrObj GUIDistrCutter2D
 TCanvasPrinter: 	 $(ROOT_TOOLS_LIB_DIR)/libTCanvasPrinter.so
-GUIFit: 			 	 $(ROOT_TOOLS_LIB_DIR)/libGUIFit.so
+ThrObj: 	 			 $(ROOT_TOOLS_LIB_DIR)/libThrObj.so
+GUIDistrCutter2D:	 $(ROOT_TOOLS_LIB_DIR)/libGUIDistrCutter2D.so
 
 # ProgressBar target groups
 
@@ -116,14 +117,19 @@ $(ROOT_TOOLS_LIB_DIR)/TCanvasPrinter.o: $(ROOT_TOOLS_SRC_DIR)/TCanvasPrinter.cpp
 												    $(ROOT_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
+	$(ROOT_TOOLS_INCLUDE) $(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
-$(ROOT_TOOLS_LIB_DIR)/GUIFit.o: $(ROOT_TOOLS_SRC_DIR)/GUIFit.cpp | ErrorHandler IOTools \
-										  $(CPP_TOOLS_LIB_DIR)
+$(ROOT_TOOLS_LIB_DIR)/ThrObj.o: $(ROOT_TOOLS_SRC_DIR)/ThrObj.cpp | \
+										  $(ROOT_TOOLS_LIB_DIR)
 	@$(ECHO) Building CXX object $@
 	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
-	$(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs` \
-	$(CPP_TOOLS_INCLUDE) -L$(CPP_TOOLS_LIB_DIR) -l ErrorHandler -lIOTools
+	$(ROOT_TOOLS_INCLUDE) $(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
+
+$(ROOT_TOOLS_LIB_DIR)/GUIDistrCutter2D.o: $(ROOT_TOOLS_SRC_DIR)/GUIDistrCutter2D.cpp | \
+													   $(ROOT_TOOLS_LIB_DIR)
+	@$(ECHO) Building CXX object $@
+	$(CXX) $< $(CXX_COMMON_LIB) -o $@ \
+	$(ROOT_TOOLS_INCLUDE) $(ROOT_INCLUDE) `$(ROOT_CONFIG) --glibs`
 
 $(ROOT_TOOLS_LIB_DIR)/lib%.so: $(ROOT_TOOLS_LIB_DIR)/%.o
 	@$(ECHO) Building CXX shared library $@
