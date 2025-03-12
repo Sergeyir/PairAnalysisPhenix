@@ -5,10 +5,12 @@ backup/
 tmp/
 build/
 output/
+CMakeFiles/
 
 *:w
 *.pyc
 __*
+*.tmp
 *.log
 *.swp
 *.png
