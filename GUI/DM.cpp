@@ -40,9 +40,9 @@ void DM()
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
    GUIDistrCutter2D::AddHistogram(realHist);
-   system(("mkdir -p data/Deadmaps/" + runName).c_str());
+   system(("mkdir -p par/Deadmaps/" + runName).c_str());
 
-   const std::string outputCutsFileName = "data/Deadmaps/" + runName + "/" + detectorName + ".txt";
+   const std::string outputCutsFileName = "par/Deadmaps/" + runName + "/" + detectorName + ".txt";
    if (CppTools::FileExists(outputCutsFileName))
    {
       GUIDistrCutter2D::ReadCutAreas(outputCutsFileName);

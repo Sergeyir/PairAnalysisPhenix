@@ -10,12 +10,13 @@
 #define DEAD_MAP_CUTTER_HPP
 
 #include <string>
+#include <vector>
 #include <fstream>
 
 #include "ErrorHandler.hpp"
 
 /*! @class DeadMapCutter
- * @brief Class DeadMapCutter provides simple means to implement and to use dead areas cuts (deadmaps) onto heatmaps
+ * @brief Class DeadMapCutter provides simple means to implement and to use bad/dead areas cuts (deadmaps) onto 2D heatmaps and/or 1D distributions (slat, striptofw)
  */
 class DeadMapCutter
 {
@@ -34,27 +35,46 @@ class DeadMapCutter
     *  -# TOFw
     *  -# EMCal
     *
-    * Options example: "110111" - this one uses all detectors apart from PC2
+    * Options example: "1101111" - this one uses all detectors apart from PC2
     */
    DeadMapCutter(const std::string& runName, const std::string& options = "1111111");
 
    /// Returns true if data in DC is in bad/dead area
-   bool IsDeadDC(const double phi, const double alpha, const double zed);
+   bool IsDeadDC(const int arm, const double zed, const double board, const double alpha);
    /// Returns true if data in PC1 is in bad/dead area
-   bool IsDeadPC1(const double phi, const double ppc1z, const double ppc1phi);
+   bool IsDeadPC1(const int arm, const double ppc1z, const double ppc1phi);
    /// Returns true if data in PC2 is in bad/dead area
    bool IsDeadPC2(const double ppc2z, const double ppc2phi);
    /// Returns true if data in PC3 is in bad/dead area
-   bool IsDeadPC3(const double phi, const double ppc3z, const double ppc3phi);
+   bool IsDeadPC3(const int arm, const double ppc3z, const double ppc3phi);
    /// Returns true if data in TOFe is in bad/dead area
    bool IsDeadTOFe(const double ptofy, const double ptofz, const int slat);
    /// Returns true if data in TOFw is in bad/dead area
    bool IsDeadTOFw(const double ptofwy, const double ptofwz, const int striptofw);
    /// Returns true if data in EMCal is in bad/dead area
-   bool IsDeadEMCal(const double phi, const int sector, const int ytower, const int ztower);
+   bool IsDeadEMCal(const int arm, const int sector, const int ytower, const int ztower);
 
    private:
-   void SetDeadAreas(const std::string& inputFileName, std::vector<std::vector>>& deadAreas);
+   /// read 2D arrays from the file into class attributes
+   void SetDeadAreas(const std::string& inputFileName, std::vector<std::vector<bool>>& cutAreas,
+                     double *ranges);
+   /// read 1D arrays from the file into class attributes
+   void SetDeadAreas(const std::string& inputFileName, std::vector<bool>& cutAreas,
+                     double *ranges);
+   /// shows whether option for DC was specified
+   bool doCutDC;
+   /// shows whether option for PC1 was specified
+   bool doCutPC1;
+   /// shows whether option for PC2 was specified
+   bool doCutPC2;
+   /// shows whether option for PC3 was specified
+   bool doCutPC3;
+   /// shows whether option for TOFe was specified
+   bool doCutTOFe;
+   /// shows whether option for TOFw was specified
+   bool doCutTOFw;
+   /// shows whether option for EMCal was specified
+   bool doCutEMCal;
    /// cut areas for DCe, zDC<0
    std::vector<std::vector<bool>> cutAreasDCe0;
    /// cut areas for DCe, zDC>0
@@ -77,14 +97,48 @@ class DeadMapCutter
    std::vector<std::vector<bool>> cutAreasTOFe;
    /// cut slats in TOFe
    std::vector<bool> cutSlatsTOFe;
-   /// cut areas for TOFw
-   std::vector<std::vector<bool>> cutAreasTOFw;
+   /// cut areas for TOFw, ptofy<100
+   std::vector<std::vector<bool>> cutAreasTOFw0;
+   /// cut areas for TOFw, ptofy>100
+   std::vector<std::vector<bool>> cutAreasTOFw1;
    /// cut strips in TOFw
    std::vector<bool> cutStripsTOFw;
    /// cut areas for EMCale(0-3)
-   std::vector<std::vector<bool>> EMCale[4];
+   std::vector<std::vector<bool>> cutAreasEMCale[4];
    /// cut areas for EMCalw(0-3)
-   std::vector<std::vector<bool>> EMCalw[4];
+   std::vector<std::vector<bool>> cutAreasEMCalw[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCe, zDC<0 heatmaps
+   double cutAreasDCe0Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCe, zDC>=0 heatmaps
+   double cutAreasDCe1Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCw, zDC<0 heatmaps
+   double cutAreasDCw0Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCw, zDC>=0 heatmaps
+   double cutAreasDCw1Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for PC1e heatmaps
+   double cutAreasPC1eRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for PC1w heatmaps
+   double cutAreasPC1wRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for PC2 heatmaps
+   double cutAreasPC2Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for PC3e heatmaps
+   double cutAreasPC3eRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for PC3w heatmaps
+   double cutAreasPC3wRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for TOFe heatmaps
+   double cutAreasTOFeRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for TOFw, ptofy<100 heatmaps
+   double cutAreasTOFw0Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for TOFw, ptofy>100 heatmaps
+   double cutAreasTOFw1Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for EMCale(0-3) heatmaps
+   double cutAreasEMCaleRange[4][4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for EMCalw(0-3) heatmaps
+   double cutAreasEMCalwRange[4][4];
+   /// ranges of X [0], [1] axis for slats
+   double cutSlatsRange[2];
+   /// ranges of X [0], [1] axis for strips
+   double cutStripsRange[2];
 };
 
 #endif /* DEAD_MAP_CUTTER_HPP */

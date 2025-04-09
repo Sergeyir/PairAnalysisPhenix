@@ -45,9 +45,9 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/CppTools/include ./ROOTTools/include ${CMAKE_SOURCE_DIR}/ProgressBar/include)
 
-add_subdirectory(CppTools)
-add_subdirectory(ROOTTools)
-add_subdirectory(ProgressBar)
+add_subdirectory(CppTools EXCLUDE_FROM_ALL)
+add_subdirectory(ROOTTools EXCLUDE_FROM_ALL)
+add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
 
 link_libraries(jsoncpp)
 link_libraries(ErrorHandler StrTools Time IOTools Box Table)
@@ -55,4 +55,7 @@ link_libraries(TCanvasTools ThrObj GUIDistrCutter2D)
 link_libraries(PBar)
 
 add_library(EffTreeReader ${CMAKE_SOURCE_DIR}/src/EffTreeReader.cpp)
+add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 #add_executable(AnalyzeHeatMaps ${CMAKE_SOURCE_DIR}/src/AnalyzeHeatMaps.cpp)
+
+add_executable(Cut1D ${CMAKE_SOURCE_DIR}/src/Cut1D.cpp)
