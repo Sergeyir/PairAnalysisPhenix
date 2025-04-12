@@ -54,7 +54,9 @@ link_libraries(ErrorHandler StrTools Time IOTools Box Table)
 link_libraries(TCanvasTools ThrObj GUIDistrCutter2D)
 link_libraries(PBar)
 
-add_library(EffTreeReader ${CMAKE_SOURCE_DIR}/src/EffTreeReader.cpp)
+add_library(InputYAMLReader ${CMAKE_SOURCE_DIR}/src/InputYAMLReader.cpp)
+add_library(SimTreeReader ${CMAKE_SOURCE_DIR}/src/SimTreeReader.cpp)
+add_library(SingleTrackFunc ${CMAKE_SOURCE_DIR}/src/SingleTrackFunc.cpp)
 add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 #add_executable(AnalyzeHeatMaps ${CMAKE_SOURCE_DIR}/src/AnalyzeHeatMaps.cpp)
 
