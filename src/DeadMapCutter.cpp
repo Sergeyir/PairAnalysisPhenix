@@ -12,18 +12,25 @@
 
 #include "../include/DeadMapCutter.hpp"
 
+DeadMapCutter::DeadMapCutter() {}
+
 DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& options)
+{
+   Initialize(runName, options);
+}
+
+void DeadMapCutter::Initialize(const std::string& runName, const std::string& options)
 {
    if (options.size() > 0 && options[0] == '1')
    {
       doCutDC = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/DCe, zDC<0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe, zDC>=0.txt", 
                    cutAreasDCe0, cutAreasDCe0Range);
-      SetDeadAreas("par/" + runName + "/Deadmaps/DCe, zDC>=0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe, zDC<0.txt", 
                    cutAreasDCe1, cutAreasDCe1Range);
-      SetDeadAreas("par/" + runName + "/Deadmaps/DCw, zDC<0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw, zDC>=0.txt", 
                    cutAreasDCw0, cutAreasDCw0Range);
-      SetDeadAreas("par/" + runName + "/Deadmaps/DCw, zDC>=0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw, zDC<0.txt", 
                    cutAreasDCw1, cutAreasDCw1Range);
    }
    else doCutDC = false;
@@ -31,9 +38,9 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
    if (options.size() > 1 && options[1] == '1')
    {
       doCutPC1 = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/PC1e.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
                    cutAreasPC1e, cutAreasPC1eRange);
-      SetDeadAreas("par/" + runName + "/Deadmaps/PC1w.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1w.txt", 
                    cutAreasPC1w, cutAreasPC1wRange);
    }
    else doCutPC1 = false;
@@ -41,7 +48,7 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
    if (options.size() > 2 && options[2] == '1')
    {
       doCutPC2 = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/PC2.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC2.txt", 
                    cutAreasPC2, cutAreasPC2Range);
    }
    else doCutPC2 = false;
@@ -49,9 +56,9 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
    if (options.size() > 3 && options[3] == '1')
    {
       doCutPC3 = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/PC1e.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
                    cutAreasPC1e, cutAreasPC3eRange);
-      SetDeadAreas("par/" + runName + "/Deadmaps/PC1w.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1w.txt", 
                    cutAreasPC1w, cutAreasPC3wRange);
    }
    else doCutPC3 = false;
@@ -59,20 +66,22 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
    if (options.size() > 4 && options[4] == '1')
    {
       doCutTOFe = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/TOFe.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFe.txt", 
                    cutAreasTOFe, cutAreasTOFeRange);
-      SetDeadAreas("par/" + runName + "/Deadmaps/Slat.txt", cutSlatsTOFe, cutSlatsRange);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Slat.txt", 
+                   cutSlatsTOFe, cutSlatsRange);
    }
    else doCutTOFe = false;
 
    if (options.size() > 5 && options[5] == '1')
    {
       doCutTOFw = true;
-      SetDeadAreas("par/" + runName + "/Deadmaps/TOFw, ptofy<100.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw, ptofy<100.txt", 
                    cutAreasTOFw0, cutAreasTOFw0Range);
-      SetDeadAreas("par/" + runName + "/Deadmaps/TOFw, ptofy>100.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw, ptofy>100.txt", 
                    cutAreasTOFw1, cutAreasTOFw1Range);
-      SetDeadAreas("par/" + runName + "/Deadmaps/Strip.txt", cutStripsTOFw, cutStripsRange);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Strip.txt", 
+                   cutStripsTOFw, cutStripsRange);
    }
    else doCutTOFw = false;
 
@@ -81,10 +90,10 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
       doCutEMCal = true;
       for (int i = 0; i < 4; i++)
       {
-         SetDeadAreas("par/" + runName + "/Deadmaps/EMCale" + std::to_string(i) + ".txt", 
-                      cutAreasEMCale[i], cutAreasEMCaleRange[i]);
-         SetDeadAreas("par/" + runName + "/Deadmaps/EMCalw" + std::to_string(i) + ".txt", 
-                      cutAreasEMCalw[i], cutAreasEMCalwRange[i]);
+         SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/EMCale" + 
+                      std::to_string(i) + ".txt", cutAreasEMCale[i], cutAreasEMCaleRange[i]);
+         SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/EMCalw" + 
+                      std::to_string(i) + ".txt", cutAreasEMCalw[i], cutAreasEMCalwRange[i]);
       }
    }
    else doCutEMCal = false;
@@ -95,12 +104,13 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
    }
 }
 
-bool DeadMapCutter::IsDeadDC(const int arm, const double zed, const double board, const double alpha)
+bool DeadMapCutter::IsDeadDC(const int arm, const double zed, 
+                             const double board, const double alpha)
 {
    if (!doCutDC) return false;
    if (arm == 0) // DCe
    {
-      if (zed < 0)
+      if (zed >= 0)
       {
          if (board < cutAreasDCe0Range[0] || board > cutAreasDCe0Range[1] ||
              alpha < cutAreasDCe0Range[2] || alpha > cutAreasDCe0Range[3]) return true;

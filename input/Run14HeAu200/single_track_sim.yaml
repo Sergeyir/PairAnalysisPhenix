@@ -1,0 +1,22 @@
+# This file contains all important information about Run14HeAu simulation of single track particles (charged pions, charged kaons, protons, and antiprotons)
+---
+status: single_track_sim # required field for checking the file application
+run_name: Run14HeAu200
+pt_min: 0.3
+pt_max: 10
+are_sigmalized_residuals_calibrated: false # shows whether simulated sdphi and sdz are calibrated
+correction_tofw: 1 # correction to TOFw due to ADC cut and efficiency correction
+reweight_for_spectra: true # shows whether the simulated particles should be assigned with weight so that the simulated particle production is similar to the one in the experiment
+particles: # particles that will be analyzed when AnalyzeSingleTrack executable is called
+- name: pi+
+- name: pi-
+- name: k+
+- name: k-
+- name: p
+- name: pbar
+pt_ranges: # pT ranges of particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
+- name: lpt
+- name: hpt
+magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
+- name: ''
+reweight_heatmaps_for_alpha: true # reweight_for_spectra does not give accurate heatmap information due to inaccuracy of approximation so that reweight by DC (simulation and experiment) should be done for heatmaps

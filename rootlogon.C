@@ -4,7 +4,6 @@
    gInterpreter->AddIncludePath("ROOTTools/include");
    gInterpreter->AddIncludePath("ProgressBar/include");
    gInterpreter->AddIncludePath("yaml-cpp/include");
-   gInterpreter->AddIncludePath("/usr/include/jsoncpp"); // for debian
    
    gSystem->Load("lib/libErrorHandler.so");
    gSystem->Load("lib/libStrTools.so");

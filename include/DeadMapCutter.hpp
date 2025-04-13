@@ -21,6 +21,8 @@
 class DeadMapCutter
 {
    public:
+   ///@brief default constructor
+   DeadMapCutter();
    /*! @brief Constructor
     *
     * @param[in] runName name of the run
@@ -38,6 +40,23 @@ class DeadMapCutter
     * Options example: "1101111" - this one uses all detectors apart from PC2
     */
    DeadMapCutter(const std::string& runName, const std::string& options = "1111111");
+   /*! @brief Initializes the object DeadMapCutter
+    *
+    * @param[in] runName name of the run
+    * @param[in] options options that show which detectors deadmaps will be read and utilized
+    *
+    * Detectors in options go in the following order:
+    *  -# DC
+    *  -# PC1
+    *  -# PC2
+    *  -# PC3
+    *  -# TOFe
+    *  -# TOFw
+    *  -# EMCal
+    *
+    * Options example: "1101111" - this one uses all detectors apart from PC2
+    */
+   void Initialize(const std::string& runName, const std::string& options = "1111111");
 
    /// Returns true if data in DC is in bad/dead area
    bool IsDeadDC(const int arm, const double zed, const double board, const double alpha);
@@ -75,13 +94,13 @@ class DeadMapCutter
    bool doCutTOFw;
    /// shows whether option for EMCal was specified
    bool doCutEMCal;
-   /// cut areas for DCe, zDC<0
+   /// cut areas for DCe, zDC>=0
    std::vector<std::vector<bool>> cutAreasDCe0;
-   /// cut areas for DCe, zDC>0
+   /// cut areas for DCe, zDC<0
    std::vector<std::vector<bool>> cutAreasDCe1;
-   /// cut areas for DCw, zDC<0
+   /// cut areas for DCw, zDC>=0
    std::vector<std::vector<bool>> cutAreasDCw0;
-   /// cut areas for DCw, zDC>0
+   /// cut areas for DCw, zDC<0
    std::vector<std::vector<bool>> cutAreasDCw1;
    /// cut areas for PC1e
    std::vector<std::vector<bool>> cutAreasPC1e;
@@ -107,13 +126,13 @@ class DeadMapCutter
    std::vector<std::vector<bool>> cutAreasEMCale[4];
    /// cut areas for EMCalw(0-3)
    std::vector<std::vector<bool>> cutAreasEMCalw[4];
-   /// ranges of X [0], [1] and Y, [2], [3] axis for DCe, zDC<0 heatmaps
-   double cutAreasDCe0Range[4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for DCe, zDC>=0 heatmaps
+   double cutAreasDCe0Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCe, zDC<0 heatmaps
    double cutAreasDCe1Range[4];
-   /// ranges of X [0], [1] and Y, [2], [3] axis for DCw, zDC<0 heatmaps
-   double cutAreasDCw0Range[4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for DCw, zDC>=0 heatmaps
+   double cutAreasDCw0Range[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for DCw, zDC<0 heatmaps
    double cutAreasDCw1Range[4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for PC1e heatmaps
    double cutAreasPC1eRange[4];

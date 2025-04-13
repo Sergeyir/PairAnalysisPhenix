@@ -13,6 +13,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 
+set(CMAKE_BUILD_TYPE Debug)
+
 find_package(ROOT QUIET)
 
 if(${ROOT_FOUND})
@@ -45,6 +47,7 @@ endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/CppTools/include ./ROOTTools/include ${CMAKE_SOURCE_DIR}/ProgressBar/include)
 
+add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(CppTools EXCLUDE_FROM_ALL)
 add_subdirectory(ROOTTools EXCLUDE_FROM_ALL)
 add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
@@ -53,6 +56,7 @@ add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
 link_libraries(ErrorHandler StrTools Time IOTools Box Table)
 link_libraries(TCanvasTools ThrObj GUIDistrCutter2D)
 link_libraries(PBar)
+link_libraries(yaml-cpp)
 
 add_library(InputYAMLReader ${CMAKE_SOURCE_DIR}/src/InputYAMLReader.cpp)
 add_library(SimTreeReader ${CMAKE_SOURCE_DIR}/src/SimTreeReader.cpp)
@@ -61,3 +65,6 @@ add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 #add_executable(AnalyzeHeatMaps ${CMAKE_SOURCE_DIR}/src/AnalyzeHeatMaps.cpp)
 
 add_executable(Cut1D ${CMAKE_SOURCE_DIR}/src/Cut1D.cpp)
+add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
+
+target_link_libraries(AnalyzeSingleTrack InputYAMLReader SimTreeReader SingleTrackFunc DeadMapCutter)

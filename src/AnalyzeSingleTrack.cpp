@@ -1,407 +1,282 @@
-// $SOURCE$
-//------------------------------------------------------------------------------------------------
-//                         AnalyzeHeatMaps functions realisation
-//------------------------------------------------------------------------------------------------
-// AnalyzeHeatMaps
-//
-// ** Code for use in PHENIX related projects **
-//
-// Author: Sergei Antsupov
-// Email: antsupov0124@gmail.com
-//
-/**
- * Basic macro for evaluating heat maps distributions for different detectors
- * from simulation output of event-like TTrees to processed histograms
+/** 
+ *  @file   AnalyzeSingleTrack.hpp
+ *  @brief  Contains declarations of functions and variables that are used for analysis of a single track from a trees acquired from the PHENIX simulation
+ *
+ *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
+ *
+ *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-//------------------------------------------------------------------------------------------------
+#ifndef ANALYZE_SINGLE_TRACK_CPP
+#define ANALYZE_SINGLE_TRACK_CPP
 
-#ifndef ANALYZE_HEAT_MAPS_CPP
-#define ANALYZE_HEAT_MAPS_CPP
+#include "../include/AnalyzeSingleTrack.hpp"
 
-#include "../include/AnalyzeHeatMaps.hpp"
+// this namespace is only used so that documentation will not become a mess
+// so there is no need to enforce the contents inside of it 
+// being accessed only via the scope resolution operator in this file
+using namespace AnalyzeSingleTrack;
 
-void Parameters::Init(const std::string inputFileName, const int nThr)
-{
-   CppTools::CheckInputFile(inputFileName);
-   
-   numberOfThreads = nThr;
-   
-   std::ifstream simInputJSON(inputFileName.c_str(), std::ifstream::binary);
-   Json::Value simInputJSONContents;
-   simInputJSON >> simInputJSONContents;
+void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer, 
+                                              const std::string& particleName, 
+                                              const std::string& magneticFieldName, 
+                                              const std::string &pTRangeName)
+{ 
 
-   runName = simInputJSONContents["run_name"].asString();
-
-   std::ifstream mainInputJSON("input/" + runName + "/main.json", std::ifstream::binary);
-   Json::Value mainInputJSONContents;
-   mainInputJSON >> mainInputJSONContents;
-
-   collisionSystemName = mainInputJSONContents["collision_system_name"].asString();
-
-   for (auto particle : simInputJSONContents["single_track"]["particles"])
-   {
-      partQueue.push_back(particle["name"].asString());
-   }
-   for (auto magf : simInputJSONContents["single_track"]["magnetic_field_configurations"])
-   {
-      magfQueue.push_back(magf["name"].asString());
-   }
-   for (auto pTRange : simInputJSONContents["single_track"]["pt_ranges"])
-   {
-      pTRangeQueue.push_back(pTRange["name"].asString());
-   }
-
-   pTMin = simInputJSONContents["single_track"]["pt_min"].asDouble();
-   pTMax = simInputJSONContents["single_track"]["pt_max"].asDouble();
-
-   reweightForSpectra = 
-      simInputJSONContents["single_track"]["heatmaps_options"]["reweight_for_spectra"].asBool();
-   reweightForAlpha = 
-      simInputJSONContents["single_track"]["heatmaps_options"]["reweight_for_alpha"].asBool();
-
-   dms.Init(runName);
-}
-
-Parameters Par;
-
-TH2F *GetDCHeatmap(TFile *file, const std::string& histName)
-{
-   TH2F *hist = (TH2F *) file->Get(histName.c_str());
-   if (!hist) CppTools::PrintError("Histogram " + histName + " does not exist in file " + 
-                                   (std::string) file->GetName());
-   // ROOT things to make histograms to not be automaticaly deleted when the file is closed
-   hist->SetDirectory(0);
-   return hist;
-}
-
-void CheckHistsAxis(TH2F *hist1, TH2F *hist2)
-{
-   // heatmaps from real data and sim are required to have the same axis ranges and number of bins
-   if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
-   {
-      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                           (std::string) hist2->GetName() + "\" have different number of bins on X axis");
-   }
-   if (hist1->GetYaxis()->GetNbins() != hist2->GetYaxis()->GetNbins())
-   {
-      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                           (std::string) hist2->GetName() + "\" have different number of bins on Y axis");
-   }
-   if (fabs(hist1->GetXaxis()->GetBinLowEdge(1) - hist2->GetXaxis()->GetBinLowEdge(1)) > 1e-7 ||
-       fabs(hist1->GetXaxis()->GetBinLowEdge(hist1->GetXaxis()->GetNbins()) - 
-            hist2->GetXaxis()->GetBinLowEdge(hist2->GetXaxis()->GetNbins())) > 1e-7)
-   {
-      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                           (std::string) hist2->GetName() + "\" have different ranges on X axis");
-   }
-   if (fabs(hist1->GetYaxis()->GetBinLowEdge(1) - hist2->GetYaxis()->GetBinLowEdge(1)) > 1e-7 ||
-       fabs(hist1->GetYaxis()->GetBinLowEdge(hist1->GetYaxis()->GetNbins()) - 
-            hist2->GetYaxis()->GetBinLowEdge(hist2->GetYaxis()->GetNbins())) > 1e-7)
-   {
-      CppTools::PrintError("Histograms \"" + (std::string) hist1->GetName() + "\" and \"" + 
-                           (std::string) hist2->GetName() + "\" have different ranges on Y axis");
-   }
-}
-
-// pTRange can be used to specify different statistics of the same dataset e.g. low pT or high pT
-void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part, 
-                          const std::string& magf, const std::string &pTRange)  
-{   
-
-   std::string simInputFileName = "data/SimTrees/" + 
-      Par.runName + "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
-   std::string realDataFileName = "data/Real/" + 
-      Par.runName + "/SingleTrack/sum" + magf + ".root";
+   std::string simInputFileName = 
+      "data/SimTrees/" + runName + "/SingleTrack/" + 
+      particleName + "_" + pTRangeName + magneticFieldName + ".root";
+   std::string realDataFileName = 
+      "data/Real/" + runName + "/SingleTrack/sum" + magneticFieldName + ".root";
 
    TFile simInputFile = TFile(simInputFileName.c_str());
    TFile realDataFile = TFile(realDataFileName.c_str());
-    
-   TH1F *origPtHist = (TH1F *) simInputFile.Get("orig_pt");
-   
-   //thredhold is needed since there can be a little noise in the historgram
-   const double origPtThreshold = origPtHist->Integral()/
-      static_cast<double>(origPtHist->GetXaxis()->GetNbins())/2.;
-   
-   const double lowPtBound = origPtHist->GetXaxis()->GetBinLowEdge(
-      origPtHist->FindFirstBinAbove(origPtThreshold));
-   const double upPtBound = origPtHist->GetXaxis()->GetBinUpEdge(
-      origPtHist->FindLastBinAbove(origPtThreshold));
-   
+
+   TH1F *origPTHist = static_cast<TH1F *>(simInputFile.Get("orig_pt"));
+
+   // weight function for spectra
+   std::unique_ptr<TF1> weightFunc;
+  
+   // normalization of the number of particles to the number of events
+   // this normalization is needed to seamlessly merge 2 files with 
+   // flat pT distribution with different ranges
    double eventNormWeight = 1.;
-   if (Par.reweightForSpectra)
+   if (reweightForSpectra)
    {
-      TH1F *centrHist = (TH1F *) realDataFile.Get("centrality");
+      // threshold is needed since there can be a little noise in the histogram
+      const double origPTThreshold = 
+         origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
+ 
+      // pT bounds of original pT distribution for spectra scale
+      const double lowPTBound = 
+         origPTHist->GetXaxis()->GetBinLowEdge(origPTHist->FindFirstBinAbove(origPTThreshold));
+      const double upPTBound = 
+         origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
+
+      TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
       if (!centrHist) 
       {
          CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
                               static_cast<std::string>(realDataFile.GetName()));
       }
-      
-      eventNormWeight = origPtHist->Integral(
-         origPtHist->GetXaxis()->FindBin(Par.pTMin), 
-         origPtHist->GetXaxis()->FindBin(Par.pTMax))/
-         centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
 
-      //this normalization is needed to merge 2 files with flat pT distribution with different ranges
-      eventNormWeight *= (Par.pTMax - Par.pTMin)/(upPtBound-lowPtBound);
-   }
+      eventNormWeight = origPTHist->Integral(origPTHist->GetXaxis()->FindBin(pTMin), 
+                                            origPTHist->GetXaxis()->FindBin(pTMax))/
+                        centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
 
-   /*
-   Par.pBar.HandleOutput(ErrorHandlerSnippet::INFO + "Processing file " + 
-                         simInputFileName + " with original pT distribution: " +
-                         DtoStr(lowPtBound) + " < pT < " + DtoStr(upPtBound));
-                         */
-   
-   // weight function for spectra
-   std::unique_ptr<TF1> weightFunc;
-   if (Par.reweightForSpectra)
-   { 
-      std::ifstream inputWeightFunc(("data/Spectra/" + Par.collisionSystemName + "/" + 
-                                     part + "Fit.json").c_str(), std::ifstream::binary);
-      Json::Value inputWeightFuncContents;
-      inputWeightFunc >> inputWeightFuncContents;
+      eventNormWeight *= (pTMax - pTMin)/(upPTBound-lowPTBound);
 
-      weightFunc = std::make_unique<TF1>(
-         "weightFunc", inputWeightFuncContents["fit_function"].asString().c_str());
-      
-      int iPar = 0;
-      for (auto par : inputWeightFuncContents["fit_parameters"])
+      InputYAMLReader inputYAMLSpectraFit("data/Parameters/SpectraFit/" + collisionSystemName + 
+                                       "/" + particleName + ".yaml");
+      inputYAMLSpectraFit.CheckStatus("spectra_fit");
+
+      weightFunc = std::make_unique<TF1>
+         ("weightFunc", inputYAMLSpectraFit["fit_function"].as<std::string>().c_str());
+
+      for (unsigned int i = 0; i < inputYAMLSpectraFit["fit_parameters"].size(); i++)
       {
-         weightFunc->SetParameter(iPar, par.asDouble());
-         iPar++;
+         weightFunc->SetParameter(i, inputYAMLSpectraFit["fit_parameters"][i].as<double>());
       }
    }
-   
-   ROOT::EnableImplicitMT();
+
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
-   
+  
    auto ProcessMP = [&](TTreeReader &reader)
-   {   
-      std::shared_ptr<TH1F> distrOrigPT = thrContainer->distrOrigPT.Get();
-      std::shared_ptr<TH2F> distrOrigPTVsRecPT = thrContainer->distrOrigPTVsRecPT.Get();
-      
-      std::shared_ptr<TH2F> heatmapDCe0 = thrContainer->heatmapDCe0.Get();
-      std::shared_ptr<TH2F> heatmapDCe1 = thrContainer->heatmapDCe1.Get();
-      std::shared_ptr<TH2F> heatmapDCw0 = thrContainer->heatmapDCw0.Get();
-      std::shared_ptr<TH2F> heatmapDCw1 = thrContainer->heatmapDCw1.Get();
-      
-      std::shared_ptr<TH2F> heatmapUnscaledDCe0 = thrContainer->heatmapUnscaledDCe0.Get();
-      std::shared_ptr<TH2F> heatmapUnscaledDCw0 = thrContainer->heatmapUnscaledDCw0.Get();
-      std::shared_ptr<TH2F> heatmapUnscaledDCe1 = thrContainer->heatmapUnscaledDCe1.Get();
-      std::shared_ptr<TH2F> heatmapUnscaledDCw1 = thrContainer->heatmapUnscaledDCw1.Get();
-      
-      std::shared_ptr<TH2F> heatmapPC1e = thrContainer->heatmapPC1e.Get();
-      std::shared_ptr<TH2F> heatmapPC1w = thrContainer->heatmapPC1w.Get();
-      
-      std::shared_ptr<TH2F> heatmapPC2 = thrContainer->heatmapPC2.Get();
-      std::shared_ptr<TH2F> heatmapPC3e = thrContainer->heatmapPC3e.Get();
-      std::shared_ptr<TH2F> heatmapPC3w = thrContainer->heatmapPC3w.Get();
-      
-      std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale, heatmapEMCalw;
+   { 
+      ThrContainerCopy histContainer = thrContainer.GetCopy();
 
-      std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCale, distrECoreVsPTEMCalw;
-      
-      std::shared_ptr<TH1F> distrStripTOFw = thrContainer->distrStripTOFw.Get();
-      std::shared_ptr<TH1F> distrSlatTOFe = thrContainer->distrSlatTOFe.Get();
-      std::shared_ptr<TH2F> distrELossTOFe = thrContainer->distrELossTOFe.Get();
-      
-      std::shared_ptr<TH2F> heatmapTOFe = thrContainer->heatmapTOFe.Get();
-      
-      std::shared_ptr<TH2F> heatmapTOFw0 = thrContainer->heatmapTOFw0.Get();
-      std::shared_ptr<TH2F> heatmapTOFw1 = thrContainer->heatmapTOFw1.Get();
-      
-      for (int i = 0; i < 4; i++)
-      {
-         heatmapEMCale[i] = thrContainer->heatmapEMCale[i].Get();
-         heatmapEMCalw[i] = thrContainer->heatmapEMCalw[i].Get();
-         distrECoreVsPTEMCale[i] = thrContainer->distrECoreVsPTEMCale[i].Get();
-         distrECoreVsPTEMCalw[i] = thrContainer->distrECoreVsPTEMCalw[i].Get();
-      }
-   
-      EffTreeReader T(reader);
-   
+      SimTreeReader STR(reader);
+ 
       while (reader.Next())
-      {   
-         Par.numberOfCalls++;
-         const double origPt = sqrt(pow(T.mom_orig(0), 2) + pow(T.mom_orig(1), 2));
+      { 
+         numberOfCalls++;
+         const double origPT = sqrt(pow(STR.mom_orig(0), 2) + pow(STR.mom_orig(1), 2));
 
          double eventWeight;
-         
-         if (Par.reweightForSpectra) 
+ 
+         if (reweightForSpectra) 
          {
-            eventWeight = weightFunc->Eval(origPt)/eventNormWeight;
+            eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
          }
          else eventWeight = 1.;
-         
-         distrOrigPT->Fill(origPt, eventWeight);
-         
-         const double bbcz = T.bbcz();
-         if (fabs(bbcz) > 30) continue;
+ 
+         histContainer.distrOrigPT->Fill(origPT, eventWeight);
+ 
+         const double bbcz = STR.bbcz();
+         if (fabs(bbcz) > 30.) continue;
 
-         for(int i = 0; i < T.nch(); i++)
+         for(int i = 0; i < STR.nch(); i++)
          {
-            const double the0 = T.the0(i);
-            const double pT = (T.mom(i))*sin(the0);
+            const double the0 = STR.the0(i);
+            const double pT = (STR.mom(i))*sin(the0);
 
-            if (pT < Par.pTMin) continue;
-            if (IsQualityCut(T.qual(i))) continue;
-            
-            int charge = T.charge(i);
+            if (pT < pTMin) continue;
+            if (IsQualityCut(STR.qual(i))) continue;
+
+            int charge = STR.charge(i);
             if (charge != -1 && charge != 1) continue;
 
-            const double zed = T.zed(i);
-            if (fabs(zed) > 75 && fabs(zed) < 3) continue;
-            
-            if (!(fabs(the0)<100 &&
-               ((bbcz > 0 && ((bbcz - 250*tan(the0 - 3.1416/2)) > 2 ||
-               (bbcz - 200*tan(the0 - 3.1416/2)) < -2)) ||
-               (bbcz < 0 && ((bbcz - 250*tan(the0 - 3.1416/2))< -2 ||
-               (bbcz - 200*tan(the0 - 3.1416/2)) > 2))))) continue;
-   
+            const double zed = STR.zed(i);
+            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
+
+            if (!(fabs(the0) < 100. &&
+               ((bbcz > 0. && ((bbcz - 250.*tan(the0 - 3.1416/2.)) > 2. ||
+               (bbcz - 200.*tan(the0 - 3.1416/2)) < -2.)) ||
+               (bbcz < 0. && ((bbcz - 250.*tan(the0 - 3.1416/2.))< -2. ||
+               (bbcz - 200.*tan(the0 - 3.1416/2)) > 2.))))) continue;
+ 
             //end of basic cuts
 
-            const double alpha = T.alpha(i);
-            const double phi = T.phi(i);
+            const double alpha = STR.alpha(i);
+            const double phi = STR.phi(i);
             double board;
-            
+
             if (phi > M_PI/2.) board = ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496);
             else board = ((0.573231 + phi - 0.0046 * cos(phi + 0.05721))/0.01963496);
 
-            double particleWeight = eventWeight;
+            double alphaReweight = 1.;
 
-            if (phi > M_PI/2.)
+            if (STR.dcarm(i) == 0)
             {
-               if (zed >=0) 
+               if (zed >= 0) 
                {
-                  heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
-                  if (Par.reweightForAlpha) particleWeight *= 
-                     Par.alphaReweightDCe0->GetBinContent(
-                     Par.alphaReweightDCe0->FindBin(alpha));
-                  heatmapDCe0->Fill(board, alpha, particleWeight);
+                  histContainer.heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
+                  if (reweightHeatmapsForAlpha) alphaReweight = 
+                     alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
+                  histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
                }
                else 
                {
-                  heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
-                  if (Par.reweightForAlpha) particleWeight *= 
-                     Par.alphaReweightDCe1->GetBinContent(
-                     Par.alphaReweightDCe1->FindBin(alpha));
-                  heatmapDCe1->Fill(board, alpha, particleWeight);
+                  histContainer.heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
+                  if (reweightHeatmapsForAlpha) alphaReweight = 
+                     alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
+                  histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
                }
             }
             else
             {
-               if (zed >=0) 
+               if (zed >= 0) 
                {
-                  heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
-                  if (Par.reweightForAlpha) particleWeight *= 
-                     Par.alphaReweightDCw0->GetBinContent(
-                     Par.alphaReweightDCw0->FindBin(alpha));
-                  heatmapDCw0->Fill(board, alpha, particleWeight);
+                  histContainer.heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
+                  if (reweightHeatmapsForAlpha) alphaReweight = 
+                     alphaReweightDCw0->GetBinContent(alphaReweightDCw0->FindBin(alpha));
+                  histContainer.heatmapDCw0->Fill(board, alpha, eventWeight*alphaReweight);
                }
                else 
                {
-                  heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
-                  if (Par.reweightForAlpha) particleWeight *= 
-                     Par.alphaReweightDCw1->GetBinContent(
-                     Par.alphaReweightDCw1->FindBin(alpha));
-                  heatmapDCw1->Fill(board, alpha, particleWeight);
+                  histContainer.heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
+                  if (reweightHeatmapsForAlpha) alphaReweight = 
+                     alphaReweightDCw1->GetBinContent(alphaReweightDCw1->FindBin(alpha));
+                  histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
                }
             }
-            
-            distrOrigPTVsRecPT->Fill(origPt, pT, eventWeight);
-            const double pc1phi = atan2(T.ppc1y(i), T.ppc1x(i));
-            
-            if (phi < M_PI/2.) 
+
+            histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
+            const double pc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
+
+            if (STR.dcarm(i) == 1) 
             {
-               heatmapPC1w->Fill(T.ppc1z(i), pc1phi, particleWeight);
+               histContainer.heatmapPC1w->Fill(STR.ppc1z(i), pc1phi, eventWeight*alphaReweight);
             }
             else
             {
-               if (pc1phi < 0) heatmapPC1e->Fill(T.ppc1z(i), pc1phi + 2.*M_PI, particleWeight);
-               else heatmapPC1e->Fill(T.ppc1z(i), pc1phi, particleWeight);
-            }
-            
-            if (IsMatch(Par.dms.GetPC2SDPhi(T.pc2dphi(i), pT, charge), 
-                        Par.dms.GetPC2SDZ(T.pc2dz(i), pT, charge), 2., 2.))
-            {
-               const double pc2z = T.ppc2z(i) - T.pc2dz(i);
-               const double pc2phi = atan2(T.ppc2y(i), T.ppc2x(i)) - T.pc2dphi(i);
-               
-               heatmapPC2->Fill(pc2z, pc2phi, particleWeight);
-            }
-
-            if (IsMatch(Par.dms.GetPC3SDPhi(phi, T.pc3dphi(i), pT, charge), 
-                        Par.dms.GetPC3SDZ(phi, T.pc3dz(i), pT, charge), 2., 2.))
-            {
-               const double pc3z = T.ppc3z(i) - T.pc3dz(i);
-               double pc3phi = atan2(T.ppc3y(i), T.ppc3x(i) - T.pc3dphi(i));
-               
-               if (phi > M_PI/2.) 
+               if (pc1phi < 0) 
                {
-                  if (pc3phi < 0) heatmapPC3e->Fill(pc3z, pc3phi + 2.*M_PI, particleWeight);
-                  else heatmapPC3e->Fill(pc3z, pc3phi, particleWeight);
+                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), pc1phi + 2.*M_PI, 
+                                                  eventWeight*alphaReweight);
                }
-               else heatmapPC3w->Fill(pc3z, pc3phi, particleWeight);
-            }
-            
-            if (IsHit(T.tofdz(i)))
-            {
-               const double beta = T.pltof(i)/T.ttof(i)/29.97;
-               const double eloss = 0.0014*pow(beta, -1.66);
-
-               distrSlatTOFe->Fill(T.slat(i), particleWeight);
-               distrELossTOFe->Fill(beta, T.etof(i));
-               
-               if (IsMatch(Par.dms.GetTOFeSDPhi(T.tofdphi(i), pT, charge), 
-                           Par.dms.GetTOFeSDZ(T.tofdz(i), pT, charge), 2., 2.) && 
-                  !Par.dms.IsBadSlat(T.slat(i)) &&
-                  T.etof(i) > eloss) 
+               else 
                {
-                  heatmapTOFe->Fill(T.ptofy(i), T.ptofz(i), T.etof(i)*particleWeight);
+                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), pc1phi, eventWeight*alphaReweight);
                }
             }
-            else if (IsHit(T.tofwdz(i)))
+
+            if (IsHit(STR.pc2dphi(i)))
             {
-               if (IsMatch(Par.dms.GetTOFwSDPhi(T.tofwdphi(i), pT, charge), 
-                           Par.dms.GetTOFwSDZ(T.tofwdz(i), pT, charge), 2., 2.))
+               //if (IsMatch(STR.pc2dphi(i), STR.pc2dz(i), 2., 2.))
                {
-                  distrStripTOFw->Fill(T.striptofw(i), particleWeight);
-                  if (!Par.dms.IsBadStripTOFw(static_cast<int>(T.striptofw(i))))
+                  const double pc2z = STR.ppc2z(i) - STR.pc2dz(i);
+                  const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i)) - STR.pc2dphi(i);
+ 
+                  histContainer.heatmapPC2->Fill(pc2z, pc2phi, eventWeight*alphaReweight);
+               }
+            }
+
+            if (IsHit(STR.pc3dphi(i)))
+            {
+               //if (IsMatch(STR.pc3dphi(i), STR.pc3dz(i), 2., 2.))
+               {
+                  const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
+                  double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i) - STR.pc3dphi(i));
+ 
+                  if (STR.dcarm(i) == 0) 
                   {
-                     if (T.ptofwy(i) < 100.) 
+                     if (pc3phi < 0) 
                      {
-                        heatmapTOFw0->Fill(T.ptofwy(i), T.ptofwz(i), particleWeight);
+                        histContainer.heatmapPC3e->Fill(pc3z, pc3phi + 2.*M_PI, 
+                                                        eventWeight*alphaReweight);
                      }
                      else 
                      {
-                        heatmapTOFw1->Fill(T.ptofwy(i), T.ptofwz(i), particleWeight);
+                        histContainer.heatmapPC3e->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
                      }
                   }
+                  else histContainer.heatmapPC3w->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
                }
             }
-            
-            if (IsHit(T.emcdz(i)))
+
+            if (IsHit(STR.tofdz(i)))
             {
-               if (IsMatch(Par.dms.GetEMCSDPhi(phi, T.emcdphi(i), pT, charge, T.sect(i)), 
-                           Par.dms.GetEMCSDZ(phi, T.emcdz(i), pT, charge, T.sect(i)), 2., 2.))
-               {   
+               const double beta = STR.pltof(i)/STR.ttof(i)/29.97;
+               //const double eloss = 0.0014*pow(beta, -1.66);
 
-                  if (phi > M_PI/2.) distrECoreVsPTEMCale[T.sect(i)]->Fill(pT, T.ecore(i));
-                  else distrECoreVsPTEMCalw[T.sect(i)]->Fill(pT, T.ecore(i));
-
-                  if (phi > M_PI/2.) 
+               histContainer.distrSlatTOFe->Fill(STR.slat(i), eventWeight*alphaReweight);
+               histContainer.distrELossTOFe->Fill(beta, STR.etof(i));
+ 
+               //if (IsMatch(STR.tofdphi(i), STR.tofdz(i), 2., 2.))// && 
+                  //!dms.IsBadSlat(STR.slat(i)) &&
+                  //STR.etof(i) > eloss) 
+               {
+                  histContainer.heatmapTOFe->
+                     Fill(STR.ptofy(i), STR.ptofz(i), STR.etof(i)*eventWeight*alphaReweight);
+               }
+            }
+            else if (IsHit(STR.tofwdz(i)))
+            {
+               //if (IsMatch(STR.tofwdphi(i), STR.tofwdz(i), 2., 2.))
+               {
+                  histContainer.distrStripTOFw->Fill(STR.striptofw(i), eventWeight*alphaReweight);
+                  if (STR.ptofwy(i) < 100.) 
                   {
-                     heatmapEMCale[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
-                                                  T.ecore(i)*particleWeight);
+                     histContainer.heatmapTOFw0->Fill(STR.ptofwy(i), STR.ptofwz(i), 
+                                                      eventWeight*alphaReweight);
                   }
-                  else
-                  {   
-                     heatmapEMCalw[T.sect(i)]->Fill(T.pemcy(i), T.pemcz(i), 
-                                                  T.ecore(i)*particleWeight);
+                  else 
+                  {
+                     histContainer.heatmapTOFw1->Fill(STR.ptofwy(i), STR.ptofwz(i), 
+                                                      eventWeight*alphaReweight);
                   }
                }
             }
 
+            if (IsHit(STR.emcdz(i)))
+            {
+               //if (IsMatch(STR.emcdz(i), STR.emcdphi(i), 2., 2.))
+               { 
+
+                  if (STR.dcarm(i) == 0) 
+                  {
+                     histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     histContainer.heatmapEMCale[STR.sect(i)]->
+                        Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
+                  }
+                  else 
+                  {
+                     histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     histContainer.heatmapEMCalw[STR.sect(i)]->
+                        Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
+                  }
+               }
+            }
          }
       }
    };
@@ -411,247 +286,332 @@ void AnalyzeConfiguration(ThrContainer *thrContainer, const std::string& part,
 
 int main(int argc, char **argv)
 {
-
    if (argc < 2 || argc > 3) 
    {
-      const std::string errMsg = 
-         "Expected 1-2 parameters while " + std::to_string(argc) + 
-         " parameter(s) were provided \n Usage: bin/AnalyzeHeatMaps inputJSONName numberOfThreads=std::thread::hardware_concurrency()";
+      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSingleTrack ";
+      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
-   
-   if (argc == 2) Par.Init(argv[1], std::thread::hardware_concurrency());
-   else Par.Init(argv[1], std::stoi(argv[2]));
+ 
+   CppTools::CheckInputFile(argv[1]);
+ 
+   if (argc == 2) numberOfThreads = std::thread::hardware_concurrency();
+   else numberOfThreads = std::stoi(argv[2]);
 
-   if (Par.reweightForSpectra)
+   ROOT::EnableImplicitMT(numberOfThreads);
+
+   inputYAMLSim.OpenFile(argv[1], "single_track_sim");
+   inputYAMLSim.CheckStatus("single_track_sim");
+
+   runName = inputYAMLSim["run_name"].as<std::string>();
+
+   inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
+   inputYAMLMain.CheckStatus("main");
+ 
+   collisionSystemName = inputYAMLMain["collision_system_name"].as<std::string>();
+
+   outputDir = "data/PostSim/" + runName + "/SingleTrack/";
+   system(("mkdir -p " + outputDir).c_str());
+
+   pTMin = inputYAMLSim["pt_min"].as<double>();
+   pTMax = inputYAMLSim["pt_max"].as<double>();
+
+   reweightForSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
+   reweightHeatmapsForAlpha = inputYAMLSim["reweight_heatmaps_for_alpha"].as<bool>();
+
+   dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
+
+   if (reweightForSpectra)
    {
-      for (std::string part : Par.partQueue)
+      for (const auto& particle : inputYAMLSim["particles"])
       {
-         CppTools::CheckInputFile("data/Spectra/" + Par.collisionSystemName + "/" + part + "Fit.json");
+         CppTools::CheckInputFile("data/Parameters/SpectraFit/" + collisionSystemName + 
+                                  "/" + particle["name"].as<std::string>() + ".yaml");
       }
    }
-   
-   for (std::string magf : Par.magfQueue)
+ 
+   for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
    {
-      CppTools::CheckInputFile("data/Real/" + Par.runName + "/SingleTrack/sum" + magf + ".root");
-      for (std::string part : Par.partQueue)
+      CppTools::CheckInputFile("data/Real/" + runName + "/SingleTrack/sum" + 
+                               magneticField["name"].as<std::string>() + ".root");
+
+      for (const auto& particle : inputYAMLSim["particles"])
       {
-         for (std::string pTRange : Par.pTRangeQueue)
+         for (const auto& pTRange : inputYAMLSim["pt_ranges"])
          {
-            const std::string simInputFileName = "data/SimTrees/" + Par.runName + 
-               "/SingleTrack/" + part + "_" + pTRange + magf + ".root";
+            const std::string simInputFileName = 
+               "data/SimTrees/" + runName + "/SingleTrack/" + 
+               particle["name"].as<std::string>() + "_" + pTRange["name"].as<std::string>() + 
+               magneticField["name"].as<std::string>() + ".root";
+
             CppTools::CheckInputFile(simInputFileName);
-            const unsigned long numberOfEvents = 
-               static_cast<unsigned long>(((TTree *) TFile::Open(simInputFileName.c_str())->
-                                                        Get("Tree"))->GetEntries());
-            if (numberOfEvents <= 0)
+
+            const unsigned long currentConfigurationNumberOfEvents = static_cast<unsigned long>
+               ((static_cast<TTree *>(TFile::Open(simInputFileName.c_str())->
+                                      Get("Tree"))->GetEntries()));
+            if (currentConfigurationNumberOfEvents <= 0)
             {
-               CppTools::PrintError("Number of events is equal or less than 0 in file " + simInputFileName);
+               CppTools::PrintError("Number of events is equal or less than 0 in file " + 
+                                    simInputFileName);
             }
-            Par.numberOfEvents += numberOfEvents;
+            numberOfEvents += currentConfigurationNumberOfEvents;
          }
       }
    }
-    
-   if (Par.reweightForAlpha)
+
+   if (reweightHeatmapsForAlpha)
    {
-      std::string realDataInputFileName = "data/Real/" + Par.runName + "/SingleTrack/sum.root";
-      std::string alphaReweightInputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/all.root";
-      
+      // real data file in which real data DC heatmaps are stored
+      std::string realDataInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
+      // file in which simulated unscaled DC heatmaps are stored
+      std::string postSimInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
+
       CppTools::CheckInputFile(realDataInputFileName);
-      
-      if (CppTools::CheckInputFile(alphaReweightInputFileName, false)) 
+
+      if (CppTools::CheckInputFile(postSimInputFileName, false)) 
       {
          TFile realDataInputFile(realDataInputFileName.c_str());
-         TFile alphaReweightInputFile(alphaReweightInputFileName.c_str());
+         TFile postSimInputFile(postSimInputFileName.c_str());
 
-         TH2F *realDataDCe0 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCe, zDC>=0");
-         TH2F *realDataDCe1 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCe, zDC<0");
-         TH2F *realDataDCw0 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCw, zDC>=0");
-         TH2F *realDataDCw1 = GetDCHeatmap(&realDataInputFile, "Heatmap: DCw, zDC<0");
+         TH2F *realDataDCe0 = GetHistogramFromFile(realDataInputFile, "Heatmap: DCe, zDC>=0");
+         TH2F *realDataDCe1 = GetHistogramFromFile(realDataInputFile, "Heatmap: DCe, zDC<0");
+         TH2F *realDataDCw0 = GetHistogramFromFile(realDataInputFile, "Heatmap: DCw, zDC>=0");
+         TH2F *realDataDCw1 = GetHistogramFromFile(realDataInputFile, "Heatmap: DCw, zDC<0");
 
-         TH2F *simDCe0 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCe, zDC>=0");
-         TH2F *simDCe1 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCe, zDC<0");
-         TH2F *simDCw0 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCw, zDC>=0");
-         TH2F *simDCw1 = GetDCHeatmap(&alphaReweightInputFile, "Unscaled heatmap: DCw, zDC<0");
-         
-         CheckHistsAxis(realDataDCe0, simDCe0);
-         CheckHistsAxis(realDataDCe1, simDCe1);
-         CheckHistsAxis(realDataDCw0, simDCw0);
-         CheckHistsAxis(realDataDCw1, simDCw1);
-         
+         TH2F *simUnscaledDCe0 = 
+            GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC>=0");
+         TH2F *simUnscaledDCe1 = 
+            GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC<0");
+         TH2F *simUnscaledDCw0 = 
+            GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC>=0");
+         TH2F *simUnscaledDCw1 = 
+            GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC<0");
+ 
+         CheckHistsAxis(realDataDCe0, simUnscaledDCe0);
+         CheckHistsAxis(realDataDCe1, simUnscaledDCe1);
+         CheckHistsAxis(realDataDCw0, simUnscaledDCw0);
+         CheckHistsAxis(realDataDCw1, simUnscaledDCw1);
+ 
          for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
          {
+            const double board = realDataDCe0->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j < realDataDCe0->GetYaxis()->GetNbins(); j++)
             {
-               const double xVal = realDataDCe0->GetXaxis()->GetBinCenter(i);
-               const double yVal = realDataDCe0->GetYaxis()->GetBinCenter(i);
-
-               if (Par.dms.IsDeadDC(2., 1., xVal, yVal))
+               const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(i);
+               if (dmCutter.IsDeadDC(1, 1., board, alpha))
                {
                   realDataDCe0->SetBinContent(i, j, 0.);
-                  simDCe0->SetBinContent(i, j, 0.);
+                  simUnscaledDCe0->SetBinContent(i, j, 0.);
                }
-               if (Par.dms.IsDeadDC(2., -1., xVal, yVal))
+            }
+         }
+         for (int i = 1; i <= realDataDCe1->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCe1->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(i);
+               if (dmCutter.IsDeadDC(1, -1., board, alpha))
                {
                   realDataDCe1->SetBinContent(i, j, 0.);
-                  simDCe1->SetBinContent(i, j, 0.);
+                  simUnscaledDCe1->SetBinContent(i, j, 0.);
                }
-               if (Par.dms.IsDeadDC(1., 1., xVal, yVal))
+            }
+         }
+         for (int i = 1; i <= realDataDCw0->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCw0->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(i);
+               if (dmCutter.IsDeadDC(0, 1., board, alpha))
                {
                   realDataDCw0->SetBinContent(i, j, 0.);
-                  simDCw0->SetBinContent(i, j, 0.);
+                  simUnscaledDCw0->SetBinContent(i, j, 0.);
                }
-               if (Par.dms.IsDeadDC(1., -1., xVal, yVal))
+            }
+         }
+         for (int i = 1; i <= realDataDCw1->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCw1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCw1->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(i);
+               if (dmCutter.IsDeadDC(0, -1., board, alpha))
                {
                   realDataDCw1->SetBinContent(i, j, 0.);
-                  simDCw1->SetBinContent(i, j, 0.);
+                  simUnscaledDCw1->SetBinContent(i, j, 0.);
                }
             }
          }
 
-         Par.alphaReweightDCe0 = (TH1F *)
-            realDataDCe0->ProjectionY("dce0_reweight",
-            1, realDataDCe0->GetXaxis()->GetNbins())->Clone();
-         Par.alphaReweightDCe1 = (TH1F *) 
-            realDataDCe1->ProjectionY("dce1_reweight",
-            1, realDataDCe1->GetXaxis()->GetNbins())->Clone();
-         Par.alphaReweightDCw0 = (TH1F *) 
-            realDataDCw0->ProjectionY("dcw0_reweight",
-            1, realDataDCw0->GetXaxis()->GetNbins())->Clone();
-         Par.alphaReweightDCw1 = (TH1F *) 
-            realDataDCw1->ProjectionY("dcw1_reweight",
-            1, realDataDCw1->GetXaxis()->GetNbins())->Clone();
+         alphaReweightDCe0 = 
+            static_cast<TH1F *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCe0->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCe1 = 
+            static_cast<TH1F *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCe1->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCw0 = 
+            static_cast<TH1F *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCw0->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCw1 = 
+            static_cast<TH1F *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
 
-         Par.alphaReweightDCe0->Scale(simDCe0->Integral()/Par.alphaReweightDCe0->Integral());
-         Par.alphaReweightDCe1->Scale(simDCe1->Integral()/Par.alphaReweightDCe1->Integral());
-         Par.alphaReweightDCw0->Scale(simDCw0->Integral()/Par.alphaReweightDCw0->Integral());
-         Par.alphaReweightDCw1->Scale(simDCw1->Integral()/Par.alphaReweightDCw1->Integral());
+         alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
+         alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
+         alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
+         alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
 
-         Par.alphaReweightDCe0->Divide(simDCe0->ProjectionY("dce0_proj",
-            1, simDCe0->GetXaxis()->GetNbins()));
-         Par.alphaReweightDCe1->Divide(simDCe1->ProjectionY("dce1_proj",
-            1, simDCe1->GetXaxis()->GetNbins()));
-         Par.alphaReweightDCw0->Divide(simDCw0->ProjectionY("dcw0_proj",
-            1, simDCw0->GetXaxis()->GetNbins()));
-         Par.alphaReweightDCw1->Divide(simDCw1->ProjectionY("dcw1_proj",
-            1, simDCw1->GetXaxis()->GetNbins()));
+         alphaReweightDCe0->Divide(simUnscaledDCe0->ProjectionY("DCe0 proj",
+                                   1, simUnscaledDCe0->GetXaxis()->GetNbins()));
+         alphaReweightDCe1->Divide(simUnscaledDCe1->ProjectionY("DCe1 proj",
+                                   1, simUnscaledDCe1->GetXaxis()->GetNbins()));
+         alphaReweightDCw0->Divide(simUnscaledDCw0->ProjectionY("DCw0 proj",
+                                   1, simUnscaledDCw0->GetXaxis()->GetNbins()));
+         alphaReweightDCw1->Divide(simUnscaledDCw1->ProjectionY("DCw1 proj",
+                                   1, simUnscaledDCw1->GetXaxis()->GetNbins()));
 
-         //capping alpha reweight since experiments extends to higher pT than simulation
-         //capped values do not affect the simulation since they are statisticaly insufficient
-         //capping is only needed to exclude very big weights in some points in the DC map
-         //that are not used for better visibility
-         for (int i = 0; i < Par.alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
+         // capping alpha reweight since experiments extends to higher pT than simulation
+         // capped values do not affect the simulation since they are statistically insufficient
+         // capping is only needed to exclude very big weights in some points in the DC map
+         // that are not used for better visibility
+         for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
          {
-            if (Par.alphaReweightDCe0->GetBinContent(i) > 100.)
+            if (alphaReweightDCe0->GetBinContent(i) > 100.)
             {
-               Par.alphaReweightDCe0->SetBinContent(i, 100.);
+               alphaReweightDCe0->SetBinContent(i, 100.);
             }
          }
-         for (int i = 0; i < Par.alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
+         for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
          {
-            if (Par.alphaReweightDCe1->GetBinContent(i) > 100.)
+            if (alphaReweightDCe1->GetBinContent(i) > 100.)
             {
-               Par.alphaReweightDCe1->SetBinContent(i, 100.);
+               alphaReweightDCe1->SetBinContent(i, 100.);
             }
          }
-         for (int i = 0; i < Par.alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
+         for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
          {
-            if (Par.alphaReweightDCw0->GetBinContent(i) > 100.)
+            if (alphaReweightDCw0->GetBinContent(i) > 100.)
             {
-               Par.alphaReweightDCw0->SetBinContent(i, 100.);
+               alphaReweightDCw0->SetBinContent(i, 100.);
             }
          }
-         for (int i = 0; i < Par.alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
+         for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
          {
-            if (Par.alphaReweightDCw1->GetBinContent(i) > 100.)
+            if (alphaReweightDCw1->GetBinContent(i) > 100.)
             {
-               Par.alphaReweightDCw1->SetBinContent(i, 100.);
+               alphaReweightDCw1->SetBinContent(i, 100.);
             }
          }
 
-         std::string alphaReweightOutputFileName = "data/PostSim/" + 
-            Par.runName + "/alpha_reweight.root";
+         std::string alphaReweightOutputFileName = 
+            "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
+
          TFile alphaReweightOutputFile = TFile(alphaReweightOutputFileName.c_str(), "RECREATE");
 
          alphaReweightOutputFile.cd();
-         
-         Par.alphaReweightDCe0->Write();
-         Par.alphaReweightDCe1->Write();
-         Par.alphaReweightDCw0->Write();
-         Par.alphaReweightDCw1->Write();
+ 
+         alphaReweightDCe0->Write();
+         alphaReweightDCe1->Write();
+         alphaReweightDCw0->Write();
+         alphaReweightDCw1->Write();
 
-         Par.alphaReweightDCe0->SetDirectory(0);
-         Par.alphaReweightDCe1->SetDirectory(0);
-         Par.alphaReweightDCw0->SetDirectory(0);
-         Par.alphaReweightDCw1->SetDirectory(0);
-         
+         alphaReweightDCe0->SetDirectory(0);
+         alphaReweightDCe1->SetDirectory(0);
+         alphaReweightDCw0->SetDirectory(0);
+         alphaReweightDCw1->SetDirectory(0);
+ 
          alphaReweightOutputFile.Close();
          CppTools::PrintInfo("File " + alphaReweightOutputFileName + " was written");
       }
       else 
       {
-         CppTools::PrintInfo("alpha reweight is now disabled");
-         Par.reweightForAlpha = false;
+         CppTools::PrintInfo("Alpha reweight is now disabled. The missing file will be created"\
+                             "after the current process is finished. Try again after the"\
+                             "missing file is written.");
+         reweightHeatmapsForAlpha = false;
       }
    }
 
-   CppTools::PrintInfo("Clearing output directory: data/PostSim/" + Par.runName + "/Heatmaps/");
-   system(("mkdir -p data/PostSim/" + Par.runName + "/Heatmaps").c_str());
-   system(("rm -r data/PostSim/" + Par.runName + "/Heatmaps/*").c_str());
+   CppTools::PrintInfo("Clearing output directory: " + outputDir);
+   system(("find " + outputDir + " ! -name 'all.root' -type f -exec rm -f {} +").c_str());
+
+   std::vector<std::string> particleList;
+   for (const auto& particle : inputYAMLSim["particles"])
+   {
+      particleList.emplace_back(particle["name"].as<std::string>());
+   }
+
+   std::vector<std::string> magneticFieldsList;
+   for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
+   {
+      magneticFieldsList.emplace_back(magneticField["name"].as<std::string>());
+   }
+
+   std::vector<std::string> pTRangesList;
+   for (const auto& pTRange : inputYAMLSim["pt_ranges"])
+   {
+      pTRangesList.emplace_back(pTRange["name"].as<std::string>());
+   }
 
    CppTools::Box box{"Parameters"};
-   
-   box.AddEntry("Run name", Par.runName);
-   box.AddEntry("Particles list", Par.partQueue);
-   if (Par.magfQueue.size() == 1 && Par.magfQueue.front() == "")
+ 
+   box.AddEntry("Run name", runName);
+   box.AddEntry("Particles", particleList);
+   if (magneticFieldsList.size() == 1 && magneticFieldsList[0] == "")
    {
-      box.AddEntry("Magnetic field list", "run default");
+      box.AddEntry("Magnetic field", "run default");
    }
-   else box.AddEntry("Magnetic field list", Par.magfQueue);
-   box.AddEntry("pT ranges list", Par.pTRangeQueue);
-   box.AddEntry("Minimum p_T, GeV", Par.pTMin);
-   box.AddEntry("Maximum p_T, GeV", Par.pTMax);
-   box.AddEntry("Reweight for pT spectra", Par.reweightForSpectra);
-   box.AddEntry("Reweight for alpha", Par.reweightForAlpha);
-   box.AddEntry("Number of threads", Par.numberOfThreads);
+   else box.AddEntry("Magnetic fields", magneticFieldsList);
+   box.AddEntry("pT ranges", pTRangesList);
+   box.AddEntry("Charged track minimum pT, GeV", pTMin);
+   box.AddEntry("Charged track maximum pT, GeV", pTMax);
+   box.AddEntry("Reweight for pT spectra", reweightForSpectra);
+   box.AddEntry("Reweight for alpha", reweightHeatmapsForAlpha);
+   box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", 
-                static_cast<double>(Par.numberOfEvents)/1e6, 3);
+                static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
 
    bool isProcessFinished = false;
 
    auto pBarCall = [&]()
    {
+      ProgressBar pBar{"BLOCK"};
       while (!isProcessFinished)
       {
-         Par.pBar.Print(static_cast<double>(Par.numberOfCalls)/
-                        static_cast<double>(Par.numberOfEvents));
+         pBar.Print(static_cast<double>(numberOfCalls)/
+                    static_cast<double>(numberOfEvents));
          std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
-      Par.pBar.Print(1.);
+      pBar.Print(1.);
    };
-   
+ 
    std::thread pBarThread(pBarCall);
-   
-   for (std::string part : Par.partQueue)
+ 
+   for (const auto& particle : inputYAMLSim["particles"])
    {
-      for (std::string magf : Par.magfQueue)
+      for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
       {
          ThrContainer thrContainer;
-         for (std::string pTRange : Par.pTRangeQueue)
+         for (const auto& pTRange : inputYAMLSim["pt_ranges"])
          {
-            AnalyzeConfiguration(&thrContainer, part, magf, pTRange);
+            AnalyzeConfiguration(thrContainer, 
+                                 particle["name"].as<std::string>(), 
+                                 magneticField["name"].as<std::string>(), 
+                                 pTRange["name"].as<std::string>());
          }
-         // wriiting the result
-         std::string outputFileName = "data/PostSim/" + Par.runName + "/Heatmaps/" + part;
-         if (magf != "") outputFileName += "magf";
-         outputFileName += magf + ".root";
-         
-         TFile outfile(outputFileName.c_str(), "RECREATE");
-         outfile.cd();
-         ThrObjHolder.Write();
-         outfile.Close();
+         // writing the result
+         std::string outputFileName = "data/PostSim/" + runName + "/SingleTrack/" + 
+                                      particle["name"].as<std::string>();
+         if (magneticField["name"].as<std::string>() != "") 
+         {
+            outputFileName += "magf" + magneticField["name"].as<std::string>();
+         }
+         outputFileName += ".root";
+         ROOTTools::ThrObjHolder::Write(outputFileName);
       }
    }
 
@@ -660,11 +620,120 @@ int main(int argc, char **argv)
 
    CppTools::PrintInfo("Merging output files into one");
 
-   system(("hadd -f data/PostSim/" + 
-           Par.runName + "/Heatmaps/all.root data/PostSim/" + 
-           Par.runName + "/Heatmaps/*.root").c_str());
+   std::string haddCommand = "hadd -f " + outputDir + "all.root ";
+   for (const auto& particle : inputYAMLSim["particles"])
+   {
+      haddCommand += outputDir + particle["name"].as<std::string>() + ".root ";
+   }
+   system(haddCommand.c_str());
 
    return 0;
 }
 
-#endif /* ANALYZE_HEAT_MAPS_CPP */
+TH2F *AnalyzeSingleTrack::GetHistogramFromFile(TFile& file, const std::string& histName)
+{
+   /// why the f doesn't ROOT allow to read the thing from readonly TFile when its const
+   TH2F *hist = static_cast<TH2F *>(file.Get(histName.c_str()));
+   if (!hist) CppTools::PrintError("Histogram " + histName + " was not found in file " + 
+                                   static_cast<std::string>(file.GetName()));
+   // ROOT thing: making histograms not be automatically deleted when the file is closed
+   hist->SetDirectory(0);
+   return hist;
+}
+
+void AnalyzeSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
+{
+   if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
+   {
+      CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
+                           "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
+                           "\" have different number of bins on X axis");
+   }
+   if (hist1->GetYaxis()->GetNbins() != hist2->GetYaxis()->GetNbins())
+   {
+      CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
+                           "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
+                           "\" have different number of bins on Y axis");
+   }
+   if (fabs(hist1->GetXaxis()->GetBinLowEdge(1) - 
+            hist2->GetXaxis()->GetBinLowEdge(1)) > 1e-15 ||
+       fabs(hist1->GetXaxis()->GetBinLowEdge(hist1->GetXaxis()->GetNbins()) - 
+            hist2->GetXaxis()->GetBinLowEdge(hist2->GetXaxis()->GetNbins())) > 1e-15)
+   {
+      CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
+                           "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
+                           "\" have different ranges on X axis");
+   }
+   if (fabs(hist1->GetYaxis()->GetBinLowEdge(1) - 
+            hist2->GetYaxis()->GetBinLowEdge(1)) > 1e-15 ||
+       fabs(hist1->GetYaxis()->GetBinLowEdge(hist1->GetYaxis()->GetNbins()) - 
+            hist2->GetYaxis()->GetBinLowEdge(hist2->GetYaxis()->GetNbins())) > 1e-15)
+   {
+      CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
+                           "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
+                           "\" have different ranges on Y axis");
+   }
+}
+
+ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
+{
+   ThrContainerCopy copy;
+
+   copy.distrOrigPT = distrOrigPT.Get();
+   copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
+   copy.heatmapUnscaledDCe0 = heatmapUnscaledDCe0.Get();
+   copy.heatmapUnscaledDCe1 = heatmapUnscaledDCe1.Get();
+   copy.heatmapUnscaledDCw0 = heatmapUnscaledDCw0.Get();
+   copy.heatmapUnscaledDCw1 = heatmapUnscaledDCw1.Get();
+   copy.heatmapDCe0 = heatmapDCe0.Get();
+   copy.heatmapDCe1 = heatmapDCe1.Get();
+   copy.heatmapDCw0 = heatmapDCw0.Get();
+   copy.heatmapDCw1 = heatmapDCw1.Get();
+   copy.heatmapPC1e = heatmapPC1e.Get();
+   copy.heatmapPC1w = heatmapPC1w.Get();
+   copy.heatmapPC2 = heatmapPC2.Get();
+   copy.heatmapPC3e = heatmapPC3e.Get();
+   copy.heatmapPC3w = heatmapPC3w.Get();
+   copy.heatmapTOFe = heatmapTOFe.Get();
+   copy.heatmapTOFw0 = heatmapTOFw0.Get();
+   copy.heatmapTOFw1 = heatmapTOFw1.Get();
+   copy.distrStripTOFw = distrStripTOFw.Get();
+   copy.distrSlatTOFe = distrSlatTOFe.Get();
+   copy.distrELossTOFe = distrELossTOFe.Get();
+   copy.distrDPhiVsPTPC2Pos = distrDPhiVsPTPC2Pos.Get();
+   copy.distrDZVsPTPC2Pos = distrDZVsPTPC2Pos.Get();
+   copy.distrDPhiVsPTPC2Neg = distrDPhiVsPTPC2Neg.Get();
+   copy.distrDZVsPTPC2Neg = distrDZVsPTPC2Neg.Get();
+   copy.distrDPhiVsPTPC3Pos = distrDPhiVsPTPC3Pos.Get();
+   copy.distrDZVsPTPC3Pos = distrDZVsPTPC3Pos.Get();
+   copy.distrDPhiVsPTPC3Neg = distrDPhiVsPTPC3Neg.Get();
+   copy.distrDZVsPTPC3Neg = distrDZVsPTPC3Neg.Get();
+   copy.distrDPhiVsPTTOFePos = distrDPhiVsPTTOFePos.Get();
+   copy.distrDZVsPTTOFePos = distrDZVsPTTOFePos.Get();
+   copy.distrDPhiVsPTTOFeNeg = distrDPhiVsPTTOFeNeg.Get();
+   copy.distrDZVsPTTOFeNeg = distrDZVsPTTOFeNeg.Get();
+   copy.distrDPhiVsPTTOFwPos = distrDPhiVsPTTOFwPos.Get();
+   copy.distrDZVsPTTOFwPos = distrDZVsPTTOFwPos.Get();
+   copy.distrDPhiVsPTTOFwNeg = distrDPhiVsPTTOFwNeg.Get();
+   copy.distrDZVsPTTOFwNeg = distrDZVsPTTOFwNeg.Get();
+
+   // iterating over EMCal sectors
+   for (int i = 0; i < 4; i++)
+   {
+      copy.heatmapEMCale[i] = heatmapEMCale[i].Get();
+      copy.heatmapEMCalw[i] = heatmapEMCalw[i].Get();
+      copy.distrECoreVsPTEMCale[i] = distrECoreVsPTEMCale[i].Get();
+      copy.distrECoreVsPTEMCalw[i] = distrECoreVsPTEMCalw[i].Get();
+      copy.distrDPhiVsPTEMCalePos[i] = distrDPhiVsPTEMCalePos[i].Get();
+      copy.distrDZVsPTEMCalePos[i] = distrDZVsPTEMCalePos[i].Get();
+      copy.distrDPhiVsPTEMCaleNeg[i] = distrDPhiVsPTEMCaleNeg[i].Get();
+      copy.distrDZVsPTEMCaleNeg[i] = distrDZVsPTEMCaleNeg[i].Get();
+      copy.distrDPhiVsPTEMCalwPos[i] = distrDPhiVsPTEMCalwPos[i].Get();
+      copy.distrDZVsPTEMCalwPos[i] = distrDZVsPTEMCalwPos[i].Get();
+      copy.distrDPhiVsPTEMCalwNeg[i] = distrDPhiVsPTEMCalwNeg[i].Get();
+      copy.distrDZVsPTEMCalwNeg[i] = distrDZVsPTEMCalwNeg[i].Get();
+   }
+   return copy;
+}
+
+#endif /* ANALYZE_SINGLE_TRACK_CPP */
