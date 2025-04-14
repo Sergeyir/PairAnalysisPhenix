@@ -108,7 +108,7 @@ bool DeadMapCutter::IsDeadDC(const int arm, const double zed,
                              const double board, const double alpha)
 {
    if (!doCutDC) return false;
-   if (arm == 0) // DCe
+   if (arm == 1) // DCe
    {
       if (zed >= 0)
       {
@@ -161,7 +161,7 @@ bool DeadMapCutter::IsDeadDC(const int arm, const double zed,
 bool DeadMapCutter::IsDeadPC1(const int arm, const double ppc1z, const double ppc1phi)
 {
    if (!doCutPC1) return false;
-   if (arm == 0) // PC1e
+   if (arm == 1) // PC1e
    {
       if (ppc1z < cutAreasPC1eRange[0] || ppc1z > cutAreasPC1eRange[1] ||
           ppc1phi < cutAreasPC1eRange[2] || ppc1phi > cutAreasPC1eRange[3]) return true;
@@ -199,7 +199,7 @@ bool DeadMapCutter::IsDeadPC2(const double ppc2z, const double ppc2phi)
 bool DeadMapCutter::IsDeadPC3(const int arm, const double ppc3z, const double ppc3phi)
 {
    if (!doCutPC3) return false;
-   if (arm == 0) // PC3e
+   if (arm == 1) // PC3e
    {
       if (ppc3z < cutAreasPC3eRange[0] || ppc3z > cutAreasPC3eRange[1] ||
           ppc3phi < cutAreasPC3eRange[2] || ppc3phi > cutAreasPC3eRange[3]) return true;
@@ -261,7 +261,7 @@ bool DeadMapCutter::IsDeadTOFw(const double ptofwy, const double ptofwz, const i
 bool DeadMapCutter::IsDeadEMCal(const int arm, const int sector, const int ytower, const int ztower)
 {
    if (!doCutEMCal) return false;
-   if (arm == 0) // EMCale
+   if (arm == 1) // EMCale
    {
       if (ytower < cutAreasEMCaleRange[sector][0] || 
           ytower > cutAreasEMCaleRange[sector][1] ||

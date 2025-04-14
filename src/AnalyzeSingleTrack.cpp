@@ -85,7 +85,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
       ThrContainerCopy histContainer = thrContainer.GetCopy();
 
       SimTreeReader STR(reader);
- 
+
       while (reader.Next())
       { 
          numberOfCalls++;
