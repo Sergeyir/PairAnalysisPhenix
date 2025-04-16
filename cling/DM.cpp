@@ -1,6 +1,4 @@
-#include "DM.hpp"
-
-using namespace Run14HeAu200Cuts;
+#include "DeadMapCutter.hpp"
 
 struct
 {

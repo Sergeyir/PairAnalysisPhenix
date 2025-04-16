@@ -14,6 +14,8 @@
    gSystem->Load("lib/libTCanvasTools.so");
    gSystem->Load("lib/libGUIDistrCutter2D.so");
 
+   gSystem->Load("lib/libDeadMapCutter.so");
+
    //gSystem->Load("ProgressBar/lib/libPBar.so");
 
    //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");

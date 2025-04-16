@@ -83,6 +83,9 @@ void SigmalizedResiduals::PerformCalibrationForDetector(const std::string& detec
       static_cast<TH2F *>(inputFile->Get((variableName + " vs pT: " + detectorName + 
                                           ", " + chargeName).c_str()));
 
+   for (int i = 1; i < distrDValVsPT->GetXaxis()->GetNbins(); i++)
+   {
+   }
 }
 
 #endif /* SIGMALIZED_RESIDUALS_CPP */
