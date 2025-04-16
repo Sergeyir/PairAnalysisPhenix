@@ -59,8 +59,6 @@ namespace SigmalizedResiduals
    double pTMin;
    /// Maximum pT of the whole pT range
    double pTMax;
-   /// Minimum number of entries for the histogram to be approximated. If this requirement for this value is not met warning will be printed but the program will not finish
-   const double minIntegralValue = 3e2;  
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in

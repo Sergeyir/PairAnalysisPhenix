@@ -1,12 +1,13 @@
 # This file contains all important information about Run14HeAuMinBias run
 ---
 status: main # required field for checking the file application
+run_name: Run14HeAu200
 collision_system_name: HeAu200
 collision_system_name_tex: 'HeAu, #sqrt{s_NN}} = 200 GeV'
 is_pp: false # shows whether the collision is p+p; if false centrality_min and centrality_max will not be used
 centrality_min: 0
 centrality_max: 88
-run_name: Run14HeAu200
 magnetic_field_configurations: # magnetic fields of a run
 - name: ''
-detectors_configuration: '0000000' # shows what detectors are in use (if 1 the detector is used, otherwise it is not used). Index in the line go for the detectors in the following order: DC, PC1, PC2, PC3, TOFe, TOFw, EMCal
+# shows what detectors are in use (if 1 the detector is used, otherwise it is not used). Index in the line go for the detectors in the following order: DC, PC1, PC2, PC3, TOFe, TOFw, EMCal
+detectors_configuration: '1101111' # only PC2 is not used
