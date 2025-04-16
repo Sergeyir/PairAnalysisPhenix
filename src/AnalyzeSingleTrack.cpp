@@ -170,28 +170,51 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
-            const double pc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
+            bool isDCPC1TrackCut = dmCutter.IsDeadDC(STR.dcarm(i), zed, board, alpha);
+
+            const double ppc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
 
             if (STR.dcarm(i) == 1) 
             {
-               histContainer.heatmapPC1w->Fill(STR.ppc1z(i), pc1phi, eventWeight*alphaReweight);
+               histContainer.heatmapPC1w->Fill(STR.ppc1z(i), ppc1phi, eventWeight*alphaReweight);
             }
             else
             {
-               if (pc1phi < 0) 
+               if (ppc1phi < 0) 
                {
-                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), pc1phi + 2.*M_PI, 
+                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), ppc1phi + 2.*M_PI, 
                                                   eventWeight*alphaReweight);
+                  if (dmCutter.IsDeadPC1(STR.dcarm(i), STR.ppc1z(i), ppc1phi + 2.*M_PI))
+                  {
+                     isDCPC1TrackCut = false;
+                  }
                }
                else 
                {
-                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), pc1phi, eventWeight*alphaReweight);
+                  histContainer.heatmapPC1e->Fill(STR.ppc1z(i), ppc1phi, 
+                                                  eventWeight*alphaReweight);
+                  if (dmCutter.IsDeadPC1(STR.dcarm(i), STR.ppc1z(i), ppc1phi + 2.*M_PI))
+                  {
+                     isDCPC1TrackCut = false;
+                  }
                }
             }
 
+            if (!isDCPC1TrackCut) histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
+
             if (IsHit(STR.pc2dphi(i)))
             {
+               if (STR.charge(i) == 1) 
+               {
+                  histContainer.distrDPhiVsPTPC2Pos->Fill(STR.pc2dphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTPC2Pos->Fill(STR.pc2dz(i), pT, eventWeight);
+               }
+               else
+               {
+                  histContainer.distrDPhiVsPTPC2Neg->Fill(STR.pc2dphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTPC2Neg->Fill(STR.pc2dz(i), pT, eventWeight);
+               }
+
                //if (IsMatch(STR.pc2dphi(i), STR.pc2dz(i), 2., 2.))
                {
                   const double pc2z = STR.ppc2z(i) - STR.pc2dz(i);
@@ -203,6 +226,32 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.pc3dphi(i)))
             {
+               if (STR.dcarm(i) == 0)
+               {
+                  if (STR.charge(i) == 1) 
+                  {
+                     histContainer.distrDPhiVsPTPC3ePos->Fill(STR.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3ePos->Fill(STR.pc3dz(i), pT, eventWeight);
+                  }
+                  else
+                  {
+                     histContainer.distrDPhiVsPTPC3eNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3eNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+                  }
+               }
+               else
+               {
+                  if (STR.charge(i) == 1) 
+                  {
+                     histContainer.distrDPhiVsPTPC3wPos->Fill(STR.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3wPos->Fill(STR.pc3dz(i), pT, eventWeight);
+                  }
+                  else
+                  {
+                     histContainer.distrDPhiVsPTPC3wNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3wNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+                  }
+               }
                //if (IsMatch(STR.pc3dphi(i), STR.pc3dz(i), 2., 2.))
                {
                   const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
@@ -226,6 +275,17 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.tofdz(i)))
             {
+               if (STR.charge(i) == 1) 
+               {
+                  histContainer.distrDPhiVsPTTOFePos->Fill(STR.tofdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFePos->Fill(STR.tofdz(i), pT, eventWeight);
+               }
+               else
+               {
+                  histContainer.distrDPhiVsPTTOFeNeg->Fill(STR.tofdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFeNeg->Fill(STR.tofdz(i), pT, eventWeight);
+               }
+
                const double beta = STR.pltof(i)/STR.ttof(i)/29.97;
                //const double eloss = 0.0014*pow(beta, -1.66);
 
@@ -242,6 +302,16 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             }
             else if (IsHit(STR.tofwdz(i)))
             {
+               if (STR.charge(i) == 1) 
+               {
+                  histContainer.distrDPhiVsPTTOFwPos->Fill(STR.tofwdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFwPos->Fill(STR.tofwdz(i), pT, eventWeight);
+               }
+               else
+               {
+                  histContainer.distrDPhiVsPTTOFwNeg->Fill(STR.tofwdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFwNeg->Fill(STR.tofwdz(i), pT, eventWeight);
+               }
                //if (IsMatch(STR.tofwdphi(i), STR.tofwdz(i), 2., 2.))
                {
                   histContainer.distrStripTOFw->Fill(STR.striptofw(i), eventWeight*alphaReweight);
@@ -260,6 +330,33 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.emcdz(i)))
             {
+               if (STR.dcarm(i) == 0)
+               {
+                  if (STR.charge(i) == 1) 
+                  {
+                     histContainer.distrDPhiVsPTEMCalePos[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalePos[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                  }
+                  else
+                  {
+                     histContainer.distrDPhiVsPTEMCaleNeg[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCaleNeg[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                  }
+               }
+               else
+               {
+                  if (STR.charge(i) == 1) 
+                  {
+                     histContainer.distrDPhiVsPTEMCalwPos[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwPos[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                  }
+                  else
+                  {
+                     histContainer.distrDPhiVsPTEMCalwNeg[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwNeg[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                  }
+               }
+
                //if (IsMatch(STR.emcdz(i), STR.emcdphi(i), 2., 2.))
                { 
 
@@ -536,7 +633,7 @@ int main(int argc, char **argv)
    }
 
    CppTools::PrintInfo("Clearing output directory: " + outputDir);
-   system(("find " + outputDir + " ! -name 'all.root' -type f -exec rm -f {} +").c_str());
+   system(("find " + outputDir + " ! -name 'all.root' ! -name 'alpha_reweight.root' -type f -exec rm -f {} +").c_str());
 
    std::vector<std::string> particleList;
    for (const auto& particle : inputYAMLSim["particles"])
@@ -704,10 +801,14 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.distrDZVsPTPC2Pos = distrDZVsPTPC2Pos.Get();
    copy.distrDPhiVsPTPC2Neg = distrDPhiVsPTPC2Neg.Get();
    copy.distrDZVsPTPC2Neg = distrDZVsPTPC2Neg.Get();
-   copy.distrDPhiVsPTPC3Pos = distrDPhiVsPTPC3Pos.Get();
-   copy.distrDZVsPTPC3Pos = distrDZVsPTPC3Pos.Get();
-   copy.distrDPhiVsPTPC3Neg = distrDPhiVsPTPC3Neg.Get();
-   copy.distrDZVsPTPC3Neg = distrDZVsPTPC3Neg.Get();
+   copy.distrDPhiVsPTPC3ePos = distrDPhiVsPTPC3ePos.Get();
+   copy.distrDZVsPTPC3ePos = distrDZVsPTPC3ePos.Get();
+   copy.distrDPhiVsPTPC3eNeg = distrDPhiVsPTPC3eNeg.Get();
+   copy.distrDZVsPTPC3eNeg = distrDZVsPTPC3eNeg.Get();
+   copy.distrDPhiVsPTPC3wPos = distrDPhiVsPTPC3wPos.Get();
+   copy.distrDZVsPTPC3wPos = distrDZVsPTPC3wPos.Get();
+   copy.distrDPhiVsPTPC3wNeg = distrDPhiVsPTPC3wNeg.Get();
+   copy.distrDZVsPTPC3wNeg = distrDZVsPTPC3wNeg.Get();
    copy.distrDPhiVsPTTOFePos = distrDPhiVsPTTOFePos.Get();
    copy.distrDZVsPTTOFePos = distrDZVsPTTOFePos.Get();
    copy.distrDPhiVsPTTOFeNeg = distrDPhiVsPTTOFeNeg.Get();

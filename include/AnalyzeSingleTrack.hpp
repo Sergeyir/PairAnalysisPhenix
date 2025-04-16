@@ -168,14 +168,22 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> distrDPhiVsPTPC2Neg;
       /// pc2dz vs pT distribution for negative tracks
       std::shared_ptr<TH2F> distrDZVsPTPC2Neg;
-      /// pc3dphi vs pT distribution for positive tracks
-      std::shared_ptr<TH2F> distrDPhiVsPTPC3Pos;
-      /// pc3dz vs pT distribution for positive tracks
-      std::shared_ptr<TH2F> distrDZVsPTPC3Pos;
-      /// pc3dphi vs pT distribution for negative tracks
-      std::shared_ptr<TH2F> distrDPhiVsPTPC3Neg;
-      /// pc3dz vs pT distribution for negative tracks
-      std::shared_ptr<TH2F> distrDZVsPTPC3Neg;
+      /// pc3dphi vs pT distribution for positive tracks for east arm
+      std::shared_ptr<TH2F> distrDPhiVsPTPC3ePos;
+      /// pc3dz vs pT distribution for positive tracks for east arm
+      std::shared_ptr<TH2F> distrDZVsPTPC3ePos;
+      /// pc3dphi vs pT distribution for negative tracks for east arm
+      std::shared_ptr<TH2F> distrDPhiVsPTPC3eNeg;
+      /// pc3dz vs pT distribution for negative tracks for east arm
+      std::shared_ptr<TH2F> distrDZVsPTPC3eNeg;
+      /// pc3dphi vs pT distribution for positive tracks for west arm
+      std::shared_ptr<TH2F> distrDPhiVsPTPC3wPos;
+      /// pc3dz vs pT distribution for positive tracks for west arm
+      std::shared_ptr<TH2F> distrDZVsPTPC3wPos;
+      /// pc3dphi vs pT distribution for negative tracks for west arm
+      std::shared_ptr<TH2F> distrDPhiVsPTPC3wNeg;
+      /// pc3dz vs pT distribution for negative tracks for west arm
+      std::shared_ptr<TH2F> distrDZVsPTPC3wNeg;
       /// tofdphi vs pT distribution for positive tracks
       std::shared_ptr<TH2F> distrDPhiVsPTTOFePos;
       /// tofdz vs pT distribution for positive tracks
@@ -339,25 +347,37 @@ namespace AnalyzeSingleTrack
          ("dphi vs pT: PC2, charge>0", "d#varphi_{PC2} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
       /// pc2dz vs pT distribution for positive tracks
       ROOTTools::ThrObj<TH2F> distrDZVsPTPC2Pos = ROOTTools::ThrObj<TH2F>
-         ("2dz vs pT: PC2, charge>0", "dz_{PC2} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+         ("dz vs pT: PC2, charge>0", "dz_{PC2} vs p_{T}", 200, -60., 60., 100, 0., 10.);
       /// pc2dphi vs pT distribution for negative tracks
       ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
          ("dphi vs pT: PC2, charge<0", "d#varphi_{PC2} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
       /// pc2dz vs pT distribution for negative tracks
       ROOTTools::ThrObj<TH2F> distrDZVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
-         ("2dz vs pT: PC2, charge<0", "dz_{PC2} vs p_{T}", 200, -60., 60., 100, 0., 10.);
-      /// pc3dphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3Pos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3, charge>0", "d#varphi_{PC3} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
-      /// pc3dz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3Pos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3, charge>0", "dz_{PC3} vs p_{T}", 200, -60., 60., 100, 0., 10.);
-      /// pc3dphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3Neg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3, charge<0", "d#varphi_{PC3} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
-      /// pc3dz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3Neg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3, charge<0", "dz_{PC3} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+         ("dz vs pT: PC2, charge<0", "dz_{PC2} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+      /// pc3dphi vs pT distribution for positive tracks for east arm
+      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
+         ("dphi vs pT: PC3e, charge>0", "d#varphi_{PC3e} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
+      /// pc3dz vs pT distribution for positive tracks for east arm
+      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
+         ("dz vs pT: PC3e, charge>0", "dz_{PC3e} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+      /// pc3dphi vs pT distribution for negative tracks for east arm
+      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
+         ("dphi vs pT: PC3e, charge<0", "d#varphi_{PC3e} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
+      /// pc3dz vs pT distribution for negative tracks for east arm
+      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
+         ("dz vs pT: PC3e, charge<0", "dz_{PC3e} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+      /// pc3dphi vs pT distribution for positive tracks for west arm
+      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
+         ("dphi vs pT: PC3w, charge>0", "d#varphi_{PC3w} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
+      /// pc3dz vs pT distribution for positive tracks for west arm
+      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
+         ("dz vs pT: PC3w, charge>0", "dz_{PC3w} vs p_{T}", 200, -60., 60., 100, 0., 10.);
+      /// pc3dphi vs pT distribution for negative tracks for west arm
+      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
+         ("dphi vs pT: PC3w, charge<0", "d#varphi_{PC3w} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
+      /// pc3dz vs pT distribution for negative tracks for west arm
+      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
+         ("dz vs pT: PC3w, charge<0", "dz_{PC3w} vs p_{T}", 200, -60., 60., 100, 0., 10.);
       /// tofdphi vs pT distribution for positive tracks
       ROOTTools::ThrObj<TH2F> distrDPhiVsPTTOFePos = ROOTTools::ThrObj<TH2F>
          ("dphi vs pT: TOFe, charge>0", "d#varphi_{TOFe} vs p_{T}", 200, -0.15, 0.15, 100, 0., 10.);
