@@ -58,15 +58,25 @@ class SimCalibrator
     */
    void Initialize(const std::string& runName, const std::string& options = "1111111");
 
+   /// @brief Returns sigmalized dphi from PC2
    double PC2SDPhi(const double dphi, const double pT, const int charge);
+   /// @brief Returns sigmalized dz from PC2
    double PC2SDZ(const double dz, const double pT, const int charge);
+   /// @brief Returns sigmalized dphi from PC3
    double PC3SDPhi(const double dphi, const double pT, const int charge, const int arm);
+   /// @brief Returns sigmalized dz from PC3
    double PC3SDZ(const double dz, const double pT, const int charge, const int arm);
+   /// @brief Returns sigmalized dphi from TOFe
    double TOFeSDPhi(const double dphi, const double pT, const int charge);
+   /// @brief Returns sigmalized dz from TOFe
    double TOFeSDZ(const double dz, const double pT, const int charge);
+   /// @brief Returns sigmalized dphi from TOFw
    double TOFwSDPhi(const double dphi, const double pT, const int charge);
+   /// @brief Returns sigmalized dz from TOFw
    double TOFwSDZ(const double dz, const double pT, const int charge);
+   /// @brief Returns sigmalized dphi from EMCal
    double EMCalSDPhi(const double dphi, const double pT, const int charge, const int arm, const int sector);
+   /// @brief Returns sigmalized dz from EMCal
    double EMCalSDZ(const double dz, const double pT, const int charge, const int arm, const int sector);
 
    private:

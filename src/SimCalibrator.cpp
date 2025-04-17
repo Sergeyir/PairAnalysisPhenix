@@ -83,6 +83,10 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    else useEMCal = false;
 }
 
+SimCalibrator::PC2SDPhi(const double phi, const double pT, const int charge)
+{
+}
+
 void SimCalibrator::SetParameters(const std::string& inputFileName, 
                                   std::array<std::vector<bool>>& parMeans,
                                   std::array<std::vector<bool>>& parSigmas)
