@@ -63,7 +63,10 @@ add_library(SimTreeReader ${CMAKE_SOURCE_DIR}/src/SimTreeReader.cpp)
 add_library(SingleTrackFunc ${CMAKE_SOURCE_DIR}/src/SingleTrackFunc.cpp)
 add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 
+link_libraries(InputYAMLReader)
+
 add_executable(Cut1D ${CMAKE_SOURCE_DIR}/src/Cut1D.cpp)
 add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
+add_executable(SigmalizedResiduals ${CMAKE_SOURCE_DIR}/src/SigmalizedResiduals.cpp)
 
-target_link_libraries(AnalyzeSingleTrack InputYAMLReader SimTreeReader SingleTrackFunc DeadMapCutter)
+target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter)

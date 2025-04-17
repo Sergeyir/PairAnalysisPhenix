@@ -9,6 +9,8 @@
 #ifndef SIGMALIZED_RESIDUALS_HPP
 #define SIGMALIZED_RESIDUALS_HPP
 
+#include <thread>
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -26,6 +28,8 @@
 #include "MathTools.hpp"
 
 #include "TCanvasTools.hpp"
+
+#include "PBar.hpp"
 
 #include "InputYAMLReader.hpp"
 
@@ -48,9 +52,9 @@ namespace SigmalizedResiduals
    // Charges of particles to be analyzed independently
    const std::array<int, 2> particleCharges{1, -1};
    /// Names of variables to be calibrated
-   std::array<std::string, 2> variableName{"dphi", "dz"};
+   std::array<std::string, 2> variableNames{"dphi", "dz"};
    /// Names of variables to be calibrated in LaTex format
-   std::array<std::string, 2> variableNameTex{"d#varphi", "dz_{DC}"};
+   std::array<std::string, 2> variableNamesTex{"d#varphi", "dz_{DC}"};
    /// Output directory
    std::string outputDir;
    /// Input file
@@ -65,6 +69,12 @@ namespace SigmalizedResiduals
    /// approximation algorithm has only limited resource to perform the gradient descent
    /// This value will be read and updated from .json calibration input file
    const unsigned int fitNTries = 5;
+   /// progress bar
+   ProgressBar pBar("BLOCK1");
+   /// Number of calls in an iteration. Needed by pBar
+   unsigned long numberOfCalls = 0;
+   /// Overal number of iterations. Needed by pBar
+   unsigned long numberOfIterations = 0;
 };
 int main(int argc, char **argv);
 
