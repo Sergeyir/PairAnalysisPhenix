@@ -20,6 +20,10 @@ int main(int argc, char **argv)
 {
    using namespace SigmalizedResiduals;
 
+   TH1::AddDirectory(false);
+   TH2::AddDirectory(false);
+   TH3::AddDirectory(false);
+
    if (argc < 2 || argc > 3) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + 
@@ -57,7 +61,8 @@ int main(int argc, char **argv)
    const std::string inputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
    CppTools::CheckInputFile(inputFileName);
 
-   inputFile = std::unique_ptr<TFile>(TFile::Open(inputFileName.c_str(), "READ"));
+   inputFile = TFile::Open(inputFileName.c_str(), "READ");
+   outputFile = TFile::Open((outputDir + "all_fits.root").c_str(), "RECREATE");
 
    const std::string detectorsConfiguration = 
       inputYAMLMain["detectors_configuration"].as<std::string>();
@@ -103,7 +108,10 @@ int main(int argc, char **argv)
    }
 
    pBar.Print(1.);
- 
+
+   inputFile->Close();
+   outputFile->Close();
+
    return 0;
 }
 
@@ -132,20 +140,49 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
    {
       if (distrDValVsPT->Integral(1, distrDValVsPT->GetXaxis()->GetNbins(), i, i) < 1e-15) continue;
 
-      TH1D *distrDValProj = 
-         distrDValVsPT->ProjectionX((distrDValVsPT->GetName() + std::to_string(i)).c_str(), i, i);
+      TH1D *distrDValProj = distrDValVsPT->
+         ProjectionX((variableName + ": " + detectorName + ", " + chargeName + ", pT" +
+                      CppTools::DtoStr(distrDValVsPT->GetYaxis()->GetBinLowEdge(i), 1) + "-" + 
+                      CppTools::DtoStr(distrDValVsPT->GetYaxis()->
+                             GetBinLowEdge(distrDValVsPT->GetYaxis()->GetNbins()), 
+                      1)).c_str(), i, i);
 
       TF1 fitDistrDVal((detectorName + variableName + chargeName + std::to_string(i)).c_str(), 
                        "gaus(0) + gaus(3)");
 
+      // set of alternative fit functions used for uncertainty estimation 
+      // by varying ranges of approximation around mean by n*sigma of the main fit
+      // for first vector approximation ranges are varied symmetrically within mean
+      // for second vector approximation ranges are varied within right of mean; left range is 1sigma
+      // for third vector approximation ranges are varied within left of mean; right range is 1sigma
+      std::vector<TF1> fitDistrDValAlt, fitDistrDValAltRight, fitDistrDValAltLeft;
+
       const double maxBinVal = distrDValProj->GetBinContent(distrDValProj->GetMaximumBin());
+
+      for (unsigned long i = 0; i < 4; i++)
+      {
+         fitDistrDValAlt.emplace_back(("fitDistrDValAlt_" + std::to_string(i) + 
+                                      "_" + std::to_string(i)).c_str(), "gaus(0) + gaus(3)");
+         fitDistrDValAlt.back().SetParLimits(0, maxBinVal/2., maxBinVal);
+         fitDistrDValAlt.back().SetParLimits(3, maxBinVal/20., maxBinVal);
+         fitDistrDValAltRight.emplace_back(("fitDistrDValAltRight_" + std::to_string(i) + 
+                                         "_" + std::to_string(i)).c_str(), "gaus(0) + gaus(3)");
+         fitDistrDValAltRight.back().SetParLimits(0, maxBinVal/2., maxBinVal);
+         fitDistrDValAltRight.back().SetParLimits(3, maxBinVal/20., maxBinVal);
+         fitDistrDValAltLeft.emplace_back(("fitDistrDValAltLeft_" + std::to_string(i) + 
+                                         "_" + std::to_string(i)).c_str(), "gaus(0) + gaus(3)");
+         fitDistrDValAltLeft.back().SetParLimits(0, maxBinVal/2., maxBinVal);
+         fitDistrDValAltLeft.back().SetParLimits(3, maxBinVal/20., maxBinVal);
+      }
 
       fitDistrDVal.SetParameters(maxBinVal, 0., distrDValProj->GetXaxis()->GetBinWidth(1)*10.);
 
-      fitDistrDVal.SetParLimits(0, maxBinVal/2., maxBinVal);
+      fitDistrDVal.SetParLimits(0, maxBinVal/3., maxBinVal);
       fitDistrDVal.SetParLimits(1, xMin/5., xMax/5.);
-      fitDistrDVal.SetParLimits(2, distrDValProj->GetXaxis()->GetBinWidth(1), xMax/2.);
-      fitDistrDVal.SetParLimits(4, xMax/3., xMax*3.);
+      fitDistrDVal.SetParLimits(2, distrDValProj->GetXaxis()->GetBinWidth(1)*10., xMax/2.);
+      fitDistrDVal.SetParLimits(3, maxBinVal/20., maxBinVal/3.);
+      fitDistrDVal.SetParLimits(4, xMin/5., xMax/5.);
+      fitDistrDVal.SetParLimits(5, xMax/5., xMax*5.);
 
       fitDistrDVal.SetRange(xMin, xMax);
 
@@ -157,10 +194,10 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
                                    (1. + 2./static_cast<double>(i*i*i)),
                                    fitDistrDVal.GetParameter(0)*
                                    (1. + 2./static_cast<double>(i*i*i)));
-         fitDistrDVal.SetParLimits(1, fitDistrDVal.GetParameter(1)*
-                                   (1. - 6./static_cast<double>(i*i*i)),
-                                   fitDistrDVal.GetParameter(1)*
-                                   (1. + 4./static_cast<double>(i*i*i)));
+         fitDistrDVal.SetParLimits(1, fitDistrDVal.GetParameter(1) - 
+                                   fitDistrDVal.GetParameter(2)*5./static_cast<double>(i*i*i),
+                                   fitDistrDVal.GetParameter(1) + 
+                                   fitDistrDVal.GetParameter(2)*5./static_cast<double>(i*i*i));
          fitDistrDVal.SetParLimits(2, fitDistrDVal.GetParameter(2)/
                                    (1. + 5./static_cast<double>(i*i*i)),
                                    fitDistrDVal.GetParameter(2)*
@@ -169,10 +206,10 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
                                    (1. + 2./static_cast<double>(i*i*i)),
                                    fitDistrDVal.GetParameter(3)*
                                    (1. + 2./static_cast<double>(i*i*i)));
-         fitDistrDVal.SetParLimits(4, fitDistrDVal.GetParameter(4)*
-                                   (1. - 6./static_cast<double>(i*i*i)),
-                                   fitDistrDVal.GetParameter(4)*
-                                   (1. + 4./static_cast<double>(i*i*i)));
+         fitDistrDVal.SetParLimits(4, fitDistrDVal.GetParameter(4) - 
+                                   fitDistrDVal.GetParameter(5)/static_cast<double>(i*i*i),
+                                   fitDistrDVal.GetParameter(4) + 
+                                   fitDistrDVal.GetParameter(5)/static_cast<double>(i*i*i));
          fitDistrDVal.SetParLimits(5, fitDistrDVal.GetParameter(5)/
                                    (1. + 5./static_cast<double>(i*i*i)),
                                    fitDistrDVal.GetParameter(5)*
@@ -183,11 +220,91 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
       }
 
       distrDValProj->Fit(&fitDistrDVal, "RQMB");
+
+      for (unsigned long i = 0; i < fitDistrDValAlt.size(); i++)
+      {
+         fitDistrDValAlt[i].
+            SetRange(fitDistrDVal.GetParameter(1) - fitDistrDVal.GetParameter(2)*
+                     static_cast<double>(i + 1)*2., fitDistrDVal.GetParameter(1) + 
+                     fitDistrDVal.GetParameter(2)*static_cast<double>(i + 1)*2.);
+         fitDistrDValAltRight[i].
+            SetRange(fitDistrDVal.GetParameter(1) - fitDistrDVal.GetParameter(2), 
+                     fitDistrDVal.GetParameter(1) + 
+                     fitDistrDVal.GetParameter(2)*static_cast<double>(i + 1)*2.);
+         fitDistrDValAltLeft[i].
+            SetRange(fitDistrDVal.GetParameter(1) - fitDistrDVal.GetParameter(2)*
+                     static_cast<double>(i + 1)*2., fitDistrDVal.GetParameter(1) + 
+                     fitDistrDVal.GetParameter(2));
+
+         for (int j = 0; j < fitDistrDVal.GetNpar(); j++)
+         {
+            fitDistrDValAlt[i].SetParameter(j, fitDistrDVal.GetParameter(j)); 
+            fitDistrDValAltRight[i].SetParameter(j, fitDistrDVal.GetParameter(j)); 
+            fitDistrDValAltLeft[i].SetParameter(j, fitDistrDVal.GetParameter(j)); 
+
+            if (j == 0 || j == 3)
+            {
+               fitDistrDValAlt[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.2, 
+                                              fitDistrDVal.GetParameter(j)*1.2); 
+               fitDistrDValAltRight[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.2, 
+                                                   fitDistrDVal.GetParameter(j)*1.2); 
+               fitDistrDValAltLeft[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.2, 
+                                                  fitDistrDVal.GetParameter(j)*1.2); 
+            }
+            else if (j == 2 || j == 4)
+            {
+               fitDistrDValAlt[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.5, 
+                                              fitDistrDVal.GetParameter(j)*1.5); 
+               fitDistrDValAltRight[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.5, 
+                                                   fitDistrDVal.GetParameter(j)*1.5); 
+               fitDistrDValAltLeft[i].SetParLimits(j, fitDistrDVal.GetParameter(j)/1.5, 
+                                                   fitDistrDVal.GetParameter(j)*1.5); 
+            }
+         }
+         distrDValProj->Fit(&fitDistrDValAlt[i], "RQMBNL");
+         distrDValProj->Fit(&fitDistrDValAltRight[i], "RQMBNL");
+         distrDValProj->Fit(&fitDistrDValAltLeft[i], "RQMBNL");
+      }
+
+      distrDValProj->Write();
       
       grMeansDVal.AddPoint(distrDValVsPT->GetYaxis()->GetBinCenter(i), 
                            fitDistrDVal.GetParameter(1));
       grSigmasDVal.AddPoint(distrDValVsPT->GetYaxis()->GetBinCenter(i), 
                             fitDistrDVal.GetParameter(2));
+
+      const double meanError = 
+         CppTools::StandardError(fitDistrDValAlt[0].GetParameter(1),
+                                 fitDistrDValAlt[1].GetParameter(1),
+                                 fitDistrDValAlt[2].GetParameter(1),
+                                 fitDistrDValAlt[3].GetParameter(1), 
+                                 fitDistrDValAltRight[0].GetParameter(1),
+                                 fitDistrDValAltRight[1].GetParameter(1),
+                                 fitDistrDValAltRight[2].GetParameter(1),
+                                 fitDistrDValAltRight[3].GetParameter(1),
+                                 fitDistrDValAltLeft[0].GetParameter(1),
+                                 fitDistrDValAltLeft[1].GetParameter(1),
+                                 fitDistrDValAltLeft[2].GetParameter(1),
+                                 fitDistrDValAltLeft[3].GetParameter(1),
+                                 fitDistrDVal.GetParameter(1));
+
+      const double sigmaError = 
+         CppTools::StandardError(fitDistrDValAlt[0].GetParameter(2),
+                                 fitDistrDValAlt[1].GetParameter(2),
+                                 fitDistrDValAlt[2].GetParameter(2),
+                                 fitDistrDValAlt[3].GetParameter(2), 
+                                 fitDistrDValAltRight[0].GetParameter(2),
+                                 fitDistrDValAltRight[1].GetParameter(2),
+                                 fitDistrDValAltRight[2].GetParameter(2),
+                                 fitDistrDValAltRight[3].GetParameter(2),
+                                 fitDistrDValAltLeft[0].GetParameter(2),
+                                 fitDistrDValAltLeft[1].GetParameter(2),
+                                 fitDistrDValAltLeft[2].GetParameter(2),
+                                 fitDistrDValAltLeft[3].GetParameter(2),
+                                 fitDistrDVal.GetParameter(2));
+
+      grMeansDVal.SetPointError(grMeansDVal.GetN() - 1, 0., meanError);
+      grSigmasDVal.SetPointError(grSigmasDVal.GetN() - 1, 0., sigmaError);
    }
 
    if (grMeansDVal.GetN() == 0) 
@@ -226,7 +343,9 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
    fitParVsPTFrame.Draw("SAME AXIS X+ Y+");
 
    grMeansDVal.SetMarkerStyle(20);
-   grMeansDVal.SetMarkerColor(kBlack);
+   grMeansDVal.SetLineColorAlpha(kBlack, 0.8);
+   grMeansDVal.SetLineWidth(2);
+   grMeansDVal.SetMarkerColorAlpha(kBlack, 0.8);
    grMeansDVal.SetMarkerSize(1.);
 
    grMeansDVal.Clone()->Draw("P");
@@ -237,29 +356,14 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
    TCanvas sigmasVsPTCanv("means vs pT canvas", "", 800, 800);
 
    fitParVsPTFrame.SetMinimum(CppTools::Minimum(TMath::MinElement(grSigmasDVal.GetN(), 
-                                                                  grSigmasDVal.GetY())));
-   if (fitParVsPTFrame.GetMinimum() < 0.) 
-   {
-      fitParVsPTFrame.SetMinimum(fitParVsPTFrame.GetMinimum()*1.5);
-   }
-   else
-   {
-      fitParVsPTFrame.SetMinimum(fitParVsPTFrame.GetMinimum()/1.5);
-   }
-
+                                                                  grSigmasDVal.GetY()))/1.5);
    fitParVsPTFrame.SetMaximum(CppTools::Maximum(TMath::MaxElement(grSigmasDVal.GetN(), 
-                                                                  grSigmasDVal.GetY())));
-   if (fitParVsPTFrame.GetMaximum() < 0.) 
-   {
-      fitParVsPTFrame.SetMaximum(fitParVsPTFrame.GetMaximum()*1.5);
-   }
-   else
-   {
-      fitParVsPTFrame.SetMaximum(fitParVsPTFrame.GetMaximum()/1.5);
-   }
+                                                                  grSigmasDVal.GetY()))*1.5);
 
    grSigmasDVal.SetMarkerStyle(20);
-   grSigmasDVal.SetMarkerColor(kBlack);
+   grSigmasDVal.SetLineColorAlpha(kBlack, 0.8);
+   grSigmasDVal.SetLineWidth(2);
+   grSigmasDVal.SetMarkerColorAlpha(kBlack, 0.8);
    grSigmasDVal.SetMarkerSize(1);
 
    fitParVsPTFrame.Draw("AXIS");

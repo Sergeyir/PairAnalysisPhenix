@@ -24,6 +24,7 @@
 #include "TLegend.h"
 #include "TMath.h"
 
+#include "StrTools.hpp"
 #include "IOTools.hpp"
 #include "MathTools.hpp"
 
@@ -58,7 +59,9 @@ namespace SigmalizedResiduals
    /// Output directory
    std::string outputDir;
    /// Input file
-   std::unique_ptr<TFile> inputFile;
+   TFile *inputFile;
+   /// Output file
+   TFile *outputFile;
    /// Minimum pT of the whole pT range
    double pTMin;
    /// Maximum pT of the whole pT range
