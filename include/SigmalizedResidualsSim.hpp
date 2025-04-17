@@ -1,13 +1,13 @@
 /** 
- *  @file   SigmalizedResiduals.hpp 
+ *  @file   SigmaliedResidualsSim.hpp 
  *  @brief  Contains declarations of functions and variables that are used for estimation of values for calibration of sigmalized residuals sdphi and sdz from dphi and dz values from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef SIGMALIZED_RESIDUALS_HPP
-#define SIGMALIZED_RESIDUALS_HPP
+#ifndef SIGMALIZED_RESIDUALS_SIM_HPP
+#define SIGMALIZED_RESIDUALS_SIM_HPP
 
 #include <thread>
 
@@ -34,18 +34,25 @@
 
 #include "InputYAMLReader.hpp"
 
-/*! @namespace SigmalizedResiduals
- * @brief Contains all functions and containers for SigmalizedResiduals.cpp and CheckSigmalizedResiduals.cpp
+/*! @namespace SigmaliedResidualsSim
+ * @brief Contains all functions and containers for SigmaliedResidualsSim.cpp and CheckSigmaliedResidualsSim.cpp
  */
-namespace SigmalizedResiduals
+namespace SigmaliedResidualsSim
 {
-/*! @brief Performs sdz and sdphi calibrations from dphi and dz values for the given detector from the PHENIX simulation
+/*! @brief Performs sdz and sdphi calibrations from dphi and dz values for the given detector, variable, and charge from the PHENIX simulation
  * @param[in] detectorName name of the detector for which the calibrations will be performed
  * @param[in] variableName name of the variable the calibration will be performed for 
  * @param[in] charge the charge of the tracks the calibration will be performed for
  */
+   void PerformCalibrationsVsPT(const std::string& detectorName, 
+                                const std::string& variableName, const int charge);
+/*! @brief Automates calling PerformCalibrationVsPT (for all charges and variables) for 
+ * the given detector from the PHENIX simulation
+ * @param[in] detectorName name of the detector for which the automation will be performed
+ * @param[in] performCalibration shows whether the calibration will be performed 
+ */
    void PerformCalibrationsForDetector(const std::string& detectorName, 
-                                       const std::string& variableName, const int charge);
+                                       const bool performCalibration);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
@@ -58,6 +65,8 @@ namespace SigmalizedResiduals
    std::array<std::string, 2> variableNamesTex{"d#varphi", "dz_{DC}"};
    /// Output directory
    std::string outputDir;
+   /// File in which approximation parameters of means and sigmas will be written
+   std::ofstream parametersOutput;
    /// Input file
    TFile *inputFile;
    /// Output file
@@ -79,6 +88,7 @@ namespace SigmalizedResiduals
    /// Overal number of iterations. Needed by pBar
    unsigned long numberOfIterations = 0;
 };
+
 int main(int argc, char **argv);
 
-#endif /* SIGMALIZED_RESIDUALS_HPP */
+#endif /* SIGMALIZED_RESIDUALS_SIM_HPP */

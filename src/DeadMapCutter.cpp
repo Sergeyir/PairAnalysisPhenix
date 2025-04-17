@@ -21,7 +21,12 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
 
 void DeadMapCutter::Initialize(const std::string& runName, const std::string& options)
 {
-   if (options.size() > 0 && options[0] == '1')
+   if (options.size() != 6)
+   {
+      CppTools::PrintError("DeadMapCutter: options size is " + std::to_string(options.size()) + 
+                           " while 6 has been expected");
+   }
+   if (options[0] == '1')
    {
       doCutDC = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe, zDC>=0.txt", 
@@ -35,7 +40,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutDC = false;
 
-   if (options.size() > 1 && options[1] == '1')
+   if (options[1] == '1')
    {
       doCutPC1 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
@@ -45,7 +50,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutPC1 = false;
 
-   if (options.size() > 2 && options[2] == '1')
+   if (options[2] == '1')
    {
       doCutPC2 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC2.txt", 
@@ -53,7 +58,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutPC2 = false;
 
-   if (options.size() > 3 && options[3] == '1')
+   if (options[3] == '1')
    {
       doCutPC3 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
@@ -63,7 +68,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutPC3 = false;
 
-   if (options.size() > 4 && options[4] == '1')
+   if (options[4] == '1')
    {
       doCutTOFe = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFe.txt", 
@@ -73,7 +78,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutTOFe = false;
 
-   if (options.size() > 5 && options[5] == '1')
+   if (options[5] == '1')
    {
       doCutTOFw = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw, ptofy<100.txt", 
@@ -85,7 +90,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    else doCutTOFw = false;
 
-   if (options.size() > 6 && options[6] == '1')
+   if (options[6] == '1')
    {
       doCutEMCal = true;
       for (int i = 0; i < 4; i++)
@@ -97,11 +102,6 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       }
    }
    else doCutEMCal = false;
-
-   if (options.size() > 7) 
-   {
-      CppTools::PrintError("DeadMapCutter: Extra options were specified in the constructor");
-   }
 }
 
 bool DeadMapCutter::IsDeadDC(const int arm, const double zed, 

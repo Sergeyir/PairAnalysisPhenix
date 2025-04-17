@@ -67,6 +67,6 @@ link_libraries(InputYAMLReader)
 
 add_executable(Cut1D ${CMAKE_SOURCE_DIR}/src/Cut1D.cpp)
 add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
-add_executable(SigmalizedResiduals ${CMAKE_SOURCE_DIR}/src/SigmalizedResiduals.cpp)
+add_executable(SigmalizedResidualsSim ${CMAKE_SOURCE_DIR}/src/SigmalizedResidualsSim.cpp)
 
 target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter)

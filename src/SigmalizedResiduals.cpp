@@ -1,24 +1,24 @@
 /** 
- *  @file   SigmalizedResiduals.cpp 
+ *  @file   SigmalizedResidualsSimCailbration.cpp 
  *  @brief  Contains realisation of functions that are used for estimation of values for calibration of sigmalized residuals dphi and dz from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef SIGMALIZED_RESIDUALS_CPP
-#define SIGMALIZED_RESIDUALS_CPP
+#ifndef SIGMALIZED_RESIDUALS_SIM_CPP
+#define SIGMALIZED_RESIDUALS_SIM_CPP
 
-#include "../include/SigmalizedResiduals.hpp"
+#include "../include/SigmalizedResidualsSim.hpp"
 
 // this namespace is only used so that documentation will not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
-using namespace SigmalizedResiduals;
+using namespace SigmalizedResidualsSim;
 
 int main(int argc, char **argv)
 {
-   using namespace SigmalizedResiduals;
+   using namespace SigmalizedResidualsSim;
 
    TH1::AddDirectory(false);
    TH2::AddDirectory(false);
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + 
                            " parameter(s) were provided \n";
-      errMsg += "Usage: bin/SigmalizedResiduals inputFile numberOfThreads=" + 
+      errMsg += "Usage: bin/SigmalizedResidualsSim inputFile numberOfThreads=" + 
                 std::to_string(std::thread::hardware_concurrency()) + "*\n";
       errMsg += "*: default argument is the number of threads on the current machine \n";
       CppTools::PrintError(errMsg);
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
    ROOT::EnableImplicitMT(numberOfThreads);
 
-   outputDir = "output/SigmalizedResiduals/" + runName + "/";
+   outputDir = "output/SigmalizedResidualsSim/" + runName + "/";
    system(("mkdir -p " + outputDir).c_str());
 
    const std::string inputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
@@ -66,6 +66,13 @@ int main(int argc, char **argv)
 
    const std::string detectorsConfiguration = 
       inputYAMLMain["detectors_configuration"].as<std::string>();
+   
+   if (detectorsConfiguration.size() != 6)
+   {
+      CppTools::PrintError("Detector configuration size is " + 
+                           std::to_string(detectorsConfiguration.size()) + 
+                           " while 6 has been expected");
+   }
 
    if (detectorsConfiguration[2] == '1') numberOfIterations += 1;
    if (detectorsConfiguration[3] == '1') numberOfIterations += 2;
@@ -75,36 +82,17 @@ int main(int argc, char **argv)
 
    numberOfIterations *= 4;
 
-   for (const std::string& variableName : variableNames)
+   system(("mkdir -p data/Parameters/SigmalizedResidualsSim/" + runName).c_str());
+
+   PerformCalibrationsForDetector("PC2", (detectorsConfiguration[2] == '1'));
+   PerformCalibrationsForDetector("PC3e", (detectorsConfiguration[3] == '1'));
+   PerformCalibrationsForDetector("PC3w", (detectorsConfiguration[3] == '1'));
+   PerformCalibrationsForDetector("TOFe", (detectorsConfiguration[4] == '1'));
+   PerformCalibrationsForDetector("TOFw", (detectorsConfiguration[5] == '1'));
+   for (int i = 0; i < 4; i++)
    {
-      for (const int charge : particleCharges)
-      {
-         if (detectorsConfiguration[2] == '1') 
-         {
-            PerformCalibrationsForDetector("PC2", variableName, charge);
-         }
-         if (detectorsConfiguration[3] == '1') 
-         {
-            PerformCalibrationsForDetector("PC3e", variableName, charge);
-            PerformCalibrationsForDetector("PC3w", variableName, charge);
-         }
-         if (detectorsConfiguration[4] == '1') 
-         {
-            PerformCalibrationsForDetector("TOFe", variableName, charge);
-         }
-         if (detectorsConfiguration[5] == '1') 
-         {
-            PerformCalibrationsForDetector("TOFw", variableName, charge);
-         }
-         if (detectorsConfiguration[6] == '1') 
-         {
-            for (int i = 0; i < 4; i++)
-            {
-               PerformCalibrationsForDetector("EMCale" + std::to_string(i), variableName, charge);
-               PerformCalibrationsForDetector("EMCalw" + std::to_string(i), variableName, charge);
-            }
-         }
-      }
+      PerformCalibrationsForDetector("EMCale" + std::to_string(i), detectorsConfiguration[6] == '1');
+      PerformCalibrationsForDetector("EMCalw" + std::to_string(i), detectorsConfiguration[6] == '1');
    }
 
    pBar.Print(1.);
@@ -115,9 +103,41 @@ int main(int argc, char **argv)
    return 0;
 }
 
-void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& detectorName, 
-                                                         const std::string& variableName,
-                                                         const int charge)
+void SigmalizedResidualsSim::PerformCalibrationsForDetector(const std::string& detectorName,
+                                                         const bool performCalibration)
+{
+   parametersOutput.open("data/Parameters/SigmalizedResidualsSimSim/" + 
+                         runName + "/" + detectorName + ".txt");
+
+   if (!performCalibration)
+   {
+      parametersOutput << 0;
+      parametersOutput.close();
+      return;
+   }
+   
+   // writing the calibration status and the number of parameters of approximation
+   parametersOutput << 1 << " " << 4 << " " << 3 << std::endl;
+
+   for (unsigned long i = 0; i < variableNames.size(); i++)
+   {
+      for (unsigned long j = 0; j < particleCharges.size(); j++)
+      {
+         PerformCalibrationsVsPT(detectorName, variableNames[i], particleCharges[j]);
+
+         if (i < variableNames.size() - 1 || j < particleCharges.size() - 1)
+         {
+            parametersOutput << std::endl;
+         }
+      }
+   }
+
+   parametersOutput.close();
+}
+
+void SigmalizedResidualsSim::PerformCalibrationsVsPT(const std::string& detectorName, 
+                                                  const std::string& variableName,
+                                                  const int charge)
 {
    pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
@@ -136,9 +156,13 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
    const double xMax = 
       distrDValVsPT->GetXaxis()->GetBinUpEdge(distrDValVsPT->GetXaxis()->GetNbins());
 
+   double pTMin = 1e31;
+
    for (int i = 1; i < distrDValVsPT->GetYaxis()->FindBin(3.); i++) // pT < 3 GeV/c
    {
       if (distrDValVsPT->Integral(1, distrDValVsPT->GetXaxis()->GetNbins(), i, i) < 1e-15) continue;
+
+      pTMin = CppTools::Minimum(pTMin, distrDValVsPT->GetYaxis()->GetBinCenter(i));
 
       TH1D *distrDValProj = distrDValVsPT->
          ProjectionX((variableName + ": " + detectorName + ", " + chargeName + ", pT" +
@@ -313,9 +337,23 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
                            ", " + variableName + ", " + chargeName + " equals 0");
    }
 
+   TF1 fitMeans("means fit", "[0] + [1]/x + [2]/x^2 + [3]*x", pTMin - 0.1, 3.1);
+   TF1 fitSigmas("means fit", "[0] + [1]/x + [2]*x", pTMin - 0.1, 3.1);
+
+   if (grMeansDVal.GetN() == 1) 
+   {
+      fitMeans.SetParameter(0, grMeansDVal.GetY()[0]);
+      fitSigmas.SetParameter(0, grSigmasDVal.GetY()[0]);
+   }
+   else
+   {
+      grMeansDVal.Fit(&fitMeans, "RQMBN");
+      grSigmasDVal.Fit(&fitSigmas, "RQMBN");
+   }
+
    TCanvas meansVsPTCanv("means vs pT canvas", "", 800, 800);
 
-   TH1F fitParVsPTFrame("means and sigmas frame", "", 10, 0., 10.);
+   TH1F fitParVsPTFrame("means and sigmas frame", "", 10, pTMin, 3.1);
 
    fitParVsPTFrame.SetMinimum(CppTools::Minimum(TMath::MinElement(grMeansDVal.GetN(), 
                                                                   grMeansDVal.GetY())));
@@ -343,12 +381,21 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
    fitParVsPTFrame.Draw("SAME AXIS X+ Y+");
 
    grMeansDVal.SetMarkerStyle(20);
-   grMeansDVal.SetLineColorAlpha(kBlack, 0.8);
+   grMeansDVal.SetLineColor(kBlack);
    grMeansDVal.SetLineWidth(2);
-   grMeansDVal.SetMarkerColorAlpha(kBlack, 0.8);
+   grMeansDVal.SetMarkerColor(kBlack);
    grMeansDVal.SetMarkerSize(1.);
 
+   fitMeans.SetLineColor(kRed-3);
+
+   fitMeans.Clone()->Draw("SAME");
    grMeansDVal.Clone()->Draw("P");
+
+   for (int i = 0; i < fitMeans.GetNpar(); i++)
+   {
+      parametersOutput << fitMeans.GetParameter(i);
+      parametersOutput << " ";
+   }
 
    ROOTTools::PrintCanvas(&meansVsPTCanv, outputDir + "means_" + variableName + "_" + 
                           detectorName + "_" + chargeNameShort);
@@ -361,20 +408,29 @@ void SigmalizedResiduals::PerformCalibrationsForDetector(const std::string& dete
                                                                   grSigmasDVal.GetY()))*1.5);
 
    grSigmasDVal.SetMarkerStyle(20);
-   grSigmasDVal.SetLineColorAlpha(kBlack, 0.8);
+   grSigmasDVal.SetLineColor(kBlack);
    grSigmasDVal.SetLineWidth(2);
-   grSigmasDVal.SetMarkerColorAlpha(kBlack, 0.8);
+   grSigmasDVal.SetMarkerColor(kBlack);
    grSigmasDVal.SetMarkerSize(1);
 
    fitParVsPTFrame.Draw("AXIS");
    fitParVsPTFrame.Draw("SAME AXIS X+ Y+");
 
+   fitSigmas.SetLineColor(kRed-3);
+
+   fitSigmas.Clone()->Draw("SAME");
    grSigmasDVal.Clone()->Draw("P");
 
    ROOTTools::PrintCanvas(&sigmasVsPTCanv, outputDir + "sigmas_" +variableName + "_" + 
                           detectorName + "_" + chargeNameShort);
 
+   for (int i = 0; i < fitSigmas.GetNpar(); i++)
+   {
+      parametersOutput << fitSigmas.GetParameter(i);
+      if (i < fitSigmas.GetNpar() - 1) parametersOutput << " ";
+   }
+
    numberOfCalls++;
 }
 
-#endif /* SIGMALIZED_RESIDUALS_CPP */
+#endif /* SIGMALIZED_RESIDUALS_SIM_CPP */
