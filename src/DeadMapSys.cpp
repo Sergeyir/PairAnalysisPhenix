@@ -6,7 +6,7 @@ struct
 	Table table{6};
 
 	TFile *dataFile = TFile::Open(("data/Real/" + runName + "/SingleTrack/sum.root").c_str());
-	TFile *simFile = TFile::Open(("data/PostSim/" + runName + "/Heatmaps/all.root").c_str());
+	TFile *simFile = TFile::Open(("data/PostSim/" + runName + "/SingleTrack/all.root").c_str());
 
 	const int sysNDiv = 4;
 } Par;
@@ -499,6 +499,21 @@ double GetUncertainty(const std::string& histName, const std::string &detectorNa
                                     detectorName, title, xTitle, yTitle, rebinX, rebinY);
 }
 
+int main(int argc, char **argv)
+{
+   if (argc < 2 || argc > 3) 
+   {
+      std::string errMsg = "Expected 1 parameter while " + std::to_string(argc) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/DeadMapSys ";
+      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
+      CppTools::PrintError(errMsg);
+   }
+ 
+   CppTools::CheckInputFile(argv[1]);
+
+   inputYAMLMain.OpenFile(argv[1]);
+   inputYAMLMain.CheckStatus("main");
+}
 void DM()
 {
 	gROOT->SetBatch(kTRUE);

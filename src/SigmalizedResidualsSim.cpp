@@ -67,11 +67,11 @@ int main(int argc, char **argv)
    const std::string detectorsConfiguration = 
       inputYAMLMain["detectors_configuration"].as<std::string>();
    
-   if (detectorsConfiguration.size() != 6)
+   if (detectorsConfiguration.size() != 7)
    {
       CppTools::PrintError("Detector configuration size is " + 
                            std::to_string(detectorsConfiguration.size()) + 
-                           " while 6 has been expected");
+                           " while 7 has been expected");
    }
 
    if (detectorsConfiguration[2] == '1') numberOfIterations += 1;

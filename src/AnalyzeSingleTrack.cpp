@@ -112,8 +112,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             if (pT < pTMin) continue;
             if (IsQualityCut(STR.qual(i))) continue;
 
-            int charge = STR.charge(i);
+            const int charge = STR.charge(i);
             if (charge != -1 && charge != 1) continue;
+
+            const int dcarm = STR.dcarm(i);
 
             const double zed = STR.zed(i);
             if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
@@ -135,7 +137,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             double alphaReweight = 1.;
 
-            if (STR.dcarm(i) == 0)
+            if (dcarm == 0)
             {
                if (zed >= 0) 
                {
@@ -170,11 +172,11 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            bool isDCPC1TrackCut = dmCutter.IsDeadDC(STR.dcarm(i), zed, board, alpha);
+            bool isDCPC1TrackCut = dmCutter.IsDeadDC(dcarm, zed, board, alpha);
 
             const double ppc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
 
-            if (STR.dcarm(i) == 1) 
+            if (dcarm == 1) 
             {
                histContainer.heatmapPC1w->Fill(STR.ppc1z(i), ppc1phi, eventWeight*alphaReweight);
             }
@@ -184,7 +186,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.heatmapPC1e->Fill(STR.ppc1z(i), ppc1phi + 2.*M_PI, 
                                                   eventWeight*alphaReweight);
-                  if (dmCutter.IsDeadPC1(STR.dcarm(i), STR.ppc1z(i), ppc1phi + 2.*M_PI))
+                  if (dmCutter.IsDeadPC1(dcarm, STR.ppc1z(i), ppc1phi + 2.*M_PI))
                   {
                      isDCPC1TrackCut = false;
                   }
@@ -193,7 +195,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.heatmapPC1e->Fill(STR.ppc1z(i), ppc1phi, 
                                                   eventWeight*alphaReweight);
-                  if (dmCutter.IsDeadPC1(STR.dcarm(i), STR.ppc1z(i), ppc1phi + 2.*M_PI))
+                  if (dmCutter.IsDeadPC1(dcarm, STR.ppc1z(i), ppc1phi + 2.*M_PI))
                   {
                      isDCPC1TrackCut = false;
                   }
@@ -204,18 +206,33 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.pc2dphi(i)))
             {
-               if (STR.charge(i) == 1) 
+               if (charge == 1) 
                {
                   histContainer.distrDPhiVsPTPC2Pos->Fill(STR.pc2dphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTPC2Pos->Fill(STR.pc2dz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTPC2Pos->
+                     Fill(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
+                          pT, eventWeight);
+                  histContainer.distrSDZVsPTPC2Pos->
+                     Fill(simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 
+                          pT, eventWeight);
                }
                else
                {
                   histContainer.distrDPhiVsPTPC2Neg->Fill(STR.pc2dphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTPC2Neg->Fill(STR.pc2dz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTPC2Neg->
+                     Fill(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
+                          pT, eventWeight);
+                  histContainer.distrSDZVsPTPC2Neg->
+                     Fill(simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 
+                          pT, eventWeight);
                }
 
-               //if (IsMatch(STR.pc2dphi(i), STR.pc2dz(i), 2., 2.))
+               if (IsMatch(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
+                           simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge)))
                {
                   const double pc2z = STR.ppc2z(i) - STR.pc2dz(i);
                   const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i)) - STR.pc2dphi(i);
@@ -226,38 +243,67 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.pc3dphi(i)))
             {
-               if (STR.dcarm(i) == 0)
+               if (dcarm == 0)
                {
-                  if (STR.charge(i) == 1) 
+                  if (charge == 1) 
                   {
                      histContainer.distrDPhiVsPTPC3ePos->Fill(STR.pc3dphi(i), pT, eventWeight);
                      histContainer.distrDZVsPTPC3ePos->Fill(STR.pc3dz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTPC3ePos->
+                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3ePos->
+                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
+                             pT, eventWeight);
                   }
                   else
                   {
                      histContainer.distrDPhiVsPTPC3eNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
                      histContainer.distrDZVsPTPC3eNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTPC3eNeg->
+                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3eNeg->
+                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
+                             pT, eventWeight);
                   }
                }
                else
                {
-                  if (STR.charge(i) == 1) 
+                  if (charge == 1) 
                   {
                      histContainer.distrDPhiVsPTPC3wPos->Fill(STR.pc3dphi(i), pT, eventWeight);
                      histContainer.distrDZVsPTPC3wPos->Fill(STR.pc3dz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTPC3wPos->
+                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3wPos->
+                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
+                             pT, eventWeight);
                   }
                   else
                   {
                      histContainer.distrDPhiVsPTPC3wNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
                      histContainer.distrDZVsPTPC3wNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTPC3wNeg->
+                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3wNeg->
+                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
+                             pT, eventWeight);
                   }
                }
-               //if (IsMatch(STR.pc3dphi(i), STR.pc3dz(i), 2., 2.))
+               if (IsMatch(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                           simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm)))
                {
                   const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
                   double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i) - STR.pc3dphi(i));
  
-                  if (STR.dcarm(i) == 0) 
+                  if (dcarm == 0) 
                   {
                      if (pc3phi < 0) 
                      {
@@ -275,15 +321,27 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.tofdz(i)))
             {
-               if (STR.charge(i) == 1) 
+               if (charge == 1) 
                {
                   histContainer.distrDPhiVsPTTOFePos->Fill(STR.tofdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFePos->Fill(STR.tofdz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTTOFePos->
+                     Fill(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge),
+                          pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFePos->
+                     Fill(simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge),
+                          pT, eventWeight);
                }
                else
                {
                   histContainer.distrDPhiVsPTTOFeNeg->Fill(STR.tofdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFeNeg->Fill(STR.tofdz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTTOFeNeg->
+                     Fill(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge), pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFeNeg->
+                     Fill(simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge), pT, eventWeight);
                }
 
                const double beta = STR.pltof(i)/STR.ttof(i)/29.97;
@@ -292,9 +350,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                histContainer.distrSlatTOFe->Fill(STR.slat(i), eventWeight*alphaReweight);
                histContainer.distrELossTOFe->Fill(beta, STR.etof(i));
  
-               //if (IsMatch(STR.tofdphi(i), STR.tofdz(i), 2., 2.))// && 
-                  //!dms.IsBadSlat(STR.slat(i)) &&
-                  //STR.etof(i) > eloss) 
+               if (IsMatch(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge), 
+                           simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge)))
                {
                   histContainer.heatmapTOFe->
                      Fill(STR.ptofy(i), STR.ptofz(i), STR.etof(i)*eventWeight*alphaReweight);
@@ -302,17 +359,32 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             }
             else if (IsHit(STR.tofwdz(i)))
             {
-               if (STR.charge(i) == 1) 
+               if (charge == 1) 
                {
                   histContainer.distrDPhiVsPTTOFwPos->Fill(STR.tofwdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFwPos->Fill(STR.tofwdz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTTOFwPos->
+                     Fill(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge), 
+                          pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFwPos->
+                     Fill(simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge), 
+                          pT, eventWeight);
                }
                else
                {
                   histContainer.distrDPhiVsPTTOFwNeg->Fill(STR.tofwdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFwNeg->Fill(STR.tofwdz(i), pT, eventWeight);
+
+                  histContainer.distrSDPhiVsPTTOFwNeg->
+                     Fill(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge),
+                          pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFwNeg->
+                     Fill(simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge),
+                          pT, eventWeight);
                }
-               //if (IsMatch(STR.tofwdphi(i), STR.tofwdz(i), 2., 2.))
+               if (IsMatch(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge), 
+                           simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge)))
                {
                   histContainer.distrStripTOFw->Fill(STR.striptofw(i), eventWeight*alphaReweight);
                   if (STR.ptofwy(i) < 100.) 
@@ -330,37 +402,84 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.emcdz(i)))
             {
-               if (STR.dcarm(i) == 0)
+               if (dcarm == 0)
                {
-                  if (STR.charge(i) == 1) 
+                  if (charge == 1) 
                   {
-                     histContainer.distrDPhiVsPTEMCalePos[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalePos[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalePos[STR.sect(i)]->
+                        Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalePos[STR.sect(i)]->
+                        Fill(STR.emcdz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTEMCalePos[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                      dcarm, STR.sect(i)),
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalePos[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
+                                                    dcarm, STR.sect(i)),
+                             pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTEMCaleNeg[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCaleNeg[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCaleNeg[STR.sect(i)]->
+                        Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCaleNeg[STR.sect(i)]->
+                        Fill(STR.emcdz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTEMCaleNeg[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                      dcarm, STR.sect(i)),
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCaleNeg[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
+                                                    dcarm, STR.sect(i)),
+                             pT, eventWeight);
                   }
                }
                else
                {
-                  if (STR.charge(i) == 1) 
+                  if (charge == 1) 
                   {
-                     histContainer.distrDPhiVsPTEMCalwPos[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalwPos[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalwPos[STR.sect(i)]->
+                        Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwPos[STR.sect(i)]->
+                        Fill(STR.emcdz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTEMCalwPos[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                      dcarm, STR.sect(i)),
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalwPos[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
+                                                    dcarm, STR.sect(i)),
+                             pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTEMCalwNeg[STR.sect(i)]->Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalwNeg[STR.sect(i)]->Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalwNeg[STR.sect(i)]->
+                        Fill(STR.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwNeg[STR.sect(i)]->
+                        Fill(STR.emcdz(i), pT, eventWeight);
+
+                     histContainer.distrSDPhiVsPTEMCalwNeg[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                      dcarm, STR.sect(i)),
+                             pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalwNeg[STR.sect(i)]->
+                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
+                                                    dcarm, STR.sect(i)),
+                             pT, eventWeight);
                   }
                }
 
-               //if (IsMatch(STR.emcdz(i), STR.emcdphi(i), 2., 2.))
+               if (IsMatch(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                    dcarm, STR.sect(i)), 
+                           simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
+                                                  dcarm, STR.sect(i))))
                { 
 
-                  if (STR.dcarm(i) == 0) 
+                  if (dcarm == 0) 
                   {
                      histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
                      histContainer.heatmapEMCale[STR.sect(i)]->
@@ -418,6 +537,7 @@ int main(int argc, char **argv)
    reweightHeatmapsForAlpha = inputYAMLSim["reweight_heatmaps_for_alpha"].as<bool>();
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
+   simCalibrator.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
    if (reweightForSpectra)
    {
@@ -493,9 +613,9 @@ int main(int argc, char **argv)
          for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
          {
             const double board = realDataDCe0->GetXaxis()->GetBinCenter(i);
-            for (int j = 1; j < realDataDCe0->GetYaxis()->GetNbins(); j++)
+            for (int j = 1; j <= realDataDCe0->GetYaxis()->GetNbins(); j++)
             {
-               const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(i);
+               const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(j);
                if (dmCutter.IsDeadDC(1, 1., board, alpha))
                {
                   realDataDCe0->SetBinContent(i, j, 0.);
@@ -508,7 +628,7 @@ int main(int argc, char **argv)
             const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j < realDataDCe1->GetYaxis()->GetNbins(); j++)
             {
-               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(i);
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
                if (dmCutter.IsDeadDC(1, -1., board, alpha))
                {
                   realDataDCe1->SetBinContent(i, j, 0.);
@@ -521,7 +641,7 @@ int main(int argc, char **argv)
             const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j < realDataDCw0->GetYaxis()->GetNbins(); j++)
             {
-               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(i);
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
                if (dmCutter.IsDeadDC(0, 1., board, alpha))
                {
                   realDataDCw0->SetBinContent(i, j, 0.);
@@ -534,7 +654,7 @@ int main(int argc, char **argv)
             const double board = realDataDCw1->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j < realDataDCw1->GetYaxis()->GetNbins(); j++)
             {
-               const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(i);
+               const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(j);
                if (dmCutter.IsDeadDC(0, -1., board, alpha))
                {
                   realDataDCw1->SetBinContent(i, j, 0.);
@@ -574,11 +694,17 @@ int main(int argc, char **argv)
          // capped values do not affect the simulation since they are statistically insufficient
          // capping is only needed to exclude very big weights in some points in the DC map
          // that are not used for better visibility
+         // also setting 0 bins into 1 since some of the areas might have been cut 
+         // when they are assumed to be bad/dead
          for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
          {
             if (alphaReweightDCe0->GetBinContent(i) > 100.)
             {
                alphaReweightDCe0->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCe0->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCe0->SetBinContent(i, 1.);
             }
          }
          for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
@@ -587,6 +713,10 @@ int main(int argc, char **argv)
             {
                alphaReweightDCe1->SetBinContent(i, 100.);
             }
+            if (alphaReweightDCe1->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCe1->SetBinContent(i, 1.);
+            }
          }
          for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
          {
@@ -594,12 +724,20 @@ int main(int argc, char **argv)
             {
                alphaReweightDCw0->SetBinContent(i, 100.);
             }
+            if (alphaReweightDCw0->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCw0->SetBinContent(i, 1.);
+            }
          }
          for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
          {
             if (alphaReweightDCw1->GetBinContent(i) > 100.)
             {
                alphaReweightDCw1->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCw1->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCw1->SetBinContent(i, 1.);
             }
          }
 
@@ -724,12 +862,17 @@ int main(int argc, char **argv)
    }
    system(haddCommand.c_str());
 
+   CppTools::PrintInfo("If you see an error below it's a ROOT thing (ROOT handles weirdly its "\
+                       "objects when they are already deleted with unique_ptr); no worries it's "\
+                       "just an error of destructor, all calculations are finished and all files "\
+                       "are already written");
+
    return 0;
 }
 
 TH2F *AnalyzeSingleTrack::GetHistogramFromFile(TFile& file, const std::string& histName)
 {
-   /// why the f doesn't ROOT allow to read the thing from readonly TFile when its const
+   /// why the f doesn't ROOT allow to read the thing from read only TFile when its const
    TH2F *hist = static_cast<TH2F *>(file.Get(histName.c_str()));
    if (!hist) CppTools::PrintError("Histogram " + histName + " was not found in file " + 
                                    static_cast<std::string>(file.GetName()));
@@ -817,6 +960,26 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.distrDZVsPTTOFwPos = distrDZVsPTTOFwPos.Get();
    copy.distrDPhiVsPTTOFwNeg = distrDPhiVsPTTOFwNeg.Get();
    copy.distrDZVsPTTOFwNeg = distrDZVsPTTOFwNeg.Get();
+   copy.distrSDPhiVsPTPC2Pos = distrSDPhiVsPTPC2Pos.Get();
+   copy.distrSDZVsPTPC2Pos = distrSDZVsPTPC2Pos.Get();
+   copy.distrSDPhiVsPTPC2Neg = distrSDPhiVsPTPC2Neg.Get();
+   copy.distrSDZVsPTPC2Neg = distrSDZVsPTPC2Neg.Get();
+   copy.distrSDPhiVsPTPC3ePos = distrSDPhiVsPTPC3ePos.Get();
+   copy.distrSDZVsPTPC3ePos = distrSDZVsPTPC3ePos.Get();
+   copy.distrSDPhiVsPTPC3eNeg = distrSDPhiVsPTPC3eNeg.Get();
+   copy.distrSDZVsPTPC3eNeg = distrSDZVsPTPC3eNeg.Get();
+   copy.distrSDPhiVsPTPC3wPos = distrSDPhiVsPTPC3wPos.Get();
+   copy.distrSDZVsPTPC3wPos = distrSDZVsPTPC3wPos.Get();
+   copy.distrSDPhiVsPTPC3wNeg = distrSDPhiVsPTPC3wNeg.Get();
+   copy.distrSDZVsPTPC3wNeg = distrSDZVsPTPC3wNeg.Get();
+   copy.distrSDPhiVsPTTOFePos = distrSDPhiVsPTTOFePos.Get();
+   copy.distrSDZVsPTTOFePos = distrSDZVsPTTOFePos.Get();
+   copy.distrSDPhiVsPTTOFeNeg = distrSDPhiVsPTTOFeNeg.Get();
+   copy.distrSDZVsPTTOFeNeg = distrSDZVsPTTOFeNeg.Get();
+   copy.distrSDPhiVsPTTOFwPos = distrSDPhiVsPTTOFwPos.Get();
+   copy.distrSDZVsPTTOFwPos = distrSDZVsPTTOFwPos.Get();
+   copy.distrSDPhiVsPTTOFwNeg = distrSDPhiVsPTTOFwNeg.Get();
+   copy.distrSDZVsPTTOFwNeg = distrSDZVsPTTOFwNeg.Get();
 
    // iterating over EMCal sectors
    for (int i = 0; i < 4; i++)
@@ -833,6 +996,14 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.distrDZVsPTEMCalwPos[i] = distrDZVsPTEMCalwPos[i].Get();
       copy.distrDPhiVsPTEMCalwNeg[i] = distrDPhiVsPTEMCalwNeg[i].Get();
       copy.distrDZVsPTEMCalwNeg[i] = distrDZVsPTEMCalwNeg[i].Get();
+      copy.distrSDPhiVsPTEMCalePos[i] = distrSDPhiVsPTEMCalePos[i].Get();
+      copy.distrSDZVsPTEMCalePos[i] = distrSDZVsPTEMCalePos[i].Get();
+      copy.distrSDPhiVsPTEMCaleNeg[i] = distrSDPhiVsPTEMCaleNeg[i].Get();
+      copy.distrSDZVsPTEMCaleNeg[i] = distrSDZVsPTEMCaleNeg[i].Get();
+      copy.distrSDPhiVsPTEMCalwPos[i] = distrSDPhiVsPTEMCalwPos[i].Get();
+      copy.distrSDZVsPTEMCalwPos[i] = distrSDZVsPTEMCalwPos[i].Get();
+      copy.distrSDPhiVsPTEMCalwNeg[i] = distrSDPhiVsPTEMCalwNeg[i].Get();
+      copy.distrSDZVsPTEMCalwNeg[i] = distrSDZVsPTEMCalwNeg[i].Get();
    }
    return copy;
 }

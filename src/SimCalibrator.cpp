@@ -21,55 +21,85 @@ SimCalibrator::SimCalibrator(const std::string& runName, const std::string& opti
 
 void SimCalibrator::Initialize(const std::string& runName, const std::string& options)
 {
-   if (options.size() != 6)
+   if (options.size() != 7)
    {
       CppTools::PrintError("SimCalibrator: options size is " + std::to_string(options.size()) + 
-                           " while 6 has been expected");
+                           " while 7 has been expected");
    }
 
-   if (options[0] == '1') useDC = true;
-   else useDC = false;
+   if (options[0] == '1') doCalDC = true;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for DC were "\
+                          "specified to not be initialized");
+      doCalDC = false;
+   }
 
-   if (options[1] == '1') usePC1 = true;
-   else usePC1 = false;
+   if (options[1] == '1') doCalPC1 = true;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for PC1 were "\
+                          "specified to not be initialized");
+      doCalPC1 = false;
+   }
 
    if (options[2] == '1')
    {
-      usePC2 = true;
+      doCalPC2 = true;
       SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC2.txt", 
                     parMeansPC2, parSigmasPC2);
    }
-   else usePC2 = false;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for PC2 were "\
+                          "specified to not be initialized");
+      doCalPC2 = false;
+   }
 
    if (options[3] == '1')
    {
-      usePC3 = true;
+      doCalPC3 = true;
       SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC3e.txt", 
                     parMeansPC3e, parSigmasPC3e);
       SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC3w.txt", 
                     parMeansPC3w, parSigmasPC3w);
    }
-   else usePC3 = false;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for PC3 were "\
+                          "specified to not be initialized");
+      doCalPC3 = false;
+   }
 
    if (options[4] == '1')
    {
-      useTOFe = true;
+      doCalTOFe = true;
       SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/TOFe.txt", 
                     parMeansTOFe, parSigmasTOFe);
    }
-   else useTOFe = false;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for TOFe were "\
+                          "specified to not be initialized");
+      doCalTOFe = false;
+   }
 
    if (options[5] == '1')
    {
-      useTOFw = true;
+      doCalTOFw = true;
       SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/TOFw.txt", 
                     parMeansTOFw, parSigmasTOFw);
    }
-   else useTOFw = false;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for TOFw were "\
+                          "specified to not be initialized");
+      doCalTOFw = false;
+   }
 
    if (options[6] == '1')
    {
-      useEMCal = true;
+      doCalEMCal = true;
       for (int i = 0; i < 4; i++)
       {
          SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + 
@@ -80,16 +110,287 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
                        parMeansEMCalw[i], parSigmasEMCalw[i]);
       }
    }
-   else useEMCal = false;
+   else 
+   {
+      CppTools::PrintInfo("SimCalibrator: calibrations for EMCal were "\
+                          "specified to not be initialized");
+      doCalEMCal = false;
+   }
 }
 
-SimCalibrator::PC2SDPhi(const double phi, const double pT, const int charge)
+double SimCalibrator::PC2SDPhi(const double dphi, const double pT, const int charge)
 {
+   if (!doCalPC2) return dphi/0.002;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansPC2[0][0]);
+      sigma = GetDValSigma(pT, &parSigmasPC2[0][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansPC2[1][0]);
+      sigma = GetDValSigma(pT, &parSigmasPC2[1][0]);
+   }
+   return (mean - dphi)/sigma;
+}
+
+double SimCalibrator::PC2SDZ(const double dz, const double pT, const int charge)
+{
+   if (!doCalPC2) return dz/2.;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansPC2[2][0]);
+      sigma = GetDValSigma(pT, &parSigmasPC2[2][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansPC2[3][0]);
+      sigma = GetDValSigma(pT, &parSigmasPC2[3][0]);
+   }
+   return (mean - dz)/sigma;
+}
+
+double SimCalibrator::PC3SDPhi(const double dphi, const double pT, const int charge, const int dcarm)
+{
+   if (!doCalPC3) return dphi/0.002;
+
+   double mean;
+   double sigma;
+
+   if (dcarm == 0)
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansPC3e[0][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3e[0][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansPC3e[1][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3e[1][0]);
+      }
+   }
+   else
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansPC3w[0][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3w[0][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansPC3w[1][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3w[1][0]);
+      }
+   }
+   return (mean - dphi)/sigma;
+}
+
+double SimCalibrator::PC3SDZ(const double dz, const double pT, const int charge, const int dcarm)
+{
+   if (!doCalPC3) return dz/2.;
+
+   double mean;
+   double sigma;
+
+   if (dcarm == 0)
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansPC3e[2][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3e[2][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansPC3e[3][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3e[3][0]);
+      }
+   }
+   else
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansPC3w[2][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3w[2][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansPC3w[3][0]);
+         sigma = GetDValSigma(pT, &parSigmasPC3w[3][0]);
+      }
+   }
+   return (mean - dz)/sigma;
+}
+
+double SimCalibrator::TOFeSDPhi(const double dphi, const double pT, const int charge)
+{
+   if (!doCalTOFe) return dphi/0.002;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansTOFe[0][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFe[0][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansTOFe[1][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFe[1][0]);
+   }
+   return (mean - dphi)/sigma;
+}
+
+double SimCalibrator::TOFeSDZ(const double dz, const double pT, const int charge)
+{
+   if (!doCalTOFe) return dz/2.;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansTOFe[2][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFe[2][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansTOFe[3][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFe[3][0]);
+   }
+   return (mean - dz)/sigma;
+}
+
+double SimCalibrator::TOFwSDPhi(const double dphi, const double pT, const int charge)
+{
+   if (!doCalTOFw) return dphi/0.002;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansTOFw[0][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFw[0][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansTOFw[1][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFw[1][0]);
+   }
+   return (mean - dphi)/sigma;
+}
+
+double SimCalibrator::TOFwSDZ(const double dz, const double pT, const int charge)
+{
+   if (!doCalTOFw) return dz/2.;
+
+   double mean;
+   double sigma;
+   if (charge > 0)
+   {
+      mean = GetDValMean(pT, &parMeansTOFw[2][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFw[2][0]);
+   }
+   else
+   {
+      mean = GetDValMean(pT, &parMeansTOFw[3][0]);
+      sigma = GetDValSigma(pT, &parSigmasTOFw[3][0]);
+   }
+   return (mean - dz)/sigma;
+}
+
+double SimCalibrator::EMCalSDPhi(const double dphi, const double pT, const int charge, 
+                          const int dcarm, const int sector)
+{
+   if (!doCalEMCal) return dphi/0.002;
+
+   double mean;
+   double sigma;
+
+   if (dcarm == 0)
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansEMCale[sector][0][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCale[sector][0][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansEMCale[sector][1][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCale[sector][1][0]);
+      }
+   }
+   else
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansEMCalw[sector][0][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCalw[sector][0][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansEMCalw[sector][1][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCalw[sector][1][0]);
+      }
+   }
+   return (mean - dphi)/sigma;
+}
+
+double SimCalibrator::EMCalSDZ(const double dz, const double pT, const int charge, 
+                          const int dcarm, const int sector)
+{
+   if (!doCalEMCal) return dz/2.;
+
+   double mean;
+   double sigma;
+
+   if (dcarm == 0)
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansEMCale[sector][2][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCale[sector][2][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansEMCale[sector][3][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCale[sector][3][0]);
+      }
+   }
+   else
+   {
+      if (charge > 0)
+      {
+         mean = GetDValMean(pT, &parMeansEMCalw[sector][2][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCalw[sector][2][0]);
+      }
+      else
+      {
+         mean = GetDValMean(pT, &parMeansEMCalw[sector][3][0]);
+         sigma = GetDValSigma(pT, &parSigmasEMCalw[sector][3][0]);
+      }
+   }
+   return (mean - dz)/sigma;
+}
+
+double SimCalibrator::GetDValMean(const double pT, const double *par)
+{
+   return par[0] + par[1]/pT + par[2]/(pT*pT) + par[3]*pT;
+}
+
+double SimCalibrator::GetDValSigma(const double pT, const double *par)
+{
+   return par[0] + par[1]/pT + par[2]*pT;
 }
 
 void SimCalibrator::SetParameters(const std::string& inputFileName, 
-                                  std::array<std::vector<bool>>& parMeans,
-                                  std::array<std::vector<bool>>& parSigmas)
+                                  std::array<std::vector<double>, 4>& parMeans,
+                                  std::array<std::vector<double>, 4>& parSigmas)
 {
    CppTools::CheckInputFile(inputFileName);
    std::ifstream inputFile(inputFileName);
@@ -103,13 +404,28 @@ void SimCalibrator::SetParameters(const std::string& inputFileName,
    }
 
    int numberOfParametersMeans;
-   int numberOfParametersSigmas
+   int numberOfParametersSigmas;
 
    bool isUnexpectedEndOfFile = false;
 
    if (!(inputFile >> numberOfParametersMeans >> numberOfParametersSigmas))
    {
       isUnexpectedEndOfFile = true;
+   }
+
+   if (numberOfParametersMeans != 4)
+   {
+      CppTools::PrintError("SimCalibrator: Mismatching number of parameters "\
+                           "for means approximation in file " + inputFileName +
+                           ": expected 4 while " + std::to_string(numberOfParametersMeans) + 
+                           "were provided");
+   }
+   if (numberOfParametersSigmas != 3)
+   {
+      CppTools::PrintError("SimCalibrator: Mismatching number of parameters "\
+                           "for sigmas approximation in file " + inputFileName +
+                           ": expected 3 while " + std::to_string(numberOfParametersSigmas) + 
+                           "were provided");
    }
 
    for (int i = 0; i < 4; i++)

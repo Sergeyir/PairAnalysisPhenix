@@ -21,10 +21,10 @@ DeadMapCutter::DeadMapCutter(const std::string& runName, const std::string& opti
 
 void DeadMapCutter::Initialize(const std::string& runName, const std::string& options)
 {
-   if (options.size() != 6)
+   if (options.size() != 7)
    {
       CppTools::PrintError("DeadMapCutter: options size is " + std::to_string(options.size()) + 
-                           " while 6 has been expected");
+                           " while 7 has been expected");
    }
    if (options[0] == '1')
    {
@@ -38,7 +38,11 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw, zDC<0.txt", 
                    cutAreasDCw1, cutAreasDCw1Range);
    }
-   else doCutDC = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for DC were specified to be not initialized");
+      doCutDC = false;
+   }
 
    if (options[1] == '1')
    {
@@ -48,7 +52,11 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1w.txt", 
                    cutAreasPC1w, cutAreasPC1wRange);
    }
-   else doCutPC1 = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for PC1 were specified to be not initialized");
+      doCutPC1 = false;
+   }
 
    if (options[2] == '1')
    {
@@ -56,17 +64,25 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC2.txt", 
                    cutAreasPC2, cutAreasPC2Range);
    }
-   else doCutPC2 = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for PC2 were specified to be not initialized");
+      doCutPC2 = false;
+   }
 
    if (options[3] == '1')
    {
       doCutPC3 = true;
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3e.txt", 
                    cutAreasPC1e, cutAreasPC3eRange);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1w.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3w.txt", 
                    cutAreasPC1w, cutAreasPC3wRange);
    }
-   else doCutPC3 = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for PC3 were specified to be not initialized");
+      doCutPC3 = false;
+   }
 
    if (options[4] == '1')
    {
@@ -76,7 +92,11 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Slat.txt", 
                    cutSlatsTOFe, cutSlatsRange);
    }
-   else doCutTOFe = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for TOFe were specified to be not initialized");
+      doCutTOFe = false;
+   }
 
    if (options[5] == '1')
    {
@@ -88,7 +108,11 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Strip.txt", 
                    cutStripsTOFw, cutStripsRange);
    }
-   else doCutTOFw = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for TOFw were specified to be not initialized");
+      doCutTOFw = false;
+   }
 
    if (options[6] == '1')
    {
@@ -101,23 +125,29 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
                       std::to_string(i) + ".txt", cutAreasEMCalw[i], cutAreasEMCalwRange[i]);
       }
    }
-   else doCutEMCal = false;
+   else 
+   {
+      CppTools::PrintInfo("DeadMapCutter: cuts for EMCal were specified to be not initialized");
+      doCutEMCal = false;
+   }
 }
 
-bool DeadMapCutter::IsDeadDC(const int arm, const double zed, 
+bool DeadMapCutter::IsDeadDC(const int dcarm, const double zed, 
                              const double board, const double alpha)
 {
    if (!doCutDC) return false;
-   if (arm == 1) // DCe
+   if (dcarm == 1) // DCe
    {
       if (zed >= 0)
       {
          if (board < cutAreasDCe0Range[0] || board > cutAreasDCe0Range[1] ||
              alpha < cutAreasDCe0Range[2] || alpha > cutAreasDCe0Range[3]) return true;
 
-         const short yBin = static_cast<short>((alpha - cutAreasDCe0Range[2])/cutAreasDCe0Range[3]*
+         const short yBin = static_cast<short>((alpha - cutAreasDCe0Range[2])/
+                                               (cutAreasDCe0Range[3] - cutAreasDCe0Range[2])*
                                                static_cast<double>(cutAreasDCe0.size()));
-         const short xBin = static_cast<short>((board - cutAreasDCe0Range[0])/cutAreasDCe0Range[1]*
+         const short xBin = static_cast<short>((board - cutAreasDCe0Range[0])/
+                                               (cutAreasDCe0Range[1] - cutAreasDCe0Range[0])*
                                                static_cast<double>(cutAreasDCe0[0].size()));
          return cutAreasDCe0[yBin][xBin];
       }
@@ -126,9 +156,11 @@ bool DeadMapCutter::IsDeadDC(const int arm, const double zed,
          if (board < cutAreasDCe1Range[0] || board > cutAreasDCe1Range[1] ||
              alpha < cutAreasDCe1Range[2] || alpha > cutAreasDCe1Range[3]) return true;
 
-         const short yBin = static_cast<short>((alpha - cutAreasDCe1Range[2])/cutAreasDCe1Range[3]*
+         const short yBin = static_cast<short>((alpha - cutAreasDCe1Range[2])/
+                                               (cutAreasDCe1Range[3] - cutAreasDCe1Range[2])*
                                                static_cast<double>(cutAreasDCe1.size()));
-         const short xBin = static_cast<short>((board - cutAreasDCe1Range[0])/cutAreasDCe1Range[1]*
+         const short xBin = static_cast<short>((board - cutAreasDCe1Range[0])/
+                                               (cutAreasDCe1Range[1] - cutAreasDCe1Range[0])*
                                                static_cast<double>(cutAreasDCe1[0].size()));
          return cutAreasDCe1[yBin][xBin];
       }
@@ -139,9 +171,11 @@ bool DeadMapCutter::IsDeadDC(const int arm, const double zed,
       if (board < cutAreasDCw0Range[0] || board > cutAreasDCw0Range[1] ||
           alpha < cutAreasDCw0Range[2] || alpha > cutAreasDCw0Range[3]) return true;
 
-      const short yBin = static_cast<short>((alpha - cutAreasDCw0Range[2])/cutAreasDCw0Range[3]*
+      const short yBin = static_cast<short>((alpha - cutAreasDCw0Range[2])/
+                                            (cutAreasDCw0Range[3] - cutAreasDCw0Range[2])*
                                             static_cast<double>(cutAreasDCw0.size()));
-      const short xBin = static_cast<short>((board - cutAreasDCw0Range[0])/cutAreasDCw0Range[1]*
+      const short xBin = static_cast<short>((board - cutAreasDCw0Range[0])/
+                                            (cutAreasDCw0Range[1] - cutAreasDCw0Range[0])*
                                             static_cast<double>(cutAreasDCw0[0].size()));
       return cutAreasDCw0[yBin][xBin];
    }
@@ -150,25 +184,29 @@ bool DeadMapCutter::IsDeadDC(const int arm, const double zed,
       if (board < cutAreasDCw1Range[0] || board > cutAreasDCw1Range[1] ||
           alpha < cutAreasDCw1Range[2] || alpha > cutAreasDCw1Range[3]) return true;
 
-      const short yBin = static_cast<short>((alpha - cutAreasDCw1Range[2])/cutAreasDCw1Range[3]*
+      const short yBin = static_cast<short>((alpha - cutAreasDCw1Range[2])/
+                                            (cutAreasDCw1Range[3] - cutAreasDCw1Range[2])*
                                             static_cast<double>(cutAreasDCw1.size()));
-      const short xBin = static_cast<short>((board - cutAreasDCw1Range[0])/cutAreasDCw1Range[1]*
+      const short xBin = static_cast<short>((board - cutAreasDCw1Range[0])/
+                                            (cutAreasDCw1Range[1] - cutAreasDCw1Range[0])*
                                             static_cast<double>(cutAreasDCw1[0].size()));
       return cutAreasDCw1[yBin][xBin];
    }
 }
 
-bool DeadMapCutter::IsDeadPC1(const int arm, const double ppc1z, const double ppc1phi)
+bool DeadMapCutter::IsDeadPC1(const int dcarm, const double ppc1z, const double ppc1phi)
 {
    if (!doCutPC1) return false;
-   if (arm == 1) // PC1e
+   if (dcarm == 1) // PC1e
    {
       if (ppc1z < cutAreasPC1eRange[0] || ppc1z > cutAreasPC1eRange[1] ||
           ppc1phi < cutAreasPC1eRange[2] || ppc1phi > cutAreasPC1eRange[3]) return true;
 
-      const short yBin = static_cast<short>((ppc1phi - cutAreasPC1eRange[2])/cutAreasPC1eRange[3]*
+      const short yBin = static_cast<short>((ppc1phi - cutAreasPC1eRange[2])/
+                                            (cutAreasPC1eRange[3] - cutAreasPC1eRange[2])*
                                             static_cast<double>(cutAreasPC1e.size()));
-      const short xBin = static_cast<short>((ppc1z - cutAreasPC1eRange[0])/cutAreasPC1eRange[1]*
+      const short xBin = static_cast<short>((ppc1z - cutAreasPC1eRange[0])/
+                                            (cutAreasPC1eRange[1] - cutAreasPC1eRange[0])*
                                             static_cast<double>(cutAreasPC1e[0].size()));
       return cutAreasPC1e[yBin][xBin];
    }
@@ -176,9 +214,11 @@ bool DeadMapCutter::IsDeadPC1(const int arm, const double ppc1z, const double pp
    if (ppc1z < cutAreasPC1wRange[0] || ppc1z > cutAreasPC1wRange[1] ||
        ppc1phi < cutAreasPC1wRange[2] || ppc1phi > cutAreasPC1wRange[3]) return true;
 
-   const short yBin = static_cast<short>((ppc1phi - cutAreasPC1wRange[2])/cutAreasPC1wRange[3]*
+   const short yBin = static_cast<short>((ppc1phi - cutAreasPC1wRange[2])/
+                                         (cutAreasPC1wRange[3] - cutAreasPC1wRange[2])*
                                          static_cast<double>(cutAreasPC1w.size()));
-   const short xBin = static_cast<short>((ppc1z - cutAreasPC1wRange[0])/cutAreasPC1wRange[1]*
+   const short xBin = static_cast<short>((ppc1z - cutAreasPC1wRange[0])/
+                                         (cutAreasPC1wRange[1] - cutAreasPC1wRange[0])*
                                          static_cast<double>(cutAreasPC1w[0].size()));
    return cutAreasPC1w[yBin][xBin];
 }
@@ -189,24 +229,28 @@ bool DeadMapCutter::IsDeadPC2(const double ppc2z, const double ppc2phi)
    if (ppc2z < cutAreasPC2Range[0] || ppc2z > cutAreasPC2Range[1] ||
        ppc2phi < cutAreasPC2Range[2] || ppc2phi > cutAreasPC2Range[3]) return true;
 
-   const short yBin = static_cast<short>((ppc2phi - cutAreasPC2Range[2])/cutAreasPC2Range[3]*
+   const short yBin = static_cast<short>((ppc2phi - cutAreasPC2Range[2])/
+                                         (cutAreasPC2Range[3] - cutAreasPC2Range[2])*
                                          static_cast<double>(cutAreasPC2.size()));
-   const short xBin = static_cast<short>((ppc2z - cutAreasPC2Range[0])/cutAreasPC2Range[1]*
+   const short xBin = static_cast<short>((ppc2z - cutAreasPC2Range[0])/
+                                         (cutAreasPC2Range[1] - cutAreasPC2Range[0])*
                                          static_cast<double>(cutAreasPC2[0].size()));
    return cutAreasPC2[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadPC3(const int arm, const double ppc3z, const double ppc3phi)
+bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double ppc3phi)
 {
    if (!doCutPC3) return false;
-   if (arm == 1) // PC3e
+   if (dcarm == 1) // PC3e
    {
       if (ppc3z < cutAreasPC3eRange[0] || ppc3z > cutAreasPC3eRange[1] ||
           ppc3phi < cutAreasPC3eRange[2] || ppc3phi > cutAreasPC3eRange[3]) return true;
 
-      const short yBin = static_cast<short>((ppc3phi - cutAreasPC3eRange[2])/cutAreasPC3eRange[3]*
+      const short yBin = static_cast<short>((ppc3phi - cutAreasPC3eRange[2])/
+                                            (cutAreasPC3eRange[3] - cutAreasPC3eRange[2])*
                                             static_cast<double>(cutAreasPC3e.size()));
-      const short xBin = static_cast<short>((ppc3z - cutAreasPC3eRange[0])/cutAreasPC3eRange[1]*
+      const short xBin = static_cast<short>((ppc3z - cutAreasPC3eRange[0])/
+                                            (cutAreasPC3eRange[1] - cutAreasPC3eRange[0])*
                                             static_cast<double>(cutAreasPC3e[0].size()));
       return cutAreasPC3e[yBin][xBin];
    }
@@ -214,9 +258,11 @@ bool DeadMapCutter::IsDeadPC3(const int arm, const double ppc3z, const double pp
    if (ppc3z < cutAreasPC3wRange[0] || ppc3z > cutAreasPC3wRange[1] ||
        ppc3phi < cutAreasPC3wRange[2] || ppc3phi > cutAreasPC3wRange[3]) return true;
 
-   const short yBin = static_cast<short>((ppc3phi - cutAreasPC3wRange[2])/cutAreasPC3wRange[3]*
+   const short yBin = static_cast<short>((ppc3phi - cutAreasPC3wRange[2])/
+                                         (cutAreasPC3wRange[3] - cutAreasPC3wRange[2])*
                                          static_cast<double>(cutAreasPC3w.size()));
-   const short xBin = static_cast<short>((ppc3z - cutAreasPC3wRange[0])/cutAreasPC3wRange[1]*
+   const short xBin = static_cast<short>((ppc3z - cutAreasPC3wRange[0])/
+                                         (cutAreasPC3wRange[1] - cutAreasPC3wRange[0])*
                                          static_cast<double>(cutAreasPC3w[0].size()));
    return cutAreasPC3w[yBin][xBin];
 }
@@ -227,9 +273,11 @@ bool DeadMapCutter::IsDeadTOFe(const double ptofy, const double ptofz, const int
    if (ptofy < cutAreasTOFeRange[0] || ptofy > cutAreasTOFeRange[1] ||
        ptofz < cutAreasTOFeRange[2] || ptofz > cutAreasTOFeRange[3]) return true;
 
-   const short yBin = static_cast<short>((ptofz - cutAreasTOFeRange[2])/cutAreasTOFeRange[3]*
+   const short yBin = static_cast<short>((ptofz - cutAreasTOFeRange[2])/
+                                         (cutAreasTOFeRange[3] - cutAreasTOFeRange[2])*
                                          static_cast<double>(cutAreasTOFe.size()));
-   const short xBin = static_cast<short>((ptofy - cutAreasTOFeRange[0])/cutAreasTOFeRange[1]*
+   const short xBin = static_cast<short>((ptofy - cutAreasTOFeRange[0])/
+                                         (cutAreasTOFeRange[1] - cutAreasTOFeRange[0])*
                                          static_cast<double>(cutAreasTOFe[0].size()));
    return cutAreasTOFe[yBin][xBin];
 }
@@ -242,26 +290,30 @@ bool DeadMapCutter::IsDeadTOFw(const double ptofwy, const double ptofwz, const i
       if (ptofwy < cutAreasTOFw0Range[0] || ptofwy > cutAreasTOFw0Range[1] ||
           ptofwz < cutAreasTOFw0Range[2] || ptofwz > cutAreasTOFw0Range[3]) return true;
 
-      const short yBin = static_cast<short>((ptofwz - cutAreasTOFw0Range[2])/cutAreasTOFw0Range[3]*
+      const short yBin = static_cast<short>((ptofwz - cutAreasTOFw0Range[2])/
+                                            (cutAreasTOFw0Range[3] - cutAreasTOFw0Range[2])*
                                             static_cast<double>(cutAreasTOFw0.size()));
-      const short xBin = static_cast<short>((ptofwy - cutAreasTOFw0Range[0])/cutAreasTOFw0Range[1]*
+      const short xBin = static_cast<short>((ptofwy - cutAreasTOFw0Range[0])/
+                                            (cutAreasTOFw0Range[1] - cutAreasTOFw0Range[0])*
                                             static_cast<double>(cutAreasTOFw0[0].size()));
       return cutAreasTOFw0[yBin][xBin];
    }
    if (ptofwy < cutAreasTOFw1Range[0] || ptofwy > cutAreasTOFw1Range[1] ||
        ptofwz < cutAreasTOFw1Range[2] || ptofwz > cutAreasTOFw1Range[3]) return true;
 
-   const short yBin = static_cast<short>((ptofwz - cutAreasTOFw1Range[2])/cutAreasTOFw1Range[3]*
+   const short yBin = static_cast<short>((ptofwz - cutAreasTOFw1Range[2])/
+                                         (cutAreasTOFw1Range[3] - cutAreasTOFw1Range[2])*
                                          static_cast<double>(cutAreasTOFw1.size()));
-   const short xBin = static_cast<short>((ptofwy - cutAreasTOFw1Range[0])/cutAreasTOFw1Range[1]*
+   const short xBin = static_cast<short>((ptofwy - cutAreasTOFw1Range[0])/
+                                         (cutAreasTOFw1Range[1] - cutAreasTOFw1Range[0])*
                                          static_cast<double>(cutAreasTOFw1[0].size()));
    return cutAreasTOFw1[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadEMCal(const int arm, const int sector, const int ytower, const int ztower)
+bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, const int ytower, const int ztower)
 {
    if (!doCutEMCal) return false;
-   if (arm == 1) // EMCale
+   if (dcarm == 1) // EMCale
    {
       if (ytower < cutAreasEMCaleRange[sector][0] || 
           ytower > cutAreasEMCaleRange[sector][1] ||
@@ -269,10 +321,12 @@ bool DeadMapCutter::IsDeadEMCal(const int arm, const int sector, const int ytowe
           ztower > cutAreasEMCaleRange[sector][3]) return true;
 
       const short yBin = static_cast<short>((ztower - cutAreasEMCaleRange[sector][2])/
-                                            cutAreasEMCaleRange[sector][3]*
+                                            (cutAreasEMCaleRange[sector][3] - 
+                                             cutAreasEMCaleRange[sector][2])*
                                             static_cast<double>(cutAreasEMCale[sector].size()));
       const short xBin = static_cast<short>((ytower - cutAreasEMCaleRange[sector][0])/
-                                            cutAreasEMCaleRange[sector][1]*
+                                            (cutAreasEMCaleRange[sector][1] - 
+                                             cutAreasEMCaleRange[sector][0])*
                                             static_cast<double>(cutAreasEMCale[sector][0].size()));
       return cutAreasEMCale[sector][yBin][xBin];
    }
@@ -283,10 +337,12 @@ bool DeadMapCutter::IsDeadEMCal(const int arm, const int sector, const int ytowe
        ztower > cutAreasEMCalwRange[sector][3]) return true;
 
    const short yBin = static_cast<short>((ztower - cutAreasEMCalwRange[sector][2])/
-                                         cutAreasEMCalwRange[sector][3]*
+                                         (cutAreasEMCalwRange[sector][3] - 
+                                          cutAreasEMCalwRange[sector][2])*
                                          static_cast<double>(cutAreasEMCalw[sector].size()));
    const short xBin = static_cast<short>((ytower - cutAreasEMCalwRange[sector][0])/
-                                         cutAreasEMCalwRange[sector][1]*
+                                         (cutAreasEMCalwRange[sector][1] - 
+                                          cutAreasEMCalwRange[sector][0])*
                                          static_cast<double>(cutAreasEMCalw[sector][0].size()));
    return cutAreasEMCalw[sector][yBin][xBin];
 }

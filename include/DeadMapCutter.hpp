@@ -14,6 +14,7 @@
 #include <fstream>
 
 #include "ErrorHandler.hpp"
+#include "IOTools.hpp"
 
 /*! @class DeadMapCutter
  * @brief Class DeadMapCutter provides simple means to implement and to use bad/dead areas cuts (deadmaps) onto 2D heatmaps and/or 1D distributions (slat, striptofw)
@@ -59,19 +60,19 @@ class DeadMapCutter
    void Initialize(const std::string& runName, const std::string& options = "1111111");
 
    /// Returns true if data in DC is in bad/dead area
-   bool IsDeadDC(const int arm, const double zed, const double board, const double alpha);
+   bool IsDeadDC(const int dcarm, const double zed, const double board, const double alpha);
    /// Returns true if data in PC1 is in bad/dead area
-   bool IsDeadPC1(const int arm, const double ppc1z, const double ppc1phi);
+   bool IsDeadPC1(const int dcarm, const double ppc1z, const double ppc1phi);
    /// Returns true if data in PC2 is in bad/dead area
    bool IsDeadPC2(const double ppc2z, const double ppc2phi);
    /// Returns true if data in PC3 is in bad/dead area
-   bool IsDeadPC3(const int arm, const double ppc3z, const double ppc3phi);
+   bool IsDeadPC3(const int dcarm, const double ppc3z, const double ppc3phi);
    /// Returns true if data in TOFe is in bad/dead area
    bool IsDeadTOFe(const double ptofy, const double ptofz, const int slat);
    /// Returns true if data in TOFw is in bad/dead area
    bool IsDeadTOFw(const double ptofwy, const double ptofwz, const int striptofw);
    /// Returns true if data in EMCal is in bad/dead area
-   bool IsDeadEMCal(const int arm, const int sector, const int ytower, const int ztower);
+   bool IsDeadEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
 
    private:
    /// read 2D arrays from the file into class attributes
