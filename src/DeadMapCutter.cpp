@@ -267,7 +267,7 @@ bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double 
    return cutAreasPC3w[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadTOFe(const double ptofy, const double ptofz, const int slat)
+bool DeadMapCutter::IsDeadTOFe(const double ptofy, const double ptofz)
 {
    if (!doCutTOFe) return false;
    if (ptofy < cutAreasTOFeRange[0] || ptofy > cutAreasTOFeRange[1] ||
@@ -282,7 +282,7 @@ bool DeadMapCutter::IsDeadTOFe(const double ptofy, const double ptofz, const int
    return cutAreasTOFe[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadTOFw(const double ptofwy, const double ptofwz, const int striptofw)
+bool DeadMapCutter::IsDeadTOFw(const double ptofwy, const double ptofwz)
 {
    if (!doCutTOFw) return false;
    if (ptofwy < 100)
