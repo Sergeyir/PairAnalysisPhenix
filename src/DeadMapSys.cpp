@@ -229,13 +229,13 @@ double DeadMapSys::GetUncertaintyFromXYProj(TH2F *realDistr, TH2F *simDistr,
 	SetHistStyle(simCutDistr, "Cut MC " + title, xTitle, yTitle);
 	
 	TH1D *realCutDistrProjX = realCutDistr->
-      ProjectionX((title + "_real_x").c_str(), 1, realCutDistr->GetXaxis()->GetNbins());
+      ProjectionX((title + "_real_x").c_str(), 1, realCutDistr->GetYaxis()->GetNbins());
 	TH1D *realCutDistrProjY = realCutDistr->
-      ProjectionY((title + "_real_y").c_str(), 1, realCutDistr->GetYaxis()->GetNbins());
+      ProjectionY((title + "_real_y").c_str(), 1, realCutDistr->GetXaxis()->GetNbins());
 	TH1D *simCutDistrProjX = simCutDistr->
-      ProjectionX((title + "_sim_x").c_str(), 1, simCutDistr->GetXaxis()->GetNbins());
+      ProjectionX((title + "_sim_x").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
 	TH1D *simCutDistrProjY = simCutDistr->
-      ProjectionY((title + "_sim_y").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
+      ProjectionY((title + "_sim_y").c_str(), 1, simCutDistr->GetXaxis()->GetNbins());
 
    realCutDistrProjX->RebinX(rebinX);
    simCutDistrProjX->RebinX(rebinX);
@@ -637,10 +637,10 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertaintyFromXYProj(realHeatmapPC3e, simHeatmapPC3e, 
                                   realCutHeatmapPC3e, simCutHeatmapPC3e, 
-                                  "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}") << " " <<
+                                  "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}", 2) << " " <<
          GetUncertaintyFromXYProj(realHeatmapPC3w, simHeatmapPC3w, 
                                   realCutHeatmapPC3w, simCutHeatmapPC3w, 
-                                  "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}");
+                                  "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2);
    }
    else
    {

@@ -145,6 +145,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
                   histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
+                  histContainer.heatmapDCe0X1-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe0X2-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
                else 
                {
@@ -152,6 +156,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
                   histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
+                  histContainer.heatmapDCe1X1-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe1X2-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
             }
             else
@@ -162,6 +170,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCw0->GetBinContent(alphaReweightDCw0->FindBin(alpha));
                   histContainer.heatmapDCw0->Fill(board, alpha, eventWeight*alphaReweight);
+                  histContainer.heatmapDCw0X1-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCw0X2-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
                else 
                {
@@ -169,6 +181,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCw1->GetBinContent(alphaReweightDCw1->FindBin(alpha));
                   histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
+                  histContainer.heatmapDCw1X1-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCw1X2-> Fill(board, alpha, static_cast<double>
+                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
             }
 
@@ -929,6 +945,14 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.heatmapDCe1 = heatmapDCe1.Get();
    copy.heatmapDCw0 = heatmapDCw0.Get();
    copy.heatmapDCw1 = heatmapDCw1.Get();
+   copy.heatmapDCe0X1 = heatmapDCe0X1.Get();
+   copy.heatmapDCe1X1 = heatmapDCe1X1.Get();
+   copy.heatmapDCw0X1 = heatmapDCw0X1.Get();
+   copy.heatmapDCw1X1 = heatmapDCw1X1.Get();
+   copy.heatmapDCe0X2 = heatmapDCe0X2.Get();
+   copy.heatmapDCe1X2 = heatmapDCe1X2.Get();
+   copy.heatmapDCw0X2 = heatmapDCw0X2.Get();
+   copy.heatmapDCw1X2 = heatmapDCw1X2.Get();
    copy.heatmapPC1e = heatmapPC1e.Get();
    copy.heatmapPC1w = heatmapPC1w.Get();
    copy.heatmapPC2 = heatmapPC2.Get();

@@ -133,6 +133,22 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> heatmapDCw0;
       /// heatmap of DCw, zDC<0
       std::shared_ptr<TH2F> heatmapDCw1;
+      /// heatmap of DCe X1, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCe0X1;
+      /// heatmap of DCe X1, zDC<0
+      std::shared_ptr<TH2F> heatmapDCe1X1;
+      /// heatmap of DCw X1, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCw0X1;
+      /// heatmap of DCw X1, zDC<0
+      std::shared_ptr<TH2F> heatmapDCw1X1;
+      /// heatmap of DCe X2, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCe0X2;
+      /// heatmap of DCe X2, zDC<0
+      std::shared_ptr<TH2F> heatmapDCe1X2;
+      /// heatmap of DCw X2, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCw0X2;
+      /// heatmap of DCw X2, zDC<0
+      std::shared_ptr<TH2F> heatmapDCw1X2;
       /// heatmap of PC1e
       std::shared_ptr<TH2F> heatmapPC1e;
       /// heatmap of PC1w
@@ -322,6 +338,38 @@ namespace AnalyzeSingleTrack
       /// heatmap of DCw, zDC<0
       ROOTTools::ThrObj<TH2F> heatmapDCw1 = 
          ROOTTools::ThrObj<TH2F>("Heatmap: DCw, zDC<0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCeX1, zDC>=0
+      ROOTTools::ThrObj<TH2F> heatmapDCe0X1 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX1, zDC>=0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCeX1, zDC<0
+      ROOTTools::ThrObj<TH2F> heatmapDCe1X1 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX1, zDC<0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCwX1, zDC>=0
+      ROOTTools::ThrObj<TH2F> heatmapDCw0X1 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX1, zDC>=0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCwX1, zDC<0
+      ROOTTools::ThrObj<TH2F> heatmapDCw1X1 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX1, zDC<0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCeX2, zDC>=0
+      ROOTTools::ThrObj<TH2F> heatmapDCe0X2 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX2, zDC>=0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCeX2, zDC<0
+      ROOTTools::ThrObj<TH2F> heatmapDCe1X2 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX2, zDC<0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCwX2, zDC>=0
+      ROOTTools::ThrObj<TH2F> heatmapDCw0X2 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX2, zDC>=0", "board vs alpha", 
+                                 400, 0., 80., 195, -0.39, 0.39);
+      /// heatmap of DCwX2, zDC<0
+      ROOTTools::ThrObj<TH2F> heatmapDCw1X2 = 
+         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX2, zDC<0", "board vs alpha", 
                                  400, 0., 80., 195, -0.39, 0.39);
       /// heatmap of PC1e
       ROOTTools::ThrObj<TH2F> heatmapPC1e = 
