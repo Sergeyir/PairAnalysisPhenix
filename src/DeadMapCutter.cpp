@@ -74,9 +74,9 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    {
       doCutPC3 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3e.txt", 
-                   cutAreasPC1e, cutAreasPC3eRange);
+                   cutAreasPC3e, cutAreasPC3eRange);
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3w.txt", 
-                   cutAreasPC1w, cutAreasPC3wRange);
+                   cutAreasPC3w, cutAreasPC3wRange);
    }
    else 
    {
@@ -166,7 +166,7 @@ bool DeadMapCutter::IsDeadDC(const int dcarm, const double zed,
       }
    }
    // DCw
-   if (zed < 0)
+   if (zed >= 0)
    {
       if (board < cutAreasDCw0Range[0] || board > cutAreasDCw0Range[1] ||
           alpha < cutAreasDCw0Range[2] || alpha > cutAreasDCw0Range[3]) return true;

@@ -18,8 +18,11 @@ void DM()
    //std::cin >> runName;
 
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
+   const std::string simInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
    CppTools::CheckInputFile(realInputFileName);
+   CppTools::CheckInputFile(simInputFileName);
    TFile realInputFile(realInputFileName.c_str());
+   TFile simInputFile(simInputFileName.c_str());
 
    CppTools::PrintInfo("List of heatmaps in " + realInputFileName + " file");
    realInputFile.ls("Heatmap:*");
@@ -34,12 +37,22 @@ void DM()
 
    if (!realHist) 
    {
-      CppTools::PrintError("No histogram named Heatmap: " + detectorName + " in file " + realInputFileName);
+      CppTools::PrintError("No histogram named Heatmap: " + detectorName + 
+                           " in file " + realInputFileName);
+   }
+
+   TH2D *simHist = static_cast<TH2D *>(simInputFile.Get(("Heatmap: " + detectorName).c_str()));
+
+   if (!simHist) 
+   {
+      CppTools::PrintError("No histogram named Heatmap: " + detectorName + 
+                           " in file " + simInputFileName);
    }
 
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
    GUIDistrCutter2D::AddHistogram(realHist);
+   GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
    system(("mkdir -p data/Parameters/Deadmaps/" + runName).c_str());
 
    const std::string outputCutsFileName = "data/Parameters/Deadmaps/" + runName + "/" + detectorName + ".txt";

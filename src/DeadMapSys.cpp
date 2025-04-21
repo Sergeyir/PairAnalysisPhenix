@@ -23,7 +23,7 @@ void DeadMapSys::CheckHists(const TH2F *histReal, const TH2F *histSim, const std
    {
       CppTools::PrintError("Real histogram named " + name + " does not exists");
    }
-   if (!histReal) 
+   if (!histSim) 
    {
       CppTools::PrintError("Simulated histogram named" + name + " does not exists");
    }
@@ -135,7 +135,7 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	simCutDistrProj->
       Scale(1./simCutDistrProj->Integral(1, simCutDistrProj->GetXaxis()->GetNbins()), "nosw2");
 
-	realCutDistrProj->SetFillColorAlpha(kRed - 3, 0.5);
+	realCutDistrProj->SetFillColorAlpha(kOrange - 4, 0.5);
 	
 	TLegend projLegend = TLegend(0.4, 0.78, 0.9, 0.88);
 	projLegend.SetNColumns(2);
@@ -207,11 +207,11 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	const double realLost = (1. - realCutDistr->Integral()/realDistr->Integral())*100.;
 	const double simLost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
 	
-	table. PrintRow(detectorName, 
-		             CppTools::DtoStr(uncertainty*100., 3), 
-		             "-", "-", 
-		             CppTools::DtoStr(realLost, 3) + "%",
-		             CppTools::DtoStr(simLost, 3) + "%");
+	table.PrintRow(detectorName, 
+		            CppTools::DtoStr(uncertainty*100., 3), 
+		            "-", "-", 
+		            CppTools::DtoStr(realLost, 3) + "%",
+		            CppTools::DtoStr(simLost, 3) + "%");
 	
 	return uncertainty;
 }
@@ -377,7 +377,7 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(0);
    gStyle->SetOptFit(0);
 
-   outputDirDM = "output/DeadMaps/" + runName + "/";
+   outputDirDM = "output/Deadmaps/" + runName + "/";
    outputDirSys = "output/Systematics/" + runName + "/";
    outputDirParameters = "data/Parameters/Systematics/" + runName + "/";
 
@@ -412,27 +412,27 @@ int main(int argc, char **argv)
       TH2F *simHeatmapDCw0 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCw, zDC>=0"));
       TH2F *simHeatmapDCw1 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCw, zDC<0"));
 
-      CheckHists(realHeatmapDCe0, simHeatmapDCe0, "DCe0");
-      CheckHists(realHeatmapDCe1, simHeatmapDCe1, "DCe1");
-      CheckHists(realHeatmapDCw0, simHeatmapDCw0, "DCw0");
-      CheckHists(realHeatmapDCw1, simHeatmapDCw1, "DCw1");
+      CheckHists(realHeatmapDCe0, simHeatmapDCe0, "Heatmap: DCe, zDC>=0");
+      CheckHists(realHeatmapDCe1, simHeatmapDCe1, "Heatmap: DCe, zDC<0");
+      CheckHists(realHeatmapDCw0, simHeatmapDCw0, "Heatmap: DCw, zDC>=0");
+      CheckHists(realHeatmapDCw1, simHeatmapDCw1, "Heatmap: DCw, zDC<0");
 
-      TH2F *realCutHeatmapDCe0 = static_cast<TH2F *>(realHeatmapDCe0->Clone());
-      TH2F *realCutHeatmapDCe1 = static_cast<TH2F *>(realHeatmapDCe1->Clone());
-      TH2F *realCutHeatmapDCw0 = static_cast<TH2F *>(realHeatmapDCw0->Clone());
-      TH2F *realCutHeatmapDCw1 = static_cast<TH2F *>(realHeatmapDCw1->Clone());
+      TH2F *realCutHeatmapDCe0 = static_cast<TH2F *>(realHeatmapDCe0->Clone("DCe, zDC>=0 real"));
+      TH2F *realCutHeatmapDCe1 = static_cast<TH2F *>(realHeatmapDCe1->Clone("DCe, zDC<0 real"));
+      TH2F *realCutHeatmapDCw0 = static_cast<TH2F *>(realHeatmapDCw0->Clone("DCw, zDC>=0 real"));
+      TH2F *realCutHeatmapDCw1 = static_cast<TH2F *>(realHeatmapDCw1->Clone("DCw, zDC<0 real"));
 
-      TH2F *simCutHeatmapDCe0 = static_cast<TH2F *>(realHeatmapDCe0->Clone());
-      TH2F *simCutHeatmapDCe1 = static_cast<TH2F *>(realHeatmapDCe1->Clone());
-      TH2F *simCutHeatmapDCw0 = static_cast<TH2F *>(realHeatmapDCw0->Clone());
-      TH2F *simCutHeatmapDCw1 = static_cast<TH2F *>(realHeatmapDCw1->Clone());
+      TH2F *simCutHeatmapDCe0 = static_cast<TH2F *>(simHeatmapDCe0->Clone("DCe, zDC>=0 sim"));
+      TH2F *simCutHeatmapDCe1 = static_cast<TH2F *>(simHeatmapDCe1->Clone("DCe, zDC<0 sim"));
+      TH2F *simCutHeatmapDCw0 = static_cast<TH2F *>(simHeatmapDCw0->Clone("DCw, zDC>=0 sim"));
+      TH2F *simCutHeatmapDCw1 = static_cast<TH2F *>(simHeatmapDCw1->Clone("DCw, zDC<0 sim"));
 
       for (int i = 1; i <= realHeatmapDCe0->GetXaxis()->GetNbins(); i++)
       {
          for (int j = 1; j <= realHeatmapDCe0->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadDC(1, 1., realHeatmapDCe0->GetXaxis()->GetBinCenter(i),
-                                  realHeatmapDCe0->GetYaxis()->GetBinCenter(i)))
+                                  realHeatmapDCe0->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCe0->SetBinContent(i, j, 0.);
                simCutHeatmapDCe0->SetBinContent(i, j, 0.);
@@ -444,7 +444,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapDCe1->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadDC(1, -1., realHeatmapDCe1->GetXaxis()->GetBinCenter(i),
-                                  realHeatmapDCe1->GetYaxis()->GetBinCenter(i)))
+                                  realHeatmapDCe1->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCe1->SetBinContent(i, j, 0.);
                simCutHeatmapDCe1->SetBinContent(i, j, 0.);
@@ -456,7 +456,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapDCw0->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadDC(0, 1., realHeatmapDCw0->GetXaxis()->GetBinCenter(i),
-                                  realHeatmapDCw0->GetYaxis()->GetBinCenter(i)))
+                                  realHeatmapDCw0->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCw0->SetBinContent(i, j, 0.);
                simCutHeatmapDCw0->SetBinContent(i, j, 0.);
@@ -468,7 +468,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapDCw1->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadDC(0, -1., realHeatmapDCw1->GetXaxis()->GetBinCenter(i),
-                                  realHeatmapDCw1->GetYaxis()->GetBinCenter(i)))
+                                  realHeatmapDCw1->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCw1->SetBinContent(i, j, 0.);
                simCutHeatmapDCw1->SetBinContent(i, j, 0.);
@@ -480,16 +480,16 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertaintyFromXProj(realHeatmapDCe0, simHeatmapDCe0, 
                                  realCutHeatmapDCe0, simCutHeatmapDCe0, 
-                                 "DCe0", "DC east, zDC>=0", "board", "#alpha") << " " <<
+                                 "DCe0", "DC east, zDC>=0", "board", "#alpha", 2) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCe1, simHeatmapDCe1, 
                                  realCutHeatmapDCe1, simCutHeatmapDCe1, 
-                                 "DCe1", "DC east, zDC<0", "board", "#alpha") << " " <<
+                                 "DCe1", "DC east, zDC<0", "board", "#alpha", 2) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCw0, simHeatmapDCw0, 
                                  realCutHeatmapDCw0, simCutHeatmapDCw0, 
-                                 "DCw0", "DC west, zDC>=0", "board", "#alpha") << " " <<
+                                 "DCw0", "DC west, zDC>=0", "board", "#alpha", 2) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCw1, simHeatmapDCw1, 
                                  realCutHeatmapDCw1, simCutHeatmapDCw1, 
-                                 "DCw1", "DC west, zDC<0", "board", "#alpha");
+                                 "DCw1", "DC west, zDC<0", "board", "#alpha", 2);
    }
    else
    {
@@ -505,6 +505,9 @@ int main(int argc, char **argv)
       TH2F *simHeatmapPC1e = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: PC1e"));
       TH2F *simHeatmapPC1w = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: PC1w"));
 
+      CheckHists(realHeatmapPC1e, simHeatmapPC1e, "Heatmap: PC1e");
+      CheckHists(realHeatmapPC1w, simHeatmapPC1w, "Heatmap: PC1w");
+
       TH2F *realCutHeatmapPC1e = static_cast<TH2F *>(realHeatmapPC1e->Clone());
       TH2F *realCutHeatmapPC1w = static_cast<TH2F *>(realHeatmapPC1w->Clone());
 
@@ -516,7 +519,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapPC1e->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadPC1(1, realHeatmapPC1e->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapPC1e->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapPC1e->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC1e->SetBinContent(i, j, 0.);
                simCutHeatmapPC1e->SetBinContent(i, j, 0.);
@@ -528,7 +531,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapPC1w->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadPC1(0, realHeatmapPC1w->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapPC1w->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapPC1w->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC1w->SetBinContent(i, j, 0.);
                simCutHeatmapPC1w->SetBinContent(i, j, 0.);
@@ -540,10 +543,10 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertaintyFromXYProj(realHeatmapPC1e, simHeatmapPC1e, 
                                   realCutHeatmapPC1e, simCutHeatmapPC1e, 
-                                  "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}") << " " <<
+                                  "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}", 2) << " " <<
          GetUncertaintyFromXYProj(realHeatmapPC1w, simHeatmapPC1w, 
                                   realCutHeatmapPC1w, simCutHeatmapPC1w, 
-                                  "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}");
+                                  "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2);
    }
    else
    {
@@ -557,6 +560,8 @@ int main(int argc, char **argv)
 
       TH2F *simHeatmapPC2 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: PC2"));
 
+      CheckHists(realHeatmapPC2, simHeatmapPC2, "Heatmap: PC2");
+
       TH2F *realCutHeatmapPC2 = static_cast<TH2F *>(realHeatmapPC2->Clone());
 
       TH2F *simCutHeatmapPC2 = static_cast<TH2F *>(simHeatmapPC2->Clone());
@@ -566,7 +571,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapPC2->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadPC2(realHeatmapPC2->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapPC2->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapPC2->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC2->SetBinContent(i, j, 0.);
                simCutHeatmapPC2->SetBinContent(i, j, 0.);
@@ -594,6 +599,9 @@ int main(int argc, char **argv)
       TH2F *simHeatmapPC3e = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: PC3e"));
       TH2F *simHeatmapPC3w = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: PC3w"));
 
+      CheckHists(realHeatmapPC3e, simHeatmapPC3e, "Heatmap: PC3e");
+      CheckHists(realHeatmapPC3w, simHeatmapPC3w, "Heatmap: PC3w");
+
       TH2F *realCutHeatmapPC3e = static_cast<TH2F *>(realHeatmapPC3e->Clone());
       TH2F *realCutHeatmapPC3w = static_cast<TH2F *>(realHeatmapPC3w->Clone());
 
@@ -605,7 +613,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapPC3e->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadPC3(1, realHeatmapPC3e->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapPC3e->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapPC3e->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC3e->SetBinContent(i, j, 0.);
                simCutHeatmapPC3e->SetBinContent(i, j, 0.);
@@ -617,7 +625,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapPC3w->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadPC3(0, realHeatmapPC3w->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapPC3w->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapPC3w->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC3w->SetBinContent(i, j, 0.);
                simCutHeatmapPC3w->SetBinContent(i, j, 0.);
@@ -646,6 +654,8 @@ int main(int argc, char **argv)
 
       TH2F *simHeatmapTOFe = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: TOFe"));
 
+      CheckHists(realHeatmapTOFe, simHeatmapTOFe, "Heatmap: TOFe");
+
       TH2F *realCutHeatmapTOFe = static_cast<TH2F *>(realHeatmapTOFe->Clone());
 
       TH2F *simCutHeatmapTOFe = static_cast<TH2F *>(simHeatmapTOFe->Clone());
@@ -655,7 +665,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapTOFe->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadTOFe(realHeatmapTOFe->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapTOFe->GetYaxis()->GetBinCenter(i)))
+                                   realHeatmapTOFe->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapTOFe->SetBinContent(i, j, 0.);
                simCutHeatmapTOFe->SetBinContent(i, j, 0.);
@@ -687,6 +697,9 @@ int main(int argc, char **argv)
       TH2F *simHeatmapTOFw1 = 
          static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: TOFw, ptofy>100"));
 
+      CheckHists(realHeatmapTOFw0, simHeatmapTOFw0, "Heatmap: TOFw, ptofy<100");
+      CheckHists(realHeatmapTOFw1, simHeatmapTOFw1, "Heatmap: TOFw, ptofy>100");
+
       TH2F *realCutHeatmapTOFw0 = static_cast<TH2F *>(realHeatmapTOFw0->Clone());
       TH2F *realCutHeatmapTOFw1 = static_cast<TH2F *>(realHeatmapTOFw1->Clone());
 
@@ -698,7 +711,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapTOFw0->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadTOFw(realHeatmapTOFw0->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFw0->GetYaxis()->GetBinCenter(i)))
+                                    realHeatmapTOFw0->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapTOFw0->SetBinContent(i, j, 0.);
                simCutHeatmapTOFw0->SetBinContent(i, j, 0.);
@@ -710,7 +723,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapTOFw1->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadTOFw(realHeatmapTOFw1->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFw1->GetYaxis()->GetBinCenter(i)))
+                                    realHeatmapTOFw1->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapTOFw1->SetBinContent(i, j, 0.);
                simCutHeatmapTOFw1->SetBinContent(i, j, 0.);
@@ -747,19 +760,21 @@ int main(int argc, char **argv)
          TH2F *simHeatmapEMCale = static_cast<TH2F *>
             (inputSimDataFile->Get(("Heatmap: EMCale" + std::to_string(i)).c_str()));
 
+         CheckHists(realHeatmapEMCale, simHeatmapEMCale, "Heatmap: EMCale" + std::to_string(i));
+
          TH2F *realCutHeatmapEMCale = static_cast<TH2F *>(realHeatmapEMCale->Clone());
 
          TH2F *simCutHeatmapEMCale = static_cast<TH2F *>(simHeatmapEMCale->Clone());
 
-         for (int i = 1; i <= realHeatmapEMCale->GetXaxis()->GetNbins(); i++)
+         for (int j = 1; j <= realHeatmapEMCale->GetXaxis()->GetNbins(); j++)
          {
-            for (int j = 1; j <= realHeatmapEMCale->GetYaxis()->GetNbins(); j++)
+            for (int k = 1; k <= realHeatmapEMCale->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCale->GetXaxis()->GetBinCenter(i),
-                                        realHeatmapEMCale->GetYaxis()->GetBinCenter(i)))
+               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCale->GetXaxis()->GetBinCenter(j),
+                                        realHeatmapEMCale->GetYaxis()->GetBinCenter(k)))
                {
-                  realCutHeatmapEMCale->SetBinContent(i, j, 0.);
-                  simCutHeatmapEMCale->SetBinContent(i, j, 0.);
+                  realCutHeatmapEMCale->SetBinContent(j, k, 0.);
+                  simCutHeatmapEMCale->SetBinContent(j, k, 0.);
                }
             }
          }
@@ -779,19 +794,21 @@ int main(int argc, char **argv)
          TH2F *simHeatmapEMCalw = static_cast<TH2F *>
             (inputSimDataFile->Get(("Heatmap: EMCalw" + std::to_string(i)).c_str()));
 
+         CheckHists(realHeatmapEMCalw, simHeatmapEMCalw, "Heatmap: EMCalw" + std::to_string(i));
+
          TH2F *realCutHeatmapEMCalw = static_cast<TH2F *>(realHeatmapEMCalw->Clone());
 
          TH2F *simCutHeatmapEMCalw = static_cast<TH2F *>(simHeatmapEMCalw->Clone());
 
-         for (int i = 1; i <= realHeatmapEMCalw->GetXaxis()->GetNbins(); i++)
+         for (int j = 1; j <= realHeatmapEMCalw->GetXaxis()->GetNbins(); j++)
          {
-            for (int j = 1; j <= realHeatmapEMCalw->GetYaxis()->GetNbins(); j++)
+            for (int k = 1; k <= realHeatmapEMCalw->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCalw->GetXaxis()->GetBinCenter(i),
-                                        realHeatmapEMCalw->GetYaxis()->GetBinCenter(i)))
+               if (dmCutter.IsDeadEMCal(0, i, realHeatmapEMCalw->GetXaxis()->GetBinCenter(j),
+                                        realHeatmapEMCalw->GetYaxis()->GetBinCenter(k)))
                {
-                  realCutHeatmapEMCalw->SetBinContent(i, j, 0.);
-                  simCutHeatmapEMCalw->SetBinContent(i, j, 0.);
+                  realCutHeatmapEMCalw->SetBinContent(j, k, 0.);
+                  simCutHeatmapEMCalw->SetBinContent(j, k, 0.);
                }
             }
          }
