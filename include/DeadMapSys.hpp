@@ -55,7 +55,7 @@ namespace DeadMapSys
    /// Cutter for bad/dead areas of heatmaps
    DeadMapCutter dmCutter;
    /// Number of divisions of projections for different normalizations
-   const int numberOfProjectionDivisions = 5.;
+   const int numberOfProjectionDivisions = 10.;
    /*! @brief Returns the uncertainty that is originated from the difference between 2 2D 
     * histograms measured by taking projections of 2 histograms onto X axis. Also prints
     * the amount of data lost when the distributions are cut by the exclusion of bad/dead areas

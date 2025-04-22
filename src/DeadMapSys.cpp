@@ -71,6 +71,39 @@ double DeadMapSys::GetNormRatio(const double ratio)
 
 double DeadMapSys::CalculateUncertaintyFromProj(TH1D *dataCutDistr, TH1D *simCutDistr)
 {
+   // this uncertainty is calculated by the uncertainty propagation of each bin uncertainty
+   double uncertainty = 0.;
+
+   for (int i = 1; i <= dataCutDistr->GetXaxis()->GetNbins(); i++)
+   {
+      if (simCutDistr->GetBinContent(i) < 1e-15 && dataCutDistr->GetBinContent(i) < 1e-15) 
+      {
+         continue;
+      }
+      const double average = (dataCutDistr->GetBinContent(i)*dataCutDistr->GetBinContent(i) + 
+                              simCutDistr->GetBinContent(i)*simCutDistr->GetBinContent(i))/
+                             (dataCutDistr->GetBinContent(i) + simCutDistr->GetBinContent(i));
+      // standard deviation squared for the current bin is calculated as 
+      // sum(w_i * (x_av - x_i)^2) / sum(w_i)
+      // w_i - weight = data/sim bin content bin content (equals x_av)
+      // x_av - average bin content between simulated and real data histogram = sum(x_i*w_i)/sum(w_i)
+      // x_i - bin content of data/sim histogram
+      const double sigma2 = 
+         (dataCutDistr->GetBinContent(i)*pow(average - dataCutDistr->GetBinContent(i), 2) + 
+          simCutDistr->GetBinContent(i)*pow(average - simCutDistr->GetBinContent(i), 2))/
+         (dataCutDistr->GetBinContent(i) + simCutDistr->GetBinContent(i));
+
+      // uncertainty is propagated as sum (w_i * sigma_i^2 / x_av^2 )
+      // w_i - weight (equals x_av)
+      // sigma_i - standard deviation of the current bin (equals sqrt(sigma2))
+      // x_av - average bin content between simulated and real histograms for the current bin
+      // x_av cancels itself and only one is left in the denominator
+      uncertainty += sigma2/average;
+   }
+
+   uncertainty = sqrt(uncertainty)/2.;
+   return uncertainty;
+   /*
 	std::vector<double> dataNormIntegrals;
 	std::vector<double> simNormIntegrals;
 	std::vector<double> ratios;
@@ -79,7 +112,7 @@ double DeadMapSys::CalculateUncertaintyFromProj(TH1D *dataCutDistr, TH1D *simCut
 	{
 		dataNormIntegrals.push_back(0.);
 		simNormIntegrals.push_back(0.);
-		for (int j = 1; j < dataCutDistr->GetXaxis()->GetNbins(); j++)
+		for (int j = 1; j <= dataCutDistr->GetXaxis()->GetNbins(); j++)
 		{
 			if (j % 10 != i) continue;
 			dataNormIntegrals.back() += dataCutDistr->GetBinContent(j);
@@ -106,6 +139,7 @@ double DeadMapSys::CalculateUncertaintyFromProj(TH1D *dataCutDistr, TH1D *simCut
 		}
 	}
 	return CppTools::RMSFromCArray(&ratios[0], ratios.size()) - 1.;
+   */
 }
 
 double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr, 
