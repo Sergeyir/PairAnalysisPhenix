@@ -347,6 +347,22 @@ bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, const int yto
    return cutAreasEMCalw[sector][yBin][xBin];
 }
 
+bool DeadMapCutter::IsDeadTOFeSlat(const int slat)
+{
+   if (!doCutTOFe) return false;
+
+   if (slat < cutSlatsRange[0] || slat > cutSlatsRange[1]) return true;
+   return cutSlatsTOFe[slat];
+}
+
+bool DeadMapCutter::IsDeadTOFwStrip(const int striptofw)
+{
+   if (!doCutTOFw) return false;
+
+   if (striptofw < cutStripsRange[0] || striptofw > cutStripsRange[1]) return true;
+   return cutStripsTOFw[striptofw];
+}
+
 void DeadMapCutter::SetDeadAreas(const std::string& inputFileName, 
                                  std::vector<std::vector<bool>>& cutAreas, double *ranges)
 {
