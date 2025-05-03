@@ -60,7 +60,7 @@ class DeadMapCutter
    void Initialize(const std::string& runName, const std::string& options = "1111111");
 
    /// Returns true if data in DC is in bad/dead area
-   bool IsDeadDC(const int dcarm, const double zed, const double board, const double alpha);
+   bool IsDeadDC(const int dcarm, const double zDC, const double board, const double alpha);
    /// Returns true if data in PC1 is in bad/dead area
    bool IsDeadPC1(const int dcarm, const double ppc1z, const double ppc1phi);
    /// Returns true if data in PC2 is in bad/dead area

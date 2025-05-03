@@ -137,7 +137,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             double alphaReweight = 1.;
 
-            if (dcarm == 0)
+            if (dcarm == 0) // DCe
             {
                if (zed >= 0) 
                {
@@ -161,7 +161,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.heatmapDCe1X2-> Fill(board, alpha, static_cast<double>
                                                      (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
-            }
+            } // DCw
             else
             {
                if (zed >= 0) 
@@ -192,11 +192,11 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             const double ppc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
 
-            if (dcarm == 1) 
+            if (dcarm == 1) // PC1w
             {
                histContainer.heatmapPC1w->Fill(STR.ppc1z(i), ppc1phi, eventWeight*alphaReweight);
             }
-            else
+            else // PC1e
             {
                if (ppc1phi < 0) 
                {
@@ -259,7 +259,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.pc3dphi(i)))
             {
-               if (dcarm == 0)
+               if (dcarm == 0) // PC3e
                {
                   if (charge == 1) 
                   {
@@ -286,7 +286,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                              pT, eventWeight);
                   }
                }
-               else
+               else // PC3w
                {
                   if (charge == 1) 
                   {
@@ -319,7 +319,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
                   double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i) - STR.pc3dphi(i));
  
-                  if (dcarm == 0) 
+                  if (dcarm == 0) // PC3e
                   {
                      if (pc3phi < 0) 
                      {
@@ -331,7 +331,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         histContainer.heatmapPC3e->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
                      }
                   }
-                  else histContainer.heatmapPC3w->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
+                  else // PC3w
+                  {
+                     histContainer.heatmapPC3w->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
+                  }
                }
             }
 
@@ -418,7 +421,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(STR.emcdz(i)))
             {
-               if (dcarm == 0)
+               if (dcarm == 0) // EMCale
                {
                   if (charge == 1) 
                   {
@@ -453,7 +456,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                              pT, eventWeight);
                   }
                }
-               else
+               else // EMCalw
                {
                   if (charge == 1) 
                   {
@@ -495,13 +498,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                   dcarm, STR.sect(i))))
                { 
 
-                  if (dcarm == 0) 
+                  if (dcarm == 0) // EMCale
                   {
                      histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
                      histContainer.heatmapEMCale[STR.sect(i)]->
                         Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
                   }
-                  else 
+                  else // EMCalw
                   {
                      histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
                      histContainer.heatmapEMCalw[STR.sect(i)]->
