@@ -420,25 +420,25 @@ namespace AnalyzeSingleTrack
       std::array<ROOTTools::ThrObj<TH2F>, 4> distrECoreVsPTEMCale = 
       {
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale0", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale1", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale2", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale3", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.)
+                                 200, 0., 10., 200, 0., 2.)
       };
       /// ecore in EMCalw(0-3) vs pT distributions
       std::array<ROOTTools::ThrObj<TH2F>, 4> distrECoreVsPTEMCalw = 
       {
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw0", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw1", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw2", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.),
+                                 200, 0., 10., 200, 0., 2.),
          ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw3", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 5.)
+                                 200, 0., 10., 200, 0., 2.)
       };
       /// strip distribution in TOFw
       ROOTTools::ThrObj<TH1F> distrStripTOFw = ROOTTools::ThrObj<TH1F>
