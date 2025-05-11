@@ -169,10 +169,18 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale;
       /// heatmaps of EMCalw(0-3)
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCalw;
+      /// prob in EMCale(0-3) vs pT distributions
+      std::array<std::shared_ptr<TH2F>, 4> distrProbVsPTEMCale;
+      /// prob in EMCalw(0-3) vs pT distributions
+      std::array<std::shared_ptr<TH2F>, 4> distrProbVsPTEMCalw;
       /// ecore in EMCale(0-3) vs pT distributions
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCale;
       /// ecore in EMCalw(0-3) vs pT distributions
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCalw;
+      /// ecore in EMCale(0-3) vs pT distributions for original particles only
+      std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCaleOrig;
+      /// ecore in EMCalw(0-3) vs pT distributions for original particles only
+      std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCalwOrig;
       /// strip distribution in TOFw
       std::shared_ptr<TH1F> distrStripTOFw;
       /// slat distribution in TOFe
@@ -293,473 +301,508 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> distrSDZVsPTEMCalwNeg;
    };
    /* @struct ThrContainer
-    * @brief Container for storing ROOTTools::ThrObj variables 
+    * @brief Container for storing ROOT::TThreadedObject variables 
     * (histograms for multithreading with TTreeProcessorMT)
     */
    struct ThrContainer
    {
-      /// @brief returns ThrContainerCopy with std::shared_ptr copies of ROOTTools::ThrObj histograms
+      /// @brief returns ThrContainerCopy with std::shared_ptr 
+      /// copies of ROOT::TThreadedObject histograms
       ThrContainerCopy GetCopy();
+      /// @brief writes the merged histograms across all threads into the file with a specified name
+      void Write(const std::string& outputFileName);
       /// distribution of original generated pT
-      ROOTTools::ThrObj<TH1F> distrOrigPT = 
-         ROOTTools::ThrObj<TH1F>("orig pT", "p_{T}", 100., 0., 10.);
+      std::unique_ptr<ROOT::TThreadedObject<TH1F>> distrOrigPT = std::make_unique<ROOT::TThreadedObject<TH1F>>("orig pT", "p_{T}", 100., 0., 10.);
       // distribution of original generated pT vs reconstructed pT in the simulation
-      ROOTTools::ThrObj<TH2F> distrOrigPTVsRecPT = 
-         ROOTTools::ThrObj<TH2F>("orig pT vs rec pT","p_{T}^{orig} vs p_{T}^{rec}", 
-                                 100, 0., 10., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> 
+         distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
+                            100, 0., 10., 100, 0., 10.};
       /// unscaled by alpha heatmap of DCe, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapUnscaledDCe0 = 
-         ROOTTools::ThrObj<TH2F>("Unscaled heatmap: DCe, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapUnscaledDCe0{"Unscaled heatmap: DCe, zDC>=0", "board vs alpha", 
+                             400, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCe, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapUnscaledDCe1 = 
-         ROOTTools::ThrObj<TH2F>("Unscaled heatmap: DCe, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapUnscaledDCe1{"Unscaled heatmap: DCe, zDC<0", "board vs alpha", 
+                             400, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCw, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapUnscaledDCw0 = 
-         ROOTTools::ThrObj<TH2F>("Unscaled heatmap: DCw, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapUnscaledDCw0{"Unscaled heatmap: DCw, zDC>=0", "board vs alpha", 
+                             400, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCw, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapUnscaledDCw1 = 
-         ROOTTools::ThrObj<TH2F>("Unscaled heatmap: DCw, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapUnscaledDCw1{"Unscaled heatmap: DCw, zDC<0", "board vs alpha", 
+                             400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCe, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCe0 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCe, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe0{"Heatmap: DCe, zDC>=0", "board vs alpha", 
+                                              400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCe, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCe1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCe, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe1{"Heatmap: DCe, zDC<0", "board vs alpha", 
+                                              400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCw, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCw0 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCw, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw0{"Heatmap: DCw, zDC>=0", "board vs alpha", 
+                                              400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCw, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCw1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCw, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw1{"Heatmap: DCw, zDC<0", "board vs alpha", 
+                                              400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCe0X1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX1, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"Heatmap: DCeX1, zDC>=0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCe1X1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX1, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe1X1{"Heatmap: DCeX1, zDC<0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCw0X1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX1, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw0X1{"Heatmap: DCwX1, zDC>=0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCw1X1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX1, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw1X1{"Heatmap: DCwX1, zDC<0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCe0X2 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX2, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe0X2{"Heatmap: DCeX2, zDC>=0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCe1X2 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCeX2, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCe1X2{"Heatmap: DCeX2, zDC<0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC>=0
-      ROOTTools::ThrObj<TH2F> heatmapDCw0X2 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX2, zDC>=0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw0X2{"Heatmap: DCwX2, zDC>=0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC<0
-      ROOTTools::ThrObj<TH2F> heatmapDCw1X2 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: DCwX2, zDC<0", "board vs alpha", 
-                                 400, 0., 80., 195, -0.39, 0.39);
+      ROOT::TThreadedObject<TH2F> heatmapDCw1X2{"Heatmap: DCwX2, zDC<0", "board vs alpha", 
+                                                400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of PC1e
-      ROOTTools::ThrObj<TH2F> heatmapPC1e = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: PC1e", "pc1z vs pc1phi", 
-                                 380, -95., 95., 170, 2.05, 3.75);
+      ROOT::TThreadedObject<TH2F> heatmapPC1e{"Heatmap: PC1e", "pc1z vs pc1phi", 
+                                              380, -95., 95., 170, 2.05, 3.75};
       /// heatmap of PC1w
-      ROOTTools::ThrObj<TH2F> heatmapPC1w = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: PC1w", "pc1z vs pc1phi", 
-                                 380, -95., 95., 165, -0.6, 1.05);
+      ROOT::TThreadedObject<TH2F> heatmapPC1w{"Heatmap: PC1w", "pc1z vs pc1phi", 
+                                              380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC2
-      ROOTTools::ThrObj<TH2F> heatmapPC2 = ROOTTools::ThrObj<TH2F>
-         ("Heatmap: PC2", "pc3z vs pc3phi", 330, -165., 165., 165, -0.6, 1.05);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapPC2{"Heatmap: PC2", "pc3z vs pc3phi", 330, -165., 165., 165, -0.6, 1.05};
       /// heatmap of PC3e
-      ROOTTools::ThrObj<TH2F> heatmapPC3e = ROOTTools::ThrObj<TH2F>
-         ("Heatmap: PC3e", "pc3z vs pc3phi", 390, -195., 195., 170, 2.1, 3.8);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapPC3e{"Heatmap: PC3e", "pc3z vs pc3phi", 390, -195., 195., 170, 2.1, 3.8};
       /// heatmap of PC3w
-      ROOTTools::ThrObj<TH2F> heatmapPC3w = ROOTTools::ThrObj<TH2F>
-         ("Heatmap: PC3w", "pc3z vs pc3phi", 390, -195., 195., 170, -0.65, 1.05);
+      ROOT::TThreadedObject<TH2F> 
+         heatmapPC3w{"Heatmap: PC3w", "pc3z vs pc3phi", 390, -195., 195., 170, -0.65, 1.05};
       /// heatmap of TOFe
-      ROOTTools::ThrObj<TH2F> heatmapTOFe = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: TOFe", "ptofy vs ptofz", 
-                                 185, -280., 90., 200, -200., 200.);
+      ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "ptofy vs ptofz", 
+                                              185, -280., 90., 200, -200., 200.};
       /// heatmap of TOFw, ptofy<100
-      ROOTTools::ThrObj<TH2F> heatmapTOFw0 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 
-                                 90, -55., 35., 195, -195., 195.);
+      ROOT::TThreadedObject<TH2F> heatmapTOFw0{"Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 
+                                               90, -55., 35., 195, -195., 195.};
       /// heatmap of TOFw, ptofy>100
-      ROOTTools::ThrObj<TH2F> heatmapTOFw1 = 
-         ROOTTools::ThrObj<TH2F>("Heatmap: TOFw, ptofy>100", "ptofy vs ptofz", 
-                                 85, 185., 270., 195, -195., 195.);
+      ROOT::TThreadedObject<TH2F> heatmapTOFw1{"Heatmap: TOFw, ptofy>100", "ptofy vs ptofz", 
+                                               85, 185., 270., 195, -195., 195.};
       /// heatmaps of EMCale(0-3)
-      std::array<ROOTTools::ThrObj<TH2F>, 4> heatmapEMCale = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCale
       {
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCale0", "ytower vs ztower", 48, 0., 48., 97, 0., 97.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCale1", "ytower vs ztower", 48, 0., 48., 97, 0., 97.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCale2", "ytower vs ztower", 36, 0., 36, 72, 0., 72.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCale3", "ytower vs ztower", 36, 0., 36, 72, 0., 72.)
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale0", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale1", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale2", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale3", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72.)
       };
       /// heatmaps of EMCalw(0-3)
-      std::array<ROOTTools::ThrObj<TH2F>, 4> heatmapEMCalw = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCalw
       {
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCalw0", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
-         ROOTTools::ThrObj<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.)
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw0", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.)
+      };
+      /// prob in EMCale(0-3) vs pT distributions
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCale
+      {
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCale0", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCale1", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCale2", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCale3", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.)
+      };
+      /// prob in EMCalw(0-3) vs pT distributions
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCalw
+      {
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCalw0", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCalw1", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCalw2", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.),
+         ROOT::TThreadedObject<TH2F>("prob vs pT: EMCalw3", "prob vs p_{T}", 
+                                     200, 0., 10., 200, 0., 1.)
       };
       /// ecore in EMCale(0-3) vs pT distributions
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrECoreVsPTEMCale = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrECoreVsPTEMCale
       {
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale0", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale1", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale2", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCale3", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.)
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale0", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale1", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale2", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale3", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.)
       };
       /// ecore in EMCalw(0-3) vs pT distributions
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrECoreVsPTEMCalw = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrECoreVsPTEMCalw
       {
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw0", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw1", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw2", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.),
-         ROOTTools::ThrObj<TH2F>("ecore vs pT: EMCalw3", "E_{core} vs p_{T}", 
-                                 200, 0., 10., 200, 0., 2.)
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw0", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw1", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw2", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw3", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.)
+      };
+      /// ecore in EMCale(0-3) vs pT distributions for original particles only
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrECoreVsPTEMCaleOrig
+      {
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale0, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale1, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale2, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCale3, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.)
+      };
+      /// ecore in EMCalw(0-3) vs pT distributions
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrECoreVsPTEMCalwOrig
+      {
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw0, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw1, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw2, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.),
+         ROOT::TThreadedObject<TH2F>("ecore vs pT: EMCalw3, orig only", "E_{core} vs p_{T}", 
+                                     200, 0., 10., 200, 0., 2.)
       };
       /// strip distribution in TOFw
-      ROOTTools::ThrObj<TH1F> distrStripTOFw = ROOTTools::ThrObj<TH1F>
-         ("striptofw: TOFw", "strip number", 512, 0., 512.);
+      ROOT::TThreadedObject<TH1F> distrStripTOFw{"striptofw: TOFw", "strip number", 512, 0., 512.};
       /// slat distribution in TOFe
-      ROOTTools::ThrObj<TH1F> distrSlatTOFe = ROOTTools::ThrObj<TH1F>
-         ("slat: TOFe", "slat number", 960, 0., 960.);
+      ROOT::TThreadedObject<TH1F> distrSlatTOFe{"slat: TOFe", "slat number", 960, 0., 960.};
       /// eloss vs beta distribution in TOFe
-      ROOTTools::ThrObj<TH2F> distrELossTOFe = ROOTTools::ThrObj<TH2F>
-         ("eloss: TOFe", "#beta vs E_{TOFe}", 100, 0., 1., 100, 0., 0.03);
+      ROOT::TThreadedObject<TH2F> distrELossTOFe{"eloss: TOFe", "#beta vs E_{TOFe}", 
+                                                 100, 0., 1., 100, 0., 0.03};
       /// pc2dphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC2Pos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC2, charge>0", "d#varphi_{PC2} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC2Pos
+         {"dphi vs pT: PC2, charge>0", "d#varphi_{PC2} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc2dz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC2Pos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC2, charge>0", "dz_{PC2} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC2Pos
+         {"dz vs pT: PC2, charge>0", "dz_{PC2} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// pc2dphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC2, charge<0", "d#varphi_{PC2} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC2Neg
+         {"dphi vs pT: PC2, charge<0", "d#varphi_{PC2} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc2dz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC2, charge<0", "dz_{PC2} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC2Neg
+         {"dz vs pT: PC2, charge<0", "dz_{PC2} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// pc3dphi vs pT distribution for positive tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3e, charge>0", "d#varphi_{PC3e} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC3ePos
+         {"dphi vs pT: PC3e, charge>0", "d#varphi_{PC3e} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc3dz vs pT distribution for positive tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3e, charge>0", "dz_{PC3e} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC3ePos
+         {"dz vs pT: PC3e, charge>0", "dz_{PC3e} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// pc3dphi vs pT distribution for negative tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3e, charge<0", "d#varphi_{PC3e} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC3eNeg
+         {"dphi vs pT: PC3e, charge<0", "d#varphi_{PC3e} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc3dz vs pT distribution for negative tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3e, charge<0", "dz_{PC3e} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC3eNeg
+         {"dz vs pT: PC3e, charge<0", "dz_{PC3e} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// pc3dphi vs pT distribution for positive tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3w, charge>0", "d#varphi_{PC3w} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC3wPos
+         {"dphi vs pT: PC3w, charge>0", "d#varphi_{PC3w} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc3dz vs pT distribution for positive tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3w, charge>0", "dz_{PC3w} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC3wPos
+         {"dz vs pT: PC3w, charge>0", "dz_{PC3w} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// pc3dphi vs pT distribution for negative tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: PC3w, charge<0", "d#varphi_{PC3w} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTPC3wNeg
+         {"dphi vs pT: PC3w, charge<0", "d#varphi_{PC3w} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// pc3dz vs pT distribution for negative tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrDZVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: PC3w, charge<0", "dz_{PC3w} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTPC3wNeg
+         {"dz vs pT: PC3w, charge<0", "dz_{PC3w} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// tofdphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTTOFePos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: TOFe, charge>0", "d#varphi_{TOFe} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTTOFePos
+         {"dphi vs pT: TOFe, charge>0", "d#varphi_{TOFe} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// tofdz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTTOFePos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: TOFe, charge>0", "dz_{TOFe} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTTOFePos
+         {"dz vs pT: TOFe, charge>0", "dz_{TOFe} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// tofdphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTTOFeNeg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: TOFe, charge<0", "d#varphi_{TOFe} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTTOFeNeg
+         {"dphi vs pT: TOFe, charge<0", "d#varphi_{TOFe} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// tofdz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTTOFeNeg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: TOFe, charge<0", "dz_{TOFe} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTTOFeNeg
+         {"dz vs pT: TOFe, charge<0", "dz_{TOFe} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// tofwdphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTTOFwPos = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: TOFw, charge>0", "d#varphi_{TOFw} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTTOFwPos
+         {"dphi vs pT: TOFw, charge>0", "d#varphi_{TOFw} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// tofwdz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTTOFwPos = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: TOFw, charge>0", "dz_{TOFw} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTTOFwPos
+         {"dz vs pT: TOFw, charge>0", "dz_{TOFw} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// tofwdphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDPhiVsPTTOFwNeg = ROOTTools::ThrObj<TH2F>
-         ("dphi vs pT: TOFw, charge<0", "d#varphi_{TOFw} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDPhiVsPTTOFwNeg
+         {"dphi vs pT: TOFw, charge<0", "d#varphi_{TOFw} vs p_{T}", 200, -0.1, 0.1, 100, 0., 10.};
       /// tofwdz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrDZVsPTTOFwNeg = ROOTTools::ThrObj<TH2F>
-         ("dz vs pT: TOFw, charge<0", "dz_{TOFw} vs p_{T}", 200, -50., 50., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrDZVsPTTOFwNeg
+         {"dz vs pT: TOFw, charge<0", "dz_{TOFw} vs p_{T}", 200, -50., 50., 100, 0., 10.};
       /// emcdphi vs pT distributions for (0-3) sectors in east arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDPhiVsPTEMCalePos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDPhiVsPTEMCalePos
       {
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale0, charge>0", "d#varphi_{EMCale0} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale1, charge>0", "d#varphi_{EMCale1} vs p_{T}", 
-                                200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale2, charge>0", "d#varphi_{EMCale2} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale3, charge>0", "d#varphi_{EMCale3} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale0, charge>0", "d#varphi_{EMCale0} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale1, charge>0", "d#varphi_{EMCale1} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale2, charge>0", "d#varphi_{EMCale2} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale3, charge>0", "d#varphi_{EMCale3} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.)
       };
       /// emcdz vs pT distributions for (0-3) sectors in east arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDZVsPTEMCalePos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDZVsPTEMCalePos
       {
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale0, charge>0", "dz_{EMCale0} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale1, charge>0", "dz_{EMCale1} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale2, charge>0", "dz_{EMCale2} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale3, charge>0", "dz_{EMCale3} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale0, charge>0", "dz_{EMCale0} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale1, charge>0", "dz_{EMCale1} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale2, charge>0", "dz_{EMCale2} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale3, charge>0", "dz_{EMCale3} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.)
       };
       /// emcdphi vs pT distributions for (0-3) sectors in east arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDPhiVsPTEMCaleNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDPhiVsPTEMCaleNeg
       {
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale0, charge<0", "d#varphi_{EMCale0} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale1, charge<0", "d#varphi_{EMCale1} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale2, charge<0", "d#varphi_{EMCale2} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCale3, charge<0", "d#varphi_{EMCale3} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale0, charge<0", "d#varphi_{EMCale0} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale1, charge<0", "d#varphi_{EMCale1} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale2, charge<0", "d#varphi_{EMCale2} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCale3, charge<0", "d#varphi_{EMCale3} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.)
       };
       /// emcdz vs pT distributions for (0-3) sectors in east arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDZVsPTEMCaleNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDZVsPTEMCaleNeg
       {
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale0, charge<0", "dz_{EMCale0} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale1, charge<0", "dz_{EMCale1} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale2, charge<0", "dz_{EMCale2} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCale3, charge<0", "dz_{EMCale3} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale0, charge<0", "dz_{EMCale0} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale1, charge<0", "dz_{EMCale1} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale2, charge<0", "dz_{EMCale2} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCale3, charge<0", "dz_{EMCale3} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.)
       };
       /// emcdphi vs pT distributions for (0-3) sectors in west arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDPhiVsPTEMCalwPos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDPhiVsPTEMCalwPos
       {
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw0, charge>0", "d#varphi_{EMCale0} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw1, charge>0", "d#varphi_{EMCale1} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw2, charge>0", "d#varphi_{EMCale2} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw3, charge>0", "d#varphi_{EMCale3} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw0, charge>0", "d#varphi_{EMCale0} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw1, charge>0", "d#varphi_{EMCale1} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw2, charge>0", "d#varphi_{EMCale2} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw3, charge>0", "d#varphi_{EMCale3} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.)
       };
       /// emcdz vs pT distributions for (0-3) sectors in west arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDZVsPTEMCalwPos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDZVsPTEMCalwPos
       {
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw0, charge>0", "dz_{EMCalw0} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw1, charge>0", "dz_{EMCalw1} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw2, charge>0", "dz_{EMCalw2} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw3, charge>0", "dz_{EMCalw3} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw0, charge>0", "dz_{EMCalw0} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw1, charge>0", "dz_{EMCalw1} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw2, charge>0", "dz_{EMCalw2} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw3, charge>0", "dz_{EMCalw3} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.)
       };
       /// emcdphi vs pT distributions for (0-3) sectors in west arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDPhiVsPTEMCalwNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDPhiVsPTEMCalwNeg
       {
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw0, charge<0", "d#varphi_{EMCale0} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw1, charge<0", "d#varphi_{EMCale1} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw2, charge<0", "d#varphi_{EMCale2} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dphi vs pT: EMCalw3, charge<0", "d#varphi_{EMCale3} vs p_{T}", 
-                                 200, -0.1, 0.1, 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw0, charge<0", "d#varphi_{EMCale0} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw1, charge<0", "d#varphi_{EMCale1} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw2, charge<0", "d#varphi_{EMCale2} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dphi vs pT: EMCalw3, charge<0", "d#varphi_{EMCale3} vs p_{T}", 
+                                     200, -0.1, 0.1, 100, 0., 10.)
       };
       /// emcdz vs pT distributions for (0-3) sectors in west arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrDZVsPTEMCalwNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrDZVsPTEMCalwNeg
       {
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw0, charge<0", "dz_{EMCalw0} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw1, charge<0", "dz_{EMCalw1} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw2, charge<0", "dz_{EMCalw2} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("dz vs pT: EMCalw3, charge<0", "dz_{EMCalw3} vs p_{T}", 
-                                 200, -50., 50., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw0, charge<0", "dz_{EMCalw0} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw1, charge<0", "dz_{EMCalw1} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw2, charge<0", "dz_{EMCalw2} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("dz vs pT: EMCalw3, charge<0", "dz_{EMCalw3} vs p_{T}", 
+                                     200, -50., 50., 100, 0., 10.)
       };
       /// pc2sdphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC2Pos = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC2, charge>0", "sd#varphi_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC2Pos
+         {"sdphi vs pT: PC2, charge>0", "sd#varphi_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc2sdz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC2Pos = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC2, charge>0", "sdz_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC2Pos
+         {"sdz vs pT: PC2, charge>0", "sdz_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc2sdphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC2, charge<0", "sd#varphi_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC2Neg
+         {"sdphi vs pT: PC2, charge<0", "sd#varphi_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc2sdz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC2Neg = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC2, charge<0", "sdz_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC2Neg
+         {"sdz vs pT: PC2, charge<0", "sdz_{PC2} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdphi vs pT distribution for positive tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC3e, charge>0", "sd#varphi_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC3ePos
+         {"sdphi vs pT: PC3e, charge>0", "sd#varphi_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdz vs pT distribution for positive tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC3ePos = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC3e, charge>0", "sdz_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC3ePos
+         {"sdz vs pT: PC3e, charge>0", "sdz_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdphi vs pT distribution for negative tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC3e, charge<0", "sd#varphi_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC3eNeg
+         {"sdphi vs pT: PC3e, charge<0", "sd#varphi_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdz vs pT distribution for negative tracks for east arm
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC3eNeg = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC3e, charge<0", "sdz_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC3eNeg
+         {"sdz vs pT: PC3e, charge<0", "sdz_{PC3e} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdphi vs pT distribution for positive tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC3w, charge>0", "sd#varphi_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC3wPos
+         {"sdphi vs pT: PC3w, charge>0", "sd#varphi_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdz vs pT distribution for positive tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC3wPos = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC3w, charge>0", "sdz_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC3wPos
+         {"sdz vs pT: PC3w, charge>0", "sdz_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdphi vs pT distribution for negative tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: PC3w, charge<0", "sd#varphi_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTPC3wNeg
+         {"sdphi vs pT: PC3w, charge<0", "sd#varphi_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// pc3sdz vs pT distribution for negative tracks for west arm
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTPC3wNeg = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: PC3w, charge<0", "sdz_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTPC3wNeg
+         {"sdz vs pT: PC3w, charge<0", "sdz_{PC3w} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofsdphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTTOFePos = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: TOFe, charge>0", "sd#varphi_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTTOFePos
+         {"sdphi vs pT: TOFe, charge>0", "sd#varphi_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofsdz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTTOFePos = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: TOFe, charge>0", "sdz_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTTOFePos
+         {"sdz vs pT: TOFe, charge>0", "sdz_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofsdphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTTOFeNeg = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: TOFe, charge<0", "sd#varphi_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTTOFeNeg
+         {"sdphi vs pT: TOFe, charge<0", "sd#varphi_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofsdz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTTOFeNeg = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: TOFe, charge<0", "sdz_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTTOFeNeg
+         {"sdz vs pT: TOFe, charge<0", "sdz_{TOFe} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofwsdphi vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTTOFwPos = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: TOFw, charge>0", "sd#varphi_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTTOFwPos
+         {"sdphi vs pT: TOFw, charge>0", "sd#varphi_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofwsdz vs pT distribution for positive tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTTOFwPos = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: TOFw, charge>0", "sdz_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTTOFwPos
+         {"sdz vs pT: TOFw, charge>0", "sdz_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofwsdphi vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDPhiVsPTTOFwNeg = ROOTTools::ThrObj<TH2F>
-         ("sdphi vs pT: TOFw, charge<0", "sd#varphi_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDPhiVsPTTOFwNeg
+         {"sdphi vs pT: TOFw, charge<0", "sd#varphi_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// tofwsdz vs pT distribution for negative tracks
-      ROOTTools::ThrObj<TH2F> distrSDZVsPTTOFwNeg = ROOTTools::ThrObj<TH2F>
-         ("sdz vs pT: TOFw, charge<0", "sdz_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.);
+      ROOT::TThreadedObject<TH2F> distrSDZVsPTTOFwNeg
+         {"sdz vs pT: TOFw, charge<0", "sdz_{TOFw} vs p_{T}", 200, -5., 5., 100, 0., 10.};
       /// emcsdphi vs pT distributions for (0-3) sectors in east arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDPhiVsPTEMCalePos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDPhiVsPTEMCalePos
       {
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale0, charge>0", "sd#varphi_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale1, charge>0", "sd#varphi_{EMCale1} vs p_{T}", 
-                                200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale2, charge>0", "sd#varphi_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale3, charge>0", "sd#varphi_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale0, charge>0", 
+                                     "sd#varphi_{EMCale0} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale1, charge>0", 
+                                     "sd#varphi_{EMCale1} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale2, charge>0", 
+                                     "sd#varphi_{EMCale2} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale3, charge>0", 
+                                     "sd#varphi_{EMCale3} vs p_{T}", 200, -5., 5., 100, 0., 10.)
       };
       /// emcsdz vs pT distributions for (0-3) sectors in east arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDZVsPTEMCalePos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDZVsPTEMCalePos
       {
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale0, charge>0", "sdz_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale1, charge>0", "sdz_{EMCale1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale2, charge>0", "sdz_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale3, charge>0", "sdz_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale0, charge>0", "sdz_{EMCale0} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale1, charge>0", "sdz_{EMCale1} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale2, charge>0", "sdz_{EMCale2} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale3, charge>0", "sdz_{EMCale3} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.)
       };
       /// emcsdphi vs pT distributions for (0-3) sectors in east arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDPhiVsPTEMCaleNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDPhiVsPTEMCaleNeg
       {
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale0, charge<0", "sd#varphi_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale1, charge<0", "sd#varphi_{EMCale1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale2, charge<0", "sd#varphi_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCale3, charge<0", "sd#varphi_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale0, charge<0", 
+                                     "sd#varphi_{EMCale0} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale1, charge<0", 
+                                     "sd#varphi_{EMCale1} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale2, charge<0", 
+                                     "sd#varphi_{EMCale2} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCale3, charge<0", 
+                                     "sd#varphi_{EMCale3} vs p_{T}", 200, -5., 5., 100, 0., 10.)
       };
       /// emcsdz vs pT distributions for (0-3) sectors in east arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDZVsPTEMCaleNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDZVsPTEMCaleNeg
       {
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale0, charge<0", "sdz_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale1, charge<0", "sdz_{EMCale1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale2, charge<0", "sdz_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCale3, charge<0", "sdz_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale0, charge<0", "sdz_{EMCale0} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale1, charge<0", "sdz_{EMCale1} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale2, charge<0", "sdz_{EMCale2} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCale3, charge<0", "sdz_{EMCale3} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.)
       };
       /// emcsdphi vs pT distributions for (0-3) sectors in west arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDPhiVsPTEMCalwPos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDPhiVsPTEMCalwPos
       {
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw0, charge>0", "sd#varphi_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw1, charge>0", "sd#varphi_{EMCale1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw2, charge>0", "sd#varphi_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw3, charge>0", "sd#varphi_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw0, charge>0", 
+                                     "sd#varphi_{EMCale0} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw1, charge>0", 
+                                     "sd#varphi_{EMCale1} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw2, charge>0", 
+                                     "sd#varphi_{EMCale2} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw3, charge>0", 
+                                     "sd#varphi_{EMCale3} vs p_{T}", 200, -5., 5., 100, 0., 10.)
       };
       /// emcsdz vs pT distributions for (0-3) sectors in west arm for positive tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDZVsPTEMCalwPos = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDZVsPTEMCalwPos
       {
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw0, charge>0", "sdz_{EMCalw0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw1, charge>0", "sdz_{EMCalw1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw2, charge>0", "sdz_{EMCalw2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw3, charge>0", "sdz_{EMCalw3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw0, charge>0", "sdz_{EMCalw0} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw1, charge>0", "sdz_{EMCalw1} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw2, charge>0", "sdz_{EMCalw2} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw3, charge>0", "sdz_{EMCalw3} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.)
       };
       /// emcsdphi vs pT distributions for (0-3) sectors in west arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDPhiVsPTEMCalwNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDPhiVsPTEMCalwNeg
       {
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw0, charge<0", "sd#varphi_{EMCale0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw1, charge<0", "sd#varphi_{EMCale1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw2, charge<0", "sd#varphi_{EMCale2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdphi vs pT: EMCalw3, charge<0", "sd#varphi_{EMCale3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw0, charge<0", 
+                                     "sd#varphi_{EMCale0} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw1, charge<0", 
+                                     "sd#varphi_{EMCale1} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw2, charge<0", 
+                                     "sd#varphi_{EMCale2} vs p_{T}", 200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdphi vs pT: EMCalw3, charge<0", 
+                                     "sd#varphi_{EMCale3} vs p_{T}", 200, -5., 5., 100, 0., 10.)
       };
       /// emcsdz vs pT distributions for (0-3) sectors in west arm for negative tracks
-      std::array<ROOTTools::ThrObj<TH2F>, 4> distrSDZVsPTEMCalwNeg = 
+      std::array<ROOT::TThreadedObject<TH2F>, 4> distrSDZVsPTEMCalwNeg
       {
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw0, charge<0", "sdz_{EMCalw0} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw1, charge<0", "sdz_{EMCalw1} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw2, charge<0", "sdz_{EMCalw2} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.),
-         ROOTTools::ThrObj<TH2F>("sdz vs pT: EMCalw3, charge<0", "sdz_{EMCalw3} vs p_{T}", 
-                                 200, -5., 5., 100, 0., 10.)
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw0, charge<0", "sdz_{EMCalw0} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw1, charge<0", "sdz_{EMCalw1} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw2, charge<0", "sdz_{EMCalw2} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.),
+         ROOT::TThreadedObject<TH2F>("sdz vs pT: EMCalw3, charge<0", "sdz_{EMCalw3} vs p_{T}", 
+                                     200, -5., 5., 100, 0., 10.)
       };
    };
    /* @brief Processes the single configuration (for the given particle, 
@@ -770,8 +813,8 @@ namespace AnalyzeSingleTrack
     * @param[in] magneticFieldName name of the magnetic field to be analyzed 
     * @param[in] pTRangeName name of the pT range to be analyzed 
     */
-   void AnalyzeConfiguration(ThrContainer& thrContainer, 
-                             const std::string& particleName, const std::string& magneticFieldName, 
+   void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
+                             const short particleGeantId, const std::string& magneticFieldName, 
                              const std::string& pTRangeName); 
 }
 

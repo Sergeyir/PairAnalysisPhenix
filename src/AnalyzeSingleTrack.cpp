@@ -18,6 +18,7 @@ using namespace AnalyzeSingleTrack;
 
 void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer, 
                                               const std::string& particleName, 
+                                              const short particleGeantId, 
                                               const std::string& magneticFieldName, 
                                               const std::string &pTRangeName)
 { 
@@ -145,10 +146,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
                   histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCe0X1-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCe0X2-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe0X1->Fill(board, alpha, static_cast<double>
+                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe0X2->Fill(board, alpha, static_cast<double>
+                                                    (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
                else 
                {
@@ -156,10 +157,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
                   histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCe1X1-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCe1X2-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe1X1->Fill(board, alpha, static_cast<double>
+                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe1X2->Fill(board, alpha, static_cast<double>
+                                                    (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
             } // DCw
             else
@@ -187,6 +188,9 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                      (STR.nx2hits(i))*eventWeight*alphaReweight);
                }
             }
+
+            const bool isParticleOrig = (STR.particle_id(i) == particleGeantId && 
+                                         STR.primary_id(i) == -999);
 
             bool isDCPC1TrackCut = dmCutter.IsDeadDC(dcarm, zed, board, alpha);
 
@@ -500,13 +504,23 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                   if (dcarm == 0) // EMCale
                   {
+                     histContainer.distrProbVsPTEMCale[STR.sect(i)]->Fill(pT, STR.prob(i));
                      histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     if (isParticleOrig)
+                     {
+                        histContainer.distrECoreVsPTEMCaleOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     }
                      histContainer.heatmapEMCale[STR.sect(i)]->
                         Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
                   }
                   else // EMCalw
                   {
+                     histContainer.distrProbVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.prob(i));
                      histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     if (isParticleOrig)
+                     {
+                        histContainer.distrECoreVsPTEMCalwOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     }
                      histContainer.heatmapEMCalw[STR.sect(i)]->
                         Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
                   }
@@ -854,6 +868,7 @@ int main(int argc, char **argv)
          {
             AnalyzeConfiguration(thrContainer, 
                                  particle["name"].as<std::string>(), 
+                                 particle["geant_id"].as<short>(), 
                                  magneticField["name"].as<std::string>(), 
                                  pTRange["name"].as<std::string>());
          }
@@ -865,7 +880,7 @@ int main(int argc, char **argv)
             outputFileName += "magf" + magneticField["name"].as<std::string>();
          }
          outputFileName += ".root";
-         ROOTTools::ThrObjHolder::Write(outputFileName);
+         thrContainer.Write(outputFileName);
       }
    }
 
@@ -874,17 +889,12 @@ int main(int argc, char **argv)
 
    CppTools::PrintInfo("Merging output files into one");
 
-   std::string haddCommand = "hadd -f " + outputDir + "all.root ";
+   std::string haddCommand = "hadd -f6 " + outputDir + "all.root ";
    for (const auto& particle : inputYAMLSim["particles"])
    {
       haddCommand += outputDir + particle["name"].as<std::string>() + ".root ";
    }
    system(haddCommand.c_str());
-
-   CppTools::PrintInfo("If you see an error below it's a ROOT thing (ROOT handles weirdly its "\
-                       "objects when they are already deleted with unique_ptr); no worries it's "\
-                       "just an error of destructor, all calculations are finished and all files "\
-                       "are already written");
 
    return 0;
 }
@@ -938,7 +948,7 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
-   copy.distrOrigPT = distrOrigPT.Get();
+   copy.distrOrigPT = distrOrigPT->Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
    copy.heatmapUnscaledDCe0 = heatmapUnscaledDCe0.Get();
    copy.heatmapUnscaledDCe1 = heatmapUnscaledDCe1.Get();
@@ -1015,6 +1025,10 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.heatmapEMCalw[i] = heatmapEMCalw[i].Get();
       copy.distrECoreVsPTEMCale[i] = distrECoreVsPTEMCale[i].Get();
       copy.distrECoreVsPTEMCalw[i] = distrECoreVsPTEMCalw[i].Get();
+      copy.distrECoreVsPTEMCaleOrig[i] = distrECoreVsPTEMCaleOrig[i].Get();
+      copy.distrECoreVsPTEMCalwOrig[i] = distrECoreVsPTEMCalwOrig[i].Get();
+      copy.distrProbVsPTEMCale[i] = distrProbVsPTEMCale[i].Get();
+      copy.distrProbVsPTEMCalw[i] = distrProbVsPTEMCalw[i].Get();
       copy.distrDPhiVsPTEMCalePos[i] = distrDPhiVsPTEMCalePos[i].Get();
       copy.distrDZVsPTEMCalePos[i] = distrDZVsPTEMCalePos[i].Get();
       copy.distrDPhiVsPTEMCaleNeg[i] = distrDPhiVsPTEMCaleNeg[i].Get();
@@ -1033,6 +1047,114 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.distrSDZVsPTEMCalwNeg[i] = distrSDZVsPTEMCalwNeg[i].Get();
    }
    return copy;
+}
+
+void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
+{
+   TFile outputFile(outputFileName.c_str(), "RECREATE");
+   outputFile.SetCompressionLevel(6);
+   outputFile.cd();
+
+   static_cast<std::shared_ptr<TH1F>>(distrOrigPT->Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe0.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCw0.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCw1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe0.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw0.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe0X1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe1X1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw0X1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw1X1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe0X2.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe1X2.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw0X2.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw1X2.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapPC1e.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapPC1w.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapPC2.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapPC3e.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapPC3w.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapTOFw0.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapTOFw1.Merge())->Write();
+   static_cast<std::shared_ptr<TH1F>>(distrStripTOFw.Merge())->Write();
+   static_cast<std::shared_ptr<TH1F>>(distrSlatTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrELossTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC2Pos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Pos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC2Neg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Neg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC3ePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3ePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC3eNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3eNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC3wPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3wPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTPC3wNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3wNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTTOFePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTTOFePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTTOFeNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTTOFeNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTTOFwPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTTOFwPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTTOFwNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTTOFwNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC2Pos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC2Pos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC2Neg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC2Neg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC3ePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC3ePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC3eNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC3eNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC3wPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC3wPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTPC3wNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTPC3wNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTTOFePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTTOFePos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTTOFeNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTTOFeNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTTOFwPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTTOFwPos.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTTOFwNeg.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTTOFwNeg.Merge())->Write();
+
+   // iterating over EMCal sectors
+   for (int i = 0; i < 4; i++)
+   {
+      static_cast<std::shared_ptr<TH2F>>(heatmapEMCale[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(heatmapEMCalw[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCale[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCalw[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCaleOrig[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCalwOrig[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrProbVsPTEMCale[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrProbVsPTEMCalw[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTEMCalePos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDZVsPTEMCalePos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTEMCaleNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDZVsPTEMCaleNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTEMCalwPos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDZVsPTEMCalwPos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPTEMCalwNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrDZVsPTEMCalwNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTEMCalePos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTEMCalePos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTEMCaleNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTEMCaleNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTEMCalwPos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTEMCalwPos[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDPhiVsPTEMCalwNeg[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(distrSDZVsPTEMCalwNeg[i].Merge())->Write();
+   }
+
+   outputFile.Close();
 }
 
 #endif /* ANALYZE_SINGLE_TRACK_CPP */
