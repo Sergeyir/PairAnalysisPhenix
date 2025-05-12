@@ -1,7 +1,7 @@
 # This file contains all important information about Run14HeAu simulation of single track particles (charged pions, charged kaons, protons, and antiprotons)
 ---
 status: single_track_sim # required field for checking the file application
-run_name: Run14HeAu200
+run_name: Run14HeAu200 # required field for searching main.yaml
 pt_min: 0.3
 pt_max: 10
 are_sigmalized_residuals_calibrated: false # shows whether simulated sdphi and sdz are calibrated

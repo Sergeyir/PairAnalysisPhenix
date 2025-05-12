@@ -6,12 +6,12 @@
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef CUT_1D_CPP
-#define CUT_1D_CPP
+#pragma once
 
-#include "../include/Cut1D.hpp"
+#include "IOTools.hpp"
+#include "TCanvasTools.hpp"
 
-void Cut1D::CutDistribution(TH1D *distr, const std::string& name, const double minValueFromAverage)
+void CutDistribution(TH1D *distr, const std::string& name, const double minValueFromAverage)
 {
    const int nBins = distr->GetXaxis()->GetNbins();
    /*
@@ -27,8 +27,8 @@ void Cut1D::CutDistribution(TH1D *distr, const std::string& name, const double m
    const double fullIntegral = distr->Integral(1, nBins);
    const double averageYValue = fullIntegral/static_cast<double>(nBins);
 
-   system("mkdir -p par/Deadmaps/Run14HeAu200");
-   std::ofstream cutOutputFile("par/Deadmaps/Run14HeAu200/" + name + ".txt");
+   system("mkdir -p data/Parameters/Deadmaps/Run14HeAu200");
+   std::ofstream cutOutputFile("data/Parameters/Deadmaps/Run14HeAu200/" + name + ".txt");
 
    cutOutputFile << nBins << " " << distr->GetXaxis()->GetBinLowEdge(1) << " " << 
                     distr->GetXaxis()->GetBinUpEdge(nBins) << std::endl;
@@ -68,15 +68,14 @@ void Cut1D::CutDistribution(TH1D *distr, const std::string& name, const double m
    ROOTTools::PrintCanvas(&canv, "output/Deadmaps/Run14HeAu200/" + name);
 }
 
-int main()
+void Cut1D()
 {
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
+   gROOT->SetBatch(true);
 
    TFile inputFile("data/Real/Run14HeAu200/SingleTrack/sum.root");
 
-   Cut1D::CutDistribution(static_cast<TH1D *>(inputFile.Get("slat: TOFe")), "Slat", 0.4);
-   Cut1D::CutDistribution(static_cast<TH1D *>(inputFile.Get("strip: TOFw")), "Strip", 0.4);
+   CutDistribution(static_cast<TH1D *>(inputFile.Get("slat: TOFe")), "Slat", 0.4);
+   CutDistribution(static_cast<TH1D *>(inputFile.Get("strip: TOFw")), "Strip", 0.4);
 }
-
-#endif /* CUT_1D_CPP */

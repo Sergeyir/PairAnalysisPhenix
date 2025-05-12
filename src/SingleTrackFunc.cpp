@@ -37,4 +37,4 @@ double TransformProb(double prob)
    return prob;
 }
 
-#endif /* SINGLE_TRACK_FUNC */
+#endif /* SINGLE_TRACK_FUNC_CPP */
