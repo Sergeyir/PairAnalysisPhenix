@@ -29,13 +29,13 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[0] == '1')
    {
       doCutDC = true;
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe, zDC>=0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe,zDC>=0.txt", 
                    cutAreasDCe0, cutAreasDCe0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe, zDC<0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe,zDC<0.txt", 
                    cutAreasDCe1, cutAreasDCe1Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw, zDC>=0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw,zDC>=0.txt", 
                    cutAreasDCw0, cutAreasDCw0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw, zDC<0.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw,zDC<0.txt", 
                    cutAreasDCw1, cutAreasDCw1Range);
    }
    else 
@@ -101,9 +101,9 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[5] == '1')
    {
       doCutTOFw = true;
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw, ptofy<100.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw,ptofy<100.txt", 
                    cutAreasTOFw0, cutAreasTOFw0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw, ptofy>100.txt", 
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw,ptofy>100.txt", 
                    cutAreasTOFw1, cutAreasTOFw1Range);
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Strip.txt", 
                    cutStripsTOFw, cutStripsRange);

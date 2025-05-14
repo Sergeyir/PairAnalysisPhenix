@@ -466,7 +466,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapDCe0->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadDC(1, 1., realHeatmapDCe0->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadDC(0, 1., realHeatmapDCe0->GetXaxis()->GetBinCenter(i),
                                   realHeatmapDCe0->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCe0->SetBinContent(i, j, 0.);
@@ -478,7 +478,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapDCe1->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadDC(1, -1., realHeatmapDCe1->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadDC(0, -1., realHeatmapDCe1->GetXaxis()->GetBinCenter(i),
                                   realHeatmapDCe1->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCe1->SetBinContent(i, j, 0.);
@@ -490,7 +490,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapDCw0->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadDC(0, 1., realHeatmapDCw0->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadDC(1, 1., realHeatmapDCw0->GetXaxis()->GetBinCenter(i),
                                   realHeatmapDCw0->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCw0->SetBinContent(i, j, 0.);
@@ -502,7 +502,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapDCw1->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadDC(0, -1., realHeatmapDCw1->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadDC(1, -1., realHeatmapDCw1->GetXaxis()->GetBinCenter(i),
                                   realHeatmapDCw1->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapDCw1->SetBinContent(i, j, 0.);
@@ -553,7 +553,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapPC1e->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadPC1(1, realHeatmapPC1e->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadPC1(0, realHeatmapPC1e->GetXaxis()->GetBinCenter(i),
                                    realHeatmapPC1e->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC1e->SetBinContent(i, j, 0.);
@@ -565,7 +565,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapPC1w->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadPC1(0, realHeatmapPC1w->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadPC1(1, realHeatmapPC1w->GetXaxis()->GetBinCenter(i),
                                    realHeatmapPC1w->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC1w->SetBinContent(i, j, 0.);
@@ -647,7 +647,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapPC3e->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadPC3(1, realHeatmapPC3e->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadPC3(0, realHeatmapPC3e->GetXaxis()->GetBinCenter(i),
                                    realHeatmapPC3e->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC3e->SetBinContent(i, j, 0.);
@@ -659,7 +659,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapPC3w->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadPC3(0, realHeatmapPC3w->GetXaxis()->GetBinCenter(i),
+            if (dmCutter.IsDeadPC3(1, realHeatmapPC3w->GetXaxis()->GetBinCenter(i),
                                    realHeatmapPC3w->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapPC3w->SetBinContent(i, j, 0.);
@@ -700,7 +700,7 @@ int main(int argc, char **argv)
          for (int j = 1; j <= realHeatmapTOFe->GetYaxis()->GetNbins(); j++)
          {
             if (dmCutter.IsDeadTOFe(realHeatmapTOFe->GetXaxis()->GetBinCenter(i),
-                                   realHeatmapTOFe->GetYaxis()->GetBinCenter(j)))
+                                    realHeatmapTOFe->GetYaxis()->GetBinCenter(j)))
             {
                realCutHeatmapTOFe->SetBinContent(i, j, 0.);
                simCutHeatmapTOFe->SetBinContent(i, j, 0.);
@@ -805,7 +805,7 @@ int main(int argc, char **argv)
          {
             for (int k = 1; k <= realHeatmapEMCale->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCale->GetXaxis()->GetBinCenter(j),
+               if (dmCutter.IsDeadEMCal(0, i, realHeatmapEMCale->GetXaxis()->GetBinCenter(j),
                                         realHeatmapEMCale->GetYaxis()->GetBinCenter(k)))
                {
                   realCutHeatmapEMCale->SetBinContent(j, k, 0.);
@@ -839,7 +839,7 @@ int main(int argc, char **argv)
          {
             for (int k = 1; k <= realHeatmapEMCalw->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(0, i, realHeatmapEMCalw->GetXaxis()->GetBinCenter(j),
+               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCalw->GetXaxis()->GetBinCenter(j),
                                         realHeatmapEMCalw->GetYaxis()->GetBinCenter(k)))
                {
                   realCutHeatmapEMCalw->SetBinContent(j, k, 0.);
