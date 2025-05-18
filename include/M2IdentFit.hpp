@@ -38,10 +38,10 @@ int main(int argc, char **argv);
  */
 namespace M2IdentFit
 {
-/* @struct M2IdentFit
- *
- * @brief Contains fit parameters for different pT
- */
+   /* @struct FitParameters
+    *
+    * @brief Contains fit parameters for different pT
+    */
    struct FitParameters
    {
       TGraph meansVsPT;
@@ -50,11 +50,19 @@ namespace M2IdentFit
       TF1 *meansVsPTFit;
       TF1 *sigmasVsPTFit;
    }
+   /// file reader for all required parameters for the m2 identification
+   InputYAMLReader inputYAMLM2Id;
+   /// file reader for all required parameters for the current run
+   InputYAMLReader inputYAMLMain;
    /// @brief Calculates the yield of the particle from the m2 distribution
    double GetYield(TH1F *hist, const double mean, const double sigma, 
                    const double vetoLow, const double vetoHigh);
-
-   void PerformFitsForDetector(const YAML::Node& detector);
+   /// @brief Performs all fits for charged hadrons m2 distribution 
+   /// for the given detector and for the given centrality class
+   void PerformFitsForDetector(const YAML::Node& detector, 
+                               const double centralityMin,
+                               const double centralityMax);
+   /// @brief Performs m2 fits for charged hadrons for the given histogram
    void PerformSingleM2Fit(const double pT, TH1F *massProj, FitParameters& fitPar);
 }
 

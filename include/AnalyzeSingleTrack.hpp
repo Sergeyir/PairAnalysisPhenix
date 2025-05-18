@@ -62,9 +62,9 @@ namespace AnalyzeSingleTrack
    bool areSigmalizedResidualsCalibrated;
    /// correction for TOFw due to ADC and efficiency correction
    double correctionTOFw;
-   /// file reader with all required parameters for the simulation processing
+   /// file reader for all required parameters for the simulation processing
    InputYAMLReader inputYAMLSim;
-   /// file reader with all required parameters for the current run
+   /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
    /// number of threads
    int numberOfThreads;
