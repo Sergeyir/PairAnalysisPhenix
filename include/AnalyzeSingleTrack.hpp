@@ -9,7 +9,6 @@
 #ifndef ANALYZE_SINGLE_TRACK_HPP
 #define ANALYZE_SINGLE_TRACK_HPP
 
-#include <signal.h>
 #include <thread>
 
 #include "TF1.h"
@@ -133,6 +132,14 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> heatmapDCw0;
       /// heatmap of DCw, zDC<0
       std::shared_ptr<TH2F> heatmapDCw1;
+      /// heatmap of DCe hits, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCe0Hit;
+      /// heatmap of DCe hits, zDC<0
+      std::shared_ptr<TH2F> heatmapDCe1Hit;
+      /// heatmap of DCw hits, zDC>=0
+      std::shared_ptr<TH2F> heatmapDCw0Hit;
+      /// heatmap of DCw hits, zDC<0
+      std::shared_ptr<TH2F> heatmapDCw1Hit;
       /// heatmap of DCe X1, zDC>=0
       std::shared_ptr<TH2F> heatmapDCe0X1;
       /// heatmap of DCe X1, zDC<0
@@ -161,6 +168,8 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> heatmapPC3w;
       /// heatmap of TOFe
       std::shared_ptr<TH2F> heatmapTOFe;
+      /// heatmap of TOFe hits
+      std::shared_ptr<TH2F> heatmapTOFeHit;
       /// heatmap of TOFw, ptofy<100
       std::shared_ptr<TH2F> heatmapTOFw0;
       /// heatmap of TOFw, ptofy>100
@@ -169,6 +178,10 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale;
       /// heatmaps of EMCalw(0-3)
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCalw;
+      /// heatmaps of EMCale(0-3) hits
+      std::array<std::shared_ptr<TH2F>, 4> heatmapEMCaleHit;
+      /// heatmaps of EMCalw(0-3) hits
+      std::array<std::shared_ptr<TH2F>, 4> heatmapEMCalwHit;
       /// prob in EMCale(0-3) vs pT distributions
       std::array<std::shared_ptr<TH2F>, 4> distrProbVsPTEMCale;
       /// prob in EMCalw(0-3) vs pT distributions
@@ -345,29 +358,41 @@ namespace AnalyzeSingleTrack
       /// heatmap of DCw, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCw1{"Heatmap: DCw, zDC<0", "board vs alpha", 
                                               400, 0., 80., 195, -0.39, 0.39};
+      /// heatmap of DCe hits, zDC>=0
+      ROOT::TThreadedObject<TH2F> heatmapDCe0Hit{"_Heatmap: DCe hit, zDC>=0", "board vs alpha", 
+                                                 400, 0., 80., 195, -0.39, 0.39};
+      /// heatmap of DCe hits, zDC<0
+      ROOT::TThreadedObject<TH2F> heatmapDCe1Hit{"_Heatmap: DCe hit, zDC<0", "board vs alpha", 
+                                                 400, 0., 80., 195, -0.39, 0.39};
+      /// heatmap of DCw hits, zDC>=0
+      ROOT::TThreadedObject<TH2F> heatmapDCw0Hit{"_Heatmap: DCw hit, zDC>=0", "board vs alpha", 
+                                                 400, 0., 80., 195, -0.39, 0.39};
+      /// heatmap of DCw hits, zDC<0
+      ROOT::TThreadedObject<TH2F> heatmapDCw1Hit{"_Heatmap: DCw hit, zDC<0", "board vs alpha", 
+                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"Heatmap: DCeX1, zDC>=0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"_Heatmap: DCeX1, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCe1X1{"Heatmap: DCeX1, zDC<0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCe1X1{"_Heatmap: DCeX1, zDC<0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCw0X1{"Heatmap: DCwX1, zDC>=0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCw0X1{"_Heatmap: DCwX1, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCw1X1{"Heatmap: DCwX1, zDC<0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCw1X1{"_Heatmap: DCwX1, zDC<0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCe0X2{"Heatmap: DCeX2, zDC>=0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCe0X2{"_Heatmap: DCeX2, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCe1X2{"Heatmap: DCeX2, zDC<0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCe1X2{"_Heatmap: DCeX2, zDC<0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCw0X2{"Heatmap: DCwX2, zDC>=0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCw0X2{"_Heatmap: DCwX2, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCw1X2{"Heatmap: DCwX2, zDC<0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCw1X2{"_Heatmap: DCwX2, zDC<0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of PC1e
       ROOT::TThreadedObject<TH2F> heatmapPC1e{"Heatmap: PC1e", "pc1z vs pc1phi", 
@@ -387,6 +412,9 @@ namespace AnalyzeSingleTrack
       /// heatmap of TOFe
       ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "ptofy vs ptofz", 
                                               185, -280., 90., 200, -200., 200.};
+      /// heatmap of TOFe hits
+      ROOT::TThreadedObject<TH2F> heatmapTOFeHit{"Heatmap: TOFe hit", "ptofy vs ptofz", 
+                                                 185, -280., 90., 200, -200., 200.};
       /// heatmap of TOFw, ptofy<100
       ROOT::TThreadedObject<TH2F> heatmapTOFw0{"Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 
                                                90, -55., 35., 195, -195., 195.};
@@ -412,6 +440,30 @@ namespace AnalyzeSingleTrack
          ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw1", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
          ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw2", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.),
          ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw3", "pemcy vs pemcz", 36, 0., 36, 72, 0., 72.)
+      };
+      /// heatmaps of EMCale(0-3) hits
+      std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCaleHit
+      {
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale0 hit", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale1 hit", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale2 hit", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale3 hit", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72.)
+      };
+      /// heatmaps of EMCalw(0-3) hits
+      std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCalwHit
+      {
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw0 hit", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw1 hit", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw2 hit", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72.),
+         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw3 hit", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72.)
       };
       /// prob in EMCale(0-3) vs pT distributions
       std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCale

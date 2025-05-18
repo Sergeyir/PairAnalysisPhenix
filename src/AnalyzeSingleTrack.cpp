@@ -146,10 +146,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
                   histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCe0X1->Fill(board, alpha, static_cast<double>
-                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCe0X2->Fill(board, alpha, static_cast<double>
-                                                    (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe0Hit->Fill(board, alpha, eventWeight*alphaReweight*
+                                                     static_cast<double>(STR.nx1hits(i) + 
+                                                                         STR.nx2hits(i)));
+                  histContainer.heatmapDCe0X1->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx1hits(i)));
+                  histContainer.heatmapDCe0X2->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx2hits(i)));
                }
                else 
                {
@@ -157,10 +160,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
                   histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCe1X1->Fill(board, alpha, static_cast<double>
-                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCe1X2->Fill(board, alpha, static_cast<double>
-                                                    (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCe1Hit->Fill(board, alpha, eventWeight*alphaReweight*
+                                                     static_cast<double>(STR.nx1hits(i) + 
+                                                                         STR.nx2hits(i)));
+                  histContainer.heatmapDCe1X1->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx1hits(i)));
+                  histContainer.heatmapDCe1X2->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx2hits(i)));
                }
             } // DCw
             else
@@ -171,10 +177,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCw0->GetBinContent(alphaReweightDCw0->FindBin(alpha));
                   histContainer.heatmapDCw0->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCw0X1-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCw0X2-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCw0Hit->Fill(board, alpha, eventWeight*alphaReweight*
+                                                     static_cast<double>(STR.nx1hits(i) + 
+                                                                         STR.nx2hits(i)));
+                  histContainer.heatmapDCw0X1->Fill(board, alpha, static_cast<double>
+                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCw0X2->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx2hits(i)));
                }
                else 
                {
@@ -182,10 +191,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (reweightHeatmapsForAlpha) alphaReweight = 
                      alphaReweightDCw1->GetBinContent(alphaReweightDCw1->FindBin(alpha));
                   histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
-                  histContainer.heatmapDCw1X1-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx1hits(i))*eventWeight*alphaReweight);
-                  histContainer.heatmapDCw1X2-> Fill(board, alpha, static_cast<double>
-                                                     (STR.nx2hits(i))*eventWeight*alphaReweight);
+                  histContainer.heatmapDCw1Hit->Fill(board, alpha, eventWeight*alphaReweight*
+                                                     static_cast<double>(STR.nx1hits(i) + 
+                                                                         STR.nx2hits(i)));
+                  histContainer.heatmapDCw1X1->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx1hits(i)));
+                  histContainer.heatmapDCw1X2->Fill(board, alpha, eventWeight*alphaReweight*
+                                                    static_cast<double>(STR.nx2hits(i)));
                }
             }
 
@@ -251,8 +263,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                           pT, eventWeight);
                }
 
-               if (IsMatch(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
-                           simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge)))
+               if (IsMatch(pT, simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
+                           simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 0.25))
                {
                   const double pc2z = STR.ppc2z(i) - STR.pc2dz(i);
                   const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i)) - STR.pc2dphi(i);
@@ -317,8 +329,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                              pT, eventWeight);
                   }
                }
-               if (IsMatch(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
-                           simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm)))
+               if (IsMatch(pT, simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
+                           simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 0.25))
                {
                   const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
                   double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i) - STR.pc3dphi(i));
@@ -373,11 +385,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                histContainer.distrSlatTOFe->Fill(STR.slat(i), eventWeight*alphaReweight);
                histContainer.distrELossTOFe->Fill(beta, STR.etof(i));
  
-               if (IsMatch(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge), 
-                           simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge)))
+               if (IsMatch(pT, simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge), 
+                           simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge), 0.25))
                {
                   histContainer.heatmapTOFe->
                      Fill(STR.ptofy(i), STR.ptofz(i), STR.etof(i)*eventWeight*alphaReweight);
+                  histContainer.heatmapTOFeHit->
+                     Fill(STR.ptofy(i), STR.ptofz(i), eventWeight*alphaReweight);
                }
             }
             else if (IsHit(STR.tofwdz(i)))
@@ -406,8 +420,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      Fill(simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge),
                           pT, eventWeight);
                }
-               if (IsMatch(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge), 
-                           simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge)))
+               if (IsMatch(pT, simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge), 
+                           simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge), 0.25))
                {
                   histContainer.distrStripTOFw->Fill(STR.striptofw(i), eventWeight*alphaReweight);
                   if (STR.ptofwy(i) < 100.) 
@@ -427,8 +441,16 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             {
                if (dcarm == 0) // EMCale
                {
+                  histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
+
+                  if (isParticleOrig)
+                  {
+                     histContainer.distrECoreVsPTEMCaleOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                  }
                   if (charge == 1) 
                   {
+                     histContainer.distrProbVsPTEMCale[STR.sect(i)]->Fill(pT, STR.prob(i));
+
                      histContainer.distrDPhiVsPTEMCalePos[STR.sect(i)]->
                         Fill(STR.emcdphi(i), pT, eventWeight);
                      histContainer.distrDZVsPTEMCalePos[STR.sect(i)]->
@@ -462,6 +484,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
                else // EMCalw
                {
+                  histContainer.distrProbVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.prob(i));
+                  histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                  if (isParticleOrig)
+                  {
+                     histContainer.distrECoreVsPTEMCalwOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                  }
+
                   if (charge == 1) 
                   {
                      histContainer.distrDPhiVsPTEMCalwPos[STR.sect(i)]->
@@ -496,33 +525,25 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   }
                }
 
-               if (IsMatch(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
-                                                    dcarm, STR.sect(i)), 
+               if (IsMatch(pT, simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
+                                                       dcarm, STR.sect(i)), 
                            simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
-                                                  dcarm, STR.sect(i))))
+                                                  dcarm, STR.sect(i)), 0.25))
                { 
 
                   if (dcarm == 0) // EMCale
                   {
-                     histContainer.distrProbVsPTEMCale[STR.sect(i)]->Fill(pT, STR.prob(i));
-                     histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
-                     if (isParticleOrig)
-                     {
-                        histContainer.distrECoreVsPTEMCaleOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
-                     }
                      histContainer.heatmapEMCale[STR.sect(i)]->
                         Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
+                     histContainer.heatmapEMCaleHit[STR.sect(i)]->
+                        Fill(STR.ysect(i), STR.zsect(i), eventWeight*alphaReweight);
                   }
                   else // EMCalw
                   {
-                     histContainer.distrProbVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.prob(i));
-                     histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
-                     if (isParticleOrig)
-                     {
-                        histContainer.distrECoreVsPTEMCalwOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
-                     }
                      histContainer.heatmapEMCalw[STR.sect(i)]->
                         Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
+                     histContainer.heatmapEMCalwHit[STR.sect(i)]->
+                        Fill(STR.ysect(i), STR.zsect(i), eventWeight*alphaReweight);
                   }
                }
             }
@@ -958,6 +979,10 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.heatmapDCe1 = heatmapDCe1.Get();
    copy.heatmapDCw0 = heatmapDCw0.Get();
    copy.heatmapDCw1 = heatmapDCw1.Get();
+   copy.heatmapDCe0Hit = heatmapDCe0Hit.Get();
+   copy.heatmapDCe1Hit = heatmapDCe1Hit.Get();
+   copy.heatmapDCw0Hit = heatmapDCw0Hit.Get();
+   copy.heatmapDCw1Hit = heatmapDCw1Hit.Get();
    copy.heatmapDCe0X1 = heatmapDCe0X1.Get();
    copy.heatmapDCe1X1 = heatmapDCe1X1.Get();
    copy.heatmapDCw0X1 = heatmapDCw0X1.Get();
@@ -972,6 +997,7 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.heatmapPC3e = heatmapPC3e.Get();
    copy.heatmapPC3w = heatmapPC3w.Get();
    copy.heatmapTOFe = heatmapTOFe.Get();
+   copy.heatmapTOFeHit = heatmapTOFeHit.Get();
    copy.heatmapTOFw0 = heatmapTOFw0.Get();
    copy.heatmapTOFw1 = heatmapTOFw1.Get();
    copy.distrStripTOFw = distrStripTOFw.Get();
@@ -1023,6 +1049,8 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    {
       copy.heatmapEMCale[i] = heatmapEMCale[i].Get();
       copy.heatmapEMCalw[i] = heatmapEMCalw[i].Get();
+      copy.heatmapEMCaleHit[i] = heatmapEMCaleHit[i].Get();
+      copy.heatmapEMCalwHit[i] = heatmapEMCalwHit[i].Get();
       copy.distrECoreVsPTEMCale[i] = distrECoreVsPTEMCale[i].Get();
       copy.distrECoreVsPTEMCalw[i] = distrECoreVsPTEMCalw[i].Get();
       copy.distrECoreVsPTEMCaleOrig[i] = distrECoreVsPTEMCaleOrig[i].Get();
@@ -1065,6 +1093,10 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(heatmapDCe1.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapDCw0.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapDCw1.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe0Hit.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCe1Hit.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw0Hit.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapDCw1Hit.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapDCe0X1.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapDCe1X1.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapDCw0X1.Merge())->Write();
@@ -1079,6 +1111,7 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(heatmapPC3e.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapPC3w.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapTOFeHit.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapTOFw0.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapTOFw1.Merge())->Write();
    static_cast<std::shared_ptr<TH1F>>(distrStripTOFw.Merge())->Write();
@@ -1130,6 +1163,8 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    {
       static_cast<std::shared_ptr<TH2F>>(heatmapEMCale[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(heatmapEMCalw[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(heatmapEMCaleHit[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH2F>>(heatmapEMCalwHit[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCale[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCalw[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCaleOrig[i].Merge())->Write();

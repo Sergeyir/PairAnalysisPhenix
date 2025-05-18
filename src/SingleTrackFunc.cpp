@@ -18,10 +18,10 @@ bool IsHit(const double dVal)
    return true;
 }
 
-bool IsMatch(const double sdphi, const double sdz, const double sdphiMax, const double sdzMax)
+bool IsMatch(const double pT, const double sdphi, const double sdz, const double sDevSquareMax)
 {
-   if (abs(sdphi) > sdphiMax || abs(sdz) > sdzMax) return false;
-   return true;
+   if (pT < 3. && sdphi*sdphi + sdz*sdz < sDevSquareMax) return true;
+   return false;
 }   
 
 bool IsQualityCut(const int qual)

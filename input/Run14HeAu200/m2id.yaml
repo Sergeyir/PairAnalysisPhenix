@@ -9,9 +9,9 @@ detectors:
   name: TOFe
   sigmalized_identification_range: 2
   L: 5.2
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 1. # for M2IdentFit this is approximate value
-  sigma_t: 120. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 1. # for M2IdentFit this is an approximate value
+  sigma_t: 120. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "0.*[0]" # no bg
   proton_bg_func: "0.*[0]" # no bg
@@ -25,9 +25,9 @@ detectors:
   name: TOFw
   sigmalized_identification_range: 2
   L: 4.95
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 1. # for M2IdentFit this is approximate value
-  sigma_t: 84. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 1. # for M2IdentFit this is an approximate value
+  sigma_t: 84. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "0.*[0]" # no bg
   proton_bg_func: "0.*[0]" # no bg
@@ -41,9 +41,9 @@ detectors:
   name: EMCale2
   sigmalized_identification_range: 1
   L: 5.22
-  sigma_alpha: 0.835 # for M2IdentFit this is approximate value
-  sigma_ms: 2.3 # for M2IdentFit this is approximate value
-  sigma_t: 500. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.835 # for M2IdentFit this is an approximate value
+  sigma_ms: 2.3 # for M2IdentFit this is an approximate value
+  sigma_t: 500. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -57,9 +57,9 @@ detectors:
   name: EMCale3
   sigmalized_identification_range: 1
   L: 5.22
-  sigma_alpha: 0.835 # for M2IdentFit this is approximate value
-  sigma_ms: 2.4 # for M2IdentFit this is approximate value
-  sigma_t: 520. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.835 # for M2IdentFit this is an approximate value
+  sigma_ms: 2.4 # for M2IdentFit this is an approximate value
+  sigma_t: 520. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -73,9 +73,9 @@ detectors:
   name: EMCalw0
   sigmalized_identification_range: 1
   L: 5.22
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 1.8 # for M2IdentFit this is approximate value
-  sigma_t: 480. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 1.8 # for M2IdentFit this is an approximate value
+  sigma_t: 480. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -89,9 +89,9 @@ detectors:
   name: EMCalw1
   sigmalized_identification_range: 1
   L: 5.22
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 1.7 # for M2IdentFit this is approximate value
-  sigma_t: 480. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 1.7 # for M2IdentFit this is an approximate value
+  sigma_t: 480. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -105,9 +105,9 @@ detectors:
   name: EMCalw2
   sigmalized_identification_range: 1
   L: 5.22
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 1.5 # for M2IdentFit this is approximate value
-  sigma_t: 480. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 1.5 # for M2IdentFit this is an approximate value
+  sigma_t: 480. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -121,9 +121,9 @@ detectors:
   sigmalized_identification_range: 1
   name: EMCalw3
   L: 5.22
-  sigma_alpha: 0.9 # for M2IdentFit this is approximate value
-  sigma_ms: 2. # for M2IdentFit this is approximate value
-  sigma_t: 480. # for M2IdentFit this is approximate value
+  sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
+  sigma_ms: 2. # for M2IdentFit this is an approximate value
+  sigma_t: 480. # for M2IdentFit this is an approximate value
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"

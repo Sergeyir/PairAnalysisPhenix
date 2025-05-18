@@ -29,14 +29,22 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[0] == '1')
    {
       doCutDC = true;
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe,zDC>=0.txt", 
-                   cutAreasDCe0, cutAreasDCe0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCe,zDC<0.txt", 
-                   cutAreasDCe1, cutAreasDCe1Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw,zDC>=0.txt", 
-                   cutAreasDCw0, cutAreasDCw0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCw,zDC<0.txt", 
-                   cutAreasDCw1, cutAreasDCw1Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX1,zDC>=0.txt", 
+                   cutAreasDCe0X1, cutAreasDCe0X1Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX1,zDC<0.txt", 
+                   cutAreasDCe1X1, cutAreasDCe1X1Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCwX1,zDC>=0.txt", 
+                   cutAreasDCw0X1, cutAreasDCw0X1Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCwX1,zDC<0.txt", 
+                   cutAreasDCw1X1, cutAreasDCw1X1Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX2,zDC>=0.txt", 
+                   cutAreasDCe0X2, cutAreasDCe0X2Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX2,zDC<0.txt", 
+                   cutAreasDCe1X2, cutAreasDCe1X2Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCwX2,zDC>=0.txt", 
+                   cutAreasDCw0X2, cutAreasDCw0X2Range);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCwX2,zDC<0.txt", 
+                   cutAreasDCw1X2, cutAreasDCw1X2Range);
    }
    else 
    {
@@ -140,57 +148,93 @@ bool DeadMapCutter::IsDeadDC(const int dcarm, const double zDC,
    {
       if (zDC >= 0)
       {
-         if (board <= cutAreasDCe0Range[0] || board >= cutAreasDCe0Range[1] ||
-             alpha <= cutAreasDCe0Range[2] || alpha >= cutAreasDCe0Range[3]) return true;
+         if (board <= cutAreasDCe0X1Range[0] || board >= cutAreasDCe0X1Range[1] ||
+             alpha <= cutAreasDCe0X1Range[2] || alpha >= cutAreasDCe0X1Range[3] ||
+             board <= cutAreasDCe0X2Range[0] || board >= cutAreasDCe0X2Range[1] ||
+             alpha <= cutAreasDCe0X2Range[2] || alpha >= cutAreasDCe0X2Range[3]) return true;
 
-         const short yBin = static_cast<short>((alpha - cutAreasDCe0Range[2])/
-                                               (cutAreasDCe0Range[3] - cutAreasDCe0Range[2])*
-                                               static_cast<double>(cutAreasDCe0.size()));
-         const short xBin = static_cast<short>((board - cutAreasDCe0Range[0])/
-                                               (cutAreasDCe0Range[1] - cutAreasDCe0Range[0])*
-                                               static_cast<double>(cutAreasDCe0[0].size()));
-         return cutAreasDCe0[yBin][xBin];
+         const short yBinX1 = static_cast<short>((alpha - cutAreasDCe0X1Range[2])/
+                                                (cutAreasDCe0X1Range[3] - cutAreasDCe0X1Range[2])*
+                                                static_cast<double>(cutAreasDCe0X1.size()));
+         const short xBinX1 = static_cast<short>((board - cutAreasDCe0X1Range[0])/
+                                                (cutAreasDCe0X1Range[1] - cutAreasDCe0X1Range[0])*
+                                                static_cast<double>(cutAreasDCe0X1[0].size()));
+         const short yBinX2 = static_cast<short>((alpha - cutAreasDCe0X2Range[2])/
+                                                (cutAreasDCe0X2Range[3] - cutAreasDCe0X2Range[2])*
+                                                static_cast<double>(cutAreasDCe0X2.size()));
+         const short xBinX2 = static_cast<short>((board - cutAreasDCe0X2Range[0])/
+                                                (cutAreasDCe0X2Range[1] - cutAreasDCe0X2Range[0])*
+                                                static_cast<double>(cutAreasDCe0X2[0].size()));
+
+         return (cutAreasDCe0X1[yBinX1][xBinX1] || cutAreasDCe0X2[yBinX2][xBinX2]);
       }
       else
       {
-         if (board <= cutAreasDCe1Range[0] || board >= cutAreasDCe1Range[1] ||
-             alpha <= cutAreasDCe1Range[2] || alpha >= cutAreasDCe1Range[3]) return true;
+         if (board <= cutAreasDCe1X1Range[0] || board >= cutAreasDCe1X1Range[1] ||
+             alpha <= cutAreasDCe1X1Range[2] || alpha >= cutAreasDCe1X1Range[3] ||
+             board <= cutAreasDCe1X2Range[0] || board >= cutAreasDCe1X2Range[1] ||
+             alpha <= cutAreasDCe1X2Range[2] || alpha >= cutAreasDCe1X2Range[3]) return true;
 
-         const short yBin = static_cast<short>((alpha - cutAreasDCe1Range[2])/
-                                               (cutAreasDCe1Range[3] - cutAreasDCe1Range[2])*
-                                               static_cast<double>(cutAreasDCe1.size()));
-         const short xBin = static_cast<short>((board - cutAreasDCe1Range[0])/
-                                               (cutAreasDCe1Range[1] - cutAreasDCe1Range[0])*
-                                               static_cast<double>(cutAreasDCe1[0].size()));
-         return cutAreasDCe1[yBin][xBin];
+         const short yBinX1 = static_cast<short>((alpha - cutAreasDCe1X1Range[2])/
+                                                (cutAreasDCe1X1Range[3] - cutAreasDCe1X1Range[2])*
+                                                static_cast<double>(cutAreasDCe1X1.size()));
+         const short xBinX1 = static_cast<short>((board - cutAreasDCe1X1Range[0])/
+                                                (cutAreasDCe1X1Range[1] - cutAreasDCe1X1Range[0])*
+                                                static_cast<double>(cutAreasDCe1X1[0].size()));
+         const short yBinX2 = static_cast<short>((alpha - cutAreasDCe1X2Range[2])/
+                                                (cutAreasDCe1X2Range[3] - cutAreasDCe1X2Range[2])*
+                                                static_cast<double>(cutAreasDCe1X2.size()));
+         const short xBinX2 = static_cast<short>((board - cutAreasDCe1X2Range[0])/
+                                                (cutAreasDCe1X2Range[1] - cutAreasDCe1X2Range[0])*
+                                                static_cast<double>(cutAreasDCe1X2[0].size()));
+
+         return (cutAreasDCe1X1[yBinX1][xBinX1] || cutAreasDCe1X2[yBinX2][xBinX2]);
       }
    }
    // DCw
    if (zDC >= 0)
    {
-      if (board <= cutAreasDCw0Range[0] || board >= cutAreasDCw0Range[1] ||
-          alpha <= cutAreasDCw0Range[2] || alpha >= cutAreasDCw0Range[3]) return true;
+      if (board <= cutAreasDCw0X1Range[0] || board >= cutAreasDCw0X1Range[1] ||
+          alpha <= cutAreasDCw0X1Range[2] || alpha >= cutAreasDCw0X1Range[3] ||
+          board <= cutAreasDCw0X2Range[0] || board >= cutAreasDCw0X2Range[1] ||
+          alpha <= cutAreasDCw0X2Range[2] || alpha >= cutAreasDCw0X2Range[3]) return true;
 
-      const short yBin = static_cast<short>((alpha - cutAreasDCw0Range[2])/
-                                            (cutAreasDCw0Range[3] - cutAreasDCw0Range[2])*
-                                            static_cast<double>(cutAreasDCw0.size()));
-      const short xBin = static_cast<short>((board - cutAreasDCw0Range[0])/
-                                            (cutAreasDCw0Range[1] - cutAreasDCw0Range[0])*
-                                            static_cast<double>(cutAreasDCw0[0].size()));
-      return cutAreasDCw0[yBin][xBin];
+      const short yBinX1 = static_cast<short>((alpha - cutAreasDCw0X1Range[2])/
+                                             (cutAreasDCw0X1Range[3] - cutAreasDCw0X1Range[2])*
+                                             static_cast<double>(cutAreasDCw0X1.size()));
+      const short xBinX1 = static_cast<short>((board - cutAreasDCw0X1Range[0])/
+                                             (cutAreasDCw0X1Range[1] - cutAreasDCw0X1Range[0])*
+                                             static_cast<double>(cutAreasDCw0X1[0].size()));
+      const short yBinX2 = static_cast<short>((alpha - cutAreasDCw0X2Range[2])/
+                                             (cutAreasDCw0X2Range[3] - cutAreasDCw0X2Range[2])*
+                                             static_cast<double>(cutAreasDCw0X2.size()));
+      const short xBinX2 = static_cast<short>((board - cutAreasDCw0X2Range[0])/
+                                             (cutAreasDCw0X2Range[1] - cutAreasDCw0X2Range[0])*
+                                             static_cast<double>(cutAreasDCw0X2[0].size()));
+
+      return (cutAreasDCw0X1[yBinX1][xBinX1] || cutAreasDCw0X2[yBinX2][xBinX2]);
    }
    else
    {
-      if (board <= cutAreasDCw1Range[0] || board >= cutAreasDCw1Range[1] ||
-          alpha <= cutAreasDCw1Range[2] || alpha >= cutAreasDCw1Range[3]) return true;
+      if (board <= cutAreasDCw1X1Range[0] || board >= cutAreasDCw1X1Range[1] ||
+          alpha <= cutAreasDCw1X1Range[2] || alpha >= cutAreasDCw1X1Range[3] ||
+          board <= cutAreasDCw1X2Range[0] || board >= cutAreasDCw1X2Range[1] ||
+          alpha <= cutAreasDCw1X2Range[2] || alpha >= cutAreasDCw1X2Range[3]) return true;
 
-      const short yBin = static_cast<short>((alpha - cutAreasDCw1Range[2])/
-                                            (cutAreasDCw1Range[3] - cutAreasDCw1Range[2])*
-                                            static_cast<double>(cutAreasDCw1.size()));
-      const short xBin = static_cast<short>((board - cutAreasDCw1Range[0])/
-                                            (cutAreasDCw1Range[1] - cutAreasDCw1Range[0])*
-                                            static_cast<double>(cutAreasDCw1[0].size()));
-      return cutAreasDCw1[yBin][xBin];
+      const short yBinX1 = static_cast<short>((alpha - cutAreasDCw1X1Range[2])/
+                                             (cutAreasDCw1X1Range[3] - cutAreasDCw1X1Range[2])*
+                                             static_cast<double>(cutAreasDCw1X1.size()));
+      const short xBinX1 = static_cast<short>((board - cutAreasDCw1X1Range[0])/
+                                             (cutAreasDCw1X1Range[1] - cutAreasDCw1X1Range[0])*
+                                             static_cast<double>(cutAreasDCw1X1[0].size()));
+      const short yBinX2 = static_cast<short>((alpha - cutAreasDCw1X2Range[2])/
+                                             (cutAreasDCw1X2Range[3] - cutAreasDCw1X2Range[2])*
+                                             static_cast<double>(cutAreasDCw1X2.size()));
+      const short xBinX2 = static_cast<short>((board - cutAreasDCw1X2Range[0])/
+                                             (cutAreasDCw1X2Range[1] - cutAreasDCw1X2Range[0])*
+                                             static_cast<double>(cutAreasDCw1X2[0].size()));
+
+      return (cutAreasDCw1X1[yBinX1][xBinX1] || cutAreasDCw1X2[yBinX2][xBinX2]);
    }
 }
 

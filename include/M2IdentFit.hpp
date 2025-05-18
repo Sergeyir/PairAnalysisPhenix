@@ -12,9 +12,21 @@
 #include <string>
 #include <filesystem>
 
-#include "yaml-cpp/yaml.h"
+#include "TROOT.h"
+#include "TFile.h"
+#include "TH1F.h"
+#include "TH2F.h"
+#include "TH3F.h"
 
 #include "ErrorHandler.hpp"
+#include "IOTools.hpp"
+#include "StrTools.hpp"
+#include "Box.hpp"
+
+#include "TCanvasTools.hpp"
+
+#include "InputYAMLReader.hpp"
+
 
 int main(int argc, char **argv);
 
@@ -42,7 +54,8 @@ namespace M2IdentFit
    double GetYield(TH1F *hist, const double mean, const double sigma, 
                    const double vetoLow, const double vetoHigh);
 
-   void PerformFitsForDetector
+   void PerformFitsForDetector(const YAML::Node& detector);
+   void PerformSingleM2Fit(const double pT, TH1F *massProj, FitParameters& fitPar);
 }
 
 #endif /* M2_IDENT_FIT_HPP */
