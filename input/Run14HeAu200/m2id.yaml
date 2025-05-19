@@ -2,13 +2,13 @@
 ---
 status: m2id # required field for checking the file application
 run_name: Run14HeAu200 # required field for searching main.yaml
-mean_vs_pt_fit: "pol1(0)"
-sigma_vs_pt_fit: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
+means_vs_pt_fit_func: "pol1(0)"
+sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 detectors:
 - 
   name: TOFe
   sigmalized_identification_range: 2
-  L: 5.2
+  L: 5.2 # distance to detector
   sigma_alpha: 0.9 # for M2IdentFit this is an approximate value
   sigma_ms: 1. # for M2IdentFit this is an approximate value
   sigma_t: 120. # for M2IdentFit this is an approximate value

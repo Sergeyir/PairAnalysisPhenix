@@ -11,6 +11,11 @@
 
 #include "M2IdentFit.hpp"
 
+// this namespace is only used so that documentation will not become a mess
+// so there is no need to enforce the contents inside of it 
+// being accessed only via the scope resolution operator in this file
+using namespace M2IdentFit;
+
 int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 3) 
@@ -67,31 +72,90 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    // i.e. charged pions and kaons, protons, and antiprotons
    FitParameters fitPi, fitK, fitP, fitAPi, fitAK, fitPBar;
 
+   fitPi.meansVsPTFit = 
+      std::make_unique<TF1>("means fit pi", inputYAMLM2Id["means_vs_pt_fit_func"].as<char *>());
+   fitPi.sigmasVsPTFit = 
+      std::make_unique<TF1>("sigmas fit pi", inputYAMLM2Id["sigmas_vs_pt_fit_func"].as<char *>());
+
    TH3F* m2DistrPos = inputDataFile->
       Get(("m2, " + detector["name"].as<std::string>() + ", charge>0".c_str());
    TH3F* m2DistrNeg = inputDataFile->
       Get(("m2, " + detector["name"].as<std::string>() + ", charge<0".c_str());
 
+   // minimum pT in whole pT range
+   const double pTMin = CppTools::Minimum(detector["pion_pt_min"].as<double>(), 
+                                          detector["kaon_pt_min"].as<double>(),
+                                          detector["proton_pt_min"].as<double>());
+   // maximum pT in whole pT range
+   const double pTMax = CppTools::Maximum(detector["pion_pt_max"].as<double>(), 
+                                          detector["kaon_pt_max"].as<double>(),
+                                          detector["proton_pt_max"].as<double>());
+
+   const double distance = detector["L"].as<double>();
+   const double sigmaAlpha = detector["sigma_alpha"].as<double>();
+   const double sigmaMS = detector["sigma_ms"].as<double>();
+   const double sigmaT = detector["sigma_t"].as<double>();
+
    for (const YAML::Node& pT : inputYAMLM2Id["pt_bins"])
    {
       // minium pT for the current pT bin
-      const double pTMin = pT["min"].as<double>();
+      const double binPTMin = pT["min"].as<double>();
       // maximum pT for the current pT bin
-      const double pTMax = pT["max"].as<double>();
+      const double binPTMax = pT["max"].as<double>();
 
-      // continue here
-      TH1F *m2DistrPosProj = static_cast<TH1F *>(m2DistrPos->ProjectionY());
+      if (binPTMin + 1e-15 < pTMin || binPTMax - 1e-15 > pTMax) continue;
 
-      if (pTMin > detector["pion_pt_min"].as<double>() && 
-          pTMax < detector["pion_pt_max"].as<double>())
+      TH1D *m2DistrPosProj = m2DistrPos->
+         ProjectionY((m2DistrPos->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
+                     m2DistrPos->GetXaxis()->FindBin(binPTMin + 1e-15),
+                     m2DistrPos->GetXaxis()->FindBin(binPTMax - 1e-15),
+                     m2DistrPos->GetXaxis()->FindBin(centralityMin + 1e-15),
+                     m2DistrPos->GetXaxis()->FindBin(centralityMax - 1e-15));
+
+      TH1D *m2DistrNegProj = m2DistrNeg->
+         ProjectionY((m2DistrNeg->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
+                     m2DistrNeg->GetXaxis()->FindBin(binPTMin + 1e-15),
+                     m2DistrNeg->GetXaxis()->FindBin(binPTMax - 1e-15),
+                     m2DistrNeg->GetXaxis()->FindBin(centralityMin + 1e-15),
+                     m2DistrNeg->GetXaxis()->FindBin(centralityMax - 1e-15));
+      
+      if (binPTMin > detector["pion_pt_min"].as<double>() && 
+          binPTMax < detector["pion_pt_max"].as<double>())
       {
-         PerformSingleM2Fit(pTMin, pTMax, ;
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitPi, 
+                            detector["pion_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrNegProj, fitAPi, 
+                            detector["pion_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
+      }
+      if (binPTMin > detector["kaon_pt_min"].as<double>() && 
+          binPTMax < detector["kaon_pt_max"].as<double>())
+      {
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitK, 
+                            detector["kaon_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitAK, 
+                            detector["kaon_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
+      }
+      if (binPTMin > detector["proton_pt_min"].as<double>() && 
+          binPTMax < detector["proton_pt_max"].as<double>())
+      {
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitP,
+                            detector["proton_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitPBar,
+                            detector["proton_bg_func"].as<std::string>(), 
+                            distance, sigmaAlpha, sigmaMS, sigmaT);
       }
    }
 }
 
-void M2IdentFit::PerformSingleM2Fit(const std::string& pTRangeName, 
-                                    TH1F *massProj, FitParameters& fitPar)
+void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj,
+                                    FitParameters& fitPar, const std::string& funcFG, 
+                                    const double distance, const double sigmaAlpha, 
+                                    const double sigmaMS, const double sigmaT)
 {
 }
 

@@ -47,8 +47,8 @@ namespace M2IdentFit
       TGraph meansVsPT;
       TGraph sigmasVsPT;
 
-      TF1 *meansVsPTFit;
-      TF1 *sigmasVsPTFit;
+      std::unique_ptr<TF1> meansVsPTFit;
+      std::unique_ptr<TF1> sigmasVsPTFit;
 
       ofstream rawYieldsOutputFile;
    }
@@ -75,8 +75,9 @@ namespace M2IdentFit
     * @param[in] massProj projection of m2 histogram distribution taken from the real data
     * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
     */
-   void PerformSingleM2Fit(const double pTMin, const double pTMax, 
-                           TH1F *massProj, FitParameters& fitPar);
+   void PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj, 
+                           FitParameters& fitPar, const std::string& funcBG, const double distance, 
+                           const double sigmaAlpha, const double sigmaMS, const double sigmaT);
    /* @brief Calculates the yield of the particle from the m2 distribution. Since the distribution
     * is discrete the yield will may be extracted in the range that is narrower than specified to
     * avoid subtraction of the wider range. The difference in range is corrected by the ratio of
