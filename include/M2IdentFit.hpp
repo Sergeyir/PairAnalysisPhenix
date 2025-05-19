@@ -49,21 +49,52 @@ namespace M2IdentFit
 
       TF1 *meansVsPTFit;
       TF1 *sigmasVsPTFit;
+
+      ofstream rawYieldsOutputFile;
    }
+   /// file with real data
+   TFile *inputDataFile;
    /// file reader for all required parameters for the m2 identification
    InputYAMLReader inputYAMLM2Id;
    /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
-   /// @brief Calculates the yield of the particle from the m2 distribution
-   double GetYield(TH1F *hist, const double mean, const double sigma, 
-                   const double vetoLow, const double vetoHigh);
-   /// @brief Performs all fits for charged hadrons m2 distribution 
-   /// for the given detector and for the given centrality class
+   /* @brief Performs all fits for charged hadrons m2 distribution 
+    * for the given detector and for the given centrality class
+    *
+    * @param[in] detector yaml node for the given detector
+    * @param[in] centralityMin lowest bound of centrality range
+    * @param[in] centralityMax highest bound of centrality range
+    */
    void PerformFitsForDetector(const YAML::Node& detector, 
                                const double centralityMin,
                                const double centralityMax);
-   /// @brief Performs m2 fits for charged hadrons for the given histogram
-   void PerformSingleM2Fit(const double pT, TH1F *massProj, FitParameters& fitPar);
+   /* @brief Performs m2 fits for charged hadrons for the given histogram
+    *
+    * @param[in] pTMin minimum pT for the current bin [GeV/c]
+    * @param[in] pTMax maximum pT for the current bin [GeV/c]
+    * @param[in] massProj projection of m2 histogram distribution taken from the real data
+    * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
+    */
+   void PerformSingleM2Fit(const double pTMin, const double pTMax, 
+                           TH1F *massProj, FitParameters& fitPar);
+   /* @brief Calculates the yield of the particle from the m2 distribution. Since the distribution
+    * is discrete the yield will may be extracted in the range that is narrower than specified to
+    * avoid subtraction of the wider range. The difference in range is corrected by the ratio of
+    * error functions of the extracted range to the specified range. The latter is performed under
+    * the assumption that all signals have purely gaussian shape which is not true and needs to
+    * be accounted by the evaluation of systematic uncertainty. Yields must be extracted with
+    * this function in multiple different ranges for this estimation.
+    *
+    * @param[in] hist the histogram the yield from which will be calculated
+    * @param[in] m2Min minimum range for the yield extraction
+    * @param[in] m2Max maximum range for the yield extraction
+    * @param[in] vetoLow lowest bound on m2 identification range that comes from other particle
+    * @param[in] vetoHigh highest bound on m2 identification range that comes from other particle
+    * @param[in] err error of the yield
+    * @param[out] yield of the particle in the given range
+    */
+   double GetYield(TH1F *hist, const double m2Min, const double m2Max,
+                   const double vetoLow, const double vetoHigh);
 }
 
 #endif /* M2_IDENT_FIT_HPP */
