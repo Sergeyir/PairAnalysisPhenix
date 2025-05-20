@@ -9,6 +9,7 @@
 #ifndef M2_IDENT_FIT_HPP
 #define M2_IDENT_FIT_HPP
 
+#include <cmath>
 #include <string>
 #include <filesystem>
 
@@ -87,14 +88,23 @@ namespace M2IdentFit
     * this function in multiple different ranges for this estimation.
     *
     * @param[in] hist the histogram the yield from which will be calculated
-    * @param[in] m2Min minimum range for the yield extraction
-    * @param[in] m2Max maximum range for the yield extraction
+    * @param[in] mean mean of the gaussian distribution for the given particle 
+    * @param[in] sigma sigma of the gaussian distribution for the given particle 
+    * @param[in] sigmalizedYieldExtractionRange sigmalized yield extraction range 
+    * (i.e. if this variable is set to 2 then yield will be calculated from the integral
+    * in the range from mean - 2*sigma to mean + 2*sigma)
+    * @param[in] fitGaus1 gaussian approximation of a particle different than specified
+    * @param[in] fitGaus2 gaussian approximation of a particle different than specified
+    * and different than the particle which was used for fitGaus1
+    * @param[in] fitBG approximation of background
     * @param[in] vetoLow lowest bound on m2 identification range that comes from other particle
     * @param[in] vetoHigh highest bound on m2 identification range that comes from other particle
     * @param[in] err error of the yield
     * @param[out] yield of the particle in the given range
     */
-   double GetYield(TH1F *hist, const double m2Min, const double m2Max,
+   double GetYield(TH1F *hist, const double mean, const double sigma,
+                   const double sigmalizedYieldExtractionRange,
+                   TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
                    const double vetoLow, const double vetoHigh);
 }
 

@@ -118,7 +118,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                      m2DistrNeg->GetXaxis()->FindBin(binPTMax - 1e-15),
                      m2DistrNeg->GetXaxis()->FindBin(centralityMin + 1e-15),
                      m2DistrNeg->GetXaxis()->FindBin(centralityMax - 1e-15));
-      
+
       if (binPTMin > detector["pion_pt_min"].as<double>() && 
           binPTMax < detector["pion_pt_max"].as<double>())
       {
@@ -160,33 +160,56 @@ void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F
 }
 
 double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma, 
+                            const double sigmalizedYieldExtractionRange,
+                            TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
                             const double vetoLow, const double vetoHigh, double& err)
 {
-	double yield = 0;
-	double yield_nosubtr = 0;
-	
-	for (int i = hist->GetXaxis()->FindBin(Maximum(mean-Par.yield_extr_srange*sigma, veto_low)); 
-			i <= hist->GetXaxis()->FindBin(Minimum(mean+Par.yield_extr_srange*sigma, veto_up)); i++)
-	{
-		yield += hist->GetBinContent(i) - 
-			gaus1->Eval(hist->GetXaxis()->GetBinCenter(i)) -
-			gaus2->Eval(hist->GetXaxis()->GetBinCenter(i));
-		yield_nosubtr += hist->GetBinContent(i);
-	}
-	
-	const double norm = (
-		erf((hist->GetXaxis()->GetBinCenter(hist->GetXaxis()->FindBin(mean)) - 
-		hist->GetXaxis()->GetBinLowEdge(
-		hist->GetXaxis()->FindBin(Maximum(mean - Par.yield_extr_srange*sigma, veto_low))))*
-		Par.yield_extr_srange/sqrt(2.)/sigma) +
-		erf((hist->GetXaxis()->GetBinUpEdge(
-		hist->GetXaxis()->FindBin(Minimum(mean + Par.yield_extr_srange*sigma, veto_up))) - 
-		hist->GetXaxis()->GetBinCenter(hist->GetXaxis()->FindBin(mean)))*
-		Par.yield_extr_srange/sqrt(2.)/sigma))/2./erf(Par.yield_extr_srange/sqrt(2.));
+   double yield = 0; // yield of a signal
+   double yieldNoBGSubtr = 0; // yield of a signal + bg i.e. without bg subtraction
 
-	err = sqrt(yield_nosubtr)/yield/norm;
-	
-	return yield/norm;
+   for (int i = hist->GetXaxis()->
+           FindBin(CppTools::Maximum(mean - sigmalizedYieldExtractionRange*sigma, veto_low)); 
+        i <= hist->GetXaxis()->
+           FindBin(CppTools::Minimum(mean + sigmalizedYieldExtractionRange*sigma, veto_up)); i++)
+   {
+      // this is needed for bin shift correction
+      double binAverageFitGaus1 = 0.;
+      double binAverageFitGaus2 = 0.;
+      double binAverageFitBG = 0.;
+      // taking into account the bin shift correction
+      for (double m2 = hist->GetXaxis()->GetBinLowEdge(i); 
+           m2 < hist->GetXaxis()->GetBinUpEdge(i) + 1e-15; 
+           m2 += hist->GetXaxis()->GetBinWidth(i)/99.)
+      {
+         binAverageFitGaus1 = fitGaus1->Eval(m2);
+         binAverageFitGaus2 = fitGaus2->Eval(m2);
+         binAverageFitBG = fitBG->Eval(m2);
+      }
+
+      // 100 iterations in the previous loop so the division is by 100
+      binAverageFitGaus1 /= 100.; 
+      binAverageFitGaus2 /= 100.;
+      binAverageFitBG /= 100.;
+
+      yield += hist->GetBinContent(i) - binAverageFitGaus1 - binAverageFitGaus2 - binAverageFitBG;
+      yieldNoBGSubtr += hist->GetBinContent(i);
+   }
+
+   // correction to the yield (see M2IdentFit::PerformSingleM2Fit definition)
+   const double yieldCorrection = 
+      (erf((hist->GetXaxis()->GetBinCenter(hist->GetXaxis()->FindBin(mean)) - 
+       hist->GetXaxis()->GetBinLowEdge
+       (hist->GetXaxis()->FindBin(Maximum(mean - sigmalizedYieldExtractionRange*sigma, veto_low))))*
+       sigmalizedYieldExtractionRange/sqrt(2.)/sigma) +
+       erf((hist->GetXaxis()->GetBinUpEdge
+       (hist->GetXaxis()->FindBin(Minimum(mean + sigmalizedYieldExtractionRange*sigma, veto_up))) - 
+        hist->GetXaxis()->GetBinCenter(hist->GetXaxis()->FindBin(mean)))*
+       sigmalizedYieldExtractionRange/sqrt(2.)/sigma))/
+      2./erf(sigmalizedYieldExtractionRange/sqrt(2.));
+
+   err = sqrt(yield_nosubtr)/yield/yieldCorrection;
+
+   return yield/yieldCorrection;
 }
 
 #endif /* M2_IDENT_FIT_CPP */
