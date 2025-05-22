@@ -53,12 +53,6 @@ namespace M2IdentFit
 
       ofstream rawYieldsOutputFile;
    }
-   /// file with real data
-   TFile *inputDataFile;
-   /// file reader for all required parameters for the m2 identification
-   InputYAMLReader inputYAMLM2Id;
-   /// file reader for all required parameters for the current run
-   InputYAMLReader inputYAMLMain;
    /* @brief Performs all fits for charged hadrons m2 distribution 
     * for the given detector and for the given centrality class
     *
@@ -106,6 +100,15 @@ namespace M2IdentFit
                    const double sigmalizedYieldExtractionRange,
                    TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
                    const double vetoLow, const double vetoHigh);
+   /// file with real data
+   TFile *inputDataFile;
+   /// file reader for all required parameters for the m2 identification
+   InputYAMLReader inputYAMLM2Id;
+   /// file reader for all required parameters for the current run
+   InputYAMLReader inputYAMLMain;
+   /// number of sequential fits with regressive parameter limiter 
+   /// for the improvement of approximation
+   const unsigned int nFitTries = 5.;
 }
 
 #endif /* M2_IDENT_FIT_HPP */
