@@ -39,20 +39,6 @@ int main(int argc, char **argv);
  */
 namespace M2IdentFit
 {
-   /* @struct FitParameters
-    *
-    * @brief Contains fit parameters for different pT
-    */
-   struct FitParameters
-   {
-      TGraph meansVsPT;
-      TGraph sigmasVsPT;
-
-      std::unique_ptr<TF1> meansVsPTFit;
-      std::unique_ptr<TF1> sigmasVsPTFit;
-
-      ofstream rawYieldsOutputFile;
-   }
    /* @brief Performs all fits for charged hadrons m2 distribution 
     * for the given detector and for the given centrality class
     *
@@ -100,12 +86,46 @@ namespace M2IdentFit
                    const double sigmalizedYieldExtractionRange,
                    TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
                    const double vetoLow, const double vetoHigh);
+   /* @struct FitParameters
+    *
+    * @brief Contains fit parameters for different pT
+    */
+   struct FitParameters
+   {
+      /// @brief Default deleted constructor
+      FitParameters() = delete;
+      /* @brief Constructor for defining the fit parameters
+       * @param[in] isChargePositive shows whether the charge is positive
+       */
+      FitParameters(const std::string& particleName);
+
+      /// means vs pT
+      TGraph meansVsPT;
+      /// sigmas vs pT
+      TGraph sigmasVsPT;
+      /// means vs pT fit for
+      std::unique_ptr<TF1> meansVsPTFit;
+      /// sigmas vs pT fit for
+      std::unique_ptr<TF1> sigmasVsPTFit;
+      /// file in which raw yields
+      ofstream rawYieldsOutputFile;
+   };
    /// file with real data
    TFile *inputDataFile;
    /// file reader for all required parameters for the m2 identification
    InputYAMLReader inputYAMLM2Id;
    /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
+   /// name of a run (i.e. Run14HeAu200)
+   std::string runName;
+   /// name of a collision system (i.e. HeAu200)
+   std::string collisionSystemName;
+   /// directory in which all output files will be written
+   std::string outputDir;
+   /// directory in which all approximation parameters will be written
+   std::string parametersDir;
+   /// directory in which all yields will be written
+   std::string rawYieldsDir;
    /// number of sequential fits with regressive parameter limiter 
    /// for the improvement of approximation
    const unsigned int nFitTries = 5.;

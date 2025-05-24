@@ -48,8 +48,14 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputDataFileName);
    inputDataFile = TFile::Open(inputDataFileName.c_str(), "READ");
 
-   outputDir = "data/PostM2Id/" + runName + "/SingleTrack/";
+   outputDir = "output/M2Id/" + runName;
    system(("mkdir -p " + outputDir).c_str());
+
+   parametersDir = "data/Parameters/M2Id/" + runName;
+   system(("mkdir -p " + parametersDir).c_str());
+
+   rawYieldsDir = "data/RawYields/SingleTrack/" + runName;
+   system(("mkdir -p " + rawYieldsDir).c_str());
 
    gROOT->ProcessLine("gErrorIngonreLevel = 1001;");
    gErrorIgnoreLevel = kWarning;
@@ -68,25 +74,34 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                                         const double centralityMin, 
                                         const double centralityMax)
 {
-   // containers that hold fit parameters and yields for pi^+, K^+, p, pi^-, K^-, \bar{p} 
-   // i.e. charged pions and kaons, protons, and antiprotons
-   FitParameters fitPi, fitK, fitP, fitAPi, fitAK, fitPBar;
+   // container that hold fit parameters and yields for pi^+
+   FitParameters fitPiPlus("pi+");
+   // container that hold fit parameters and yields for K^+
+   FitParameters fitKPlus("k+");
+   // container that hold fit parameters and yields for protons
+   FitParameters fitP("p");
+   // container that hold fit parameters and yields for pi^-
+   FitParameters fitPiMinus("pi-");
+   // container that hold fit parameters and yields for K^-
+   FitParameters fitKMinus("k-");
+   // container that hold fit parameters and yields for antiprotons
+   FitParameters fitPBar("pbar");
 
    const std::string meansFitFunc = inputYAMLM2Id["means_vs_pt_fit_func"].as<std::string>();
    const std::string sigmasFitFunc = inputYAMLM2Id["sigmas_vs_pt_fit_func"].as<std::string>();
 
-   fitPi.meansVsPTFit = std::make_unique<TF1>("means fit pi+", meansFitFunc.c_str());
-   fitPi.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi+", sigmasFitFunc.c_str());
-   fitK.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
-   fitK.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
+   fitPiPlus.meansVsPTFit = std::make_unique<TF1>("means fit pi+", meansFitFunc.c_str());
+   fitPiPlus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi+", sigmasFitFunc.c_str());
+   fitKPlus.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
+   fitKPlus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
    fitP.meansVsPTFit = std::make_unique<TF1>("means fit p", meansFitFunc.c_str());
    fitP.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit p", sigmasFitFunc.c_str());
-   fitAPi.meansVsPTFit = std::make_unique<TF1>("means fit pi+", meansFitFunc.c_str());
-   fitAPi.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi+", sigmasFitFunc.c_str());
-   fitAK.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
-   fitAK.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
-   fitAP.meansVsPTFit = std::make_unique<TF1>("means fit p", meansFitFunc.c_str());
-   fitAP.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit p", sigmasFitFunc.c_str());
+   fitPiMinus.meansVsPTFit = std::make_unique<TF1>("means fit pi-", meansFitFunc.c_str());
+   fitPiMinus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi-", sigmasFitFunc.c_str());
+   fitKMinus.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
+   fitKMinus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
+   fitPBar.meansVsPTFit = std::make_unique<TF1>("means fit pbar", meansFitFunc.c_str());
+   fitPBar.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pbar", sigmasFitFunc.c_str());
 
    TH3F* m2DistrPos = inputDataFile->
       Get(("m2, " + detector["name"].as<std::string>() + ", charge>0".c_str());
@@ -114,7 +129,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       // maximum pT for the current pT bin
       const double binPTMax = pT["max"].as<double>();
 
-      if (binPTMin + 1e-15 < pTMin || binPTMax - 1e-15 > pTMax) continue;
+      if (binPTMin + 1e-15 < pTMin) continue;
+      if (binPTMax - 1e-15 > pTMax) break;
 
       TH1D *m2DistrPosProj = m2DistrPos->
          ProjectionY((m2DistrPos->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
@@ -235,6 +251,11 @@ double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma,
    err = sqrt(yield_nosubtr)/yield/yieldCorrection;
 
    return yield/yieldCorrection;
+}
+
+M2IdentFit::FitParameters::FitParameters(const std::string& particleName)
+{
+   rawYieldOutputFile.open(rawYieldsDir + "/" + particleName + ".txt");
 }
 
 #endif /* M2_IDENT_FIT_CPP */
