@@ -57,8 +57,7 @@ namespace M2IdentFit
     * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
     */
    void PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj, 
-                           FitParameters& fitPar, const std::string& funcBG, const double distance, 
-                           const double sigmaAlpha, const double sigmaMS, const double sigmaT);
+                           FitParameters& fitPar, const std::string& funcBG);
    /* @brief Calculates the yield of the particle from the m2 distribution. Since the distribution
     * is discrete the yield will may be extracted in the range that is narrower than specified to
     * avoid subtraction of the wider range. The difference in range is corrected by the ratio of
@@ -83,12 +82,11 @@ namespace M2IdentFit
     * @param[out] yield of the particle in the given range
     */
    double GetYield(TH1F *hist, const double mean, const double sigma,
-                   const double sigmalizedYieldExtractionRange,
-                   TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
+                   const double sigmalizedYieldExtractionRange, TF1 *fitBG,
                    const double vetoLow, const double vetoHigh);
    /* @struct FitParameters
     *
-    * @brief Contains fit parameters for different pT
+    * @brief Contains fit parameters for different pT for a given particle specie
     */
    struct FitParameters
    {
@@ -96,9 +94,21 @@ namespace M2IdentFit
       FitParameters() = delete;
       /* @brief Constructor for defining the fit parameters
        * @param[in] isChargePositive shows whether the charge is positive
+       * @param[in] massSquared mass squared of a given particle specie [GeV/c^2]
+       * @param[in] detector yaml data node containing all important information about the given detector
        */
-      FitParameters(const std::string& particleName);
-
+      FitParameters(const std::string& particleName, const double massSquared, 
+                    const YAML::Node& detector);
+      /// name of a given particle specie
+      std::string name;
+      /// mass squared of a given particle specie
+      double m2;
+      /// approximation of signal+background for a given particle specie in m2 distribution
+      std::vector<unique_ptr<TF1>> m2Fit;
+      /// approximation of a signal of a given particle specie in m2 distribution
+      std::vector<unique_ptr<TF1>> m2GausFit;
+      /// approximation of background for a given particle specie in m2 distribution
+      std::vector<unique_ptr<TF1>> m2BGFit;
       /// means vs pT
       TGraph meansVsPT;
       /// sigmas vs pT

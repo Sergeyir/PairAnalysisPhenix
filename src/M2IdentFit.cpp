@@ -74,34 +74,18 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                                         const double centralityMin, 
                                         const double centralityMax)
 {
-   // container that hold fit parameters and yields for pi^+
-   FitParameters fitPiPlus("pi+");
-   // container that hold fit parameters and yields for K^+
-   FitParameters fitKPlus("k+");
-   // container that hold fit parameters and yields for protons
-   FitParameters fitP("p");
-   // container that hold fit parameters and yields for pi^-
-   FitParameters fitPiMinus("pi-");
-   // container that hold fit parameters and yields for K^-
-   FitParameters fitKMinus("k-");
-   // container that hold fit parameters and yields for antiprotons
-   FitParameters fitPBar("pbar");
-
-   const std::string meansFitFunc = inputYAMLM2Id["means_vs_pt_fit_func"].as<std::string>();
-   const std::string sigmasFitFunc = inputYAMLM2Id["sigmas_vs_pt_fit_func"].as<std::string>();
-
-   fitPiPlus.meansVsPTFit = std::make_unique<TF1>("means fit pi+", meansFitFunc.c_str());
-   fitPiPlus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi+", sigmasFitFunc.c_str());
-   fitKPlus.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
-   fitKPlus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
-   fitP.meansVsPTFit = std::make_unique<TF1>("means fit p", meansFitFunc.c_str());
-   fitP.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit p", sigmasFitFunc.c_str());
-   fitPiMinus.meansVsPTFit = std::make_unique<TF1>("means fit pi-", meansFitFunc.c_str());
-   fitPiMinus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pi-", sigmasFitFunc.c_str());
-   fitKMinus.meansVsPTFit = std::make_unique<TF1>("means fit K-", meansFitFunc.c_str());
-   fitKMinus.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit K-", sigmasFitFunc.c_str());
-   fitPBar.meansVsPTFit = std::make_unique<TF1>("means fit pbar", meansFitFunc.c_str());
-   fitPBar.sigmasVsPTFit = std::make_unique<TF1>("sigmas fit pbar", sigmasFitFunc.c_str());
+   // container that holds fit parameters and yields for pi^+
+   FitParameters fitPiPlus("pi+", pow(0.139570, 2), detector);
+   // container that holds fit parameters and yields for K^+
+   FitParameters fitKPlus("k+", pow(0.493677, 2), detector);
+   // container that holds fit parameters and yields for protons
+   FitParameters fitP("p", pow(0.938272, 2), detector);
+   // container that holds fit parameters and yields for pi^-
+   FitParameters fitPiMinus("pi-", pow(0.139570, 2), detector);
+   // container that holds fit parameters and yields for K^-
+   FitParameters fitKMinus("k-", pow(0.493677, 2), detector);
+   // container that holds fit parameters and yields for antiprotons
+   FitParameters fitPBar("pbar", pow(0.938272, 2), detector);
 
    TH3F* m2DistrPos = inputDataFile->
       Get(("m2, " + detector["name"].as<std::string>() + ", charge>0".c_str());
@@ -116,11 +100,6 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    const double pTMax = CppTools::Maximum(detector["pion_pt_max"].as<double>(), 
                                           detector["kaon_pt_max"].as<double>(),
                                           detector["proton_pt_max"].as<double>());
-
-   const double distance = detector["L"].as<double>();
-   const double sigmaAlpha = detector["sigma_alpha"].as<double>();
-   const double sigmaMS = detector["sigma_ms"].as<double>();
-   const double sigmaT = detector["sigma_t"].as<double>();
 
    for (const YAML::Node& pT : inputYAMLM2Id["pt_bins"])
    {
@@ -149,20 +128,20 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       if (binPTMin > detector["pion_pt_min"].as<double>() && 
           binPTMax < detector["pion_pt_max"].as<double>())
       {
-         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitPi, 
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitPiPlus, 
                             detector["pion_bg_func"].as<std::string>(), 
                             distance, sigmaAlpha, sigmaMS, sigmaT);
-         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrNegProj, fitAPi, 
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrNegProj, fitPiMinus, 
                             detector["pion_bg_func"].as<std::string>(), 
                             distance, sigmaAlpha, sigmaMS, sigmaT);
       }
       if (binPTMin > detector["kaon_pt_min"].as<double>() && 
           binPTMax < detector["kaon_pt_max"].as<double>())
       {
-         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitK, 
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitKPlus, 
                             detector["kaon_bg_func"].as<std::string>(), 
                             distance, sigmaAlpha, sigmaMS, sigmaT);
-         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitAK, 
+         PerformSingleM2Fit(binPTMin, binPTMax, m2DistrPosProj, fitKMinus, 
                             detector["kaon_bg_func"].as<std::string>(), 
                             distance, sigmaAlpha, sigmaMS, sigmaT);
       }
@@ -178,18 +157,18 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       }
    }
 
-   fitPi.meansVsPTFit->SetRange(detector["pion_pt_min"].as<double>() - 0.05, 
-                                detector["pion_pt_max"].as<double>() + 0.05);
-   fitK.meansVsPTFit->SetRange(detector["kaon_pt_min"].as<double>() - 0.05, 
-                               detector["kaon_pt_max"].as<double>() + 0.05);
+   fitPiPlus.meansVsPTFit->SetRange(detector["pion_pt_min"].as<double>() - 0.05, 
+                                    detector["pion_pt_max"].as<double>() + 0.05);
+   fitKPlus.meansVsPTFit->SetRange(detector["kaon_pt_min"].as<double>() - 0.05, 
+                                   detector["kaon_pt_max"].as<double>() + 0.05);
    fitP.meansVsPTFit->SetRange(detector["proton_pt_min"].as<double>() - 0.05, 
                                detector["proton_pt_max"].as<double>() + 0.05);
-   fitAPi.meansVsPTFit->SetRange(detector["pion_pt_min"].as<double>() - 0.05, 
-                                 detector["pion_pt_max"].as<double>() + 0.05);
-   fitAK.meansVsPTFit->SetRange(detector["kaon_pt_min"].as<double>() - 0.05, 
-                                detector["kaon_pt_max"].as<double>() + 0.05);
-   fitAP.meansVsPTFit->SetRange(detector["proton_pt_min"].as<double>() - 0.05, 
-                                detector["proton_pt_max"].as<double>() + 0.05);
+   fitPiMinus.meansVsPTFit->SetRange(detector["pion_pt_min"].as<double>() - 0.05, 
+                                     detector["pion_pt_max"].as<double>() + 0.05);
+   fitKMinus.meansVsPTFit->SetRange(detector["kaon_pt_min"].as<double>() - 0.05, 
+                                    detector["kaon_pt_max"].as<double>() + 0.05);
+   fitPBar.meansVsPTFit->SetRange(detector["proton_pt_min"].as<double>() - 0.05, 
+                                  detector["proton_pt_max"].as<double>() + 0.05);
 }
 
 void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj,
@@ -197,12 +176,25 @@ void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F
                                     const double distance, const double sigmaAlpha, 
                                     const double sigmaMS, const double sigmaT)
 {
-   TF1
+   fitPar.m2BGFit.push_back
+      (std::make_unique<TF1>((name + ": " + std::to_string(pTMin) + "-" + 
+                              std::to_string(pTMax)).c_str()), funcBG.c_str());
+   fitPar.m2GausFit.push_back
+      (std::make_unique<TF1>((name + ": " + std::to_string(pTMin) + "-" + 
+                              std::to_string(pTMax)).c_str()), "gaus");
+   fitPar.m2Fit.push_back
+      (std::make_unique<TF1>((name + ": " + std::to_string(pTMin) + "-" + 
+                              std::to_string(pTMax)).c_str()), (funcBG + "gaus(3)").c_str());
+
+   fitPar.m2GausFit.back()->
+      SetParameter(0, massProj->GetBinContent(massProj->GetXaxis()->FindBin(fitPar.m2)));
+   fitPar.m2GausFit.back()->SetParameter(1, );
+
+   fitPar.m2Fit.back()->SetRange(m2)
 }
 
 double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma, 
-                            const double sigmalizedYieldExtractionRange,
-                            TF1 *fitGaus1, TF1 *fitGaus2, TF1 *fitBG,
+                            const double sigmalizedYieldExtractionRange, TF1 *fitBG,
                             const double vetoLow, const double vetoHigh, double& err)
 {
    double yield = 0; // yield of a signal
@@ -222,17 +214,13 @@ double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma,
            m2 < hist->GetXaxis()->GetBinUpEdge(i) + 1e-15; 
            m2 += hist->GetXaxis()->GetBinWidth(i)/99.)
       {
-         binAverageFitGaus1 = fitGaus1->Eval(m2);
-         binAverageFitGaus2 = fitGaus2->Eval(m2);
          binAverageFitBG = fitBG->Eval(m2);
       }
 
       // 100 iterations in the previous loop so the division is by 100
-      binAverageFitGaus1 /= 100.; 
-      binAverageFitGaus2 /= 100.;
       binAverageFitBG /= 100.;
 
-      yield += hist->GetBinContent(i) - binAverageFitGaus1 - binAverageFitGaus2 - binAverageFitBG;
+      yield += hist->GetBinContent(i) - binAverageFitBG;
       yieldNoBGSubtr += hist->GetBinContent(i);
    }
 
@@ -253,9 +241,37 @@ double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma,
    return yield/yieldCorrection;
 }
 
-M2IdentFit::FitParameters::FitParameters(const std::string& particleName)
+M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const double massSquared,
+                                         const YAML::Node& detector)
 {
-   rawYieldOutputFile.open(rawYieldsDir + "/" + particleName + ".txt");
+   name = particleName;
+   m2 = massSquared;
+
+   meansVsPTFit = std::make_unique<TF1>(("means fit " + name).c_str(), 
+                                        inputYAMLM2Id["means_vs_pt_fit_func"].as<char *>());
+   sigmasVsPTFit = std::make_unique<TF1>(("sigmas fit " + name).c_str(), 
+                                         inputYAMLM2Id["sigmas_vs_pt_fit_func"].as<char *>());
+
+   // expected parameters
+   const double distance = detector["L"].as<double>();
+   const double sigmaAlpha = detector["sigma_alpha"].as<double>();
+   const double sigmaMS = detector["sigma_ms"].as<double>();
+   const double sigmaT = detector["sigma_t"].as<double>();
+   const double K1 = ;
+
+   meansVsPTFit.SetParameter(0, m2);
+   meansVsPTFit.SetParameter(1, 0.);
+   meansVsPTFit.SetParameter(2, sigmaAlpha);
+   meansVsPTFit.SetParameter(3, sigmaMS);
+   meansVsPTFit.SetParameter(4, sigmaT);
+   meansVsPTFit.FixParameter(5, detector["k1"].as<double>());
+   meansVsPTFit.FixParameter(6, detector["L"].as<double>());
+
+   meansVsPTFit.SetParLimits(2, sigmaAlpha/1.2, sigmaAlpha*1.2);
+   meansVsPTFit.SetParLimits(3, sigmaMS/1.2, sigmaMS*1.2);
+   meansVsPTFit.SetParLimits(4, sigmaT/1.2, sigmaT*1.2);
+
+   rawYieldOutputFile.open(rawYieldsDir + "/" + name + ".txt");
 }
 
 #endif /* M2_IDENT_FIT_CPP */
