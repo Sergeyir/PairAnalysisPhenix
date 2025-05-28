@@ -6,6 +6,8 @@ tmp/
 build/
 output/
 CMakeFiles/
+'=0.txt'
+'=0.txt.backup'
 
 *:w
 *.pyc

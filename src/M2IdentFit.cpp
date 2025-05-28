@@ -200,7 +200,34 @@ void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F
    fitPar.m2FitGaus.back()->SetRange(m2 - fitPar.sigmasVsPT->Eval(pT)*3., 
                                      m2 + fitPar.sigmasVsPT->Eval(pT)*3.);
 
-   massDistr->Fit(fitPar.m2FitGaus);
+   massDistr->Fit(fitPar.m2Fit, "RQMBN");
+
+   for (unsigned int i = 0; i < nFitTries; i++)
+   {
+      fitPar.m2Fit->
+         SetParLimits(3, fitPar.m2Fit->GetParameter(3)/(1. + 1./static_cast<double>(i*i*i)),
+                      fitPar.m2Fit->GetParameter(3)*(1. + 1./static_cast<double>(i*i*i)));
+      fitPar.m2Fit->
+         SetParLimits(4, fitPar.m2Fit->GetParameter(4) - 
+                      fitPar.m2Fit->GetParameter(5)*(0.5. + 0.5./static_cast<double>(i*i*i)),
+                      fitPar.m2Fit->GetParameter(4) + 
+                      fitPar.m2Fit->GetParameter(5)*(0.5. + 0.5./static_cast<double>(i*i*i)));
+      fitPar.m2Fit->
+         SetParLimits(5, fitPar.m2Fit->GetParameter(5)/(1. + 1./static_cast<double>(i*i*i)),
+                      fitPar.m2Fit->GetParameter(5)*(1. + 1./static_cast<double>(i*i*i)));
+      fitPar.m2Fit->
+         SetRange(fitPar.m2Fit->GetParameter(4) - 
+                  fitPar.m2Fit->GetParameter(5)*(1. + 1./static_cast<double>(i*i*i)),
+                  fitPar.m2Fit->GetParameter(4) + 
+                  fitPar.m2Fit->GetParameter(5)*(1. + 1./static_cast<double>(i*i*i)));
+         massDistr->Fit(fitPr.m2Fit, "RQMBN");
+   }
+
+   for (int i = 0; i < 3; i++)
+   {
+      fitPar.m2FitBG->SetParameter(i, fitPar.m2Fit->GetParameter(i));
+      fitPar.m2FitGaus->SetParameter(i, fitPar.m2Fit->GetParameter(i+3));
+   }
 }
 
 double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma, 
