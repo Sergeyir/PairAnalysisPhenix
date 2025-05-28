@@ -56,7 +56,7 @@ namespace M2IdentFit
     * @param[in] massProj projection of m2 histogram distribution taken from the real data
     * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
     */
-   void PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj, 
+   void PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massDistr, 
                            FitParameters& fitPar, const std::string& funcBG);
    /* @brief Calculates the yield of the particle from the m2 distribution. Since the distribution
     * is discrete the yield will may be extracted in the range that is narrower than specified to

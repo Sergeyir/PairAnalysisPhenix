@@ -171,11 +171,11 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                                   detector["proton_pt_max"].as<double>() + 0.05);
 }
 
-void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massProj,
-                                    FitParameters& fitPar, const std::string& funcFG, 
-                                    const double distance, const double sigmaAlpha, 
-                                    const double sigmaMS, const double sigmaT)
+void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massDistr,
+                                    FitParameters& fitPar, const std::string& funcFG)
 {
+   const double pT = (pTMin + pTMax)/2.
+
    fitPar.m2BGFit.push_back
       (std::make_unique<TF1>((name + ": " + std::to_string(pTMin) + "-" + 
                               std::to_string(pTMax)).c_str()), funcBG.c_str());
@@ -186,11 +186,21 @@ void M2IdentFit::PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F
       (std::make_unique<TF1>((name + ": " + std::to_string(pTMin) + "-" + 
                               std::to_string(pTMax)).c_str()), (funcBG + "gaus(3)").c_str());
 
-   fitPar.m2GausFit.back()->
-      SetParameter(0, massProj->GetBinContent(massProj->GetXaxis()->FindBin(fitPar.m2)));
-   fitPar.m2GausFit.back()->SetParameter(1, );
+   fitPar.m2Fit.back()->
+      SetParameter(3, massDistr->GetBinContent(massDistr->GetXaxis()->FindBin(fitPar.m2)));
+   fitPar.m2Fit.back()->SetParameter(4, fitPar.m2);
+   fitPar.m2Fit.back()->SetParameter(5, fitPar.sigmasVsPT->Eval(pT));
 
-   fitPar.m2Fit.back()->SetRange(m2)
+   fitPar.m2Fit.back()->SetParLimits(3, 0., massDistr->GetBinContent(massDistr->GetMaximumBin()));
+   fitPar.m2Fit.back()->SetParLimits(4, fitPar.m2 - fitPar.sigmasVsPT->Eval(pT), 
+                                     fitPar.m2 + fitPar.sigmasVsPT->Eval(pT));
+   fitPar.m2Fit.back()->SetParLimits(5, fitPar.sigmasVsPT->Eval(pT)/1.2, 
+                                     fitPar.sigmasVsPT->Eval(pT)*1.2);
+
+   fitPar.m2FitGaus.back()->SetRange(m2 - fitPar.sigmasVsPT->Eval(pT)*3., 
+                                     m2 + fitPar.sigmasVsPT->Eval(pT)*3.);
+
+   massDistr->Fit(fitPar.m2FitGaus);
 }
 
 double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma, 
@@ -257,14 +267,13 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
    const double sigmaAlpha = detector["sigma_alpha"].as<double>();
    const double sigmaMS = detector["sigma_ms"].as<double>();
    const double sigmaT = detector["sigma_t"].as<double>();
-   const double K1 = ;
 
    meansVsPTFit.SetParameter(0, m2);
    meansVsPTFit.SetParameter(1, 0.);
    meansVsPTFit.SetParameter(2, sigmaAlpha);
    meansVsPTFit.SetParameter(3, sigmaMS);
    meansVsPTFit.SetParameter(4, sigmaT);
-   meansVsPTFit.FixParameter(5, detector["k1"].as<double>());
+   meansVsPTFit.FixParameter(5, detector["K1"].as<double>());
    meansVsPTFit.FixParameter(6, detector["L"].as<double>());
 
    meansVsPTFit.SetParLimits(2, sigmaAlpha/1.2, sigmaAlpha*1.2);
