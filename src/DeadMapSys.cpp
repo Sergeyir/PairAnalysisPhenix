@@ -511,6 +511,7 @@ int main(int argc, char **argv)
          }
       }
 
+      /*
       std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 
          GetUncertaintyFromXProj(realHeatmapDCe0, simHeatmapDCe0, 
@@ -525,12 +526,15 @@ int main(int argc, char **argv)
          GetUncertaintyFromXProj(realHeatmapDCw1, simHeatmapDCw1, 
                                  realCutHeatmapDCw1, simCutHeatmapDCw1, 
                                  "DCw1", "DC west, zDC<0", "board", "#alpha", 2);
+                                 */
    }
+   /*
    else
    {
       std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 0 << " " << 0 << " " << 0 << " " << 0;
    }
+   */
 
    if (detectorsConfiguration[1] == '1') // PC1
    {
