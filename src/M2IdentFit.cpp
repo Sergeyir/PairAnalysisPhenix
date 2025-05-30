@@ -111,6 +111,9 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       if (binPTMin + 1e-15 < pTMin) continue;
       if (binPTMax - 1e-15 > pTMax) break;
 
+      const std::string pTRangeName = CppTools::DToStr(pT["min"].as<double>(), 1) + " < p_{T} < " +
+                                      CppTools::DToStr(pT["max"].as<double>(), 1) + " [GeV/c];
+
       TH1D *m2DistrPosProj = m2DistrPos->
          ProjectionY((m2DistrPos->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
                      m2DistrPos->GetXaxis()->FindBin(binPTMin + 1e-15),
@@ -155,6 +158,29 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                             detector["proton_bg_func"].as<std::string>(), 
                             distance, sigmaAlpha, sigmaMS, sigmaT);
       }
+
+      TCanvas m2FitCanv(("m2 pos and neg fits" + pTRangeName).c_str(), "", 900, 900);
+		canv.Divide(1, 2);
+
+		TText text;
+
+		text.SetTextFont(43);
+		text.SetTextSize(40);
+		text.SetTextAngle(90);
+	
+		text.DrawText(0.04, 0.65, "charge = +1");
+		text.DrawText(0.04, 0.15, "charge = -1");
+
+		TLatex tlText;
+
+		tlText.SetTextFont(52);
+		tlText.SetTextSize(0.05);
+
+		tlText.DrawLatex(0.5, 0.9, pTRangeName.c_str());
+		tlText.DrawLatex(0.5, 0.4, pTRangeName.c_str());
+		
+		canv.cd(1);	
+		gPad->SetPad(0.02, 0.51, 1., 1.);
    }
 
    fitPiPlus.meansVsPTFit->SetRange(detector["pion_pt_min"].as<double>() - 0.05, 
