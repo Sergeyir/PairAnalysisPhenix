@@ -54,7 +54,7 @@ add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
 
 #link_libraries(jsoncpp)
 link_libraries(ErrorHandler StrTools Time IOTools Box Table)
-link_libraries(TCanvasTools ThrObj GUIDistrCutter2D)
+link_libraries(TCanvasTools ThrObj)
 link_libraries(PBar)
 link_libraries(yaml-cpp)
 
@@ -69,6 +69,7 @@ link_libraries(InputYAMLReader)
 add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
 add_executable(SigmalizedResidualsSim ${CMAKE_SOURCE_DIR}/src/SigmalizedResidualsSim.cpp)
 add_executable(DeadMapSys ${CMAKE_SOURCE_DIR}/src/DeadMapSys.cpp)
+add_executable(M2IdentFit ${CMAKE_SOURCE_DIR}/src/M2IdentFit.cpp)
 
 target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimCalibrator)
 target_link_libraries(DeadMapSys DeadMapCutter)

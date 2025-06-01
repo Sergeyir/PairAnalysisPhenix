@@ -12,15 +12,25 @@
 #include <cmath>
 #include <string>
 #include <filesystem>
+#include <thread>
 
 #include "TROOT.h"
+#include "TError.h"
 #include "TFile.h"
+#include "TStyle.h"
+#include "TGraphErrors.h"
+#include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
+#include "TText.h"
+#include "TLatex.h"
+#include "TAttLine.h"
+#include "TColor.h"
 
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
+#include "MathTools.hpp"
 #include "StrTools.hpp"
 #include "Box.hpp"
 
@@ -39,6 +49,50 @@ int main(int argc, char **argv);
  */
 namespace M2IdentFit
 {
+   /* @struct FitParameters
+    *
+    * @brief Contains fit parameters for different pT for a given particle specie
+    */
+   struct FitParameters
+   {
+      /// @brief Default deleted constructor
+      FitParameters() = delete;
+      /* @brief Constructor for defining the fit parameters
+       * @param[in] isChargePositive shows whether the charge is positive
+       * @param[in] massSquared mass squared of a given particle specie [GeV/c^2]
+       * @param[in] detector yaml data node containing all important information about the given detector
+       * @param[in] isPositive shows whether the track is positive 
+       * @param[in] color color of an approximated function that will be drawn onto the canvas
+       * @param[in] isP shows whether the track is from protons
+       */
+      FitParameters(const std::string& particleName, const double massSquared, 
+                    const YAML::Node& detector, const bool isPositive, const Color_t color,
+                    const bool isP = false);
+      /// name of a given particle specie
+      std::string name;
+      /// mass squared of a given particle specie
+      double m2;
+      /// shows whether the track is positive
+      bool isPositive;
+      /// shows whether the detector was already calibrated
+      bool isCalibrated;
+      /// color of lines and markers associated with a given particle
+      Color_t color;
+      /// means vs pT
+      TGraphErrors meansVsPT;
+      /// sigmas vs pT
+      TGraphErrors sigmasVsPT;
+      /// means - sigmalizedExtractionRange*sigma
+      TGraphErrors extractionRangeLowVsPT;
+      /// means + sigmalizedExtractionRange*sigma
+      TGraphErrors extractionRangeUpVsPT;
+      /// means vs pT fit for
+      std::unique_ptr<TF1> meansVsPTFit;
+      /// sigmas vs pT fit for
+      std::unique_ptr<TF1> sigmasVsPTFit;
+      /// file in which raw yields will be written
+      std::ofstream rawYieldsOutputFile;
+   };
    /* @brief Performs all fits for charged hadrons m2 distribution 
     * for the given detector and for the given centrality class
     *
@@ -51,13 +105,16 @@ namespace M2IdentFit
                                const double centralityMax);
    /* @brief Performs m2 fits for charged hadrons for the given histogram
     *
-    * @param[in] pTMin minimum pT for the current bin [GeV/c]
-    * @param[in] pTMax maximum pT for the current bin [GeV/c]
     * @param[in] massProj projection of m2 histogram distribution taken from the real data
+    * @param[in] sigmalizedYieldExtractionRange sigmalized yield extraction range 
+    * (i.e. if this variable is set to 2 then yield will be extracted
+    * in the range from mean - 2*sigma to mean + 2*sigma)
+    * @param[in] pT transverse momentum for the current bin [GeV/c]
     * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
+    * @param[in] funcBG function that will be used for approximation of a background
     */
-   void PerformSingleM2Fit(const double pTMin, const double pTMax, TH1F *massDistr, 
-                           FitParameters& fitPar, const std::string& funcBG);
+   void PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYieldExtractionRange, 
+                           const double pT, FitParameters& fitPar, const std::string& funcBG);
    /* @brief Calculates the yield of the particle from the m2 distribution. Since the distribution
     * is discrete the yield will may be extracted in the range that is narrower than specified to
     * avoid subtraction of the wider range. The difference in range is corrected by the ratio of
@@ -83,43 +140,20 @@ namespace M2IdentFit
     */
    double GetYield(TH1F *hist, const double mean, const double sigma,
                    const double sigmalizedYieldExtractionRange, TF1 *fitBG,
-                   const double vetoLow, const double vetoHigh);
-   /* @struct FitParameters
+                   const double vetoLow, const double vetoUp, double &err);
+   /* @brief Draws TCanvas frame
     *
-    * @brief Contains fit parameters for different pT for a given particle specie
+    * @param[in] massProj projection of m2 histogram distribution taken from the real data
+    * @param[in] sigmalizedYieldExtractionRange sigmalized yield extraction range 
+    * (i.e. if this variable is set to 2 then yield will be extracted
+    * in the range from mean - 2*sigma to mean + 2*sigma)
+    * @param[in] pT transverse momentum for the current bin [GeV/c]
+    * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
+    * @param[in] funcBG function that will be used for approximation of a background
     */
-   struct FitParameters
-   {
-      /// @brief Default deleted constructor
-      FitParameters() = delete;
-      /* @brief Constructor for defining the fit parameters
-       * @param[in] isChargePositive shows whether the charge is positive
-       * @param[in] massSquared mass squared of a given particle specie [GeV/c^2]
-       * @param[in] detector yaml data node containing all important information about the given detector
-       */
-      FitParameters(const std::string& particleName, const double massSquared, 
-                    const YAML::Node& detector);
-      /// name of a given particle specie
-      std::string name;
-      /// mass squared of a given particle specie
-      double m2;
-      /// approximation of signal+background for a given particle specie in m2 distribution
-      std::vector<unique_ptr<TF1>> m2Fit;
-      /// approximation of a signal of a given particle specie in m2 distribution
-      std::vector<unique_ptr<TF1>> m2GausFit;
-      /// approximation of background for a given particle specie in m2 distribution
-      std::vector<unique_ptr<TF1>> m2BGFit;
-      /// means vs pT
-      TGraph meansVsPT;
-      /// sigmas vs pT
-      TGraph sigmasVsPT;
-      /// means vs pT fit for
-      std::unique_ptr<TF1> meansVsPTFit;
-      /// sigmas vs pT fit for
-      std::unique_ptr<TF1> sigmasVsPTFit;
-      /// file in which raw yields
-      ofstream rawYieldsOutputFile;
-   };
+   void DrawFrame(const double xMin, const double yMin, 
+                  const double xMax, const double yMax,
+                  const std::string& xTitle, const std::string& yTitle);
    /// file with real data
    TFile *inputDataFile;
    /// file reader for all required parameters for the m2 identification
@@ -136,9 +170,13 @@ namespace M2IdentFit
    std::string parametersDir;
    /// directory in which all yields will be written
    std::string rawYieldsDir;
+   /// integral of a magnetic field [mrad*GeV]
+   double K1;
    /// number of sequential fits with regressive parameter limiter 
    /// for the improvement of approximation
    const unsigned int nFitTries = 5.;
+   /// number of threads the program will run on
+   unsigned int numberOfThreads;
 }
 
 #endif /* M2_IDENT_FIT_HPP */
