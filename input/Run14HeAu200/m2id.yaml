@@ -3,102 +3,94 @@
 status: m2id # required field for checking the file application
 run_name: Run14HeAu200 # required field for searching main.yaml
 means_vs_pt_fit_func: "pol1(0)"
-sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))*[7]"
+sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 K1: 104. # integral of a magnetic field [mrad*GeV]
 detectors:
 - 
   name: TOFe
   sigmalized_identification_range: 2
   L: 5.2 # distance to the detector
-  sigma_alpha: 0.9 # DC angular resolution [mrad]
-  sigma_ms: 1.0 # multiple scattering resolution [mrad*GeV]
-  sigma_t: 148. # timing resolution [ps]
-  # 3 fields below are for protons only due to protons signal being wider than others
-  p_sigma_alpha: 0.9
-  p_sigma_ms: 1.0
-  p_sigma_t: 148.
+  sigma_alpha: 1.0 # DC angular resolution [mrad]
+  sigma_ms: 0.9 # multiple scattering resolution [mrad*GeV]
+  sigma_t: 150. # timing resolution [ps]
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  proton_bg_func: "0.*[0]" # no bg
+  proton_bg_func: "exp(pol1(0))"
   pi+_pt_bounds: [0.5, 3.]
   k+_pt_bounds: [0.3, 1.8]
-  p_pt_bounds: [0.5, 2.8]
+  p_pt_bounds: [0.5, 3.0]
   pi-_pt_bounds: [0.5, 3.]
   k-_pt_bounds: [0.3, 1.8]
-  pbar_pt_bounds: [0.3, 2.8]
-  is_calibrated: false
+  pbar_pt_bounds: [0.3, 3.0]
+  is_calibrated: true
 - 
   name: TOFw
   sigmalized_identification_range: 2
   L: 4.95
-  sigma_alpha: 0.9 
-  sigma_ms: 1. 
-  sigma_t: 84. 
-  p_widening_factor: 1.1
-  pion_bg_func: "0.*[0]" # no bg
-  kaon_bg_func: "0.*[0]" # no bg
-  proton_bg_func: "0.*[0]" # no bg
-  pi+_pt_bounds: [0.3, 2.]
-  k+_pt_bounds: [0.3, 2.]
-  p_pt_bounds: [0.3, 2.]
-  pi-_pt_bounds: [0.3, 2.]
-  k-_pt_bounds: [0.3, 2.]
-  pbar_pt_bounds: [0.3, 2.]
-  is_calibrated: false
+  sigma_alpha: 0.88
+  sigma_ms: 0.95 
+  sigma_t: 94. 
+  pion_bg_func: "exp(pol1(0))"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(pol1(0))"
+  pi+_pt_bounds: [0.5, 3.0]
+  k+_pt_bounds: [0.3, 2.4]
+  p_pt_bounds: [0.5, 3.0]
+  pi-_pt_bounds: [0.5, 3.0]
+  k-_pt_bounds: [0.6, 2.2]
+  pbar_pt_bounds: [0.4, 3.0]
+  is_calibrated: true
 - 
   name: EMCale2
-  sigmalized_identification_range: 1
+  sigmalized_identification_range: 2
   L: 5.22
-  sigma_alpha: 0.835 
-  sigma_ms: 2.3 
-  sigma_t: 500. 
-  p_widening_factor: 1.1
-  pion_bg_func: "0.*[0]" # no bg
+  sigma_alpha: 1.0
+  sigma_ms: 1.1
+  sigma_t: 550. 
+  pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
-  pi+_pt_bounds: [0.3, 2.]
-  k+_pt_bounds: [0.3, 2.]
-  p_pt_bounds: [0.3, 2.]
-  pi-_pt_bounds: [0.3, 2.]
-  k-_pt_bounds: [0.3, 2.]
-  pbar_pt_bounds: [0.3, 2.]
-  is_calibrated: false
+  pi+_pt_bounds: [0.5, 1.7]
+  k+_pt_bounds: [0.3, 0.9]
+  p_pt_bounds: [0.6, 1.7]
+  pi-_pt_bounds: [0.5, 1.5]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.4, 1.6]
+  is_calibrated: true
 - 
   name: EMCale3
-  sigmalized_identification_range: 1
+  sigmalized_identification_range: 2
   L: 5.22
-  sigma_alpha: 0.835 
-  sigma_ms: 2.4 
-  sigma_t: 520. 
-  p_widening_factor: 1.1
-  pion_bg_func: "0.*[0]" # no bg
+  sigma_alpha: 1.0
+  sigma_ms: 1.6
+  sigma_t: 580. 
+  pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
-  pi+_pt_bounds: [0.3, 2.]
-  k+_pt_bounds: [0.3, 2.]
-  p_pt_bounds: [0.3, 2.]
-  pi-_pt_bounds: [0.3, 2.]
-  k-_pt_bounds: [0.3, 2.]
-  pbar_pt_bounds: [0.3, 2.]
-  is_calibrated: false
+  pi+_pt_bounds: [0.5, 1.6]
+  k+_pt_bounds: [0.4, 0.8]
+  p_pt_bounds: [0.6, 1.7]
+  pi-_pt_bounds: [0.5, 1.5]
+  k-_pt_bounds: [0.3, 0.8]
+  pbar_pt_bounds: [0.3, 1.6]
+  is_calibrated: true
 - 
   name: EMCalw0
-  sigmalized_identification_range: 1
+  sigmalized_identification_range: 2
   L: 5.22
-  sigma_alpha: 0.9 
-  sigma_ms: 1.8 
-  sigma_t: 480. 
-  p_widening_factor: 1.1
-  pion_bg_func: "0.*[0]" # no bg
+  sigma_alpha: 1.1
+  sigma_ms: 1.6
+  sigma_t: 600
+  pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
-  pi+_pt_bounds: [0.3, 2.]
-  k+_pt_bounds: [0.3, 2.]
-  p_pt_bounds: [0.3, 2.]
-  pi-_pt_bounds: [0.3, 2.]
-  k-_pt_bounds: [0.3, 2.]
-  pbar_pt_bounds: [0.3, 2.]
-  is_calibrated: false
+  pi+_pt_bounds: [0.4, 2.0]
+  k+_pt_bounds: [0.4, 0.8]
+  p_pt_bounds: [0.6, 2.0]
+  pi-_pt_bounds: [0.4, 2.0]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.3, 2.0]
+  is_calibrated: true
 - 
   name: EMCalw1
   sigmalized_identification_range: 1
@@ -106,7 +98,6 @@ detectors:
   sigma_alpha: 0.9 
   sigma_ms: 1.7 
   sigma_t: 480. 
-  p_widening_factor: 1.1
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -124,7 +115,6 @@ detectors:
   sigma_alpha: 0.9 
   sigma_ms: 1.5 
   sigma_t: 480. 
-  p_widening_factor: 1.1
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"
@@ -142,7 +132,6 @@ detectors:
   sigma_alpha: 0.9 
   sigma_ms: 2. 
   sigma_t: 480. 
-  p_widening_factor: 1.1
   pion_bg_func: "0.*[0]" # no bg
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(pol1(0))"

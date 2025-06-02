@@ -12,7 +12,6 @@
 #include <cmath>
 #include <string>
 #include <filesystem>
-#include <thread>
 
 #include "TROOT.h"
 #include "TError.h"
@@ -63,11 +62,9 @@ namespace M2IdentFit
        * @param[in] detector yaml data node containing all important information about the given detector
        * @param[in] isPositive shows whether the track is positive 
        * @param[in] color color of an approximated function that will be drawn onto the canvas
-       * @param[in] isP shows whether the track is from protons
        */
       FitParameters(const std::string& particleName, const double massSquared, 
-                    const YAML::Node& detector, const bool isPositive, const Color_t color,
-                    const bool isP = false);
+                    const YAML::Node& detector, const bool isPositive, const Color_t color);
       /// name of a given particle specie
       std::string name;
       /// mass squared of a given particle specie

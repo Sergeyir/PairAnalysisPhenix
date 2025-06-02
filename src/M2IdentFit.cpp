@@ -21,17 +21,17 @@ int main(int argc, char **argv)
    if (argc < 2 || argc > 3) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/M2IdentFit ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
+      errMsg += "parameter(s) were provided \n Usage: bin/M2IdentFit \
+                 inputYAMLName detectorName=all* \n\
+                 * you can specify the name of a detector you want for this program to run for or \
+                 to leave it empty for the program to run over all detectors that are specified in \
+                 the input file";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
  
-   if (argc == 2) numberOfThreads = std::thread::hardware_concurrency();
-   else numberOfThreads = std::stoi(argv[2]);
-
-   ROOT::EnableImplicitMT(numberOfThreads);
+   ROOT::EnableImplicitMT();
 
    inputYAMLM2Id.OpenFile(argv[1], "m2id");
    inputYAMLM2Id.CheckStatus("m2id");
@@ -66,10 +66,11 @@ int main(int argc, char **argv)
 
    for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
    {
+      if (argc == 3 && detector["name"].as<std::string>() != 
+          static_cast<std::string>(argv[2])) continue;
       system(("mkdir -p " + outputDir + "/" + detector["name"].as<std::string>()).c_str());
       PerformFitsForDetector(detector, inputYAMLMain["centrality_min"].as<double>(), 
                              inputYAMLMain["centrality_max"].as<double>());
-      break;
    }
 }
 
@@ -82,7 +83,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    // container that holds fit parameters and yields for K^+
    FitParameters fitKPlus("K+", pow(0.493677, 2), detector, true, kGreen);
    // container that holds fit parameters and yields for protons
-   FitParameters fitP("p", pow(0.938272, 2), detector, true, kAzure, true);
+   FitParameters fitP("p", pow(0.938272, 2), detector, true, kAzure);
    // container that holds fit parameters and yields for pi^-
    FitParameters fitPiMinus("pi-", pow(0.139570, 2), detector, false, kRed);
    // container that holds fit parameters and yields for K^-
@@ -119,8 +120,9 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
       const double pT = (binPTMin + binPTMax)/2.;
 
-      if (binPTMin + 1e-15 < pTMin) continue;
-      if (binPTMax - 1e-15 > pTMax) break;
+      if (binPTMin + 1e-3 < m2DistrPos->GetXaxis()->GetBinLowEdge(1)) continue;
+      if (binPTMax - 1e-3 > m2DistrPos->GetXaxis()->
+          GetBinLowEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
 
       const std::string pTRangeName = 
          CppTools::DtoStr(pTBin["min"].as<double>(), 1) + " < p_{T} < " +
@@ -133,6 +135,12 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                      m2DistrPos->GetXaxis()->FindBin(centralityMin + 1e-15),
                      m2DistrPos->GetXaxis()->FindBin(centralityMax - 1e-15));
 
+      if (m2DistrPosProj->Integral(1, m2DistrPosProj->GetXaxis()->GetNbins()) < 1.)
+      {
+         CppTools::PrintWarning("Histogram for positive tracks is empty for " + pTRangeName +
+                                " in " + detector["name"].as<std::string>());
+      }
+
       TH1D *m2DistrNegProj = m2DistrNeg->
          ProjectionY((m2DistrNeg->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
                      m2DistrNeg->GetXaxis()->FindBin(binPTMin + 1e-15),
@@ -140,6 +148,11 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                      m2DistrNeg->GetXaxis()->FindBin(centralityMin + 1e-15),
                      m2DistrNeg->GetXaxis()->FindBin(centralityMax - 1e-15));
 
+      if (m2DistrNegProj->Integral(1, m2DistrPosProj->GetXaxis()->GetNbins()) < 1.)
+      {
+         CppTools::PrintWarning("Histogram for negative tracks is empty for " + pTRangeName +
+                                " in " + detector["name"].as<std::string>());
+      }
 
       TCanvas m2SingleFitCanv(("m2 pos and neg fits" + pTRangeName).c_str(), "", 900, 900);
 		m2SingleFitCanv.Divide(1, 2);
@@ -300,81 +313,89 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitPBar.sigmasVsPT.Fit(fitPBar.sigmasVsPTFit.get(), "RQMBN");
    fitPiMinus.sigmasVsPT.Fit(fitPiMinus.sigmasVsPTFit.get(), "RQMBN");
    fitKMinus.sigmasVsPT.Fit(fitKMinus.sigmasVsPTFit.get(), "RQMBN");
+   fitP.sigmasVsPT.Fit(fitP.sigmasVsPTFit.get(), "RQMBN");
+
+   if (!detector["is_calibrated"].as<bool>())
+   {
+      CppTools:: PrintInfo("From apporximations for " + detector["name"].as<std::string>());
+      CppTools::Print(" pions: sigma_alpha=" + 
+                      std::to_string(CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(2),
+                                                       fitPiMinus.sigmasVsPTFit->GetParameter(2)))+ 
+                      ", sigma_ms=" + 
+                      std::to_string(CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(3),
+                                                       fitPiMinus.sigmasVsPTFit->GetParameter(3))) + 
+                      ", sigma_t=" + 
+                      std::to_string(CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(4),
+                                                       fitPiMinus.sigmasVsPTFit->GetParameter(4))));
+      CppTools::Print(" kaons: sigma_alpha=" + 
+                      std::to_string(CppTools::Average(fitKPlus.sigmasVsPTFit->GetParameter(2),
+                                                       fitKMinus.sigmasVsPTFit->GetParameter(2)))+ 
+                      ", sigma_ms=" + 
+                      std::to_string(CppTools::Average(fitKPlus.sigmasVsPTFit->GetParameter(3),
+                                                       fitKMinus.sigmasVsPTFit->GetParameter(3))) + 
+                      ", sigma_t=" + 
+                      std::to_string(CppTools::Average(fitKPlus.sigmasVsPTFit->GetParameter(4),
+                                                       fitKMinus.sigmasVsPTFit->GetParameter(4))));
+      CppTools::Print(" p and pbar: sigma_alpha=" + 
+                      std::to_string(CppTools::Average(fitP.sigmasVsPTFit->GetParameter(2),
+                                                       fitPBar.sigmasVsPTFit->GetParameter(2)))+ 
+                      ", sigma_ms=" + 
+                      std::to_string(CppTools::Average(fitP.sigmasVsPTFit->GetParameter(3),
+                                                       fitPBar.sigmasVsPTFit->GetParameter(3))) + 
+                      ", sigma_t=" + 
+                      std::to_string(CppTools::Average(fitP.sigmasVsPTFit->GetParameter(4),
+                                                       fitPBar.sigmasVsPTFit->GetParameter(4))));
+   }
 
    double sigmaAlpha = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(2), 
                                          fitPiMinus.sigmasVsPTFit->GetParameter(2), 
                                          fitKPlus.sigmasVsPTFit->GetParameter(2), 
-                                         fitKMinus.sigmasVsPTFit->GetParameter(2), 
+                                         fitKMinus.sigmasVsPTFit->GetParameter(2),
+                                         fitP.sigmasVsPTFit->GetParameter(2),
                                          fitPBar.sigmasVsPTFit->GetParameter(2));
 
    double sigmaMS = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(3), 
                                       fitPiMinus.sigmasVsPTFit->GetParameter(3), 
                                       fitKPlus.sigmasVsPTFit->GetParameter(3), 
                                       fitKMinus.sigmasVsPTFit->GetParameter(3), 
+                                      fitP.sigmasVsPTFit->GetParameter(3),
                                       fitPBar.sigmasVsPTFit->GetParameter(3));
 
    double sigmaT = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(4), 
                                      fitPiMinus.sigmasVsPTFit->GetParameter(4), 
                                      fitKPlus.sigmasVsPTFit->GetParameter(4), 
                                      fitKMinus.sigmasVsPTFit->GetParameter(4), 
+                                     fitP.sigmasVsPTFit->GetParameter(4),
                                      fitPBar.sigmasVsPTFit->GetParameter(4));
-
-   // taking into account protons signal widening
-   fitP.sigmasVsPTFit->SetParLimits(2, sigmaAlpha/1.05, sigmaAlpha*1.05);
-   fitP.sigmasVsPTFit->SetParLimits(3, sigmaMS/1.05, sigmaMS*1.05);
-   fitP.sigmasVsPTFit->SetParLimits(4, sigmaT/1.05, sigmaT*1.05);
-
-   fitP.sigmasVsPT.Fit(fitP.sigmasVsPTFit.get(), "RQMBN");
-
-   // recalculating parameters with protons
-   sigmaAlpha = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(2), 
-                                  fitPiMinus.sigmasVsPTFit->GetParameter(2), 
-                                  fitKPlus.sigmasVsPTFit->GetParameter(2), 
-                                  fitKMinus.sigmasVsPTFit->GetParameter(2), 
-                                  fitP.sigmasVsPTFit->GetParameter(2), 
-                                  fitPBar.sigmasVsPTFit->GetParameter(2));
-
-   sigmaMS = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(3), 
-                               fitPiMinus.sigmasVsPTFit->GetParameter(3), 
-                               fitKPlus.sigmasVsPTFit->GetParameter(3), 
-                               fitKMinus.sigmasVsPTFit->GetParameter(3), 
-                               fitP.sigmasVsPTFit->GetParameter(3), 
-                               fitPBar.sigmasVsPTFit->GetParameter(3));
-
-   sigmaT = CppTools::Average(fitPiPlus.sigmasVsPTFit->GetParameter(4), 
-                              fitPiMinus.sigmasVsPTFit->GetParameter(4), 
-                              fitKPlus.sigmasVsPTFit->GetParameter(4), 
-                              fitKMinus.sigmasVsPTFit->GetParameter(4), 
-                              fitP.sigmasVsPTFit->GetParameter(4), 
-                              fitPBar.sigmasVsPTFit->GetParameter(4));
 
    fitPiPlus.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
    fitKPlus.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
-   fitP.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
    fitPiMinus.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
    fitKMinus.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
+   fitP.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
    fitPBar.sigmasVsPTFit->FixParameter(2, sigmaAlpha);
 
    fitPiPlus.sigmasVsPTFit->FixParameter(3, sigmaMS);
    fitKPlus.sigmasVsPTFit->FixParameter(3, sigmaMS);
-   fitP.sigmasVsPTFit->FixParameter(3, sigmaMS);
    fitPiMinus.sigmasVsPTFit->FixParameter(3, sigmaMS);
    fitKMinus.sigmasVsPTFit->FixParameter(3, sigmaMS);
+   fitP.sigmasVsPTFit->FixParameter(3, sigmaMS);
    fitPBar.sigmasVsPTFit->FixParameter(3, sigmaMS);
 
    fitPiPlus.sigmasVsPTFit->FixParameter(4, sigmaT);
    fitKPlus.sigmasVsPTFit->FixParameter(4, sigmaT);
-   fitP.sigmasVsPTFit->FixParameter(4, sigmaT);
    fitPiMinus.sigmasVsPTFit->FixParameter(4, sigmaT);
    fitKMinus.sigmasVsPTFit->FixParameter(4, sigmaT);
+   fitP.sigmasVsPTFit->FixParameter(4, sigmaT);
    fitPBar.sigmasVsPTFit->FixParameter(4, sigmaT);
 
-   CppTools::PrintInfo("Suggested new parameters for " + detector["name"].as<std::string>() + 
-                       ":\n sigma_alpha=" + std::to_string(sigmaAlpha) + 
-                       ", sigma_ms=" + std::to_string(sigmaMS) + 
-                       ", sigma_t=" + std::to_string(sigmaT) + 
-                       ", p_widening_factor=" + 
-                       std::to_string(fitP.sigmasVsPTFit->GetParameter(7)));
+   if (!detector["is_calibrated"].as<bool>())
+   {
+      CppTools:: PrintInfo("Suggested new parameters for " + detector["name"].as<std::string>() + 
+                           ":\n sigma_alpha=" + std::to_string(sigmaAlpha) + 
+                           ", sigma_ms=" + std::to_string(sigmaMS) + 
+                           ", sigma_t=" + std::to_string(sigmaT));
+   }
 
    TCanvas fitParVsPTCanv("m2 id fit parameters vs pT", "", 1000, 1000);
 
@@ -393,7 +414,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitParVsPTCanv.cd(1);
    gPad->SetPad(0.04, 0.51, 0.52, 1.);
 
-   gPad->SetLeftMargin(0.135);
+   gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
    DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1., 
@@ -411,7 +432,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitParVsPTCanv.cd(2);
    gPad->SetPad(0.52, 0.51, 1., 1.);
 
-   gPad->SetLeftMargin(0.135);
+   gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
    DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
@@ -429,7 +450,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitParVsPTCanv.cd(3);
    gPad->SetPad(0.04, 0.02, 0.52, 0.51);
 
-   gPad->SetLeftMargin(0.135);
+   gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
    DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1., 
@@ -447,7 +468,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitParVsPTCanv.cd(4);
    gPad->SetPad(0.52, 0.02, 1., 0.51);
 
-   gPad->SetLeftMargin(0.135);
+   gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
    DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
@@ -504,11 +525,17 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
    m2Fit.SetParLimits(3, 0., massDistr->GetBinContent(massDistr->GetMaximumBin()));
    m2Fit.SetParLimits(4, fitPar.m2 - fitPar.sigmasVsPTFit->Eval(pT), 
                       fitPar.m2 + fitPar.sigmasVsPTFit->Eval(pT));
-   m2Fit.SetParLimits(5, fitPar.sigmasVsPTFit->Eval(pT)/1.2, 
-                      fitPar.sigmasVsPTFit->Eval(pT)*1.2);
 
-   m2FitGaus.SetRange(fitPar.m2 - fitPar.sigmasVsPTFit->Eval(pT)*sigmalizedYieldExtractionRange, 
-                      fitPar.m2 + fitPar.sigmasVsPTFit->Eval(pT)*sigmalizedYieldExtractionRange);
+   if (!fitPar.isCalibrated)
+   {
+      m2Fit.SetParLimits(5, fitPar.sigmasVsPTFit->Eval(pT)/1.2, 
+                         fitPar.sigmasVsPTFit->Eval(pT)*1.2);
+   }
+   else
+   {
+      m2Fit.SetParLimits(5, fitPar.sigmasVsPTFit->Eval(pT)/1.05, 
+                         fitPar.sigmasVsPTFit->Eval(pT)*1.05);
+   }
 
    massDistr->Fit(&m2Fit, "RQMBN");
 
@@ -520,8 +547,16 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
                          m2Fit.GetParameter(5)*(0.25 + 0.25/static_cast<double>(i*i*i)),
                          m2Fit.GetParameter(4) + 
                          m2Fit.GetParameter(5)*(0.25 + 0.25/static_cast<double>(i*i*i)));
-      m2Fit.SetParLimits(5, m2Fit.GetParameter(5)/(1. + 0.25/static_cast<double>(i*i*i)),
-                         m2Fit.GetParameter(5)*(1. + 0.25/static_cast<double>(i*i*i)));
+      if (!fitPar.isCalibrated)
+      {
+         m2Fit.SetParLimits(5, m2Fit.GetParameter(5)/(1. + 0.25/static_cast<double>(i*i*i)),
+                            m2Fit.GetParameter(5)*(1. + 0.25/static_cast<double>(i*i*i)));
+      }
+      else
+      {
+         m2Fit.SetParLimits(5, m2Fit.GetParameter(5)/(1. + 0.025/static_cast<double>(i*i*i)),
+                            m2Fit.GetParameter(5)*(1. + 0.025/static_cast<double>(i*i*i)));
+      }
       m2Fit.SetRange(m2Fit.GetParameter(4) - m2Fit.GetParameter(5)*
                      (sigmalizedYieldExtractionRange + 0.25/static_cast<double>(i*i*i)),
                      m2Fit.GetParameter(4) + m2Fit.GetParameter(5)*
@@ -549,10 +584,8 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
 
    m2Fit.SetRange(m2Fit.GetParameter(4) - m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange, 
                   m2Fit.GetParameter(4) + m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
-   m2FitGaus.SetRange(m2Fit.GetParameter(4) - 
-                      m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange, 
-                      m2Fit.GetParameter(4) + 
-                      m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
+   m2FitGaus.SetRange(m2Fit.GetParameter(4) - m2Fit.GetParameter(5)*5., 
+                      m2Fit.GetParameter(4) + m2Fit.GetParameter(5)*5.);
    m2FitBG.SetRange(m2Fit.GetParameter(4) - m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange,
                     m2Fit.GetParameter(4) + m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
 
@@ -630,7 +663,7 @@ void M2IdentFit::DrawFrame(const double xMin, const double yMin,
    frame->GetYaxis()->SetTitle(yTitle.c_str());
 
    frame->GetYaxis()->SetTitleOffset(1.);
-   frame->GetYaxis()->SetTitleOffset(1.25);
+   frame->GetYaxis()->SetTitleOffset(1.5);
 
    frame->GetXaxis()->SetLabelSize(0.05);
    frame->GetYaxis()->SetLabelSize(0.05);
@@ -643,7 +676,7 @@ void M2IdentFit::DrawFrame(const double xMin, const double yMin,
 
 M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const double massSquared,
                                          const YAML::Node& detector, const bool isPositive, 
-                                         const Color_t color, const bool isP)
+                                         const Color_t color)
 {
    name = particleName;
    m2 = massSquared;
@@ -679,12 +712,9 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
    sigmasVsPTFit->SetLineStyle(2);
 
    // expected parameters
-   const double sigmaAlpha = !isP ? detector["sigma_alpha"].as<double>() :
-                                    detector["p_sigma_alpha"].as<double>();
-   const double sigmaMS = !isP ? detector["sigma_ms"].as<double>() :
-                                 detector["p_sigma_ms"].as<double>();
-   const double sigmaT = !isP ? detector["sigma_t"].as<double>() :
-                                 detector["p_sigma_t"].as<double>();
+   const double sigmaAlpha = detector["sigma_alpha"].as<double>();
+   const double sigmaMS = detector["sigma_ms"].as<double>();
+   const double sigmaT = detector["sigma_t"].as<double>();
 
    meansVsPTFit->SetParameter(0, m2);
    meansVsPTFit->SetParameter(1, 0.);
@@ -709,24 +739,6 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
       sigmasVsPTFit->FixParameter(2, sigmaAlpha);
       sigmasVsPTFit->FixParameter(3, sigmaMS);
       sigmasVsPTFit->FixParameter(4, sigmaT);
-   }
-
-   if (!isP)
-   {
-      sigmasVsPTFit->FixParameter(7, 1.);
-   }
-   else
-   {
-      if (isCalibrated)
-      {
-         sigmasVsPTFit->FixParameter(7, detector["p_widening_factor"].as<double>());
-      }
-      else
-      {
-         sigmasVsPTFit->SetParameter(7, detector["p_widening_factor"].as<double>());
-         sigmasVsPTFit->SetParLimits(7, sigmasVsPTFit->GetParameter(7)/1.2, 
-                                     sigmasVsPTFit->GetParameter(7)*1.2);
-      }
    }
 
    rawYieldsOutputFile.open(rawYieldsDir + "/" + name + ".txt");
