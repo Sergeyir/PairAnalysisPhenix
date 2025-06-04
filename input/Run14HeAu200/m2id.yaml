@@ -14,14 +14,14 @@ detectors:
   sigma_ms: 0.9 # multiple scattering resolution [mrad*GeV]
   sigma_t: 150. # timing resolution [ps]
   pion_bg_func: "exp(pol1(0))"
-  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  proton_bg_func: "exp(pol1(0))"
-  pi+_pt_bounds: [0.5, 3.]
-  k+_pt_bounds: [0.3, 1.8]
-  p_pt_bounds: [0.5, 3.0]
-  pi-_pt_bounds: [0.5, 3.]
-  k-_pt_bounds: [0.3, 1.8]
-  pbar_pt_bounds: [0.3, 3.0]
+  kaon_bg_func: "exp(pol1(0))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.5, 3.5]
+  k+_pt_bounds: [0.3, 2.2]
+  p_pt_bounds: [0.5, 3.5]
+  pi-_pt_bounds: [0.5, 3.5]
+  k-_pt_bounds: [0.3, 2.2]
+  pbar_pt_bounds: [0.4, 3.5]
   is_calibrated: true
 - 
   name: TOFw
@@ -31,14 +31,14 @@ detectors:
   sigma_ms: 0.95 
   sigma_t: 94. 
   pion_bg_func: "exp(pol1(0))"
-  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  proton_bg_func: "exp(pol1(0))"
-  pi+_pt_bounds: [0.5, 3.0]
-  k+_pt_bounds: [0.3, 2.4]
-  p_pt_bounds: [0.5, 3.0]
-  pi-_pt_bounds: [0.5, 3.0]
-  k-_pt_bounds: [0.6, 2.2]
-  pbar_pt_bounds: [0.4, 3.0]
+  kaon_bg_func: "exp(pol1(0))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.5, 4.5]
+  k+_pt_bounds: [0.3, 2.5]
+  p_pt_bounds: [0.4, 3.0]
+  pi-_pt_bounds: [0.5, 4.5]
+  k-_pt_bounds: [0.6, 3.0]
+  pbar_pt_bounds: [0.6, 2.5]
   is_calibrated: true
 - 
   name: EMCale2
@@ -161,10 +161,8 @@ pt_bins: # [GeV/c]
   - {min: 1.8, max: 1.9}
   - {min: 1.9, max: 2.0}
   - {min: 2.0, max: 2.2}
-  - {min: 2.2, max: 2.4}
-  - {min: 2.4, max: 2.6}
-  - {min: 2.6, max: 2.8}
-  - {min: 2.8, max: 3.0}
+  - {min: 2.2, max: 2.5}
+  - {min: 2.5, max: 3.0}
   - {min: 3.0, max: 3.5}
   - {min: 3.5, max: 4.0}
   - {min: 4.0, max: 4.5}

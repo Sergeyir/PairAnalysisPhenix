@@ -122,7 +122,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
       if (binPTMin + 1e-3 < m2DistrPos->GetXaxis()->GetBinLowEdge(1)) continue;
       if (binPTMax - 1e-3 > m2DistrPos->GetXaxis()->
-          GetBinLowEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
+          GetBinUpEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
 
       const std::string pTRangeName = 
          CppTools::DtoStr(pTBin["min"].as<double>(), 1) + " < p_{T} < " +
