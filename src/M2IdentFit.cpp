@@ -64,6 +64,26 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(0);
    gStyle->SetOptStat(0);
 
+   // calculating the number of iterations needed for this program
+   // this step is needed by progress bar
+   for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
+   {
+      if (argc == 3 && detector["name"].as<std::string>() != 
+          static_cast<std::string>(argv[2])) continue;
+
+      TH3F* m2DistrPos = static_cast<TH3F *>
+         (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + ", charge>0").c_str()));
+
+      for (const YAML::Node& pTBin : inputYAMLM2Id["pt_bins"])
+      {
+         if (pTBin["min"].as<double>() + 1e-3 < m2DistrPos->GetXaxis()->GetBinLowEdge(1)) continue;
+         if (pTBin["max"].as<double>() - 1e-3 > m2DistrPos->GetXaxis()->
+             GetBinUpEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
+         numberOfIterations++;
+      }
+   }
+   numberOfIterations++;
+
    for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
    {
       if (argc == 3 && detector["name"].as<std::string>() != 
@@ -71,7 +91,10 @@ int main(int argc, char **argv)
       system(("mkdir -p " + outputDir + "/" + detector["name"].as<std::string>()).c_str());
       PerformFitsForDetector(detector, inputYAMLMain["centrality_min"].as<double>(), 
                              inputYAMLMain["centrality_max"].as<double>());
+      pBar.HandleOutput(" " + detector["name"].as<std::string>() + " done");
    }
+   pBar.Clear();
+   CppTools::PrintInfo("M2IdentFit has finished running succesfully");
 }
 
 void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector, 
@@ -113,6 +136,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
    for (const YAML::Node& pTBin : inputYAMLM2Id["pt_bins"])
    {
+      pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
+
       // minium pT for the current pT bin
       const double binPTMin = pTBin["min"].as<double>();
       // maximum pT for the current pT bin
@@ -263,6 +288,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                              detector["name"].as<std::string>() + "/" + 
                              CppTools::DtoStr(pTBin["min"].as<double>(), 1) + "-" +
                              CppTools::DtoStr(pTBin["max"].as<double>(), 1));
+      numberOfCalls++;
    }
 
    fitPiPlus.meansVsPTFit->SetRange(detector["pi+_pt_bounds"][0].as<double>() - 0.01, 
@@ -506,6 +532,36 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    fitPBar.extractionRangeLowVsPT.Clone()->Draw("P");
    fitPBar.extractionRangeUpVsPT.Clone()->Draw("P");
 
+   // writing parameters in output file
+   if (detector["is_calibrated"].as<bool>())
+   {
+      std::ofstream 
+         parametersOutputFile(parametersDir + "/" + detector["name"].as<std::string>() + ".txt");
+
+      parametersOutputFile << fitPiPlus.meansVsPTFit->GetParameter(0) << " " << 
+                             fitPiPlus.meansVsPTFit->GetParameter(1) << std::endl;;
+      parametersOutputFile << fitPiMinus.meansVsPTFit->GetParameter(0) << " " << 
+                             fitPiMinus.meansVsPTFit->GetParameter(1) << std::endl;
+      parametersOutputFile << fitKPlus.meansVsPTFit->GetParameter(0) << " " << 
+                             fitKPlus.meansVsPTFit->GetParameter(1) << std::endl;;
+      parametersOutputFile << fitKMinus.meansVsPTFit->GetParameter(0) << " " << 
+                             fitKMinus.meansVsPTFit->GetParameter(1) << std::endl;
+      parametersOutputFile << fitP.meansVsPTFit->GetParameter(0) << " " << 
+                             fitP.meansVsPTFit->GetParameter(1) << std::endl;;
+      parametersOutputFile << fitPBar.meansVsPTFit->GetParameter(0) << " " << 
+                             fitPBar.meansVsPTFit->GetParameter(1) << std::endl;
+      parametersOutputFile << sigmaAlpha << " " << sigmaMS << " " << sigmaT << " " <<
+                             fitP.sigmasVsPTFit->GetParameter(5) << " " <<
+                             fitP.sigmasVsPTFit->GetParameter(6);
+   }
+   else
+   {
+      pBar.HandleOutput(CppTools::INFO_PROMPT, "Detector " + detector["name"].as<std::string>() + 
+                        " was specified as not being calibrated; change \"is_calibrated\" field\
+                        to true in file " + inputYAMLM2Id.GetFileName() + 
+                        " for the approximation parameters to be written");
+   }
+
    ROOTTools::PrintCanvas(&m2IdVsPTCanv, outputDir + "/" + 
                           detector["name"].as<std::string>() + "/ms");
 }
@@ -518,13 +574,21 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
    TF1 m2FitGaus("fg fit", "gaus");
    TF1 m2Fit("bg+fg fit", (funcBG + "+ gaus(3)").c_str());
 
-   m2Fit.SetParameter(3, massDistr->GetBinContent(massDistr->GetXaxis()->FindBin(fitPar.m2)));
-   m2Fit.SetParameter(4, fitPar.m2);
+   m2Fit.SetParameter(3, massDistr->GetBinContent(massDistr->GetXaxis()->
+                                                  FindBin(fitPar.meansVsPTFit->Eval(pT))));
+   m2Fit.SetParameter(4, fitPar.meansVsPTFit->Eval(pT));
    m2Fit.SetParameter(5, fitPar.sigmasVsPTFit->Eval(pT));
 
    m2Fit.SetParLimits(3, 0., massDistr->GetBinContent(massDistr->GetMaximumBin()));
-   m2Fit.SetParLimits(4, fitPar.m2 - fitPar.sigmasVsPTFit->Eval(pT), 
-                      fitPar.m2 + fitPar.sigmasVsPTFit->Eval(pT));
+   if (!fitPar.useM2MeansPrevFit)
+   {
+      m2Fit.SetParLimits(4, fitPar.meansVsPTFit->Eval(pT) - fitPar.sigmasVsPTFit->Eval(pT)/2., 
+                         fitPar.meansVsPTFit->Eval(pT) + fitPar.sigmasVsPTFit->Eval(pT)/2.);
+   }
+   else
+   {
+      m2Fit.SetParLimits(4, fitPar.meansVsPTFit->Eval(pT)/1.1, fitPar.meansVsPTFit->Eval(pT)*1.1);
+   }
 
    if (!fitPar.isCalibrated)
    {
@@ -679,11 +743,19 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
                                          const Color_t color)
 {
    name = particleName;
+
+   if (name != "pi+" && name != "pi-" && name != "K+" && 
+       name != "K-" && name != "p" && name != "pbar") 
+   {
+      CppTools::PrintError("Unknown charged hadron " + name);
+   }
+
    m2 = massSquared;
    this->isPositive = isPositive;
    this->color = color;
 
    isCalibrated = detector["is_calibrated"].as<bool>();
+   useM2MeansPrevFit = detector["use_m2_mean_par"].as<bool>();
 
    meansVsPTFit = 
       std::make_unique<TF1>(("means vs pT fit " + name).c_str(),
@@ -716,11 +788,45 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
    const double sigmaMS = detector["sigma_ms"].as<double>();
    const double sigmaT = detector["sigma_t"].as<double>();
 
-   meansVsPTFit->SetParameter(0, m2);
-   meansVsPTFit->SetParameter(1, 0.);
+   if (!useM2MeansPrevFit)
+   {
+      meansVsPTFit->SetParameter(0, m2);
+      meansVsPTFit->SetParameter(1, 0.);
+      sigmasVsPTFit->SetParameter(0, m2);
+      sigmasVsPTFit->SetParameter(1, 0.);
+   }
+   else
+   {
+      std::ifstream parametersInputFile("data/Parameters/M2Id/" + runName + "/" + 
+                                        detector["name"].as<std::string>() + ".txt");
+      double tmp[2];
+      parametersInputFile >> tmp[0] >> tmp[1];
+      if (name != "pi+") 
+      {
+         parametersInputFile >> tmp[0] >> tmp[1];
+         if (name != "pi-") 
+         {
+            parametersInputFile >> tmp[0] >> tmp[1];
+            if (name != "K+") 
+            {
+               parametersInputFile >> tmp[0] >> tmp[1];
+               if (name != "K-") 
+               {
+                  parametersInputFile >> tmp[0] >> tmp[1];
+                  if (name != "p") parametersInputFile >> tmp[0] >> tmp[1];
+               }
+            }
+         }
+      }
 
-   sigmasVsPTFit->SetParameter(0, m2);
-   sigmasVsPTFit->SetParameter(1, 0.);
+      for (int i = 0; i < 2; i++)
+      {
+         meansVsPTFit->SetParameter(i, tmp[i]);
+         sigmasVsPTFit->SetParameter(i, tmp[i]);
+         meansVsPTFit->SetParLimits(i, tmp[i]/1.05, tmp[i]*1.05);
+      }
+   }
+
    sigmasVsPTFit->FixParameter(5, K1);
    sigmasVsPTFit->FixParameter(6, detector["L"].as<double>());
 

@@ -82,7 +82,7 @@ namespace SigmalizedResidualsSim
    /// This value will be read and updated from .json calibration input file
    const unsigned int fitNTries = 5;
    /// progress bar
-   ProgressBar pBar("BLOCK1");
+   ProgressBar pBar("BLOCK1", "", PBarColor::BOLD_RED);
    /// Number of calls in an iteration. Needed by pBar
    unsigned long numberOfCalls = 0;
    /// Overal number of iterations. Needed by pBar

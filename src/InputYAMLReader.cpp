@@ -1,13 +1,13 @@
 /** 
  *  @file   InputYAMLReader.cpp 
- *  @brief  Contains declaration of class InputYAMLReader
+ *  @brief  Contains realisation of class InputYAMLReader
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/CalPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef INPUT_READER_CPP
-#define INPUT_READER_CPP
+#ifndef INPUT_YAML_READER_CPP
+#define INPUT_YAML_READER_CPP
 
 #include "../include/InputYAMLReader.hpp"
 
@@ -52,6 +52,11 @@ void InputYAMLReader::CheckStatus(const std::string& status)
    }
 }
 
+std::string InputYAMLReader::GetFileName()
+{
+   return inputFileName;
+}
+
 YAML::Node InputYAMLReader::operator[](const std::string& field)
 {
    return inputFileContents[field];
@@ -59,4 +64,4 @@ YAML::Node InputYAMLReader::operator[](const std::string& field)
 
 InputYAMLReader::~InputYAMLReader() {};
 
-#endif /* INPUT_READER_CPP */
+#endif /* INPUT_YAML_READER_CPP */

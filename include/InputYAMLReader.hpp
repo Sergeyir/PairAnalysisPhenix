@@ -6,8 +6,8 @@
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef INPUT_READER_HPP
-#define INPUT_READER_HPP
+#ifndef INPUT_YAML_READER_HPP
+#define INPUT_YAML_READER_HPP
 
 #include <string>
 #include <filesystem>
@@ -43,6 +43,8 @@ class InputYAMLReader
    void CheckStatus(const std::string& status);
    /// @brief Public access to YAML::Node operator[] associated with the file contents opened with InputYAMLReader object
    YAML::Node operator[](const std::string& field);
+   /// @brief Returns the name of the file that was open
+   std::string GetFileName();
    /// @brief Default destructor
    virtual ~InputYAMLReader();
 
@@ -54,4 +56,4 @@ class InputYAMLReader
    YAML::Node inputFileContents;
 };
 
-#endif /* INPUT_READER_HPP */
+#endif /* INPUT_YAML_READER_HPP */

@@ -33,6 +33,8 @@
 #include "StrTools.hpp"
 #include "Box.hpp"
 
+#include "PBar.hpp"
+
 #include "TCanvasTools.hpp"
 
 #include "InputYAMLReader.hpp"
@@ -73,6 +75,8 @@ namespace M2IdentFit
       bool isPositive;
       /// shows whether the detector was already calibrated
       bool isCalibrated;
+      /// shows whether means are tigthly limited from the previous fits
+      bool useM2MeansPrevFit;
       /// color of lines and markers associated with a given particle
       Color_t color;
       /// means vs pT
@@ -174,6 +178,12 @@ namespace M2IdentFit
    const unsigned int nFitTries = 5.;
    /// number of threads the program will run on
    unsigned int numberOfThreads;
+   /// progress bar
+   ProgressBar pBar("BLOCK1", "", PBarColor::BOLD_RED);
+   /// Number of calls in an iteration. Needed by pBar
+   unsigned short numberOfCalls = 0;
+   /// Overal number of iterations. Needed by pBar
+   unsigned short numberOfIterations = 0;
 }
 
 #endif /* M2_IDENT_FIT_HPP */

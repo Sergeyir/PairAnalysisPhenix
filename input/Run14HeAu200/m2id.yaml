@@ -1,28 +1,35 @@
 # This file contains all important information about m2 identification for Run14HeAuMinBias
 ---
 status: m2id # required field for checking the file application
-run_name: Run14HeAu200 # required field for searching main.yaml
+run_name: Run14HeAu200 # required field for searching for main.yaml
 means_vs_pt_fit_func: "pol1(0)"
 sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 K1: 104. # integral of a magnetic field [mrad*GeV]
 detectors:
 - 
   name: TOFe
-  sigmalized_identification_range: 2
+  # sigmalized range from the mean in which approximation of signals 
+  # in m2 distribution will be performed
+  sigmalized_identification_range: 2 
   L: 5.2 # distance to the detector
   sigma_alpha: 1.0 # DC angular resolution [mrad]
   sigma_ms: 0.9 # multiple scattering resolution [mrad*GeV]
   sigma_t: 150. # timing resolution [ps]
-  pion_bg_func: "exp(pol1(0))"
+  # background is needed to help the approximation
+  pion_bg_func: "exp(pol1(0))" 
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  pi+_pt_bounds: [0.5, 3.5]
+  # minimum and maximum pT for approximation of different particles
+  pi+_pt_bounds: [0.5, 3.5] 
   k+_pt_bounds: [0.3, 2.2]
   p_pt_bounds: [0.5, 3.5]
   pi-_pt_bounds: [0.5, 3.5]
   k-_pt_bounds: [0.3, 2.2]
   pbar_pt_bounds: [0.4, 3.5]
+  # makes sigma_alpha, sigma_ms, and sigma_t tigtly limited around values specified in this file
   is_calibrated: true
+  # makes m2 means tigtly limited around the parameters obtained from the previous fit
+  use_m2_mean_par: true
 - 
   name: TOFw
   sigmalized_identification_range: 2
@@ -40,6 +47,7 @@ detectors:
   k-_pt_bounds: [0.6, 3.0]
   pbar_pt_bounds: [0.6, 2.5]
   is_calibrated: true
+  use_m2_mean_par: true
 - 
   name: EMCale2
   sigmalized_identification_range: 3
@@ -57,6 +65,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.9]
   pbar_pt_bounds: [0.4, 1.6]
   is_calibrated: true
+  use_m2_mean_par: false
 - 
   name: EMCale3
   sigmalized_identification_range: 3
@@ -74,6 +83,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.8]
   pbar_pt_bounds: [0.3, 1.6]
   is_calibrated: true
+  use_m2_mean_par: false
 - 
   name: EMCalw0
   sigmalized_identification_range: 3
@@ -91,6 +101,7 @@ detectors:
   k-_pt_bounds: [0.3, 1.0]
   pbar_pt_bounds: [0.3, 1.8]
   is_calibrated: true
+  use_m2_mean_par: true
 - 
   name: EMCalw1
   sigmalized_identification_range: 3
@@ -105,9 +116,10 @@ detectors:
   k+_pt_bounds: [0.4, 1.]
   p_pt_bounds: [0.6, 2.]
   pi-_pt_bounds: [0.5, 2.]
-  k-_pt_bounds: [0.3, 1.]
+  k-_pt_bounds: [0.3, 0.9]
   pbar_pt_bounds: [0.3, 2.]
   is_calibrated: true
+  use_m2_mean_par: true
 - 
   name: EMCalw2
   sigmalized_identification_range: 3
@@ -125,6 +137,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.9]
   pbar_pt_bounds: [0.3, 1.8]
   is_calibrated: true
+  use_m2_mean_par: true
 - 
   sigmalized_identification_range: 3
   name: EMCalw3
@@ -142,6 +155,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.9]
   pbar_pt_bounds: [0.3, 1.8]
   is_calibrated: true
+  use_m2_mean_par: true
 pt_bins: # [GeV/c]
   - {min: 0.3, max: 0.4}
   - {min: 0.4, max: 0.5}
