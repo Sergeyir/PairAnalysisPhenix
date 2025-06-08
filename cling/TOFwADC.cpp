@@ -15,10 +15,10 @@ void TOFwADC()
    CppTools::CheckInputFile(inputFileName);
    TFile inputFile(inputFileName.c_str());
 
-   TH2F *distrTOFwADC = static_cast<TH2F *>(inputFile.Get("ADC: TOFw"));
+   TH2F *distrTOFwADC = static_cast<TH2F *>(inputFile.Get("ADC, TOFw"));
    if (!distrTOFwADC) 
    {
-      CppTools::PrintError("No histogram named \"ADC: TOFw\" in file: " + inputFileName);
+      CppTools::PrintError("No histogram named \"ADC, TOFw\" in file: " + inputFileName);
    }
 
    const double fullIntegral = 
