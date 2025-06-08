@@ -536,7 +536,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    if (detector["is_calibrated"].as<bool>())
    {
       std::ofstream 
-         parametersOutputFile(parametersDir + "/" + detector["name"].as<std::string>() + ".txt");
+         parametersOutputFile(parametersDir + "/M2Par" + detector["name"].as<std::string>() + ".txt");
 
       parametersOutputFile << fitPiPlus.meansVsPTFit->GetParameter(0) << " " << 
                              fitPiPlus.meansVsPTFit->GetParameter(1) << std::endl;;

@@ -339,7 +339,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         histContainer.heatmapPC3w->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
                      }
                   }
-                  if (!dmCutter.IsDeadPC3(dcarm, pc3z, pc3phi)) isMatchAndGoodPC3 = true;
+                  if (!dmCutter.IsDeadPC3(dcarm, pc3z, pc3phi) &&
+                      !isDeadDCPC1) isMatchAndGoodPC3 = true;
                }
             }
 
