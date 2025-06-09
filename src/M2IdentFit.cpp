@@ -797,7 +797,7 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
    }
    else
    {
-      std::ifstream parametersInputFile("data/Parameters/M2Id/" + runName + "/" + 
+      std::ifstream parametersInputFile("data/Parameters/M2Id/" + runName + "/M2Par" + 
                                         detector["name"].as<std::string>() + ".txt");
       double tmp[2];
       parametersInputFile >> tmp[0] >> tmp[1];

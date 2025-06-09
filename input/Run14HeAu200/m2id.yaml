@@ -4,6 +4,9 @@ status: m2id # required field for checking the file application
 run_name: Run14HeAu200 # required field for searching for main.yaml
 means_vs_pt_fit_func: "pol1(0)"
 sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
+sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
+                             [3]*[3]/([5]*[5])*4.*pol1(0)*pol1(0)*(1. + pol1(0)/(x*x)) + \
+                             [4]*[4]*2.9972e-4*2.9972e-4/([6]*[6])*4.*x*x*(pol1(0) + x*x))"
 K1: 104. # integral of a magnetic field [mrad*GeV]
 detectors:
 - 
@@ -65,7 +68,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.9]
   pbar_pt_bounds: [0.4, 1.6]
   is_calibrated: true
-  use_m2_mean_par: false
+  use_m2_mean_par: true
 - 
   name: EMCale3
   sigmalized_identification_range: 3
@@ -83,7 +86,7 @@ detectors:
   k-_pt_bounds: [0.3, 0.8]
   pbar_pt_bounds: [0.3, 1.6]
   is_calibrated: true
-  use_m2_mean_par: false
+  use_m2_mean_par: true
 - 
   name: EMCalw0
   sigmalized_identification_range: 3
