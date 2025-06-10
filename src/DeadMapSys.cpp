@@ -437,20 +437,20 @@ int main(int argc, char **argv)
 
    if (detectorsConfiguration[0] == '1') // DC
    {
-      TH2F *realHeatmapDCe0 = static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: DCe, zDC>=0"));
-      TH2F *realHeatmapDCe1 = static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: DCe, zDC<0"));
-      TH2F *realHeatmapDCw0 = static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: DCw, zDC>=0"));
-      TH2F *realHeatmapDCw1 = static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: DCw, zDC<0"));
+      TH2F *realHeatmapDCe0 = static_cast<TH2F *>(inputRealDataFile->Get("_Heatmap: DCe, zDC>=0"));
+      TH2F *realHeatmapDCe1 = static_cast<TH2F *>(inputRealDataFile->Get("_Heatmap: DCe, zDC<0"));
+      TH2F *realHeatmapDCw0 = static_cast<TH2F *>(inputRealDataFile->Get("_Heatmap: DCw, zDC>=0"));
+      TH2F *realHeatmapDCw1 = static_cast<TH2F *>(inputRealDataFile->Get("_Heatmap: DCw, zDC<0"));
 
-      TH2F *simHeatmapDCe0 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCe, zDC>=0"));
-      TH2F *simHeatmapDCe1 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCe, zDC<0"));
-      TH2F *simHeatmapDCw0 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCw, zDC>=0"));
-      TH2F *simHeatmapDCw1 = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: DCw, zDC<0"));
+      TH2F *simHeatmapDCe0 = static_cast<TH2F *>(inputSimDataFile->Get("_Heatmap: DCe, zDC>=0"));
+      TH2F *simHeatmapDCe1 = static_cast<TH2F *>(inputSimDataFile->Get("_Heatmap: DCe, zDC<0"));
+      TH2F *simHeatmapDCw0 = static_cast<TH2F *>(inputSimDataFile->Get("_Heatmap: DCw, zDC>=0"));
+      TH2F *simHeatmapDCw1 = static_cast<TH2F *>(inputSimDataFile->Get("_Heatmap: DCw, zDC<0"));
 
-      CheckHists(realHeatmapDCe0, simHeatmapDCe0, "Heatmap: DCe, zDC>=0");
-      CheckHists(realHeatmapDCe1, simHeatmapDCe1, "Heatmap: DCe, zDC<0");
-      CheckHists(realHeatmapDCw0, simHeatmapDCw0, "Heatmap: DCw, zDC>=0");
-      CheckHists(realHeatmapDCw1, simHeatmapDCw1, "Heatmap: DCw, zDC<0");
+      CheckHists(realHeatmapDCe0, simHeatmapDCe0, "_Heatmap: DCe, zDC>=0");
+      CheckHists(realHeatmapDCe1, simHeatmapDCe1, "_Heatmap: DCe, zDC<0");
+      CheckHists(realHeatmapDCw0, simHeatmapDCw0, "_Heatmap: DCw, zDC>=0");
+      CheckHists(realHeatmapDCw1, simHeatmapDCw1, "_Heatmap: DCw, zDC<0");
 
       TH2F *realCutHeatmapDCe0 = static_cast<TH2F *>(realHeatmapDCe0->Clone("DCe, zDC>=0 real"));
       TH2F *realCutHeatmapDCe1 = static_cast<TH2F *>(realHeatmapDCe1->Clone("DCe, zDC<0 real"));
@@ -511,7 +511,6 @@ int main(int argc, char **argv)
          }
       }
 
-      /*
       std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 
          GetUncertaintyFromXProj(realHeatmapDCe0, simHeatmapDCe0, 
@@ -526,15 +525,12 @@ int main(int argc, char **argv)
          GetUncertaintyFromXProj(realHeatmapDCw1, simHeatmapDCw1, 
                                  realCutHeatmapDCw1, simCutHeatmapDCw1, 
                                  "DCw1", "DC west, zDC<0", "board", "#alpha", 2);
-                                 */
    }
-   /*
    else
    {
       std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 0 << " " << 0 << " " << 0 << " " << 0;
    }
-   */
 
    if (detectorsConfiguration[1] == '1') // PC1
    {
