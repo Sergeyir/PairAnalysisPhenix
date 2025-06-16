@@ -72,15 +72,11 @@ void TimingDM()
    const double numberOfIterations = static_cast<double>(realHist->GetYaxis()->GetNbins()*
                                                          realHist->GetZaxis()->GetNbins());
 
-   gROOT->SetBatch(kTRUE);
-
-   TCanvas fitCanv("fit canv", "", 400, 400);
-
    for (int i = 1; i <= realHist->GetYaxis()->GetNbins(); i++)
    {
       for (int j = 1; j <= realHist->GetZaxis()->GetNbins(); j++)
       {
-         pBar.Print(static_cast<double>(i + j*i - 2)/numberOfIterations);
+         pBar.Print(static_cast<double>(i + j - 2)/numberOfIterations);
 
          // distribution for a single smallest unit of a detector (tower, slat, strip, etc.)
          TH1D *distrTime = realHist->
@@ -100,6 +96,8 @@ void TimingDM()
          // by taking maximum value we extract the value close to the center of pions signal
          const int maximumBin = distrTime->GetMaximumBin();
 
+         TCanvas canv(("canv" + std::to_string(i) + std::to_string(j)).c_str(), "", 400, 400);
+
          // approximation of t-t_exp for pi+
          TF1 gausFit("gaus fit", "gaus");
          gausFit.SetParameter(0, distrTime->GetBinContent(maximumBin));
@@ -114,20 +112,16 @@ void TimingDM()
          meanTimeHist.SetBinContent(i, j, gausFit.GetParameter(1));
          sigmaTimeHist.SetBinContent(i, j, fabs(gausFit.GetParameter(2)));
 
-         gPad->Clear();
-         distrTime->Draw();
-         gausFit.Draw("SAME");
+         gPad->Add(distrTime);
+         gPad->Add(&gausFit, "SAME");
 
-         
-         fitCanv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
-                        std::to_string(j) + ".png").c_str());
+         canv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
+                      std::to_string(j) + ".png").c_str());
       }
    }
 
    pBar.Clear();
    CppTools::PrintInfo("Preparing the heatmap: done");
-
-   gROOT->SetBatch(kFALSE);
 
    /*
    TH2D *simHist = static_cast<TH2D *>

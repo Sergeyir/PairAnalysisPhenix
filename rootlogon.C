@@ -16,7 +16,7 @@
 
    gSystem->Load("lib/libDeadMapCutter.so");
 
-   //gSystem->Load("ProgressBar/lib/libPBar.so");
+   gSystem->Load("lib/libPBar.so");
 
    //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
 
