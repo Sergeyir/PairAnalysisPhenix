@@ -136,17 +136,24 @@ void SigmalizedResidualsSim::PerformCalibrationsForDetector(const std::string& d
 }
 
 void SigmalizedResidualsSim::PerformCalibrationsVsPT(const std::string& detectorName, 
-                                                  const std::string& variableName,
-                                                  const int charge)
+                                                     const std::string& variableName,
+                                                     const int charge)
 {
    pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
    const std::string chargeName = ((charge > 0) ? "charge>0" : "charge<0");
    const std::string chargeNameShort = ((charge > 0) ? "pos" : "neg");
 
-   TH2F *distrDValVsPT = 
-      static_cast<TH2F *>(inputFile->Get((variableName + " vs pT: " + detectorName + 
-                                          ", " + chargeName).c_str()));
+   const std::string distrDValVsPTName = variableName + "/" + variableName + " vs pT: " + 
+                                         detectorName + ", " + chargeName;
+
+   TH2F *distrDValVsPT = static_cast<TH2F *>(inputFile->Get(distrDValVsPTName.c_str()));
+
+   if (!distrDValVsPT)
+   {
+      CppTools::PrintError("No histogram named \"" + distrDValVsPTName + 
+                           "\" in file data/PostSim/" + runName + "/SingleTrack/all.root");
+   }
 
    TGraphErrors grMeansDVal;
    TGraphErrors grSigmasDVal;

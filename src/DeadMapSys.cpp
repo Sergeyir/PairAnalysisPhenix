@@ -181,9 +181,6 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	realCutDistrProj->SetLineColor(kRed - 3);
 	simCutDistrProj->SetLineColor(kAzure - 3);
 
-	realCutDistrProj->SetLineWidth(2);
-	simCutDistrProj->SetLineWidth(2);
-
 	projLegend.AddEntry(realCutDistrProj, "real");
 	projLegend.AddEntry(simCutDistrProj, "MC");
 	
@@ -194,6 +191,11 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	
 	realCutDistrProj->GetXaxis()->SetLabelSize(0.05);
 	realCutDistrProj->GetYaxis()->SetLabelSize(0.05);
+
+   realDistr->SetMinimum(1.);
+   realCutDistr->SetMinimum(1.);
+   simDistr->SetMinimum(1.);
+   simCutDistr->SetMinimum(1.);
 	
 	TCanvas canv("canv", "canv", 900, 450);
 	canv.Divide(2);
@@ -302,11 +304,6 @@ double DeadMapSys::GetUncertaintyFromXYProj(TH2F *realDistr, TH2F *simDistr,
 	simCutDistrProjX->SetLineColor(kAzure-3);
 	simCutDistrProjY->SetLineColor(kAzure-3);
 
-	realCutDistrProjX->SetLineWidth(2);
-	realCutDistrProjY->SetLineWidth(2);
-	simCutDistrProjX->SetLineWidth(2);
-	simCutDistrProjY->SetLineWidth(2);
-
 	projXLegend.AddEntry(realCutDistrProjX, "real");
 	projXLegend.AddEntry(simCutDistrProjX, "MC");
 
@@ -327,6 +324,11 @@ double DeadMapSys::GetUncertaintyFromXYProj(TH2F *realDistr, TH2F *simDistr,
 
 	realCutDistrProjY->GetXaxis()->SetLabelSize(0.05);
 	realCutDistrProjY->GetYaxis()->SetLabelSize(0.05);
+
+   realDistr->SetMinimum(1.);
+   realCutDistr->SetMinimum(1.);
+   simDistr->SetMinimum(1.);
+   simCutDistr->SetMinimum(1.);
 	
 	TCanvas canv = TCanvas("canv", "canv", 900, 450);
 	canv.Divide(2);
@@ -712,7 +714,7 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertaintyFromXYProj(realHeatmapTOFe, simHeatmapTOFe, 
                                   realCutHeatmapTOFe, simCutHeatmapTOFe, 
-                                  "TOFe", "TOFe", "y_{TOFe}", "z_{TOFe}");
+                                  "TOFe", "TOFe", "chamber", "slat");
    }
    else
    {
@@ -722,60 +724,33 @@ int main(int argc, char **argv)
 
    if (detectorsConfiguration[5] == '1') // TOFw
    {
-      TH2F *realHeatmapTOFw0 = 
-         static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: TOFw, ptofy<100"));
-      TH2F *realHeatmapTOFw1 = 
-         static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: TOFw, ptofy>100"));
+      TH2F *realHeatmapTOFw = static_cast<TH2F *>(inputRealDataFile->Get("Heatmap: TOFw"));
 
-      TH2F *simHeatmapTOFw0 = 
-         static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: TOFw, ptofy<100"));
-      TH2F *simHeatmapTOFw1 = 
-         static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: TOFw, ptofy>100"));
+      TH2F *simHeatmapTOFw = static_cast<TH2F *>(inputSimDataFile->Get("Heatmap: TOFw"));
 
-      CheckHists(realHeatmapTOFw0, simHeatmapTOFw0, "Heatmap: TOFw, ptofy<100");
-      CheckHists(realHeatmapTOFw1, simHeatmapTOFw1, "Heatmap: TOFw, ptofy>100");
+      CheckHists(realHeatmapTOFw, simHeatmapTOFw, "Heatmap: TOFw");
 
-      TH2F *realCutHeatmapTOFw0 = static_cast<TH2F *>(realHeatmapTOFw0->Clone());
-      TH2F *realCutHeatmapTOFw1 = static_cast<TH2F *>(realHeatmapTOFw1->Clone());
+      TH2F *realCutHeatmapTOFw = static_cast<TH2F *>(realHeatmapTOFw->Clone());
+      TH2F *simCutHeatmapTOFw = static_cast<TH2F *>(simHeatmapTOFw->Clone());
 
-      TH2F *simCutHeatmapTOFw0 = static_cast<TH2F *>(simHeatmapTOFw0->Clone());
-      TH2F *simCutHeatmapTOFw1 = static_cast<TH2F *>(simHeatmapTOFw1->Clone());
-
-      for (int i = 1; i <= realHeatmapTOFw0->GetXaxis()->GetNbins(); i++)
+      for (int i = 1; i <= realHeatmapTOFw->GetXaxis()->GetNbins(); i++)
       {
-         for (int j = 1; j <= realHeatmapTOFw0->GetYaxis()->GetNbins(); j++)
+         for (int j = 1; j <= realHeatmapTOFw->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadTOFw(realHeatmapTOFw0->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFw0->GetYaxis()->GetBinCenter(j)))
+            if (dmCutter.IsDeadTOFw(realHeatmapTOFw->GetXaxis()->GetBinCenter(i),
+                                    realHeatmapTOFw->GetYaxis()->GetBinCenter(j)))
             {
-               realCutHeatmapTOFw0->SetBinContent(i, j, 0.);
-               simCutHeatmapTOFw0->SetBinContent(i, j, 0.);
-            }
-         }
-      }
-      for (int i = 1; i <= realHeatmapTOFw1->GetXaxis()->GetNbins(); i++)
-      {
-         for (int j = 1; j <= realHeatmapTOFw1->GetYaxis()->GetNbins(); j++)
-         {
-            if (dmCutter.IsDeadTOFw(realHeatmapTOFw1->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFw1->GetYaxis()->GetBinCenter(j)))
-            {
-               realCutHeatmapTOFw1->SetBinContent(i, j, 0.);
-               simCutHeatmapTOFw1->SetBinContent(i, j, 0.);
+               realCutHeatmapTOFw->SetBinContent(i, j, 0.);
+               simCutHeatmapTOFw->SetBinContent(i, j, 0.);
             }
          }
       }
 
       std::ofstream systematicsOutputFile(outputDirParameters + "TOFw.txt");
       systematicsOutputFile << 
-         CppTools::RMS(GetUncertaintyFromXYProj(realHeatmapTOFw0, simHeatmapTOFw0, 
-                                                realCutHeatmapTOFw0, simCutHeatmapTOFw0, 
-                                                "TOFw0", "TOFw, y_{TOFw}<100", 
-                                                "y_{TOFw}", "z_{TOFw}"),
-                       GetUncertaintyFromXYProj(realHeatmapTOFw1, simHeatmapTOFw1, 
-                                                realCutHeatmapTOFw1, simCutHeatmapTOFw1, 
-                                                "TOFw1", "TOFw, y_{TOFw}>100", 
-                                                "y_{TOFw}", "z_{TOFw}"));
+         CppTools::RMS(GetUncertaintyFromXYProj(realHeatmapTOFw, simHeatmapTOFw, 
+                                                realCutHeatmapTOFw, simCutHeatmapTOFw, 
+                                                "TOFw", "TOFw", "chamber", "strip"));
    }
    else
    {

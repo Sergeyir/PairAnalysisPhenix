@@ -132,14 +132,6 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> heatmapDCw0;
       /// heatmap of DCw, zDC<0
       std::shared_ptr<TH2F> heatmapDCw1;
-      /// heatmap of DCe hits, zDC>=0
-      std::shared_ptr<TH2F> heatmapDCe0Hit;
-      /// heatmap of DCe hits, zDC<0
-      std::shared_ptr<TH2F> heatmapDCe1Hit;
-      /// heatmap of DCw hits, zDC>=0
-      std::shared_ptr<TH2F> heatmapDCw0Hit;
-      /// heatmap of DCw hits, zDC<0
-      std::shared_ptr<TH2F> heatmapDCw1Hit;
       /// heatmap of DCe X1, zDC>=0
       std::shared_ptr<TH2F> heatmapDCe0X1;
       /// heatmap of DCe X1, zDC<0
@@ -168,12 +160,8 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH2F> heatmapPC3w;
       /// heatmap of TOFe
       std::shared_ptr<TH2F> heatmapTOFe;
-      /// heatmap of TOFe hits
-      std::shared_ptr<TH2F> heatmapTOFeHit;
-      /// heatmap of TOFw, ptofy<100
-      std::shared_ptr<TH2F> heatmapTOFw0;
-      /// heatmap of TOFw, ptofy>100
-      std::shared_ptr<TH2F> heatmapTOFw1;
+      /// heatmap of TOFw
+      std::shared_ptr<TH2F> heatmapTOFw;
       /// heatmaps of EMCale(0-3)
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCale;
       /// heatmaps of EMCalw(0-3)
@@ -194,10 +182,6 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCaleOrig;
       /// ecore in EMCalw(0-3) vs pT distributions for original particles only
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCalwOrig;
-      /// strip distribution in TOFw
-      std::shared_ptr<TH1F> distrStripTOFw;
-      /// slat distribution in TOFe
-      std::shared_ptr<TH1F> distrSlatTOFe;
       /// eloss vs beta distribution in TOFe
       std::shared_ptr<TH2F> distrBetaVsETOFe;
       /// pc2dphi vs pT distribution for positive tracks
@@ -349,7 +333,8 @@ namespace AnalyzeSingleTrack
       /// @brief writes the merged histograms across all threads into the file with a specified name
       void Write(const std::string& outputFileName);
       /// distribution of original generated pT
-      std::unique_ptr<ROOT::TThreadedObject<TH1F>> distrOrigPT = std::make_unique<ROOT::TThreadedObject<TH1F>>("orig pT", "p_{T}", 100., 0., 10.);
+      std::unique_ptr<ROOT::TThreadedObject<TH1F>> distrOrigPT = 
+         std::make_unique<ROOT::TThreadedObject<TH1F>>("orig pT", "p_{T}", 100., 0., 10.);
       // distribution of original generated pT vs reconstructed pT in the simulation
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
@@ -382,18 +367,6 @@ namespace AnalyzeSingleTrack
       /// heatmap of DCw, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCw1{"_Heatmap: DCw, zDC<0", "board vs alpha", 
                                               400, 0., 80., 195, -0.39, 0.39};
-      /// heatmap of DCe hits, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCe0Hit{"_Heatmap: DCe hit, zDC>=0", "board vs alpha", 
-                                                 400, 0., 80., 195, -0.39, 0.39};
-      /// heatmap of DCe hits, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCe1Hit{"_Heatmap: DCe hit, zDC<0", "board vs alpha", 
-                                                 400, 0., 80., 195, -0.39, 0.39};
-      /// heatmap of DCw hits, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCw0Hit{"_Heatmap: DCw hit, zDC>=0", "board vs alpha", 
-                                                 400, 0., 80., 195, -0.39, 0.39};
-      /// heatmap of DCw hits, zDC<0
-      ROOT::TThreadedObject<TH2F> heatmapDCw1Hit{"_Heatmap: DCw hit, zDC<0", "board vs alpha", 
-                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"_Heatmap: DCeX1, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
@@ -434,17 +407,11 @@ namespace AnalyzeSingleTrack
       ROOT::TThreadedObject<TH2F> 
          heatmapPC3w{"Heatmap: PC3w", "pc3z vs pc3phi", 390, -195., 195., 170, -0.65, 1.05};
       /// heatmap of TOFe
-      ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "ptofy vs ptofz", 
-                                              185, -280., 90., 200, -200., 200.};
-      /// heatmap of TOFe hits
-      ROOT::TThreadedObject<TH2F> heatmapTOFeHit{"Heatmap: TOFe hit", "ptofy vs ptofz", 
-                                                 185, -280., 90., 200, -200., 200.};
+      ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "chamber vs slat", 
+                                              10, 0., 10., 96, 0., 96.};
       /// heatmap of TOFw, ptofy<100
-      ROOT::TThreadedObject<TH2F> heatmapTOFw0{"Heatmap: TOFw, ptofy<100", "ptofy vs ptofz", 
-                                               90, -55., 35., 195, -195., 195.};
-      /// heatmap of TOFw, ptofy>100
-      ROOT::TThreadedObject<TH2F> heatmapTOFw1{"Heatmap: TOFw, ptofy>100", "ptofy vs ptofz", 
-                                               85, 185., 270., 195, -195., 195.};
+      ROOT::TThreadedObject<TH2F> heatmapTOFw{"Heatmap: TOFw", "chamber vs strip", 
+                                              8, 0., 8., 64, 0., 64.};
       /// heatmaps of EMCale(0-3)
       std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCale
       {
@@ -561,10 +528,6 @@ namespace AnalyzeSingleTrack
          ROOT::TThreadedObject<TH2F>("ecore vs pT, EMCalw3, orig only", "E_{core} vs p_{T}", 
                                      200, 0., 10., 200, 0., 2.)
       };
-      /// strip distribution in TOFw
-      ROOT::TThreadedObject<TH1F> distrStripTOFw{"strip: TOFw", "strip number", 512, 0., 512.};
-      /// slat distribution in TOFe
-      ROOT::TThreadedObject<TH1F> distrSlatTOFe{"slat: TOFe", "slat number", 960, 0., 960.};
       /// eloss vs beta distribution in TOFe
       ROOT::TThreadedObject<TH2F> distrBetaVsETOFe{"beta vs E, TOFe", "#beta vs E_{TOFe}", 
                                                    100, 0., 1., 100, 0., 0.03};

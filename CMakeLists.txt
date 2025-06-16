@@ -49,7 +49,7 @@ include_directories(${CMAKE_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${CMAKE_SOU
 
 add_subdirectory(yaml-cpp EXCLUDE_FROM_ALL)
 add_subdirectory(CppTools EXCLUDE_FROM_ALL)
-add_subdirectory(ROOTTools EXCLUDE_FROM_ALL)
+add_subdirectory(ROOTTools)
 add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
 
 #link_libraries(jsoncpp)

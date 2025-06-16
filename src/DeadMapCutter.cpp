@@ -97,8 +97,6 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       doCutTOFe = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFe.txt", 
                    cutAreasTOFe, cutAreasTOFeRange);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Slat.txt", 
-                   cutSlatsTOFe, cutSlatsRange);
    }
    else 
    {
@@ -109,12 +107,8 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[5] == '1')
    {
       doCutTOFw = true;
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw,ptofy<100.txt", 
-                   cutAreasTOFw0, cutAreasTOFw0Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw,ptofy>100.txt", 
-                   cutAreasTOFw1, cutAreasTOFw1Range);
-      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/Strip.txt", 
-                   cutStripsTOFw, cutStripsRange);
+      SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw.txt", 
+                   cutAreasTOFw, cutAreasTOFwRange);
    }
    else 
    {
@@ -311,50 +305,39 @@ bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double 
    return cutAreasPC3w[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadTOFe(const double ptofy, const double ptofz)
+bool DeadMapCutter::IsDeadTOFe(const int chamber, const int slat)
 {
    if (!doCutTOFe) return false;
-   if (ptofy <= cutAreasTOFeRange[0] || ptofy >= cutAreasTOFeRange[1] ||
-       ptofz <= cutAreasTOFeRange[2] || ptofz >= cutAreasTOFeRange[3]) return true;
+   if (chamber <= cutAreasTOFeRange[0] || chamber >= cutAreasTOFeRange[1] ||
+       slat <= cutAreasTOFeRange[2] || slat >= cutAreasTOFeRange[3]) return true;
 
-   const short yBin = static_cast<short>((ptofz - cutAreasTOFeRange[2])/
+   const short yBin = static_cast<short>((slat - cutAreasTOFeRange[2])/
                                          (cutAreasTOFeRange[3] - cutAreasTOFeRange[2])*
                                          static_cast<double>(cutAreasTOFe.size()));
-   const short xBin = static_cast<short>((ptofy - cutAreasTOFeRange[0])/
+   const short xBin = static_cast<short>((chamber - cutAreasTOFeRange[0])/
                                          (cutAreasTOFeRange[1] - cutAreasTOFeRange[0])*
                                          static_cast<double>(cutAreasTOFe[0].size()));
    return cutAreasTOFe[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadTOFw(const double ptofwy, const double ptofwz)
+bool DeadMapCutter::IsDeadTOFw(const int chamber, const int strip)
 {
    if (!doCutTOFw) return false;
-   if (ptofwy < 100)
-   {
-      if (ptofwy <= cutAreasTOFw0Range[0] || ptofwy >= cutAreasTOFw0Range[1] ||
-          ptofwz <= cutAreasTOFw0Range[2] || ptofwz >= cutAreasTOFw0Range[3]) return true;
 
-      const short yBin = static_cast<short>((ptofwz - cutAreasTOFw0Range[2])/
-                                            (cutAreasTOFw0Range[3] - cutAreasTOFw0Range[2])*
-                                            static_cast<double>(cutAreasTOFw0.size()));
-      const short xBin = static_cast<short>((ptofwy - cutAreasTOFw0Range[0])/
-                                            (cutAreasTOFw0Range[1] - cutAreasTOFw0Range[0])*
-                                            static_cast<double>(cutAreasTOFw0[0].size()));
-      return cutAreasTOFw0[yBin][xBin];
-   }
-   if (ptofwy <= cutAreasTOFw1Range[0] || ptofwy >= cutAreasTOFw1Range[1] ||
-       ptofwz <= cutAreasTOFw1Range[2] || ptofwz >= cutAreasTOFw1Range[3]) return true;
+   if (chamber <= cutAreasTOFwRange[0] || chamber >= cutAreasTOFwRange[1] ||
+       strip <= cutAreasTOFwRange[2] || strip >= cutAreasTOFwRange[3]) return true;
 
-   const short yBin = static_cast<short>((ptofwz - cutAreasTOFw1Range[2])/
-                                         (cutAreasTOFw1Range[3] - cutAreasTOFw1Range[2])*
-                                         static_cast<double>(cutAreasTOFw1.size()));
-   const short xBin = static_cast<short>((ptofwy - cutAreasTOFw1Range[0])/
-                                         (cutAreasTOFw1Range[1] - cutAreasTOFw1Range[0])*
-                                         static_cast<double>(cutAreasTOFw1[0].size()));
-   return cutAreasTOFw1[yBin][xBin];
+   const short yBin = static_cast<short>((strip - cutAreasTOFwRange[2])/
+                                         (cutAreasTOFwRange[3] - cutAreasTOFwRange[2])*
+                                         static_cast<double>(cutAreasTOFw.size()));
+   const short xBin = static_cast<short>((chamber - cutAreasTOFwRange[0])/
+                                         (cutAreasTOFwRange[1] - cutAreasTOFwRange[0])*
+                                         static_cast<double>(cutAreasTOFw[0].size()));
+   return cutAreasTOFw[yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, const int ytower, const int ztower)
+bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, 
+                                const int ytower, const int ztower)
 {
    if (!doCutEMCal) return false;
    if (dcarm == 0) // EMCale
@@ -391,22 +374,6 @@ bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, const int yto
    return cutAreasEMCalw[sector][yBin][xBin];
 }
 
-bool DeadMapCutter::IsDeadTOFeSlat(const int slat)
-{
-   if (!doCutTOFe) return false;
-
-   if (slat < cutSlatsRange[0] || slat >= cutSlatsRange[1]) return true;
-   return cutSlatsTOFe[slat];
-}
-
-bool DeadMapCutter::IsDeadTOFwStrip(const int striptofw)
-{
-   if (!doCutTOFw) return false;
-
-   if (striptofw < cutStripsRange[0] || striptofw >= cutStripsRange[1]) return true;
-   return cutStripsTOFw[striptofw];
-}
-
 void DeadMapCutter::SetDeadAreas(const std::string& inputFileName, 
                                  std::vector<std::vector<bool>>& cutAreas, double *ranges)
 {
@@ -437,40 +404,6 @@ void DeadMapCutter::SetDeadAreas(const std::string& inputFileName,
          }
          cutAreas[i][j] = tmp;
       }
-   }
-
-   if (isUnexpectedEndOfFile) 
-   {
-      CppTools::PrintError("DeadMapCutter: Unexpected end of file: " + inputFileName);
-   }
-}
-
-void DeadMapCutter::SetDeadAreas(const std::string& inputFileName, 
-                                 std::vector<bool>& cutAreas, double *ranges)
-{
-   CppTools::CheckInputFile(inputFileName);
-
-   std::ifstream inputFile(inputFileName);
-
-   int xNBins;
-   bool isUnexpectedEndOfFile = false;
-
-   if (!(inputFile >> xNBins >> ranges[0] >> ranges[1]))
-   {
-      isUnexpectedEndOfFile = true;
-   }
-
-   cutAreas.resize(xNBins);
-
-   for (int i = 0; i < xNBins; i++)
-   {
-      bool tmp;
-      if (!(inputFile >> tmp)) 
-      {
-         isUnexpectedEndOfFile = true;
-         break;
-      }
-      cutAreas[i] = tmp;
    }
 
    if (isUnexpectedEndOfFile) 
