@@ -120,7 +120,7 @@ detectors:
   p_pt_bounds: [0.6, 2.]
   pi-_pt_bounds: [0.5, 2.]
   k-_pt_bounds: [0.3, 0.9]
-  pbar_pt_bounds: [0.3, 2.]
+  pbar_pt_bounds: [0.3, 1.9]
   is_calibrated: true
   use_m2_mean_par: true
 - 
@@ -138,7 +138,7 @@ detectors:
   p_pt_bounds: [0.6, 2.]
   pi-_pt_bounds: [0.4, 1.8]
   k-_pt_bounds: [0.3, 0.9]
-  pbar_pt_bounds: [0.3, 1.8]
+  pbar_pt_bounds: [0.4, 1.8]
   is_calibrated: true
   use_m2_mean_par: true
 - 

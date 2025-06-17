@@ -8,6 +8,7 @@
 
 void TimingDM()
 {
+   gStyle->SetPalette(kWaterMelon);
 	gStyle->SetOptStat(0);
    TDirectory::AddDirectory(kFALSE);
    gErrorIgnoreLevel = kWarning;
@@ -48,7 +49,7 @@ void TimingDM()
                            " in file " + realInputFileName);
    }
 
-   TH2D meanTimeHist("mean T in real data", "", 
+   TH2D meanTimeHist("mean T in real data", "#mu", 
                      realHist->GetYaxis()->GetNbins(), 
                      realHist->GetYaxis()->GetBinLowEdge(1), 
                      realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()),
@@ -56,7 +57,7 @@ void TimingDM()
                      realHist->GetZaxis()->GetBinLowEdge(1), 
                      realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
 
-   TH2D sigmaTimeHist("sigma T in real data", "", 
+   TH2D sigmaTimeHist("sigma T in real data", "#sigma", 
                       realHist->GetYaxis()->GetNbins(), 
                       realHist->GetYaxis()->GetBinLowEdge(1), 
                       realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()),
@@ -64,35 +65,86 @@ void TimingDM()
                       realHist->GetZaxis()->GetBinLowEdge(1), 
                       realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
 
+   TH2D ratioFGToFullIntHist("FG to full integral ratio", "FG/(full integral)", 
+                             realHist->GetYaxis()->GetNbins(), 
+                             realHist->GetYaxis()->GetBinLowEdge(1), 
+                             realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()),
+                             realHist->GetZaxis()->GetNbins(), 
+                             realHist->GetZaxis()->GetBinLowEdge(1), 
+                             realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
+
    const std::string outputDir = "output/TimingDeadmaps/" + detectorName;
    system(("mkdir -p " + outputDir).c_str());
 
-   ProgressBar pBar("BLOCK", "Preparing the heatmap", PBarColor::BOLD_MAGENTA);
+   ProgressBar pBar("BLOCK", "Preparing heatmaps", PBarColor::BOLD_MAGENTA);
 
    const double numberOfIterations = static_cast<double>(realHist->GetYaxis()->GetNbins()*
                                                          realHist->GetZaxis()->GetNbins());
 
    gROOT->SetBatch(kTRUE);
 
-   TCanvas fitCanv("fit canv", "", 400, 400);
+   const std::string outputCutsFileName = "data/Parameters/TimingDeadmaps/" + 
+                                          runName + "/TimingDeadmap" + detectorName + ".txt";
 
-   for (int i = 1; i <= realHist->GetYaxis()->GetNbins(); i++)
+   bool outputFileExists = CppTools::FileExists(outputCutsFileName);
+
+   // bins with low statistics should be considered dead areas thus they need to be cut
+   // this file will contain these bins at first; the user will also add fiducial cuts
+   // by applying them via GUI
+   std::ofstream lowStatBinsOutputFile;
+
+   if (!outputFileExists)
    {
-      for (int j = 1; j <= realHist->GetZaxis()->GetNbins(); j++)
+      lowStatBinsOutputFile.open(outputCutsFileName);
+
+      CppTools::PrintInfo("Low statistics bins will be automatically written in file " + 
+                          outputCutsFileName);
+
+      lowStatBinsOutputFile << 
+         realHist->GetYaxis()->GetNbins() << " " <<
+         realHist->GetYaxis()->GetBinLowEdge(1) << " " <<
+         realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()) << " " <<
+         realHist->GetZaxis()->GetNbins() << " " <<
+         realHist->GetZaxis()->GetBinLowEdge(1) << " " <<
+         realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()) << std::endl;
+   }
+   else
+   {
+      CppTools::PrintInfo("File " + outputCutsFileName + " already exists:\n"\
+                          " low statistics bins will not be automatically written");
+   }
+
+   TCanvas fitCanv("fit canv", "", 600, 600);
+
+   int numberOfBinsWithLowStat = 0;
+
+   for (int i = 1; i <= realHist->GetZaxis()->GetNbins(); i++)
+   {
+      for (int j = 1; j <= realHist->GetYaxis()->GetNbins(); j++)
       {
          pBar.Print(static_cast<double>(i + j*i - 2)/numberOfIterations);
 
          // distribution for a single smallest unit of a detector (tower, slat, strip, etc.)
          TH1D *distrTime = realHist->
             ProjectionX((realHist->GetName() + std::to_string(i) + std::to_string(j)).c_str(), 
-                        i, i, j, j);
+                        j, j, i, i);
 
-         //CppTools::Print(i, j, distrTime->Integral(1, distrTime->GetXaxis()->GetNbins());
+         const double fullIntegral = distrTime->Integral(1, distrTime->GetXaxis()->GetNbins());
          // removing units with insufficient statistics
-         if (distrTime->Integral(1, distrTime->GetXaxis()->GetNbins()) < 100.)
+         if (fullIntegral < 100.)
          {
-            //meanTimeHist.SetBinContent(i, j, -9999.);
-            //sigmaTimeHist.SetBinContent(i, j, -9999.);
+            numberOfBinsWithLowStat++;
+            if (!outputFileExists)
+            {
+               lowStatBinsOutputFile << 1;
+               if (j < realHist->GetYaxis()->GetNbins()) lowStatBinsOutputFile << " ";
+               else lowStatBinsOutputFile << std::endl;
+            }
+            else
+            {
+               //meanTimeHist.SetBinContent(j, i, -9999.);
+               //sigmaTimeHist.SetBinContent(j, i, -9999.);
+            }
             continue;
          }
 
@@ -101,31 +153,74 @@ void TimingDM()
          const int maximumBin = distrTime->GetMaximumBin();
 
          // approximation of t-t_exp for pi+
-         TF1 gausFit("gaus fit", "gaus");
-         gausFit.SetParameter(0, distrTime->GetBinContent(maximumBin));
-         gausFit.SetParameter(1, distrTime->GetXaxis()->GetBinCenter(maximumBin));
-         gausFit.SetParLimits(1, distrTime->GetXaxis()->GetBinCenter(maximumBin - 3), 
-                              distrTime->GetXaxis()->GetBinCenter(maximumBin + 3));
-         gausFit.SetParameter(2, distrTime->GetXaxis()->GetBinWidth(maximumBin)*5.);
-         gausFit.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
-                          distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 5));
+         TF1 fitFG("fg fit", "gaus(0) + gaus(3) + [6]");
+         TF1 fitBG("bg fit", "gaus(0) + [3]");
 
-         distrTime->Fit(&gausFit, "RQMBN");
-         meanTimeHist.SetBinContent(i, j, gausFit.GetParameter(1));
-         sigmaTimeHist.SetBinContent(i, j, fabs(gausFit.GetParameter(2)));
+         fitFG.SetParameter(0, distrTime->GetBinContent(maximumBin));
+         fitFG.SetParLimits(0, distrTime->GetBinContent(maximumBin)/3., 
+                            distrTime->GetBinContent(maximumBin));
+
+         fitFG.SetParameter(1, distrTime->GetXaxis()->GetBinCenter(maximumBin));
+         fitFG.SetParLimits(1, distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 1), 
+                            distrTime->GetXaxis()->GetBinUpEdge(maximumBin));
+
+         fitFG.SetParameter(2, distrTime->GetXaxis()->GetBinWidth(1)*2.);
+
+         fitFG.SetParLimits(3, distrTime->GetBinContent(maximumBin + 10)/2., 
+                            distrTime->GetBinContent(maximumBin)/2.);
+         fitFG.SetParLimits(4, distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 2),
+                            distrTime->GetXaxis()->GetBinCenter(maximumBin + 10));
+
+         fitFG.SetParameter(5, distrTime->GetXaxis()->GetBinWidth(1)*5.);
+
+         fitFG.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
+                        distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
+         fitBG.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
+                        distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
+
+         distrTime->Fit(&fitFG, "RQMBN");
+         meanTimeHist.SetBinContent(j, i, fitFG.GetParameter(1));
+         sigmaTimeHist.SetBinContent(j, i, fabs(fitFG.GetParameter(2)));
+
+         double integralFG = 0.;
+         for (int k = maximumBin - 5; k <= maximumBin + 5; k++)
+         {
+            integralFG += fitFG.Eval(distrTime->GetXaxis()->GetBinCenter(k)) - 
+                          fitBG.Eval(distrTime->GetXaxis()->GetBinCenter(k)); 
+         }
+         ratioFGToFullIntHist.SetBinContent(j, i, integralFG/fullIntegral);
+
+         distrTime->SetLineColor(kBlack);
+         fitBG.SetLineColor(kBlue);
+         fitBG.SetLineStyle(2);
+
+         for (int k = 0; k < fitBG.GetNpar(); k++)
+         {
+            fitBG.SetParameter(k, fitFG.GetParameter(k + 3));
+         }
 
          gPad->Clear();
          distrTime->Draw();
-         gausFit.Draw("SAME");
-
+         fitFG.Draw("SAME");
+         fitBG.Draw("SAME");
          
          fitCanv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
                         std::to_string(j) + ".png").c_str());
+
+         if (!outputFileExists)
+         {
+            lowStatBinsOutputFile << 0;
+            if (j < realHist->GetYaxis()->GetNbins()) lowStatBinsOutputFile << " ";
+            else lowStatBinsOutputFile << std::endl;
+         }
       }
    }
 
+   CppTools::PrintInfo("There were " + std::to_string(numberOfBinsWithLowStat) + 
+                       " bins with low statistics");
+
    pBar.Clear();
-   CppTools::PrintInfo("Preparing the heatmap: done");
+   CppTools::PrintInfo("Preparing heatmaps: done");
 
    gROOT->SetBatch(kFALSE);
 
@@ -140,10 +235,11 @@ void TimingDM()
    }
    */
 
-	TCanvas *canv = new TCanvas("", "", 900, 900);
+	TCanvas *canv = new TCanvas("", "", 1080, 1080);
    
    GUIDistrCutter2D::AddHistogram(&meanTimeHist);
    GUIDistrCutter2D::AddHistogram(&sigmaTimeHist);
+   GUIDistrCutter2D::AddHistogram(&ratioFGToFullIntHist);
    //GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
    system(("mkdir -p data/Parameters/TimingDeadmaps/" + runName).c_str());
 
@@ -152,9 +248,6 @@ void TimingDM()
       const unsigned int spacePos = detectorName.find(" ");
       detectorName.erase(spacePos, 1);
    }
-
-   const std::string outputCutsFileName = "data/Parameters/TimingDeadmaps/" + 
-                                          runName + "/TimingDeadmap" + detectorName + ".txt";
 
    if (CppTools::FileExists(outputCutsFileName))
    {

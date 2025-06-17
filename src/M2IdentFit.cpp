@@ -443,7 +443,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1., 
+   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
              "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
 
    fitPiPlus.meansVsPTFit->Draw("SAME");
@@ -479,7 +479,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1., 
+   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
              "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
 
    fitPiMinus.meansVsPTFit->Draw("SAME");
