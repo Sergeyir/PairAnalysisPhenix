@@ -24,6 +24,9 @@ void TimingDM()
    //std::cout << ">> ";
    //std::cin >> runName;
 
+   system(("mkdir -p data/Parameters/TimingDeadmaps/" + runName).c_str());
+   system(("mkdir -p data/Parameters/TimingOffsets/" + runName).c_str());
+
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    const std::string simInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
    CppTools::CheckInputFile(realInputFileName);
@@ -83,24 +86,31 @@ void TimingDM()
 
    gROOT->SetBatch(kTRUE);
 
-   const std::string outputCutsFileName = "data/Parameters/TimingDeadmaps/" + 
-                                          runName + "/TimingDeadmap" + detectorName + ".txt";
+   const std::string deadmapOutputFileName = "data/Parameters/TimingDeadmaps/" + 
+                                             runName + "/TimingDeadmap" + detectorName + ".txt";
+   const std::string offsetOutputFileName = "data/Parameters/TimingOffsets/" + 
+                                             runName + "/TimingOffset" + detectorName + ".txt";
 
-   bool outputFileExists = CppTools::FileExists(outputCutsFileName);
+   bool deadmapOutputFileExists = CppTools::FileExists(deadmapOutputFileName);
+   bool offsetOutputFileExists = CppTools::FileExists(offsetOutputFileName);
 
    // bins with low statistics should be considered dead areas thus they need to be cut
    // this file will contain these bins at first; the user will also add fiducial cuts
    // by applying them via GUI
-   std::ofstream lowStatBinsOutputFile;
+   std::ofstream deadmapOutputFile;
 
-   if (!outputFileExists)
+   // means*(-1) i.e. offsets of pions signals will be written 
+   // into separate file for later correction
+   std::ofstream offsetOutputFile;
+
+   if (!deadmapOutputFileExists)
    {
-      lowStatBinsOutputFile.open(outputCutsFileName);
+      deadmapOutputFile.open(deadmapOutputFileName);
 
       CppTools::PrintInfo("Low statistics bins will be automatically written in file " + 
-                          outputCutsFileName);
+                          deadmapOutputFileName);
 
-      lowStatBinsOutputFile << 
+      deadmapOutputFile << 
          realHist->GetYaxis()->GetNbins() << " " <<
          realHist->GetYaxis()->GetBinLowEdge(1) << " " <<
          realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()) << " " <<
@@ -110,8 +120,28 @@ void TimingDM()
    }
    else
    {
-      CppTools::PrintInfo("File " + outputCutsFileName + " already exists:\n"\
+      CppTools::PrintInfo("File " + deadmapOutputFileName + " already exists:\n"\
                           " low statistics bins will not be automatically written");
+   }
+
+   if (!offsetOutputFileExists)
+   {
+      offsetOutputFile.open(offsetOutputFileName);
+
+      CppTools::PrintInfo("Timing offset will be written in file " + offsetOutputFileName);
+
+      offsetOutputFile << 
+         realHist->GetYaxis()->GetNbins() << " " <<
+         realHist->GetYaxis()->GetBinLowEdge(1) << " " <<
+         realHist->GetYaxis()->GetBinUpEdge(realHist->GetYaxis()->GetNbins()) << " " <<
+         realHist->GetZaxis()->GetNbins() << " " <<
+         realHist->GetZaxis()->GetBinLowEdge(1) << " " <<
+         realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()) << std::endl;
+   }
+   else
+   {
+      CppTools::PrintInfo("File " + offsetOutputFileName + " already exists:\n"\
+                          " timing offset will not be written");
    }
 
    TCanvas fitCanv("fit canv", "", 600, 600);
@@ -134,11 +164,22 @@ void TimingDM()
          if (fullIntegral < 100.)
          {
             numberOfBinsWithLowStat++;
-            if (!outputFileExists)
+            if (!deadmapOutputFileExists)
             {
-               lowStatBinsOutputFile << 1;
-               if (j < realHist->GetYaxis()->GetNbins()) lowStatBinsOutputFile << " ";
-               else lowStatBinsOutputFile << std::endl;
+               deadmapOutputFile << 1;
+               if (j < realHist->GetYaxis()->GetNbins()) deadmapOutputFile << " ";
+               else deadmapOutputFile << std::endl;
+            }
+            else
+            {
+               //meanTimeHist.SetBinContent(j, i, -9999.);
+               //sigmaTimeHist.SetBinContent(j, i, -9999.);
+            }
+            if (!offsetOutputFileExists)
+            {
+               offsetOutputFile << 0.;
+               if (j < realHist->GetYaxis()->GetNbins()) offsetOutputFile << " ";
+               else offsetOutputFile << std::endl;
             }
             else
             {
@@ -207,11 +248,17 @@ void TimingDM()
          fitCanv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
                         std::to_string(j) + ".png").c_str());
 
-         if (!outputFileExists)
+         if (!deadmapOutputFileExists)
          {
-            lowStatBinsOutputFile << 0;
-            if (j < realHist->GetYaxis()->GetNbins()) lowStatBinsOutputFile << " ";
-            else lowStatBinsOutputFile << std::endl;
+            deadmapOutputFile << 0;
+            if (j < realHist->GetYaxis()->GetNbins()) deadmapOutputFile << " ";
+            else deadmapOutputFile << std::endl;
+         }
+         if (!offsetOutputFileExists)
+         {
+            offsetOutputFile << -1.*fitFG.GetParameter(1);
+            if (j < realHist->GetYaxis()->GetNbins()) offsetOutputFile << " ";
+            else offsetOutputFile << std::endl;
          }
       }
    }
@@ -241,7 +288,6 @@ void TimingDM()
    GUIDistrCutter2D::AddHistogram(&sigmaTimeHist);
    GUIDistrCutter2D::AddHistogram(&ratioFGToFullIntHist);
    //GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
-   system(("mkdir -p data/Parameters/TimingDeadmaps/" + runName).c_str());
 
    while (detectorName.find(" ") < detectorName.size())
    {
@@ -249,11 +295,11 @@ void TimingDM()
       detectorName.erase(spacePos, 1);
    }
 
-   if (CppTools::FileExists(outputCutsFileName))
+   if (CppTools::FileExists(deadmapOutputFileName))
    {
-      GUIDistrCutter2D::ReadCutAreas(outputCutsFileName);
+      GUIDistrCutter2D::ReadCutAreas(deadmapOutputFileName);
    }
-   GUIDistrCutter2D::SetOutputFile(outputCutsFileName);
+   GUIDistrCutter2D::SetOutputFile(deadmapOutputFileName);
 
 	gPad->AddExec("exec", "GUIDistrCutter2D::Exec()");
 }

@@ -239,8 +239,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (IsMatch(pT, simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
                            simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 0.25))
                {
-                  const double pc2z = STR.ppc2z(i) - STR.pc2dz(i);
-                  const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i)) - STR.pc2dphi(i);
+                  const double pc2z = STR.ppc2z(i);// - STR.pc2dz(i);
+                  const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i));// - STR.pc2dphi(i);
  
                   histContainer.heatmapPC2->Fill(pc2z, pc2phi, eventWeight*alphaReweight);
                }
@@ -310,12 +310,12 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (IsMatch(pT, sdphi, sdz))
                {
-                  const double pc3z = STR.ppc3z(i) - STR.pc3dz(i);
-                  double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i) - STR.pc3dphi(i));
+                  const double pc3z = STR.ppc3z(i);// - STR.pc3dz(i);
+                  double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i));// - STR.pc3dphi(i);
 
                   if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-                  if (IsMatch(pT, sdphi, sdz, 0.25))
+                  //if (IsMatch(pT, sdphi, sdz, 0.25))
                   {
                      if (dcarm == 0) // PC3e
                      {
