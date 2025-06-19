@@ -85,12 +85,12 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    { 
       ThrContainerCopy histContainer = thrContainer.GetCopy();
 
-      SimTreeReader STR(reader);
+      SimTreeReader simCNT(reader);
 
       while (reader.Next())
       { 
          numberOfCalls++;
-         const double origPT = sqrt(pow(STR.mom_orig(0), 2) + pow(STR.mom_orig(1), 2));
+         const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + pow(simCNT.mom_orig(1), 2));
 
          double eventWeight;
  
@@ -102,23 +102,23 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
  
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
-         const double bbcz = STR.bbcz();
+         const double bbcz = simCNT.bbcz();
          if (fabs(bbcz) > 30.) continue;
 
-         for(int i = 0; i < STR.nch(); i++)
+         for(int i = 0; i < simCNT.nch(); i++)
          {
-            const double the0 = STR.the0(i);
-            const double pT = (STR.mom(i))*sin(the0);
+            const double the0 = simCNT.the0(i);
+            const double pT = (simCNT.mom(i))*sin(the0);
 
             if (pT < pTMin || pT > pTMax) continue;
-            if (IsQualityCut(STR.qual(i))) continue;
+            if (IsQualityCut(simCNT.qual(i))) continue;
 
-            const int charge = STR.charge(i);
+            const int charge = simCNT.charge(i);
             if (charge != -1 && charge != 1) continue;
 
-            const int dcarm = STR.dcarm(i);
+            const int dcarm = simCNT.dcarm(i);
 
-            const double zed = STR.zed(i);
+            const double zed = simCNT.zed(i);
             if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
 
             if (!(fabs(the0) < 100. &&
@@ -129,8 +129,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
  
             //end of basic cuts
 
-            const double alpha = STR.alpha(i);
-            const double phi = STR.phi(i);
+            const double alpha = simCNT.alpha(i);
+            const double phi = simCNT.phi(i);
             double board;
 
             if (phi > M_PI/2.) board = ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496);
@@ -147,9 +147,9 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
                   histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCe0X1->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx1hits(i)));
+                                                    static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCe0X2->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx2hits(i)));
+                                                    static_cast<double>(simCNT.nx2hits(i)));
                }
                else 
                {
@@ -158,9 +158,9 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
                   histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCe1X1->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx1hits(i)));
+                                                    static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCe1X2->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx2hits(i)));
+                                                    static_cast<double>(simCNT.nx2hits(i)));
                }
             } // DCw
             else
@@ -172,9 +172,9 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      alphaReweightDCw0->GetBinContent(alphaReweightDCw0->FindBin(alpha));
                   histContainer.heatmapDCw0->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCw0X1->Fill(board, alpha, static_cast<double>
-                                                    (STR.nx1hits(i))*eventWeight*alphaReweight);
+                                                    (simCNT.nx1hits(i))*eventWeight*alphaReweight);
                   histContainer.heatmapDCw0X2->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx2hits(i)));
+                                                    static_cast<double>(simCNT.nx2hits(i)));
                }
                else 
                {
@@ -183,135 +183,113 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      alphaReweightDCw1->GetBinContent(alphaReweightDCw1->FindBin(alpha));
                   histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCw1X1->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx1hits(i)));
+                                                    static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCw1X2->Fill(board, alpha, eventWeight*alphaReweight*
-                                                    static_cast<double>(STR.nx2hits(i)));
+                                                    static_cast<double>(simCNT.nx2hits(i)));
                }
             }
 
-            const bool isParticleOrig = (STR.particle_id(i) == particleGeantId && 
-                                         STR.primary_id(i) == -999);
+            const bool isParticleOrig = (simCNT.particle_id(i) == particleGeantId && 
+                                         simCNT.primary_id(i) == -999);
 
             if (dmCutter.IsDeadDC(dcarm, zed, board, alpha)) continue;
 
-            double ppc1phi = atan2(STR.ppc1y(i), STR.ppc1x(i));
+            double ppc1phi = atan2(simCNT.ppc1y(i), simCNT.ppc1x(i));
 
             if (dcarm == 1) // PC1w
             {
-               histContainer.heatmapPC1w->Fill(STR.ppc1z(i), ppc1phi, eventWeight*alphaReweight);
+               histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                               eventWeight*alphaReweight);
             }
             else // PC1e
             {
                if (ppc1phi < 0) ppc1phi += 2.*M_PI;
-               histContainer.heatmapPC1e->Fill(STR.ppc1z(i), ppc1phi, eventWeight*alphaReweight);
+               histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                               eventWeight*alphaReweight);
             }
-            if (dmCutter.IsDeadPC1(dcarm, STR.ppc1z(i), ppc1phi)) continue;
+            if (dmCutter.IsDeadPC1(dcarm, simCNT.ppc1z(i), ppc1phi)) continue;
 
             histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
 
-            if (IsHit(STR.pc2dphi(i)))
+            if (IsHit(simCNT.pc2dphi(i)))
             {
+               const double sdphi = simCalibrator.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
+               const double sdz = simCalibrator.PC2SDZ(simCNT.pc2dz(i), pT, charge);
+
                if (charge == 1) 
                {
-                  histContainer.distrDPhiVsPTPC2Pos->Fill(STR.pc2dphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTPC2Pos->Fill(STR.pc2dz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTPC2Pos->Fill(simCNT.pc2dphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTPC2Pos->Fill(simCNT.pc2dz(i), pT, eventWeight);
 
-                  histContainer.distrSDPhiVsPTPC2Pos->
-                     Fill(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
-                          pT, eventWeight);
-                  histContainer.distrSDZVsPTPC2Pos->
-                     Fill(simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 
-                          pT, eventWeight);
+                  histContainer.distrSDPhiVsPTPC2Pos->Fill(sdphi, pT, eventWeight);
+                  histContainer.distrSDZVsPTPC2Pos->Fill(sdz, pT, eventWeight);
                }
                else
                {
-                  histContainer.distrDPhiVsPTPC2Neg->Fill(STR.pc2dphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTPC2Neg->Fill(STR.pc2dz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTPC2Neg->Fill(simCNT.pc2dphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTPC2Neg->Fill(simCNT.pc2dz(i), pT, eventWeight);
 
-                  histContainer.distrSDPhiVsPTPC2Neg->
-                     Fill(simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
-                          pT, eventWeight);
-                  histContainer.distrSDZVsPTPC2Neg->
-                     Fill(simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 
-                          pT, eventWeight);
+                  histContainer.distrSDPhiVsPTPC2Neg->Fill(sdphi, pT, eventWeight);
+                  histContainer.distrSDZVsPTPC2Neg->Fill(sdz, pT, eventWeight);
                }
 
-               if (IsMatch(pT, simCalibrator.PC2SDPhi(STR.pc2dphi(i), pT, charge), 
-                           simCalibrator.PC2SDZ(STR.pc2dz(i), pT, charge), 0.25))
+               if (IsMatch(pT, sdphi, sdz, 0.25))
                {
-                  const double pc2z = STR.ppc2z(i);
-                  const double pc2phi = atan2(STR.ppc2y(i), STR.ppc2x(i));
- 
-                  histContainer.heatmapPC2->Fill(pc2z, pc2phi, eventWeight*alphaReweight);
+                  const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
+                  histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
+                                                 eventWeight*alphaReweight);
                }
             }
 
             bool isMatchAndGoodPC3 = false;
 
-            if (IsHit(STR.pc3dphi(i)))
+            if (IsHit(simCNT.pc3dphi(i)))
             {
+               const double sdphi = simCalibrator.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
+               const double sdz = simCalibrator.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
+
                if (dcarm == 0) // PC3e
                {
                   if (charge == 1) 
                   {
-                     histContainer.distrDPhiVsPTPC3ePos->Fill(STR.pc3dphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTPC3ePos->Fill(STR.pc3dz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTPC3ePos->Fill(simCNT.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3ePos->Fill(simCNT.pc3dz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTPC3ePos->
-                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTPC3ePos->
-                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTPC3ePos->Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3ePos->Fill(sdz, pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTPC3eNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTPC3eNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTPC3eNeg->Fill(simCNT.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3eNeg->Fill(simCNT.pc3dz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTPC3eNeg->
-                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTPC3eNeg->
-                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTPC3eNeg->Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3eNeg->Fill(sdz, pT, eventWeight);
                   }
                }
                else // PC3w
                {
                   if (charge == 1) 
                   {
-                     histContainer.distrDPhiVsPTPC3wPos->Fill(STR.pc3dphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTPC3wPos->Fill(STR.pc3dz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTPC3wPos->Fill(simCNT.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3wPos->Fill(simCNT.pc3dz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTPC3wPos->
-                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTPC3wPos->
-                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTPC3wPos->Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3wPos->Fill(sdz, pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTPC3wNeg->Fill(STR.pc3dphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTPC3wNeg->Fill(STR.pc3dz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTPC3wNeg->Fill(simCNT.pc3dphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTPC3wNeg->Fill(simCNT.pc3dz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTPC3wNeg->
-                        Fill(simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm), 
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTPC3wNeg->
-                        Fill(simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm), 
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTPC3wNeg->Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTPC3wNeg->Fill(sdz, pT, eventWeight);
                   }
                }
 
-               const double sdphi = simCalibrator.PC3SDPhi(STR.pc3dphi(i), pT, charge, dcarm);
-               const double sdz = simCalibrator.PC3SDZ(STR.pc3dz(i), pT, charge, dcarm);
-
                if (IsMatch(pT, sdphi, sdz))
                {
-                  const double pc3z = STR.ppc3z(i);
-                  double pc3phi = atan2(STR.ppc3y(i), STR.ppc3x(i));
+                  double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
 
                   if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
@@ -319,174 +297,177 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   {
                      if (dcarm == 0) // PC3e
                      {
-                        histContainer.heatmapPC3e->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
+                        histContainer.heatmapPC3e->Fill(simCNT.ppc3z(i), pc3phi, 
+                                                        eventWeight*alphaReweight);
                      }
                      else // PC3w
                      {
-                        histContainer.heatmapPC3w->Fill(pc3z, pc3phi, eventWeight*alphaReweight);
+                        histContainer.heatmapPC3w->Fill(simCNT.ppc3z(i), pc3phi, 
+                                                        eventWeight*alphaReweight);
                      }
                   }
-                  if (!dmCutter.IsDeadPC3(dcarm, pc3z, pc3phi)) isMatchAndGoodPC3 = true;
+                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi)) isMatchAndGoodPC3 = true;
                }
             }
 
             bool isMatchAndGoodEMCal = false;
 
-            if (IsHit(STR.emcdz(i)))
+            if (IsHit(simCNT.emcdz(i)))
             {
+               const double sdphi = 
+                  simCalibrator.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
+               const double sdz = 
+                  simCalibrator.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
+
                if (dcarm == 0) // EMCale
                {
-                  histContainer.distrECoreVsPTEMCale[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                  histContainer.distrECoreVsPTEMCale[simCNT.sect(i)]->Fill(pT, simCNT.ecore(i));
 
                   if (isParticleOrig)
                   {
-                     histContainer.distrECoreVsPTEMCaleOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     histContainer.distrECoreVsPTEMCaleOrig[simCNT.sect(i)]->
+                        Fill(pT, simCNT.ecore(i));
                   }
                   if (charge == 1) 
                   {
-                     histContainer.distrProbVsPTEMCale[STR.sect(i)]->Fill(pT, STR.prob(i));
+                     histContainer.distrProbVsPTEMCale[simCNT.sect(i)]->Fill(pT, simCNT.prob(i));
 
-                     histContainer.distrDPhiVsPTEMCalePos[STR.sect(i)]->
-                        Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalePos[STR.sect(i)]->
-                        Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalePos[simCNT.sect(i)]->
+                        Fill(simCNT.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalePos[simCNT.sect(i)]->
+                        Fill(simCNT.emcdz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTEMCalePos[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
-                                                      dcarm, STR.sect(i)),
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTEMCalePos[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
-                                                    dcarm, STR.sect(i)),
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTEMCalePos[simCNT.sect(i)]->
+                        Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalePos[simCNT.sect(i)]->
+                        Fill(sdz, pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTEMCaleNeg[STR.sect(i)]->
-                        Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCaleNeg[STR.sect(i)]->
-                        Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCaleNeg[simCNT.sect(i)]->
+                        Fill(simCNT.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCaleNeg[simCNT.sect(i)]->
+                        Fill(simCNT.emcdz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTEMCaleNeg[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
-                                                      dcarm, STR.sect(i)),
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTEMCaleNeg[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
-                                                    dcarm, STR.sect(i)),
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTEMCaleNeg[simCNT.sect(i)]->
+                        Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCaleNeg[simCNT.sect(i)]->
+                        Fill(sdz, pT, eventWeight);
                   }
                }
                else // EMCalw
                {
-                  histContainer.distrProbVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.prob(i));
-                  histContainer.distrECoreVsPTEMCalw[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                  histContainer.distrProbVsPTEMCalw[simCNT.sect(i)]->Fill(pT, simCNT.prob(i));
+                  histContainer.distrECoreVsPTEMCalw[simCNT.sect(i)]->Fill(pT, simCNT.ecore(i));
+
                   if (isParticleOrig)
                   {
-                     histContainer.distrECoreVsPTEMCalwOrig[STR.sect(i)]->Fill(pT, STR.ecore(i));
+                     histContainer.distrECoreVsPTEMCalwOrig[simCNT.sect(i)]->
+                        Fill(pT, simCNT.ecore(i));
                   }
 
                   if (charge == 1) 
                   {
-                     histContainer.distrDPhiVsPTEMCalwPos[STR.sect(i)]->
-                        Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalwPos[STR.sect(i)]->
-                        Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalwPos[simCNT.sect(i)]->
+                        Fill(simCNT.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwPos[simCNT.sect(i)]->
+                        Fill(simCNT.emcdz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTEMCalwPos[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
-                                                      dcarm, STR.sect(i)),
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTEMCalwPos[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
-                                                    dcarm, STR.sect(i)),
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTEMCalwPos[simCNT.sect(i)]->
+                        Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalwPos[simCNT.sect(i)]->
+                        Fill(sdz, pT, eventWeight);
                   }
                   else
                   {
-                     histContainer.distrDPhiVsPTEMCalwNeg[STR.sect(i)]->
-                        Fill(STR.emcdphi(i), pT, eventWeight);
-                     histContainer.distrDZVsPTEMCalwNeg[STR.sect(i)]->
-                        Fill(STR.emcdz(i), pT, eventWeight);
+                     histContainer.distrDPhiVsPTEMCalwNeg[simCNT.sect(i)]->
+                        Fill(simCNT.emcdphi(i), pT, eventWeight);
+                     histContainer.distrDZVsPTEMCalwNeg[simCNT.sect(i)]->
+                        Fill(simCNT.emcdz(i), pT, eventWeight);
 
-                     histContainer.distrSDPhiVsPTEMCalwNeg[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, 
-                                                      dcarm, STR.sect(i)),
-                             pT, eventWeight);
-                     histContainer.distrSDZVsPTEMCalwNeg[STR.sect(i)]->
-                        Fill(simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, 
-                                                    dcarm, STR.sect(i)),
-                             pT, eventWeight);
+                     histContainer.distrSDPhiVsPTEMCalwNeg[simCNT.sect(i)]->
+                        Fill(sdphi, pT, eventWeight);
+                     histContainer.distrSDZVsPTEMCalwNeg[simCNT.sect(i)]->
+                        Fill(sdz, pT, eventWeight);
                   }
                }
-
-               const double sdphi = 
-                  simCalibrator.EMCalSDPhi(STR.emcdphi(i), pT, charge, dcarm, STR.sect(i));
-               const double sdz = 
-                  simCalibrator.EMCalSDZ(STR.emcdz(i), pT, charge, dcarm, STR.sect(i));
 
                if (IsMatch(pT, sdphi, sdz))
                {
                   bool isCutByECore;
-                  if (dcarm == 0 && STR.sect(i) < 2) isCutByECore = (STR.ecore(i) < 0.35); // PbGl
-                  else isCutByECore = (STR.ecore(i) < 0.25); // PbSc
+                  if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
+                  else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
 
                   if (!isCutByECore && IsMatch(pT, sdphi, sdz, 0.25))
                   { 
                      if (dcarm == 0) // EMCale
                      {
-                        histContainer.heatmapEMCale[STR.sect(i)]->
-                           Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
-                        histContainer.heatmapEMCaleHit[STR.sect(i)]->
-                           Fill(STR.ysect(i), STR.zsect(i), eventWeight*alphaReweight);
+                        histContainer.heatmapEMCale[simCNT.sect(i)]->
+                           Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
+                                static_cast<double>(simCNT.zsect(i)) + 0.5, 
+                                simCNT.ecore(i)*eventWeight*alphaReweight);
+                        histContainer.heatmapEMCaleHit[simCNT.sect(i)]->
+                           Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
+                                static_cast<double>(simCNT.zsect(i)) + 0.5, 
+                                eventWeight*alphaReweight);
                      }
                      else // EMCalw
                      {
-                        histContainer.heatmapEMCalw[STR.sect(i)]->
-                           Fill(STR.ysect(i), STR.zsect(i), STR.ecore(i)*eventWeight*alphaReweight);
-                        histContainer.heatmapEMCalwHit[STR.sect(i)]->
-                           Fill(STR.ysect(i), STR.zsect(i), eventWeight*alphaReweight);
+                        histContainer.heatmapEMCalw[simCNT.sect(i)]->
+                           Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
+                                static_cast<double>(simCNT.zsect(i)) + 0.5, 
+                                simCNT.ecore(i)*eventWeight*alphaReweight);
+                        histContainer.heatmapEMCalwHit[simCNT.sect(i)]->
+                           Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
+                                static_cast<double>(simCNT.zsect(i)) + 0.5, 
+                                eventWeight*alphaReweight);
                      }
                   }
 
-                  if (!dmCutter.IsDeadEMCal(dcarm, STR.sect(i), STR.ysect(i), STR.zsect(i)))
+                  if (!dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), 
+                                            simCNT.ysect(i), simCNT.zsect(i)))
                   {
                      isMatchAndGoodEMCal = true;
 
                      if (!isCutByECore)
                      {
-                        const double tExpPi = sqrt(pow(STR.plemc(i)/29.9792, 2)*
-                                                   (0.018926/STR.mom(i)*STR.mom(i) + 1.));
-                        const double m2 = STR.mom(i)*STR.mom(i)*
-                                          (pow(STR.temc(i)*29.9792/STR.plemc(i), 2) - 1.);
+                        const double tExpPi = sqrt(simCNT.plemc(i)*simCNT.plemc(i)/
+                                                   (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
+                                                   (MASS_PION*MASS_PION/
+                                                    simCNT.mom(i)*simCNT.mom(i) + 1.));
+
+                        const double m2 = simCNT.mom(i)*simCNT.mom(i)*
+                                          (simCNT.temc(i)*simCNT.temc(i)*
+                                           SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                           (simCNT.plemc(i)*simCNT.plemc(i) - 1.));
 
                         if (dcarm == 0)
                         {
-                           histContainer.distrTEMCale[STR.sect(i)]->
-                              Fill(STR.temc(i) - tExpPi, pT, eventWeight);
+                           histContainer.distrTEMCale[simCNT.sect(i)]->
+                              Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
                            if (charge == 1)
                            {
-                              histContainer.distrM2EMCalePosCharge[STR.sect(i)]->
+                              histContainer.distrM2EMCalePosCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
                            else
                            {
-                              histContainer.distrM2EMCaleNegCharge[STR.sect(i)]->
+                              histContainer.distrM2EMCaleNegCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
                         }
                         else
                         {
-                           histContainer.distrTEMCalw[STR.sect(i)]->
-                              Fill(STR.temc(i) - tExpPi, pT, eventWeight);
+                           histContainer.distrTEMCalw[simCNT.sect(i)]->
+                              Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
                            if (charge == 1)
                            {
-                              histContainer.distrM2EMCalwPosCharge[STR.sect(i)]->
+                              histContainer.distrM2EMCalwPosCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
                            else
                            {
-                              histContainer.distrM2EMCalwNegCharge[STR.sect(i)]->
+                              histContainer.distrM2EMCalwNegCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
                         }
@@ -495,117 +476,130 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            if (IsHit(STR.tofdz(i)))
+            if (IsHit(simCNT.tofdz(i)))
             {
                if (charge == 1) 
                {
-                  histContainer.distrDPhiVsPTTOFePos->Fill(STR.tofdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFePos->Fill(STR.tofdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFePos->Fill(simCNT.tofdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFePos->Fill(simCNT.tofdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFePos->
-                     Fill(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge),
+                     Fill(simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge),
                           pT, eventWeight);
                   histContainer.distrSDZVsPTTOFePos->
-                     Fill(simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge),
+                     Fill(simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge),
                           pT, eventWeight);
                }
                else
                {
-                  histContainer.distrDPhiVsPTTOFeNeg->Fill(STR.tofdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFeNeg->Fill(STR.tofdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFeNeg->Fill(simCNT.tofdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFeNeg->Fill(simCNT.tofdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFeNeg->
-                     Fill(simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge), pT, eventWeight);
+                     Fill(simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge), pT, eventWeight);
                   histContainer.distrSDZVsPTTOFeNeg->
-                     Fill(simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge), pT, eventWeight);
+                     Fill(simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge), pT, eventWeight);
                }
 
-               const double sdphi = simCalibrator.TOFeSDPhi(STR.tofdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFeSDZ(STR.tofdz(i), pT, charge);
+               const double sdphi = simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
+               const double sdz = simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
-               const double beta = STR.pltof(i)/STR.ttof(i)/29.9792;
+               const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.0005*pow(beta, -2.5);
-               histContainer.distrBetaVsETOFe->Fill(beta, STR.etof(i));
+               histContainer.distrBetaVsETOFe->Fill(beta, simCNT.etof(i));
 
-               if (STR.etof(i) > eloss && IsMatch(pT, sdphi, sdz))
+               if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz))
                {
                   // slats are organized in 10 lines of 96 we define as chambers
-                  const int chamber = STR.slat(i)/96;
+                  const int chamber = simCNT.slat(i)/96;
                   // slat number for the current chamber
-                  const int slat = STR.slat(i) % 96;
+                  const int slat = simCNT.slat(i) % 96;
 
                   if (IsMatch(pT, sdphi, sdz, 0.25))
                   {
-                     histContainer.heatmapTOFe->
-                        Fill(chamber, slat, STR.etof(i)*eventWeight*alphaReweight);
+                     histContainer.heatmapTOFe->Fill(static_cast<double>(chamber) + 0.5, 
+                                                     static_cast<double>(slat) + 0.5, 
+                                                     simCNT.etof(i)*eventWeight*alphaReweight);
                   }
 
                   if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
                       !dmCutter.IsDeadTOFe(chamber, slat))
                   {
-                     const double tExpPi = sqrt(pow(STR.pltof(i)/29.9792, 2)*
-                                                (0.018926/STR.mom(i)*STR.mom(i) + 1.));
-                     const double m2 = STR.mom(i)*STR.mom(i)*
-                                       (pow(STR.ttof(i)*29.9792/STR.pltof(i), 2) - 1.);
+                     const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
+                                                (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
+                                                (MASS_PION*MASS_PION/
+                                                 simCNT.mom(i)*simCNT.mom(i) + 1.));
 
-                     histContainer.distrTTOFe->Fill(STR.ttof(i) - tExpPi, pT, eventWeight);
+                     const double m2 = simCNT.mom(i)*simCNT.mom(i)*
+                                       (simCNT.ttof(i)*simCNT.ttof(i)*
+                                        SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                        (simCNT.pltof(i)*simCNT.pltof(i) - 1.));
+
+                     histContainer.distrTTOFe->Fill(simCNT.ttof(i) - tExpPi, pT, eventWeight);
 
                      if (charge == 1) histContainer.distrM2TOFePosCharge->Fill(pT, m2, eventWeight);
                      else histContainer.distrM2TOFeNegCharge->Fill(pT, m2, eventWeight);
                   }
                }
             }
-            else if (IsHit(STR.tofwdz(i)))
+            else if (IsHit(simCNT.tofwdz(i)))
             {
                if (charge == 1) 
                {
-                  histContainer.distrDPhiVsPTTOFwPos->Fill(STR.tofwdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFwPos->Fill(STR.tofwdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFwPos->Fill(simCNT.tofwdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFwPos->Fill(simCNT.tofwdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFwPos->
-                     Fill(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge), 
+                     Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge), 
                           pT, eventWeight);
                   histContainer.distrSDZVsPTTOFwPos->
-                     Fill(simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge), 
+                     Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge), 
                           pT, eventWeight);
                }
                else
                {
-                  histContainer.distrDPhiVsPTTOFwNeg->Fill(STR.tofwdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFwNeg->Fill(STR.tofwdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFwNeg->Fill(simCNT.tofwdphi(i), pT, eventWeight);
+                  histContainer.distrDZVsPTTOFwNeg->Fill(simCNT.tofwdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFwNeg->
-                     Fill(simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge),
+                     Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge),
                           pT, eventWeight);
                   histContainer.distrSDZVsPTTOFwNeg->
-                     Fill(simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge),
+                     Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge),
                           pT, eventWeight);
                }
 
-               const double sdphi = simCalibrator.TOFwSDPhi(STR.tofwdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFwSDZ(STR.tofwdz(i), pT, charge);
+               const double sdphi = simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
+               const double sdz = simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
 
                // strips are organized in 8 lines of 64 we define as chambers
-               const int chamber = STR.striptofw(i)/64;
+               const int chamber = simCNT.striptofw(i)/64;
                // strip number for the current chamber
-               const int strip = STR.striptofw(i) % 64;
+               const int strip = simCNT.striptofw(i) % 64;
 
                if (IsMatch(pT, sdphi, sdz))
                {
                   if (IsMatch(pT, sdphi, sdz, 0.25))
                   {
-                     histContainer.heatmapTOFw->Fill(chamber, strip, eventWeight*alphaReweight);
+                     histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
+                                                     static_cast<double>(strip) + 0.5, 
+                                                     eventWeight*alphaReweight);
                   }
 
                   if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
                       !dmCutter.IsDeadTOFw(chamber, strip))
                   {
-                     const double tExpPi = sqrt(pow(STR.pltofw(i)/29.9792, 2)*
-                                                (0.018926/STR.mom(i)*STR.mom(i) + 1.));
-                     const double m2 = STR.mom(i)*STR.mom(i)*
-                                       (pow(STR.ttofw(i)*29.9792/STR.pltofw(i), 2) - 1.);
+                     const double tExpPi = sqrt(simCNT.pltofw(i)*simCNT.pltofw(i)/
+                                                (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
+                                                (MASS_PION*MASS_PION/
+                                                 simCNT.mom(i)*simCNT.mom(i) + 1.));
 
-                     histContainer.distrTTOFw->Fill(STR.ttofw(i) - tExpPi, pT, eventWeight);
+                     const double m2 = simCNT.mom(i)*simCNT.mom(i)*
+                                       (simCNT.ttofw(i)*simCNT.ttofw(i)*
+                                        SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                        (simCNT.pltofw(i)*simCNT.pltofw(i) - 1.));
+
+                     histContainer.distrTTOFw->Fill(simCNT.ttofw(i) - tExpPi, pT, eventWeight);
 
                      if (charge == 1) histContainer.distrM2TOFwPosCharge->Fill(pT, m2, eventWeight);
                      else histContainer.distrM2TOFwNegCharge->Fill(pT, m2, eventWeight);
@@ -941,6 +935,7 @@ int main(int argc, char **argv)
          std::this_thread::sleep_for(std::chrono::milliseconds(100));
       }
       pBar.Finish();
+      CppTools::PrintInfo("AnalyzerSingleTrack has finished processing simulated data");
    };
  
    std::thread pBarThread(pBarCall);

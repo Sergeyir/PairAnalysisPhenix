@@ -25,6 +25,7 @@
 
 #include "ThrObj.hpp"
 
+#include "Constants.hpp"
 #include "SingleTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
@@ -435,25 +436,25 @@ namespace AnalyzeSingleTrack
       /// heatmaps of EMCale(0-3) hits
       std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCaleHit
       {
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale0 hit", "ytower vs ztower", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCale0 hit", "ytower vs ztower", 
                                      48, 0., 48., 97, 0., 97.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale1 hit", "ytower vs ztower", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCale1 hit", "ytower vs ztower", 
                                      48, 0., 48., 97, 0., 97.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale2 hit", "ytower vs ztower", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCale2 hit", "ytower vs ztower", 
                                      36, 0., 36, 72, 0., 72.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCale3 hit", "ytower vs ztower", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCale3 hit", "ytower vs ztower", 
                                      36, 0., 36, 72, 0., 72.)
       };
       /// heatmaps of EMCalw(0-3) hits
       std::array<ROOT::TThreadedObject<TH2F>, 4> heatmapEMCalwHit
       {
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw0 hit", "pemcy vs pemcz", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCalw0 hit", "pemcy vs pemcz", 
                                      36, 0., 36, 72, 0., 72.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw1 hit", "pemcy vs pemcz", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCalw1 hit", "pemcy vs pemcz", 
                                      36, 0., 36, 72, 0., 72.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw2 hit", "pemcy vs pemcz", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCalw2 hit", "pemcy vs pemcz", 
                                      36, 0., 36, 72, 0., 72.),
-         ROOT::TThreadedObject<TH2F>("Heatmap: EMCalw3 hit", "pemcy vs pemcz", 
+         ROOT::TThreadedObject<TH2F>("_Heatmap: EMCalw3 hit", "pemcy vs pemcz", 
                                      36, 0., 36, 72, 0., 72.)
       };
       /// prob in EMCale(0-3) vs pT distributions
