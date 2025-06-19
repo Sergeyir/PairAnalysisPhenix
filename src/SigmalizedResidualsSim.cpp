@@ -95,7 +95,7 @@ int main(int argc, char **argv)
       PerformCalibrationsForDetector("EMCalw" + std::to_string(i), detectorsConfiguration[6] == '1');
    }
 
-   pBar.Print(1.);
+   pBar.Finish();
 
    inputFile->Close();
    outputFile->Close();

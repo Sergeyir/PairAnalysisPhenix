@@ -290,6 +290,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                              CppTools::DtoStr(pTBin["max"].as<double>(), 1));
       numberOfCalls++;
    }
+   
+   pBar.Finish();
 
    fitPiPlus.meansVsPTFit->SetRange(detector["pi+_pt_bounds"][0].as<double>() - 0.01, 
                                     detector["pi+_pt_bounds"][1].as<double>() + 0.01);
