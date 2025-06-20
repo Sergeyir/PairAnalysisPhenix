@@ -59,8 +59,6 @@ namespace AnalyzeSingleTrack
    bool reweightForSpectra;
    /// shows whether heatmaps will be reweighted so that the discrepancy between real data and simulation is canceled
    bool reweightHeatmapsForAlpha;
-   /// shows whether the sigmalized residuals dphi and dz for all detectors are calibrated
-   bool areSigmalizedResidualsCalibrated;
    /// correction for TOFw due to ADC and efficiency correction
    double correctionTOFw;
    /// file reader for all required parameters for the simulation processing
@@ -115,7 +113,7 @@ namespace AnalyzeSingleTrack
    {
       /// distribution of original generated pT
       std::shared_ptr<TH1F> distrOrigPT;
-      // distribution of original generated pT vs reconstructed pT in the simulation
+      /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
       /// unscaled by alpha heatmap of DCe, zDC>=0
       std::shared_ptr<TH2F> heatmapUnscaledDCe0;
