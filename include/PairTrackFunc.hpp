@@ -48,9 +48,9 @@ struct ChargedTrack
    double pZ;
    /// energy of a track [GeV]
    double e;
-   /// reconstructed azimuthal angle of a track
+   /// reconstructed azimuthal angle of a track [rad]
    double phi;
-   /// reconstructed polar angle of a track
+   /// reconstructed polar angle of a track [rad]
    double theta;
    /// id of a particle obtained in PC2
    int idPC2;
