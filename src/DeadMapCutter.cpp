@@ -28,7 +28,7 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    }
    if (options[0] == '1')
    {
-      doCutDC = true;
+      useDC = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX1,zDC>=0.txt", 
                    cutAreasDCe0X1, cutAreasDCe0X1Range);
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/DCeX1,zDC<0.txt", 
@@ -49,12 +49,12 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for DC were specified to be not initialized");
-      doCutDC = false;
+      useDC = false;
    }
 
    if (options[1] == '1')
    {
-      doCutPC1 = true;
+      usePC1 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1e.txt", 
                    cutAreasPC1e, cutAreasPC1eRange);
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC1w.txt", 
@@ -63,24 +63,24 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for PC1 were specified to be not initialized");
-      doCutPC1 = false;
+      usePC1 = false;
    }
 
    if (options[2] == '1')
    {
-      doCutPC2 = true;
+      usePC2 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC2.txt", 
                    cutAreasPC2, cutAreasPC2Range);
    }
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for PC2 were specified to be not initialized");
-      doCutPC2 = false;
+      usePC2 = false;
    }
 
    if (options[3] == '1')
    {
-      doCutPC3 = true;
+      usePC3 = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3e.txt", 
                    cutAreasPC3e, cutAreasPC3eRange);
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/PC3w.txt", 
@@ -89,55 +89,65 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for PC3 were specified to be not initialized");
-      doCutPC3 = false;
+      usePC3 = false;
    }
 
    if (options[4] == '1')
    {
-      doCutTOFe = true;
+      useTOFe = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFe.txt", 
                    cutAreasTOFe, cutAreasTOFeRange);
+      SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + "/TimingDeadmapTOFe.txt", 
+                   cutAreasTimingTOFe, cutAreasTimingTOFeRange);
    }
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for TOFe were specified to be not initialized");
-      doCutTOFe = false;
+      useTOFe = false;
    }
 
    if (options[5] == '1')
    {
-      doCutTOFw = true;
+      useTOFw = true;
       SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/TOFw.txt", 
                    cutAreasTOFw, cutAreasTOFwRange);
+      SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + "/TimingDeadmapTOFw.txt", 
+                   cutAreasTimingTOFw, cutAreasTimingTOFwRange);
    }
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for TOFw were specified to be not initialized");
-      doCutTOFw = false;
+      useTOFw = false;
    }
 
    if (options[6] == '1')
    {
-      doCutEMCal = true;
+      useEMCal = true;
       for (int i = 0; i < 4; i++)
       {
          SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/EMCale" + 
                       std::to_string(i) + ".txt", cutAreasEMCale[i], cutAreasEMCaleRange[i]);
          SetDeadAreas("data/Parameters/Deadmaps/" + runName + "/EMCalw" + 
                       std::to_string(i) + ".txt", cutAreasEMCalw[i], cutAreasEMCalwRange[i]);
+         SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
+                      "/TimingDeadmapEMCale" + std::to_string(i) + ".txt", 
+                      cutAreasTimingEMCale[i], cutAreasTimingEMCaleRange[i]);
+         SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
+                      "/TimingDeadmapEMCalw" + std::to_string(i) + ".txt", 
+                      cutAreasTimingEMCalw[i], cutAreasTimingEMCalwRange[i]);
       }
    }
    else 
    {
       CppTools::PrintInfo("DeadMapCutter: cuts for EMCal were specified to be not initialized");
-      doCutEMCal = false;
+      useEMCal = false;
    }
 }
 
 bool DeadMapCutter::IsDeadDC(const int dcarm, const double zDC, 
                              const double board, const double alpha)
 {
-   if (!doCutDC) return false;
+   if (!useDC) return false;
    if (dcarm == 0) // DCe
    {
       if (zDC >= 0)
@@ -234,7 +244,7 @@ bool DeadMapCutter::IsDeadDC(const int dcarm, const double zDC,
 
 bool DeadMapCutter::IsDeadPC1(const int dcarm, const double ppc1z, const double ppc1phi)
 {
-   if (!doCutPC1) return false;
+   if (!usePC1) return false;
    if (dcarm == 0) // PC1e
    {
       if (ppc1z <= cutAreasPC1eRange[0] || ppc1z >= cutAreasPC1eRange[1] ||
@@ -263,7 +273,7 @@ bool DeadMapCutter::IsDeadPC1(const int dcarm, const double ppc1z, const double 
 
 bool DeadMapCutter::IsDeadPC2(const double ppc2z, const double ppc2phi)
 {
-   if (!doCutPC2) return false;
+   if (!usePC2) return false;
    if (ppc2z <= cutAreasPC2Range[0] || ppc2z >= cutAreasPC2Range[1] ||
        ppc2phi <= cutAreasPC2Range[2] || ppc2phi >= cutAreasPC2Range[3]) return true;
 
@@ -278,7 +288,7 @@ bool DeadMapCutter::IsDeadPC2(const double ppc2z, const double ppc2phi)
 
 bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double ppc3phi)
 {
-   if (!doCutPC3) return false;
+   if (!usePC3) return false;
    if (dcarm == 0) // PC3e
    {
       if (ppc3z <= cutAreasPC3eRange[0] || ppc3z >= cutAreasPC3eRange[1] ||
@@ -307,7 +317,7 @@ bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double 
 
 bool DeadMapCutter::IsDeadTOFe(const int chamber, const int slat)
 {
-   if (!doCutTOFe) return false;
+   if (!useTOFe) return false;
    if (chamber <= cutAreasTOFeRange[0] || chamber >= cutAreasTOFeRange[1] ||
        slat <= cutAreasTOFeRange[2] || slat >= cutAreasTOFeRange[3]) return true;
 
@@ -322,7 +332,7 @@ bool DeadMapCutter::IsDeadTOFe(const int chamber, const int slat)
 
 bool DeadMapCutter::IsDeadTOFw(const int chamber, const int strip)
 {
-   if (!doCutTOFw) return false;
+   if (!useTOFw) return false;
 
    if (chamber <= cutAreasTOFwRange[0] || chamber >= cutAreasTOFwRange[1] ||
        strip <= cutAreasTOFwRange[2] || strip >= cutAreasTOFwRange[3]) return true;
@@ -339,7 +349,7 @@ bool DeadMapCutter::IsDeadTOFw(const int chamber, const int strip)
 bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, 
                                 const int ytower, const int ztower)
 {
-   if (!doCutEMCal) return false;
+   if (!useEMCal) return false;
    if (dcarm == 0) // EMCale
    {
       if (ytower <= cutAreasEMCaleRange[sector][0] || 
@@ -372,6 +382,79 @@ bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector,
                                           cutAreasEMCalwRange[sector][0])*
                                          static_cast<double>(cutAreasEMCalw[sector][0].size()));
    return cutAreasEMCalw[sector][yBin][xBin];
+}
+
+bool DeadMapCutter::IsDeadTimingTOFe(const int chamber, const int slat)
+{
+   if (!useTOFe) return false;
+   if (chamber <= cutAreasTimingTOFeRange[0] || chamber >= cutAreasTimingTOFeRange[1] ||
+       slat <= cutAreasTimingTOFeRange[2] || slat >= cutAreasTimingTOFeRange[3]) return true;
+
+   const short yBin = static_cast<short>((slat - cutAreasTimingTOFeRange[2])/
+                                         (cutAreasTimingTOFeRange[3] - cutAreasTimingTOFeRange[2])*
+                                         static_cast<double>(cutAreasTimingTOFe.size()));
+   const short xBin = static_cast<short>((chamber - cutAreasTimingTOFeRange[0])/
+                                         (cutAreasTimingTOFeRange[1] - cutAreasTimingTOFeRange[0])*
+                                         static_cast<double>(cutAreasTimingTOFe[0].size()));
+   return cutAreasTimingTOFe[yBin][xBin];
+}
+
+bool DeadMapCutter::IsDeadTimingTOFw(const int chamber, const int strip)
+{
+   if (!useTOFw) return false;
+
+   if (chamber <= cutAreasTimingTOFwRange[0] || chamber >= cutAreasTimingTOFwRange[1] ||
+       strip <= cutAreasTimingTOFwRange[2] || strip >= cutAreasTimingTOFwRange[3]) return true;
+
+   const short yBin = static_cast<short>((strip - cutAreasTimingTOFwRange[2])/
+                                         (cutAreasTimingTOFwRange[3] - cutAreasTimingTOFwRange[2])*
+                                         static_cast<double>(cutAreasTimingTOFw.size()));
+   const short xBin = static_cast<short>((chamber - cutAreasTimingTOFwRange[0])/
+                                         (cutAreasTimingTOFwRange[1] - cutAreasTimingTOFwRange[0])*
+                                         static_cast<double>(cutAreasTimingTOFw[0].size()));
+   return cutAreasTimingTOFw[yBin][xBin];
+}
+
+bool DeadMapCutter::IsDeadTimingEMCal(const int dcarm, const int sector, 
+                                      const int ytower, const int ztower)
+{
+   if (!useEMCal) return false;
+   if (dcarm == 0) // EMCale
+   {
+      if (ytower <= cutAreasTimingEMCaleRange[sector][0] || 
+          ytower >= cutAreasTimingEMCaleRange[sector][1] ||
+          ztower <= cutAreasTimingEMCaleRange[sector][2] || 
+          ztower >= cutAreasTimingEMCaleRange[sector][3]) return true;
+
+      const short yBin = 
+         static_cast<short>((ztower - cutAreasTimingEMCaleRange[sector][2])/
+                            (cutAreasTimingEMCaleRange[sector][3] - 
+                             cutAreasTimingEMCaleRange[sector][2])*
+                            static_cast<double>(cutAreasTimingEMCale[sector].size()));
+      const short xBin = 
+         static_cast<short>((ytower - cutAreasTimingEMCaleRange[sector][0])/
+                            (cutAreasTimingEMCaleRange[sector][1] - 
+                             cutAreasTimingEMCaleRange[sector][0])*
+                            static_cast<double>(cutAreasTimingEMCale[sector][0].size()));
+      return cutAreasTimingEMCale[sector][yBin][xBin];
+   }
+   // EMCalw
+   if (ytower <= cutAreasTimingEMCalwRange[sector][0] || 
+       ytower >= cutAreasTimingEMCalwRange[sector][1] ||
+       ztower <= cutAreasTimingEMCalwRange[sector][2] || 
+       ztower >= cutAreasTimingEMCalwRange[sector][3]) return true;
+
+   const short yBin = 
+      static_cast<short>((ztower - cutAreasTimingEMCalwRange[sector][2])/
+                         (cutAreasTimingEMCalwRange[sector][3] - 
+                          cutAreasTimingEMCalwRange[sector][2])*
+                         static_cast<double>(cutAreasTimingEMCalw[sector].size()));
+   const short xBin = 
+      static_cast<short>((ytower - cutAreasTimingEMCalwRange[sector][0])/
+                         (cutAreasTimingEMCalwRange[sector][1] - 
+                          cutAreasTimingEMCalwRange[sector][0])*
+                         static_cast<double>(cutAreasTimingEMCalw[sector][0].size()));
+   return cutAreasTimingEMCalw[sector][yBin][xBin];
 }
 
 void DeadMapCutter::SetDeadAreas(const std::string& inputFileName, 

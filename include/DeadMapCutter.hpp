@@ -73,25 +73,31 @@ class DeadMapCutter
    bool IsDeadTOFw(const int chamber, const int strip);
    /// Returns true if data in EMCal is in bad/dead area
    bool IsDeadEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
+   /// Returns true if timing distribution in TOFe is bad
+   bool IsDeadTimingTOFe(const int chamber, const int slat);
+   /// Returns true if timing distribution in TOFw is bad
+   bool IsDeadTimingTOFw(const int chamber, const int strip);
+   /// Returns true if timing distribution in EMCal is bad
+   bool IsDeadTimingEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
 
    private:
    /// read 2D arrays from the file into class attributes
    void SetDeadAreas(const std::string& inputFileName, std::vector<std::vector<bool>>& cutAreas,
                      double *ranges);
    /// shows whether option for DC was specified
-   bool doCutDC;
+   bool useDC;
    /// shows whether option for PC1 was specified
-   bool doCutPC1;
+   bool usePC1;
    /// shows whether option for PC2 was specified
-   bool doCutPC2;
+   bool usePC2;
    /// shows whether option for PC3 was specified
-   bool doCutPC3;
+   bool usePC3;
    /// shows whether option for TOFe was specified
-   bool doCutTOFe;
+   bool useTOFe;
    /// shows whether option for TOFw was specified
-   bool doCutTOFw;
+   bool useTOFw;
    /// shows whether option for EMCal was specified
-   bool doCutEMCal;
+   bool useEMCal;
    /// cut areas for DCeX1, zDC>=0
    std::vector<std::vector<bool>> cutAreasDCe0X1;
    /// cut areas for DCeX1, zDC<0
@@ -126,6 +132,14 @@ class DeadMapCutter
    std::vector<std::vector<bool>> cutAreasEMCale[4];
    /// cut areas for EMCalw(0-3)
    std::vector<std::vector<bool>> cutAreasEMCalw[4];
+   /// cut areas for timing for TOFe
+   std::vector<std::vector<bool>> cutAreasTimingTOFe;
+   /// cut areas for timing for TOFw
+   std::vector<std::vector<bool>> cutAreasTimingTOFw;
+   /// cut areas for timing for EMCale(0-3)
+   std::vector<std::vector<bool>> cutAreasTimingEMCale[4];
+   /// cut areas for timing for EMCalw(0-3)
+   std::vector<std::vector<bool>> cutAreasTimingEMCalw[4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for DCeX1, zDC>=0 heatmaps
    double cutAreasDCe0X1Range[4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for DCeX1, zDC<0 heatmaps
@@ -160,6 +174,14 @@ class DeadMapCutter
    double cutAreasEMCaleRange[4][4];
    /// ranges of X [0], [1] and Y, [2], [3] axis for EMCalw(0-3) heatmaps
    double cutAreasEMCalwRange[4][4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for TOFe timing heatmaps
+   double cutAreasTimingTOFeRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for TOFw timing heatmaps
+   double cutAreasTimingTOFwRange[4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for EMCale(0-3) timing heatmaps
+   double cutAreasTimingEMCaleRange[4][4];
+   /// ranges of X [0], [1] and Y, [2], [3] axis for EMCalw(0-3) timing heatmaps
+   double cutAreasTimingEMCalwRange[4][4];
 };
 
 #endif /* DEAD_MAP_CUTTER_HPP */
