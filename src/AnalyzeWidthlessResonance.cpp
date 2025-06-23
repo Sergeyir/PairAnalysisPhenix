@@ -17,20 +17,15 @@
 using namespace AnalyzeWidthlessResonance;
 
 void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
-                                              const std::string& particleName, 
-                                              const short particleGeantId, 
-                                              const std::string& magneticFieldName, 
-                                              const std::string &pTRangeName)
+                                                     const std::string& particleName, 
+                                                     const short particleGeantId, 
+                                                     const std::string& magneticFieldName, 
+                                                     const std::string &pTRangeName)
 { 
-
-   std::string simInputFileName = 
-      "data/SimTrees/" + runName + "/WidthlessResonance/" + 
-      particleName + "_" + pTRangeName + magneticFieldName + ".root";
-   std::string realDataFileName = 
-      "data/Real/" + runName + "/WidthlessResonance/sum" + magneticFieldName + ".root";
+   std::string simInputFileName = "data/SimTrees/" + runName + "/WidthlessResonance/" + 
+                                  particleName + "_" + pTRangeName + magneticFieldName + ".root";
 
    TFile simInputFile = TFile(simInputFileName.c_str());
-   TFile realDataFile = TFile(realDataFileName.c_str());
 
    TH1F *origPTHist = static_cast<TH1F *>(simInputFile.Get("orig_pt"));
 
@@ -43,6 +38,10 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
    double eventNormWeight = 1.;
    if (reweightForSpectra)
    {
+      std::string realDataFileName = "data/Real/" + runName + "/WidthlessResonance/sum" + 
+                                     magneticFieldName + ".root";
+      TFile realDataFile = TFile(realDataFileName.c_str());
+
       // threshold is needed since there can be a little noise in the histogram
       const double origPTThreshold = 
          origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
@@ -105,8 +104,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          const double bbcz = simCNT.bbcz();
          if (fabs(bbcz) > 30.) continue;
 
-         std::vector<TLorentzVector> positiveTracks;
-         std::vector<TLorentzVector> negativeTracks;
+         std::vector<ChargedTrack> positiveTracks;
+         std::vector<ChargedTrack> negativeTracks;
 
          for(int i = 0; i < simCNT.nch(); i++)
          {
@@ -150,21 +149,22 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             switch (charge)
             {
                case 1:
-                  positiveTracks.emplace_back(simCNT.mom[0], simCNT.mom[1], simCNT.mom[2]);
+                  positiveTracks.emplace_back(simCNT.mom[i]*sin(theta0)*cos(simCNT.phi0(i)), 
+                                              simCNT.mom[i]*sin(theta0)*sin(simCNT.phi0(i)), 
+                                              simCNT.mom[i]*cos(theta0), phi, alpha, zed);
                   break;
                case -1:
-                  negativeTracks.emplace_back(simCNT.mom[0], simCNT.mom[1], simCNT.mom[2]);
+                  negativeTracks.emplace_back(simCNT.mom[i]*sin(theta0)*cos(simCNT.phi0(i)), 
+                                              simCNT.mom[i]*sin(theta0)*sin(simCNT.phi0(i)), 
+                                              simCNT.mom[i]*cos(theta0), phi, alpha, zed);
                   break;
             }
          }
 
-         for (const TLorentzVector& posTrack : positiveTracks)
+         for (const auto& posTrack : positiveTracks)
          {
-            for (const TLorentzVector& negTrack : negativeTracks)
+            for (const auto& negTrack : negativeTracks)
             {
-               const double pX = posTrack.Px() + negTrack.Px();
-               const double pY = posTrack.Py() + negTrack.Py();
-               const double pZ = posTrack.Pz() + negTrack.Pz();
             }
          }
       }

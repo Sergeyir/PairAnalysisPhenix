@@ -1,6 +1,6 @@
 /** 
  *  @file   PairTrackFunc.hpp
- *  @brief  Contains declarations of functions that are used for analysis of pair of tracks of PHENIX simulated data
+ *  @brief  Contains declarations of functions and structs that are used for analysis of pair of tracks of PHENIX simulated data
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
@@ -10,8 +10,6 @@
 #define PAIR_TRACK_FUNC_HPP
 
 #include <cmath>
-
-#include "Particles.hpp"
 
 /*! @namespace PART_ID
  * @brief Contains constants that store absolute values of particle ids
@@ -31,13 +29,16 @@ namespace PART_ID
  */
 struct ChargedTrack
 {
+   /// Default constructor (deleted)
+   ChargedTrack() = delete;
    /*! @brief Constructor
     * @param[in] m mass of a particle [GeV/c^2]
     * @param[in] pX X component of momentum [GeV/c]
     * @param[in] pY Y component of momentum [GeV/c]
     * @param[in] pz Z component of momentum [GeV/c]
     */
-   ChargedTrack(const double m, const double pX, const double pY, const double pZ);
+   ChargedTrack(const double m, const double pX, const double pY, const double pZ, 
+                const double phi, const double alpha, const double zed);
    /// mass of a particle [GeV/c^2]
    double m;
    /// reconstructed X compoment of momentum of a track [GeV/c]
@@ -51,27 +52,77 @@ struct ChargedTrack
    /// reconstructed azimuthal angle of a track [rad]
    double phi;
    /// reconstructed polar angle of a track [rad]
-   double theta;
+   double alpha;
+   /// reconstructed zDC coordinate [cm]
+   double zed;
    /// id of a particle obtained in PC2
-   int idPC2;
+   int idPC2 = PART_ID::JUNK;
    /// id of a particle obtained in PC3
-   int idPC3;
+   int idPC3 = PART_ID::JUNK;
    /// id of a particle obtained in EMCal
-   int idEMCal;
+   int idEMCal = PART_ID::JUNK;
    /// id of a particle obtained in TOFe
-   int idTOFe;
+   int idTOFe = PART_ID::JUNK;
    /// id of a particle obtained in TOFw
-   int idTOFw
-}
-
-bool IsTOF2PID(const ChargedTrack& track1, const ChargedTrack& track2);
-bool IsEMC2PID(const ChargedTrack& track1, const ChargedTrack& track2);
-bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2);
-bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2);
+   int idTOFw = PART_ID::JUNK;
+};
+/*! @brief Returns true if the pair of charged tracks passes TOF2PID check
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ * @param[in] id1 id that 1st track must have
+ * @param[in] id2 id that 2nd track must have
+ */
+bool IsTOF2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+               const int id1, const int id2);
+/*! @brief Returns true if the pair of charged tracks passes EMC2PID check
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ * @param[in] id1 id that 1st track must have
+ * @param[in] id2 id that 2nd track must have
+ */
+bool IsEMCal2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+                 const int id1, const int id2);
+/*! @brief Returns true if the pair of charged tracks passes TOF2PID check
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ * @param[in] id1 id that 1st track must have
+ * @param[in] id2 id that 2nd track must have
+ */
+bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+            const int id1, const int id2);
+/*! @brief Returns true if the pair of charged tracks passes 2PID check
+ * @param[in] track1 1st charged track in a p1ir
+ * @param[in] track1 2nd charged track in a pair
+ * @param[in] id1 id that 1st might have 
+ * @param[in] id2 id that 2nd might have
+ */
+bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+            const int id1, const int id2);
+/*! @brief Returns true if the pair of charged tracks passes NoPID check
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ */
 bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2);
+/*! @brief Returns pT of a pair of charged tracks
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ */
 double GetPairPT(const ChargedTrack& track1, const ChargedTrack& track2);
-double GetMass(const ChargedTrack& track1, const ChargedTrack& track2);
+/*! @brief Returns invariant mass of a pair of charged tracks
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ */
+double GetPairMass(const ChargedTrack& track1, const ChargedTrack& track2);
+/*! @brief Returns true if the pair of charged tracks does not pass 1 arm check
+ * (i.e. both particles must be in one arm)
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ */
 bool IsOneArmCut(const ChargedTrack& track1, const ChargedTrack& track2);
+/*! @brief Returns true if the pair of charged tracks does not pair ghost cut
+ * @param[in] track1 1st charged track in a pair
+ * @param[in] track1 2nd charged track in a pair
+ */
 bool IsGhostCut(const ChargedTrack& track1, const ChargedTrack& track2);
 
 #endif /* PAIR_TRACK_FUNC_HPP */

@@ -61,6 +61,7 @@ link_libraries(yaml-cpp)
 add_library(InputYAMLReader ${CMAKE_SOURCE_DIR}/src/InputYAMLReader.cpp)
 add_library(SimTreeReader ${CMAKE_SOURCE_DIR}/src/SimTreeReader.cpp)
 add_library(SingleTrackFunc ${CMAKE_SOURCE_DIR}/src/SingleTrackFunc.cpp)
+add_library(PairTrackFunc ${CMAKE_SOURCE_DIR}/src/PairTrackFunc.cpp)
 add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 add_library(SimCalibrator ${CMAKE_SOURCE_DIR}/src/SimCalibrator.cpp)
 
