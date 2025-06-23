@@ -20,7 +20,7 @@ bool IsHit(const double dVal)
 
 bool IsMatch(const double pT, const double sdphi, const double sdz, const double sDevSquareMax)
 {
-   if (pT > 3. || sdphi*sdphi + sdz*sdz < sDevSquareMax) return true;
+   if (sdphi*sdphi + sdz*sdz < sDevSquareMax) return true;
    return false;
 }   
 

@@ -87,9 +87,9 @@ class SimCalibrator
                    const int dcarm, const int sector);
    private:
    /// @brief Returns mean of track deviation (sdphi or sdz)
-   inline double GetDValMean(const double pT, const double *par);
+   inline double GetDValMean(double pT, const double *par);
    /// @brief Returns sigma of track deviation (sdphi or sdz)
-   inline double GetDValSigma(const double pT, const double *par);
+   inline double GetDValSigma(double pT, const double *par);
    /// read 2D arrays from the file into class attributes
    void SetParameters(const std::string& inputFileName, 
                       std::array<std::vector<double>, 4>& parMeans,

@@ -304,8 +304,8 @@ double SimCalibrator::TOFwSDZ(const double dz, const double pT, const int charge
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::EMCalSDPhi(const double dphi, const double pT, const int charge, 
-                          const int dcarm, const int sector)
+double SimCalibrator::EMCalSDPhi(const double dphi, double pT, const int charge, 
+                                 const int dcarm, const int sector)
 {
    if (!doCalEMCal) return dphi/0.002;
 
@@ -378,13 +378,17 @@ double SimCalibrator::EMCalSDZ(const double dz, const double pT, const int charg
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::GetDValMean(const double pT, const double *par)
+double SimCalibrator::GetDValMean(double pT, const double *par)
 {
+   // on pT > ~2.5-3 mean becomes constant
+   if (pT > 3.) pT = 3.;
    return par[0] + par[1]/pT + par[2]/(pT*pT) + par[3]*pT;
 }
 
-double SimCalibrator::GetDValSigma(const double pT, const double *par)
+double SimCalibrator::GetDValSigma(double pT, const double *par)
 {
+   // on pT > ~2.5-3 sigma becomes constant
+   if (pT > 3.) pT = 3.;
    return par[0] + par[1]/pT + par[2]*pT;
 }
 

@@ -169,6 +169,32 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCaleHit;
       /// heatmaps of EMCalw(0-3) hits
       std::array<std::shared_ptr<TH2F>, 4> heatmapEMCalwHit;
+      /// heatmap of DCe vs pT, zDC>=0
+      std::shared_ptr<TH3F> heatmapDCe0VsPT;
+      /// heatmap of DCe vs pT, zDC<0
+      std::shared_ptr<TH3F> heatmapDCe1VsPT;
+      /// heatmap of DCw vs pT, zDC>=0
+      std::shared_ptr<TH3F> heatmapDCw0VsPT;
+      /// heatmap of DCw vs pT, zDC<0
+      std::shared_ptr<TH3F> heatmapDCw1VsPT;
+      /// heatmap of PC1e vs pT
+      std::shared_ptr<TH3F> heatmapPC1eVsPT;
+      /// heatmap of PC1w vs pT
+      std::shared_ptr<TH3F> heatmapPC1wVsPT;
+      /// heatmap of PC2 vs pT
+      std::shared_ptr<TH3F> heatmapPC2VsPT;
+      /// heatmap of PC3e vs pT
+      std::shared_ptr<TH3F> heatmapPC3eVsPT;
+      /// heatmap of PC3w vs pT
+      std::shared_ptr<TH3F> heatmapPC3wVsPT;
+      /// heatmap of TOFe vs pT
+      std::shared_ptr<TH3F> heatmapTOFeVsPT;
+      /// heatmap of TOFw vs pT
+      std::shared_ptr<TH3F> heatmapTOFwVsPT;
+      /// heatmaps of EMCale(0-3) vs pT
+      std::array<std::shared_ptr<TH3F>, 4> heatmapEMCaleVsPT;
+      /// heatmaps of EMCalw(0-3) vs pT
+      std::array<std::shared_ptr<TH3F>, 4> heatmapEMCalwVsPT;
       /// prob in EMCale(0-3) vs pT distributions
       std::array<std::shared_ptr<TH2F>, 4> distrProbVsPTEMCale;
       /// prob in EMCalw(0-3) vs pT distributions
@@ -408,7 +434,7 @@ namespace AnalyzeSingleTrack
       /// heatmap of TOFe
       ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "chamber vs slat", 
                                               10, 0., 10., 96, 0., 96.};
-      /// heatmap of TOFw, ptofy<100
+      /// heatmap of TOFw
       ROOT::TThreadedObject<TH2F> heatmapTOFw{"Heatmap: TOFw", "chamber vs strip", 
                                               8, 0., 8., 64, 0., 64.};
       /// heatmaps of EMCale(0-3)
@@ -454,6 +480,67 @@ namespace AnalyzeSingleTrack
                                      36, 0., 36, 72, 0., 72.),
          ROOT::TThreadedObject<TH2F>("_Heatmap: EMCalw3 hit", "pemcy vs pemcz", 
                                      36, 0., 36, 72, 0., 72.)
+      };
+
+      /// heatmap of DCe vs pT, zDC>=0
+      ROOT::TThreadedObject<TH3F> heatmapDCe0VsPT{"Heatmap vs pT: DCe, zDC>=0", "board vs alpha", 
+                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+      /// heatmap of DCe vs pT, zDC<0
+      ROOT::TThreadedObject<TH3F> heatmapDCe1VsPT{"Heatmap vs pT: DCe, zDC<0", "board vs alpha", 
+                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+      /// heatmap of DCw vs pT, zDC>=0
+      ROOT::TThreadedObject<TH3F> heatmapDCw0VsPT{"Heatmap vs pT: DCw, zDC>=0", "board vs alpha", 
+                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+      /// heatmap of DCw vs pT, zDC<0
+      ROOT::TThreadedObject<TH3F> heatmapDCw1VsPT{"Heatmap vs pT: DCw, zDC<0", "board vs alpha", 
+                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+      /// heatmap of PC1e vs pT
+      ROOT::TThreadedObject<TH3F> heatmapPC1eVsPT{"Heatmap vs pT: PC1e", "pc1z vs pc1phi", 
+                                                  76, -95., 95., 34, 2.05, 3.75, 20, 0., 10.};
+      /// heatmap of PC1w vs pT
+      ROOT::TThreadedObject<TH3F> heatmapPC1wVsPT{"Heatmap vs pT: PC1w", "pc1z vs pc1phi", 
+                                                  76, -95., 95., 34, -0.6, 1.05, 20, 0., 10.};
+      /// heatmap of PC2 vs pT
+      ROOT::TThreadedObject<TH3F> 
+         heatmapPC2VsPT{"Heatmap vs pT: PC2", "pc3z vs pc3phi", 
+                        66, -165., 165., 33, -0.6, 1.05, 20, 0., 10.};
+      /// heatmap of PC3e vs pT
+      ROOT::TThreadedObject<TH3F> 
+         heatmapPC3eVsPT{"Heatmap vs pT: PC3e", "pc3z vs pc3phi",    
+                         78, -195., 195., 34, 2.1, 3.8, 20, 0., 10.};
+      /// heatmap of PC3w vs pT
+      ROOT::TThreadedObject<TH3F> 
+         heatmapPC3wVsPT{"Heatmap vs pT: PC3w", "pc3z vs pc3phi", 
+                         78, -195., 195., 34, -0.65, 1.05, 20, 0., 10.};
+      /// heatmap of TOFe vs pT
+      ROOT::TThreadedObject<TH3F> heatmapTOFeVsPT{"Heatmap vs pT: TOFe", "chamber vs slat", 
+                                                  10, 0., 10., 96, 0., 96., 20, 0., 10.};
+      /// heatmap of TOFw vs pT
+      ROOT::TThreadedObject<TH3F> heatmapTOFwVsPT{"Heatmap vs pT: TOFw", "chamber vs strip", 
+                                                  8, 0., 8., 64, 0., 64., 20, 0., 10.};
+      /// heatmaps of EMCale(0-3) vs pT
+      std::array<ROOT::TThreadedObject<TH3F>, 4> heatmapEMCaleVsPT
+      {
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale0", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale1", "ytower vs ztower", 
+                                     48, 0., 48., 97, 0., 97., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale2", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale3", "ytower vs ztower", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.)
+      };
+      /// heatmaps of EMCalw(0-3) vs pT
+      std::array<ROOT::TThreadedObject<TH3F>, 4> heatmapEMCalwVsPT
+      {
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw0", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw1", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw2", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+         ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw3", "pemcy vs pemcz", 
+                                     36, 0., 36, 72, 0., 72., 20, 0., 10.)
       };
       /// prob in EMCale(0-3) vs pT distributions
       std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCale

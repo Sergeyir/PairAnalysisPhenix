@@ -23,7 +23,8 @@ bool IsHit(const double dVal);
  * @param[in] sdz sigmalized deviation of z
  * @param[in] sDevSquareMax maximum allowed deviation of (sdphi*sdphi + sdz*sdz)
  */
-bool IsMatch(const double pT, const double sdphi, const double sdz, const double sDevSquareMax = 4.);
+bool IsMatch(const double pT, const double sdphi, const double sdz, 
+             const double sDevSquareMax = 6.25);
 /*! @brief Checks if the quality cut for the charged track is applied
  *
  * @param[in] qual - quality of the charged track
