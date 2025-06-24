@@ -11,30 +11,19 @@
 
 #include "../include/PairTrackFunc.hpp"
 
-ChargedTrack::ChargedTrack(const double m, const double pX, const double pY, const double pZ, 
-                           const double phi, const double alpha, const double zed)
-{
-   this->m = m;
-   this->pX = pX;
-   this->pY = pY;
-   this->pZ = pZ;
-   this->phi = phi;
-   this->alpha = alpha;
-   this->zed = zed;
-   e = sqrt(pX*pX + pY*pY + pZ*pZ + m*m);
-}
-
 bool IsTOF2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                const int id1, const int id2)
 {
    return ((track1.idTOFe == id1 && track2.idTOFe == id2) ||
            (track1.idTOFw == id1 && track2.idTOFw == id2));
 }
+
 bool IsEMCal2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                  const int id1, const int id2)
 {
    return (track1.idEMCal == id1 && track2.idEMCal == id2);
 }
+
 bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
             const int id1, const int id2)
 {
@@ -46,22 +35,26 @@ bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2,
            (track1.idEMCal == id1 && track2.idTOFw == id2));
            
 }
+
 bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id1, const int id2)
 {
    return (IsNoPID(track1, track2) && 
            (track1.idTOFe == id1 || track1.idTOFw == id1 ||
             track2.idTOFe == id2 || track2.idTOFw == id2));
 }
+
 bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    // pairs are only selected in a way to satisfy IsNoPID check for now
    return true;
 }
+
 double GetPairPT(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    return sqrt((track1.pX + track2.pX)*(track1.pX + track2.pX) + 
                (track1.pY + track2.pY)*(track1.pY + track2.pY));
 }
+
 double GetPairMass(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    return sqrt((track1.e + track2.e)*(track1.e + track2.e) - 
@@ -69,11 +62,13 @@ double GetPairMass(const ChargedTrack& track1, const ChargedTrack& track2)
                (track1.pY + track2.pY)*(track1.pY + track2.pY) -
                (track1.pZ + track2.pZ)*(track1.pZ + track2.pZ));
 }
+
 bool IsOneArmCut(const ChargedTrack& track1, const ChargedTrack& track2)
 {
-   return ((track1.phi > M_PI/2. && track2.phi > M_PI/2.) ||
-           (track1.phi < M_PI/2. && track2.phi < M_PI/2.));
+   return ((track1.phi > M_PI/2. && track2.phi < M_PI/2.) ||
+           (track1.phi < M_PI/2. && track2.phi > M_PI/2.));
 }
+
 bool IsGhostCut(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    const double dPhi = track1.phi - track2.phi;
@@ -84,6 +79,16 @@ bool IsGhostCut(const ChargedTrack& track1, const ChargedTrack& track2)
            fabs(dPhi - (0.13*dAlpha)) < 0.015 ||
            fabs(dPhi - (0.04*dAlpha)) < 0.015 ||
            fabs(dPhi - (-0.065*dAlpha)) < 0.015);
+}
+
+bool IsSailorCut(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.phi < track2.phi);
+}
+
+bool IsCowboyCut(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return !IsSailorCut(track1, track2);
 }
 
 #endif /* PAIR_TRACK_FUNC_CPP */

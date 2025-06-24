@@ -16,7 +16,6 @@
 #include "TH2.h"
 #include "TH3.h"
 #include "TFile.h"
-#include "TLorentzVector.h"
 
 #include "InputYAMLReader.hpp"
 
@@ -28,8 +27,10 @@
 
 #include "Constants.hpp"
 #include "SingleTrackFunc.hpp"
+#include "PairTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
+#include "SimCalibrator.hpp"
 
 #include "PBar.hpp"
 
@@ -109,9 +110,9 @@ namespace AnalyzeWidthlessResonance
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
                             100, 0., 10., 100, 0., 10.};
-      /// unscaled by alpha heatmap of DCe, zDC>=0
+      /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
-                                                 1000, 0., 10., 200, 0., 20.};
+                                                 200, 0., 20., 10000, 0., 10.};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file
@@ -121,6 +122,7 @@ namespace AnalyzeWidthlessResonance
     * @param[in] pTRangeName name of the pT range to be analyzed 
     */
    void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
+                             const int daughter1Id, const int daugther2Id,
                              const std::string& magneticFieldName, const std::string& pTRangeName); 
 }
 

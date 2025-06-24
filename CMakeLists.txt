@@ -68,9 +68,14 @@ add_library(SimCalibrator ${CMAKE_SOURCE_DIR}/src/SimCalibrator.cpp)
 link_libraries(InputYAMLReader)
 
 add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
+add_executable(AnalyzeWidthlessResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeWidthlessResonance.cpp)
+add_executable(AnalyzeResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeResonance.cpp)
 add_executable(SigmalizedResidualsSim ${CMAKE_SOURCE_DIR}/src/SigmalizedResidualsSim.cpp)
+
 add_executable(DeadMapSys ${CMAKE_SOURCE_DIR}/src/DeadMapSys.cpp)
 add_executable(M2IdentFit ${CMAKE_SOURCE_DIR}/src/M2IdentFit.cpp)
 
 target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimCalibrator)
+target_link_libraries(AnalyzeWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimCalibrator)
+target_link_libraries(AnalyzeResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimCalibrator)
 target_link_libraries(DeadMapSys DeadMapCutter)

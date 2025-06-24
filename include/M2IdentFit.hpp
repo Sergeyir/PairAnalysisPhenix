@@ -24,6 +24,7 @@
 #include "TH3F.h"
 #include "TText.h"
 #include "TLatex.h"
+#include "TLine.h"
 #include "TAttLine.h"
 #include "TColor.h"
 
@@ -51,7 +52,6 @@ int main(int argc, char **argv);
 namespace M2IdentFit
 {
    /* @struct FitParameters
-    *
     * @brief Contains fit parameters for different pT for a given particle specie
     */
    struct FitParameters

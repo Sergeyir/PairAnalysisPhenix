@@ -11,7 +11,7 @@
 
 #include "../include/AnalyzeSingleTrack.hpp"
 
-// this namespace is only used so that documentation will not become a mess
+// this namespace is only used so that documentation does not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
 using namespace AnalyzeSingleTrack;
@@ -41,31 +41,31 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    // this normalization is needed to seamlessly merge 2 files with 
    // flat pT distribution with different ranges
    double eventNormWeight = 1.;
+   // threshold is needed since there can be a little noise in the histogram
+   const double origPTThreshold = 
+      origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
+
+   // pT bounds of original pT distribution for spectra scale
+   const double lowPTBound = 
+      origPTHist->GetXaxis()->GetBinLowEdge(origPTHist->FindFirstBinAbove(origPTThreshold));
+   const double upPTBound = 
+      origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
+
+   TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
+   if (!centrHist) 
+   {
+      CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
+                           static_cast<std::string>(realDataFile.GetName()));
+   }
+
+   eventNormWeight = origPTHist->Integral(origPTHist->GetXaxis()->FindBin(pTMin), 
+                                          origPTHist->GetXaxis()->FindBin(pTMax))/
+                     centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
+
+   eventNormWeight *= (pTMax - pTMin)/(upPTBound - lowPTBound);
+
    if (reweightForSpectra)
    {
-      // threshold is needed since there can be a little noise in the histogram
-      const double origPTThreshold = 
-         origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
- 
-      // pT bounds of original pT distribution for spectra scale
-      const double lowPTBound = 
-         origPTHist->GetXaxis()->GetBinLowEdge(origPTHist->FindFirstBinAbove(origPTThreshold));
-      const double upPTBound = 
-         origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
-
-      TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
-      if (!centrHist) 
-      {
-         CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
-                              static_cast<std::string>(realDataFile.GetName()));
-      }
-
-      eventNormWeight = origPTHist->Integral(origPTHist->GetXaxis()->FindBin(pTMin), 
-                                            origPTHist->GetXaxis()->FindBin(pTMax))/
-                        centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
-
-      eventNormWeight *= (pTMax - pTMin)/(upPTBound-lowPTBound);
-
       InputYAMLReader inputYAMLSpectraFit("data/Parameters/SpectraFit/" + collisionSystemName + 
                                        "/" + particleName + ".yaml");
       inputYAMLSpectraFit.CheckStatus("spectra_fit");
@@ -77,6 +77,11 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
       {
          weightFunc->SetParameter(i, inputYAMLSpectraFit["fit_parameters"][i].as<double>());
       }
+   }
+   else
+   {
+      weightFunc = std::make_unique<TF1>("weightFunc", "expo");
+      weightFunc->SetParameters(0., -1.);
    }
 
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());

@@ -43,12 +43,12 @@ detectors:
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  pi+_pt_bounds: [0.5, 4.5]
-  k+_pt_bounds: [0.3, 2.5]
+  pi+_pt_bounds: [0.6, 4.0]
+  k+_pt_bounds: [0.3, 3.0]
   p_pt_bounds: [0.4, 3.0]
-  pi-_pt_bounds: [0.5, 4.5]
-  k-_pt_bounds: [0.6, 3.0]
-  pbar_pt_bounds: [0.6, 2.5]
+  pi-_pt_bounds: [0.6, 4.0]
+  k-_pt_bounds: [0.3, 3.0]
+  pbar_pt_bounds: [0.4, 3.0]
   is_calibrated: true
   use_m2_mean_par: true
 - 

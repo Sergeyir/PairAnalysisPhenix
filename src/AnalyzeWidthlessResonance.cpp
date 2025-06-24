@@ -11,19 +11,22 @@
 
 #include "../include/AnalyzeWidthlessResonance.hpp"
 
-// this namespace is only used so that documentation will not become a mess
+// this namespace is only used so that documentation does not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
 using namespace AnalyzeWidthlessResonance;
 
 void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
                                                      const std::string& particleName, 
-                                                     const short particleGeantId, 
+                                                     const int daughter1Id,
+                                                     const int daughter2Id,
                                                      const std::string& magneticFieldName, 
                                                      const std::string &pTRangeName)
 { 
    std::string simInputFileName = "data/SimTrees/" + runName + "/WidthlessResonance/" + 
-                                  particleName + "_" + pTRangeName + magneticFieldName + ".root";
+                                  particleName + "_" + ParticleMap::name[daughter1Id] + 
+                                  ParticleMap::name[daughter2Id] + "_" + 
+                                  pTRangeName + magneticFieldName + ".root";
 
    TFile simInputFile = TFile(simInputFileName.c_str());
 
@@ -36,35 +39,39 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
    // this normalization is needed to seamlessly merge 2 files with 
    // flat pT distribution with different ranges
    double eventNormWeight = 1.;
+
+   std::string realDataFileName = "data/Real/" + runName + "/SingleTrack/sum" + 
+                                  magneticFieldName + ".root";
+   TFile realDataFile = TFile(realDataFileName.c_str());
+
+   // threshold is needed since there can be a little noise in the histogram
+   const double origPTThreshold = 
+      origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
+
+   // pT bounds of original pT distribution for spectra scale
+   const double lowPTBound = 
+      origPTHist->GetXaxis()->GetBinLowEdge(origPTHist->FindFirstBinAbove(origPTThreshold));
+   const double upPTBound = 
+      origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
+
+   TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
+   if (!centrHist) 
+   {
+      CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
+                           static_cast<std::string>(realDataFile.GetName()));
+   }
+
+   const double resonancePTMin = inputYAMLSim["pt_bins"][0]["min"].as<double>();
+   const double resonancePTMax = 
+      inputYAMLSim["pt_bins"][inputYAMLSim["pt_bins"].size() - 1]["max"].as<double>();
+
+   eventNormWeight = origPTHist->Integral(1, origPTHist->GetXaxis()->GetNbins())/
+                     centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
+
+   eventNormWeight *= (resonancePTMax - resonancePTMin)/(upPTBound - lowPTBound);
+
    if (reweightForSpectra)
    {
-      std::string realDataFileName = "data/Real/" + runName + "/WidthlessResonance/sum" + 
-                                     magneticFieldName + ".root";
-      TFile realDataFile = TFile(realDataFileName.c_str());
-
-      // threshold is needed since there can be a little noise in the histogram
-      const double origPTThreshold = 
-         origPTHist->Integral()/static_cast<double>(origPTHist->GetXaxis()->GetNbins())/2.;
- 
-      // pT bounds of original pT distribution for spectra scale
-      const double lowPTBound = 
-         origPTHist->GetXaxis()->GetBinLowEdge(origPTHist->FindFirstBinAbove(origPTThreshold));
-      const double upPTBound = 
-         origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
-
-      TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
-      if (!centrHist) 
-      {
-         CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
-                              static_cast<std::string>(realDataFile.GetName()));
-      }
-
-      eventNormWeight = origPTHist->Integral(origPTHist->GetXaxis()->FindBin(pTMin), 
-                                            origPTHist->GetXaxis()->FindBin(pTMax))/
-                        centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
-
-      eventNormWeight *= (pTMax - pTMin)/(upPTBound-lowPTBound);
-
       InputYAMLReader inputYAMLSpectraFit("data/Parameters/SpectraFit/" + collisionSystemName + 
                                        "/" + particleName + ".yaml");
       inputYAMLSpectraFit.CheckStatus("spectra_fit");
@@ -77,6 +84,14 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          weightFunc->SetParameter(i, inputYAMLSpectraFit["fit_parameters"][i].as<double>());
       }
    }
+   else
+   {
+      weightFunc = std::make_unique<TF1>("weightFunc", "expo");
+      weightFunc->SetParameters(0., -1.);
+   }
+
+   const double daughter1Mass = ParticleMap::mass[daughter1Id];
+   const double daughter2Mass = ParticleMap::mass[daughter2Id];
 
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
   
@@ -93,11 +108,7 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
          double eventWeight;
  
-         if (reweightForSpectra) 
-         {
-            eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
-         }
-         else eventWeight = 1.;
+         eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
@@ -149,14 +160,16 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             switch (charge)
             {
                case 1:
-                  positiveTracks.emplace_back(simCNT.mom[i]*sin(theta0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom[i]*sin(theta0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom[i]*cos(theta0), phi, alpha, zed);
+                  positiveTracks.emplace_back(daughter1Mass, 
+                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
+                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
+                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
                   break;
                case -1:
-                  negativeTracks.emplace_back(simCNT.mom[i]*sin(theta0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom[i]*sin(theta0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom[i]*cos(theta0), phi, alpha, zed);
+                  negativeTracks.emplace_back(daughter2Mass,
+                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
+                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
+                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
                   break;
             }
          }
@@ -165,6 +178,12 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          {
             for (const auto& negTrack : negativeTracks)
             {
+               if (IsOneArmCut(posTrack, negTrack) || IsGhostCut(posTrack, negTrack)) continue;
+
+               const double mInv = GetPairMass(posTrack, negTrack);
+               const double pT = GetPairPT(posTrack, negTrack);
+
+               thrContainer.distrMInvNoPID->Fill(pT, mInv);
             }
          }
       }
@@ -198,8 +217,8 @@ int main(int argc, char **argv)
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
-   inputYAMLSimSingleTrack.OpenFile("input/" + runName + "/single_track.yaml");
-   inputYAMLSimSingleTrack.CheckStatus("single_track");
+   inputYAMLSimSingleTrack.OpenFile("input/" + runName + "/single_track_sim.yaml");
+   inputYAMLSimSingleTrack.CheckStatus("single_track_sim");
  
    collisionSystemName = inputYAMLMain["collision_system_name"].as<std::string>();
 
@@ -216,27 +235,55 @@ int main(int argc, char **argv)
    if (reweightForSpectra)
    {
       CppTools::CheckInputFile("data/Parameters/SpectraFit/" + collisionSystemName + 
-                               "/" + inpytYAMLSim["name"].as<std::string>() + ".yaml");
+                               "/" + inputYAMLSim["name"].as<std::string>() + ".yaml");
    }
  
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
    {
+      CppTools::CheckInputFile("data/Real/" + runName + "/SingleTrack/sum" + 
+                               magneticField["name"].as<std::string>() + ".root");
       for (const auto& pTRange : inputYAMLSim["pt_ranges"])
       {
-         const std::string simInputFileName = 
+         std::string simInputFileName = 
             "data/SimTrees/" + runName + "/WidthlessResonance/" + 
-            inputYAMLSim["name"].as<std::string>() + "_" + pTRange["name"].as<std::string>() + 
+            inputYAMLSim["name"].as<std::string>() + "_" + 
+            ParticleMap::name[inputYAMLSim["daughter1_id"].as<int>()] + 
+            ParticleMap::name[inputYAMLSim["daughter2_id"].as<int>()] + 
+            "_" + pTRange["name"].as<std::string>() + 
             magneticField["name"].as<std::string>() + ".root";
 
          CppTools::CheckInputFile(simInputFileName);
 
-         const unsigned long currentConfigurationNumberOfEvents = static_cast<unsigned long>
+         unsigned long currentConfigurationNumberOfEvents = static_cast<unsigned long>
             ((static_cast<TTree *>(TFile::Open(simInputFileName.c_str())->
                                    Get("Tree"))->GetEntries()));
          if (currentConfigurationNumberOfEvents <= 0)
          {
             CppTools::PrintError("Number of events is equal or less than 0 in file " + 
                                  simInputFileName);
+         }
+         numberOfEvents += currentConfigurationNumberOfEvents;
+
+         if (inputYAMLSim["has_antiparticle"].as<bool>())
+         {
+            simInputFileName = 
+               "data/SimTrees/" + runName + "/WidthlessResonance/" + 
+               inputYAMLSim["name"].as<std::string>() + "_" + 
+               ParticleMap::name[-1*inputYAMLSim["daughter2_id"].as<int>()] + 
+               ParticleMap::name[-1*inputYAMLSim["daughter1_id"].as<int>()] + 
+               "_" + pTRange["name"].as<std::string>() + 
+               magneticField["name"].as<std::string>() + ".root";
+
+            CppTools::CheckInputFile(simInputFileName);
+
+            currentConfigurationNumberOfEvents = static_cast<unsigned long>
+               ((static_cast<TTree *>(TFile::Open(simInputFileName.c_str())->
+                                      Get("Tree"))->GetEntries()));
+            if (currentConfigurationNumberOfEvents <= 0)
+            {
+               CppTools::PrintError("Number of events is equal or less than 0 in file " + 
+                                    simInputFileName);
+            }
          }
          numberOfEvents += currentConfigurationNumberOfEvents;
       }
@@ -257,15 +304,15 @@ int main(int argc, char **argv)
    CppTools::Box box{"Parameters"};
  
    box.AddEntry("Run name", runName);
-   box.AddEntry("Particle", inputYAMLSim["name"]);
+   box.AddEntry("Particle", inputYAMLSim["name"].as<std::string>());
    if (magneticFieldsList.size() == 1 && magneticFieldsList[0] == "")
    {
       box.AddEntry("Magnetic field", "run default");
    }
    else box.AddEntry("Magnetic fields", magneticFieldsList);
    box.AddEntry("pT ranges", pTRangesList);
-   box.AddEntry("Charged track minimum pT, GeV", pTMin);
-   box.AddEntry("Charged track maximum pT, GeV", pTMax);
+   box.AddEntry("Charged track minimum pT [GeV/c]", pTMin);
+   box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
    box.AddEntry("Reweight for pT spectra", reweightForSpectra);
    box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
@@ -295,8 +342,18 @@ int main(int argc, char **argv)
       for (const auto& pTRange : inputYAMLSim["pt_ranges"])
       {
          AnalyzeConfiguration(thrContainer, inputYAMLSim["name"].as<std::string>(), 
+                              inputYAMLSim["daughter1_id"].as<int>(),
+                              inputYAMLSim["daughter2_id"].as<int>(),
                               magneticField["name"].as<std::string>(), 
                               pTRange["name"].as<std::string>());
+         if (inputYAMLSim["has_antiparticle"].as<bool>())
+         {
+            AnalyzeConfiguration(thrContainer, inputYAMLSim["name"].as<std::string>(), 
+                                 -1*inputYAMLSim["daughter2_id"].as<int>(),
+                                 -1*inputYAMLSim["daughter1_id"].as<int>(),
+                                 magneticField["name"].as<std::string>(), 
+                                 pTRange["name"].as<std::string>());
+         }
       }
    }
 

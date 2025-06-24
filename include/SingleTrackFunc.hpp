@@ -11,6 +11,62 @@
 
 #include <cmath>
 
+/*! @namespace PART_ID
+ * @brief Contains constants that store absolute values of particle ids
+ */
+namespace PART_ID
+{
+   const int PION = 211;
+   const int KAON = 321;
+   const int PROTON = 2212;
+   const int ELECTRON = 11;
+   const int NONE = 999;
+   const int JUNK = 1999;
+}
+
+/*! @struct ChargedTrack
+ * @brief Convenient data container for analysing simulated charged tracks
+ */
+struct ChargedTrack
+{
+   /// Default constructor (deleted)
+   ChargedTrack() = delete;
+   /*! @brief Constructor
+    * @param[in] m mass of a particle [GeV/c^2]
+    * @param[in] pX X component of momentum [GeV/c]
+    * @param[in] pY Y component of momentum [GeV/c]
+    * @param[in] pz Z component of momentum [GeV/c]
+    */
+   ChargedTrack(const double m, const double pX, const double pY, const double pZ, 
+                const double phi, const double alpha, const double zed);
+   /// mass of a particle [GeV/c^2]
+   double m;
+   /// reconstructed X compoment of momentum of a track [GeV/c]
+   double pX;
+   /// reconstructed Y compoment of momentum of a track [GeV/c]
+   double pY;
+   /// reconstructed Z compoment of momentum of a track [GeV/c]
+   double pZ;
+   /// energy of a track [GeV]
+   double e;
+   /// reconstructed azimuthal angle of a track [rad]
+   double phi;
+   /// reconstructed polar angle of a track [rad]
+   double alpha;
+   /// reconstructed zDC coordinate [cm]
+   double zed;
+   /// id of a particle obtained in PC2
+   int idPC2 = PART_ID::JUNK;
+   /// id of a particle obtained in PC3
+   int idPC3 = PART_ID::JUNK;
+   /// id of a particle obtained in EMCal
+   int idEMCal = PART_ID::JUNK;
+   /// id of a particle obtained in TOFe
+   int idTOFe = PART_ID::JUNK;
+   /// id of a particle obtained in TOFw
+   int idTOFw = PART_ID::JUNK;
+};
+
 /*! @brief Checks if the hit was detected in the detector
  *
  * @param[in] dVal deviation of track (dphi or dz) of the detector the hit is needed to be checked in

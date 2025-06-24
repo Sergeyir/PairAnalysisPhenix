@@ -12,6 +12,19 @@
 
 #include "../include/SingleTrackFunc.hpp"
 
+ChargedTrack::ChargedTrack(const double m, const double pX, const double pY, const double pZ, 
+                           const double phi, const double alpha, const double zed)
+{
+   this->m = m;
+   this->pX = pX;
+   this->pY = pY;
+   this->pZ = pZ;
+   this->phi = phi;
+   this->alpha = alpha;
+   this->zed = zed;
+   e = sqrt(pX*pX + pY*pY + pZ*pZ + m*m);
+}
+
 bool IsHit(const double dVal)
 {
    if (dVal < -9998) return false;

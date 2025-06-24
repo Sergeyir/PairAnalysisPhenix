@@ -101,19 +101,6 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                                         const double centralityMin, 
                                         const double centralityMax)
 {
-   // container that holds fit parameters and yields for pi^+
-   FitParameters fitPiPlus("pi+", pow(0.139570, 2), detector, true, kRed);
-   // container that holds fit parameters and yields for K^+
-   FitParameters fitKPlus("K+", pow(0.493677, 2), detector, true, kGreen);
-   // container that holds fit parameters and yields for protons
-   FitParameters fitP("p", pow(0.938272, 2), detector, true, kAzure);
-   // container that holds fit parameters and yields for pi^-
-   FitParameters fitPiMinus("pi-", pow(0.139570, 2), detector, false, kRed);
-   // container that holds fit parameters and yields for K^-
-   FitParameters fitKMinus("K-", pow(0.493677, 2), detector, false, kGreen);
-   // container that holds fit parameters and yields for antiprotons
-   FitParameters fitPBar("pbar", pow(0.938272, 2), detector, false, kAzure);
-
    TH3F* m2DistrPos = static_cast<TH3F *>
       (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + ", charge>0").c_str()));
    TH3F* m2DistrNeg = static_cast<TH3F *>
@@ -133,6 +120,19 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                                           detector["pi-_pt_bounds"][1].as<double>(), 
                                           detector["k-_pt_bounds"][1].as<double>(),
                                           detector["pbar_pt_bounds"][1].as<double>());
+
+   // container that holds fit parameters and yields for pi^+
+   FitParameters fitPiPlus("pi+", pow(0.139570, 2), detector, true, kRed);
+   // container that holds fit parameters and yields for K^+
+   FitParameters fitKPlus("K+", pow(0.493677, 2), detector, true, kGreen);
+   // container that holds fit parameters and yields for protons
+   FitParameters fitP("p", pow(0.938272, 2), detector, true, kAzure);
+   // container that holds fit parameters and yields for pi^-
+   FitParameters fitPiMinus("pi-", pow(0.139570, 2), detector, false, kRed);
+   // container that holds fit parameters and yields for K^-
+   FitParameters fitKMinus("K-", pow(0.493677, 2), detector, false, kGreen);
+   // container that holds fit parameters and yields for antiprotons
+   FitParameters fitPBar("pbar", pow(0.938272, 2), detector, false, kAzure);
 
    for (const YAML::Node& pTBin : inputYAMLM2Id["pt_bins"])
    {
@@ -425,6 +425,22 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                            ", sigma_t=" + std::to_string(sigmaT));
    }
 
+   TLine trueM2LinePi(pTMin, fitPiPlus.m2, pTMax, fitPiPlus.m2);
+   TLine trueM2LineK(pTMin, fitKPlus.m2, pTMax, fitKPlus.m2);
+   TLine trueM2LineP(pTMin, fitP.m2, pTMax, fitP.m2);
+
+   trueM2LinePi.SetLineColorAlpha(kGray + 3, 0.5);
+   trueM2LinePi.SetLineStyle(6);
+   trueM2LinePi.SetLineWidth(3);
+
+   trueM2LineK.SetLineColorAlpha(kGray + 3, 0.5);
+   trueM2LineK.SetLineStyle(6);
+   trueM2LineK.SetLineWidth(3);
+
+   trueM2LineP.SetLineColorAlpha(kGray + 3, 0.5);
+   trueM2LineP.SetLineStyle(6);
+   trueM2LineP.SetLineWidth(3);
+
    TCanvas fitParVsPTCanv("m2 id fit parameters vs pT", "", 1000, 1000);
 
    fitParVsPTCanv.Divide(2, 2);
@@ -447,6 +463,10 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
    DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
              "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+
+   trueM2LinePi.Draw();
+   trueM2LineK.Draw();
+   trueM2LineP.Draw();
 
    fitPiPlus.meansVsPTFit->Draw("SAME");
    fitKPlus.meansVsPTFit->Draw("SAME");
@@ -483,6 +503,10 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
    DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
              "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+
+   trueM2LinePi.Draw();
+   trueM2LineK.Draw();
+   trueM2LineP.Draw();
 
    fitPiMinus.meansVsPTFit->Draw("SAME");
    fitKMinus.meansVsPTFit->Draw("SAME");
