@@ -50,7 +50,7 @@ detectors:
   k-_pt_bounds: [0.3, 3.0]
   pbar_pt_bounds: [0.4, 3.0]
   is_calibrated: true
-  use_m2_mean_par: true
+  use_m2_mean_par: false
 - 
   name: EMCale2
   sigmalized_identification_range: 3
