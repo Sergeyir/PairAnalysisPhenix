@@ -160,16 +160,10 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             switch (charge)
             {
                case 1:
-                  positiveTracks.emplace_back(daughter1Mass, 
-                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
+                  positiveTracks.emplace_back(daughter1Mass, simCNT, i);
                   break;
                case -1:
-                  negativeTracks.emplace_back(daughter2Mass,
-                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
+                  negativeTracks.emplace_back(daughter2Mass, simCNT, i);
                   break;
             }
          }

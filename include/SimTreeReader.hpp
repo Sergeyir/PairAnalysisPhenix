@@ -27,171 +27,171 @@ class SimTreeReader
     */
    SimTreeReader(TTreeReader &reader);
    /// original momentum (i=0,1,2 for px,py,pz respectively)
-   float mom_orig(int i);
+   float mom_orig(int i) const;
    /// number of charged particles
-   int nch(); 
+   int nch() const; 
    /// bbcz (same as in PHCentralTrack)
-   float bbcz();
+   float bbcz() const;
    /// dcarm (same as in PHCentralTrack)
-   short dcarm(int i);
+   short dcarm(int i) const;
    /// phi (same as in PHCentralTrack)
-   float phi(int i);
+   float phi(int i) const;
    /// alpha (same as in PHCentralTrack)
-   float alpha(int i);
+   float alpha(int i) const;
    /// zed (same as in PHCentralTrack)
-   float zed(int i);
+   float zed(int i) const;
    /// mom (same as in PHCentralTrack)
-   float mom(int i);
+   float mom(int i) const;
    /// the0 (same as in PHCentralTrack)
-   float the0(int i);
+   float the0(int i) const;
    /// phi0 (same as in PHCentralTrack)
-   float phi0(int i);
+   float phi0(int i) const;
    /// nx1hits (same as in PHCentralTrack)
-   short nx1hits(int i);
+   short nx1hits(int i) const;
    /// nx2hits (same as in PHCentralTrack)
-   short nx2hits(int i);
+   short nx2hits(int i) const;
    /// qual (same as in PHCentralTrack)
-   short qual(int i);
+   short qual(int i) const;
    /// charge (same as in PHCentralTrack)
-   short charge(int i);
+   short charge(int i) const;
    /// parent_id - id of a parent particle (GEANT id scheme)
-   short parent_id(int i);
+   short parent_id(int i) const;
    /// primary_id - id of an original particle (GEANT id scheme)
-   short primary_id(int i);
+   short primary_id(int i) const;
    /// particle_id - id of a track (GEANT id scheme)
-   short particle_id(int i);
+   short particle_id(int i) const;
    /// ttof (same as in PHCentralTrack)
-   float ttof(int i);
+   float ttof(int i) const;
    /// ttofw (same as in PHCentralTrack)
-   float ttofw(int i);
+   float ttofw(int i) const;
    /// temc (same as in PHCentralTrack)
-   float temc(int i);
+   float temc(int i) const;
    /// pltof (same as in PHCentralTrack)
-   float pltof(int i);
+   float pltof(int i) const;
    /// pltofw (same as in PHCentralTrack)
-   float pltofw(int i);
+   float pltofw(int i) const;
    /// plemc (same as in PHCentralTrack)
-   float plemc(int i);
+   float plemc(int i) const;
    /// ptofx (same as in PHCentralTrack)
-   float ptofx(int i);
+   float ptofx(int i) const;
    /// ptofy (same as in PHCentralTrack)
-   float ptofy(int i);
+   float ptofy(int i) const;
    /// ptofz (same as in PHCentralTrack)
-   float ptofz(int i);
+   float ptofz(int i) const;
    /// ptofwx (same as in PHCentralTrack)
-   float ptofwx(int i);
+   float ptofwx(int i) const;
    /// ptofwy (same as in PHCentralTrack)
-   float ptofwy(int i);
+   float ptofwy(int i) const;
    /// ptofwz (same as in PHCentralTrack)
-   float ptofwz(int i);
+   float ptofwz(int i) const;
    /// pemcx (same as in PHCentralTrack)
-   float pemcx(int i);
+   float pemcx(int i) const;
    /// pemcy (same as in PHCentralTrack)
-   float pemcy(int i);
+   float pemcy(int i) const;
    /// pemcz (same as in PHCentralTrack)
-   float pemcz(int i);
+   float pemcz(int i) const;
    /// ppc1x (same as in PHCentralTrack)
-   float ppc1x(int i);
+   float ppc1x(int i) const;
    /// ppc1y (same as in PHCentralTrack)
-   float ppc1y(int i);
+   float ppc1y(int i) const;
    /// ppc1z (same as in PHCentralTrack)
-   float ppc1z(int i);
+   float ppc1z(int i) const;
    /// ppc2x (same as in PHCentralTrack)
-   float ppc2x(int i);
+   float ppc2x(int i) const;
    /// ppc2y (same as in PHCentralTrack)
-   float ppc2y(int i);
+   float ppc2y(int i) const;
    /// ppc2z (same as in PHCentralTrack)
-   float ppc2z(int i);
+   float ppc2z(int i) const;
    /// ppc3x (same as in PHCentralTrack)
-   float ppc3x(int i);
+   float ppc3x(int i) const;
    /// ppc3y (same as in PHCentralTrack)
-   float ppc3y(int i);
+   float ppc3y(int i) const;
    /// ppc3z (same as in PHCentralTrack)
-   float ppc3z(int i);
+   float ppc3z(int i) const;
    /// ptecx (same as in PHCentralTrack)
-   float ptecx(int i);
+   float ptecx(int i) const;
    /// ptecy (same as in PHCentralTrack)
-   float ptecy(int i);
+   float ptecy(int i) const;
    /// ptecz (same as in PHCentralTrack)
-   float ptecz(int i);
+   float ptecz(int i) const;
    /// tofdz (same as in PHCentralTrack)
-   float tofdz(int i);
+   float tofdz(int i) const;
    /// tofdphi (same as in PHCentralTrack)
-   float tofdphi(int i);
+   float tofdphi(int i) const;
    /// tofwdz (same as in PHCentralTrack)
-   float tofwdz(int i);
+   float tofwdz(int i) const;
    /// tofwdphi (same as in PHCentralTrack)
-   float tofwdphi(int i);
+   float tofwdphi(int i) const;
    /// emcdz (same as in PHCentralTrack)
-   float emcdz(int i);
+   float emcdz(int i) const;
    /// emcdphi (same as in PHCentralTrack)
-   float emcdphi(int i);
+   float emcdphi(int i) const;
    /// pc2dz (same as in PHCentralTrack)
-   float pc2dz(int i);
+   float pc2dz(int i) const;
    /// pc2dphi (same as in PHCentralTrack)
-   float pc2dphi(int i);
+   float pc2dphi(int i) const;
    /// pc3dz (same as in PHCentralTrack)
-   float pc3dz(int i);
+   float pc3dz(int i) const;
    /// pc3dphi (same as in PHCentralTrack)
-   float pc3dphi(int i);
+   float pc3dphi(int i) const;
    /// striptofw (same as in PHCentralTrack)
-   short striptofw(int i);
+   short striptofw(int i) const;
    /// slat (same as in PHCentralTrack)
-   short slat(int i);
+   short slat(int i) const;
    /// etof (same as in PHCentralTrack)
-   float etof(int i);
+   float etof(int i) const;
    /// ecore (same as in PHCentralTrack)
-   float ecore(int i);
+   float ecore(int i) const;
    /// emce (same as in PHCentralTrack)
-   float emce(int i);
+   float emce(int i) const;
    /// ecent (same as in PHCentralTrack)
-   float ecent(int i);
+   float ecent(int i) const;
    /// e9 (same as in PHCentralTrack)
-   float e9(int i);
+   float e9(int i) const;
    /// emcchi2 (same as in PHCentralTrack)
-   float emcchi2(int i);
+   float emcchi2(int i) const;
    /// twrhit (same as in PHCentralTrack)
-   short twrhit(int i);
+   short twrhit(int i) const;
    /// emcdispy (same as in PHCentralTrack)
-   float emcdispy(int i);
+   float emcdispy(int i) const;
    /// emcdispz (same as in PHCentralTrack)
-   float emcdispz(int i);
+   float emcdispz(int i) const;
    /// prob (same as in PHCentralTrack)
-   float prob(int i);
+   float prob(int i) const;
    /// sect (same as in PHCentralTrack)
-   short sect(int i);
+   short sect(int i) const;
    /// ysect (same as in PHCentralTrack)
-   short ysect(int i);
+   short ysect(int i) const;
    /// zsect (same as in PHCentralTrack)
-   short zsect(int i);
+   short zsect(int i) const;
    /// n0 (same as in PHCentralTrack)
-   short n0(int i);
+   short n0(int i) const;
    /// npe0 (same as in PHCentralTrack)
-   short npe0(int i);
+   short npe0(int i) const;
    /// n1 (same as in PHCentralTrack)
-   short n1(int i);
+   short n1(int i) const;
    /// npe1 (same as in PHCentralTrack)
-   short npe1(int i);
+   short npe1(int i) const;
    /// n2 (same as in PHCentralTrack)
-   short n2(int i);
+   short n2(int i) const;
    /// npe2 (same as in PHCentralTrack)
-   short npe2(int i);
+   short npe2(int i) const;
    /// n3 (same as in PHCentralTrack)
-   short n3(int i);
+   short n3(int i) const;
    /// npe3 (same as in PHCentralTrack)
-   short npe3(int i);
+   short npe3(int i) const;
    /// center_phi (same as in PHCentralTrack)
-   float center_phi(int i);
+   float center_phi(int i) const;
    /// center_z (same as in PHCentralTrack)
-   float center_z(int i);
+   float center_z(int i) const;
    /// cross_phi (same as in PHCentralTrack)
-   float cross_phi(int i);
+   float cross_phi(int i) const;
    /// cross_z (same as in PHCentralTrack)
-   float cross_z(int i);
+   float cross_z(int i) const;
    /// disp (same as in PHCentralTrack)
-   float disp(int i);
+   float disp(int i) const;
    /// chi2 (same as in PHCentralTrack)
-   float chi2(int i);
+   float chi2(int i) const;
    /// Default desctructor
    ~SimTreeReader();
 

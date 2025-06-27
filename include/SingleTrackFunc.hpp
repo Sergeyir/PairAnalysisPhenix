@@ -11,6 +11,8 @@
 
 #include <cmath>
 
+#include "SimTreeReader.hpp"
+
 /*! @namespace PART_ID
  * @brief Contains constants that store absolute values of particle ids
  */
@@ -37,10 +39,11 @@ struct ChargedTrack
     * @param[in] pY Y component of momentum [GeV/c]
     * @param[in] pz Z component of momentum [GeV/c]
     */
-   ChargedTrack(const double m, const double pX, const double pY, const double pZ, 
-                const double phi, const double alpha, const double zed);
+   ChargedTrack(const double m, const SimTreeReader& simCNT, const int i);
    /// mass of a particle [GeV/c^2]
    double m;
+   /// index of SimTreeReader in the current event
+   int index;
    /// reconstructed X compoment of momentum of a track [GeV/c]
    double pX;
    /// reconstructed Y compoment of momentum of a track [GeV/c]

@@ -103,20 +103,20 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrMInvNoPIDCowboyCut;
       /// abs(E1 - E2)/(E1 + E2) for a pair of tracks within 2*Gamma + 10 MeV 
       /// of the center of the signal
-      std::shared_ptr<TH2F> distrEAsymVsPT;
+      std::shared_ptr<TH3F> distrEAsymVsPT;
       /// abs(p1 - p2)/(p1 + p2) for a pair of tracks within 2*Gamma + 10 MeV 
       /// of the center of the signal
-      std::shared_ptr<TH2F> distrPAsymVsPT;
+      std::shared_ptr<TH3F> distrPAsymVsPT;
       /// E1 - E2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      std::shared_ptr<TH2F> distrDEVsPT;
+      std::shared_ptr<TH3F> distrDEVsPT;
       /// p1 - p2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      std::shared_ptr<TH2F> distrDPVsPT;
+      std::shared_ptr<TH3F> distrDPVsPT;
       /// phi1 - phi2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      std::shared_ptr<TH2F> distrDPhiVsPT;
+      std::shared_ptr<TH3F> distrDPhiVsPT;
       /// alpha1 - alpha2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      std::shared_ptr<TH2F> distrDAlphaVsPT;
+      std::shared_ptr<TH3F> distrDAlphaVsPT;
       /// zed1 - zed2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      std::shared_ptr<TH2F> distrDZedVsPT;
+      std::shared_ptr<TH3F> distrDZedVsPT;
    };
    /* @struct ThrContainer
     * @brief Container for storing ROOT::TThreadedObject variables 
@@ -160,31 +160,31 @@ namespace AnalyzeResonance
                                                           200, 0., 20., 1000, 0., 5.};
       /// abs(E1 - E2)/(E1 + E2) for a pair of tracks within 2*Gamma + 10 MeV 
       /// of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrEAsymVsPT{"E asym", "(E_{pos} - E_{neg})/(E_{pos} + E_{neg}) vs p_{T}", 
-                        200, 0., 20., 200, -1., 1.};
+                        100, 0., 20., 200, -1., 1., 100, 0., 5.};
       /// abs(p1 - p2)/(p1 + p2) for a pair of tracks within 2*Gamma + 10 MeV 
       /// of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T}", 
-                        200, 0., 20., 200, -1., 1.};
+                        100, 0., 20., 200, -1., 1., 100, 0., 5.};
       /// E1 - E2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
-         distrDEVsPT{"delta E", "E_{pos} - E_{neg} vs p_{T}", 200, 0., 20., 200, -20., 20.};
+      ROOT::TThreadedObject<TH3F> distrDEVsPT{"delta E", "E_{pos} - E_{neg} vs p_{T}", 
+                                              100, 0., 20., 200, -20., 20., 100, 0., 5.};
       /// p1 - p2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
-         distrDPVsPT{"delta p", "p_{pos} - p_{neg} vs p_{T}", 200, 0., 20., 200, -20., 20.};
+      ROOT::TThreadedObject<TH3F> distrDPVsPT{"delta p", "p_{pos} - p_{neg} vs p_{T}", 
+                                              100, 0., 20., 200, -20., 20., 100, 0., 5.};
       /// phi1 - phi2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrDPhiVsPT{"delta phi", "#varphi_{pos} - #varphi_{neg} vs p_{T}", 
-                       200, 0., 20., 200, -M_PI, M_PI};
+                       100, 0., 20., 200, -M_PI, M_PI, 100, 0., 5.};
       /// alpha1 - alpha2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrDAlphaVsPT{"delta alpha", "#alpha_{pos} - #alpha_{neg} vs p_{T}", 
-                         200, 0., 20., 200, -M_PI, M_PI};
+                         100, 0., 20., 200, -1., 0., 100, 0., 5.};
       /// zed1 - zed2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
-      ROOT::TThreadedObject<TH2F> distrDZedVsPT{"delta zed", "zed_{pos} - zed_{neg} vs p_{T}", 
-                                                200, 0., 20., 200, -150., 150.};
+      ROOT::TThreadedObject<TH3F> distrDZedVsPT{"delta zed", "zed_{pos} - zed_{neg} vs p_{T}", 
+                                                100, 0., 20., 200, -150., 150., 100, 0., 5.};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file

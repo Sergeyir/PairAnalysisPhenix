@@ -75,6 +75,8 @@ add_executable(SigmalizedResidualsSim ${CMAKE_SOURCE_DIR}/src/SigmalizedResidual
 add_executable(DeadMapSys ${CMAKE_SOURCE_DIR}/src/DeadMapSys.cpp)
 add_executable(M2IdentFit ${CMAKE_SOURCE_DIR}/src/M2IdentFit.cpp)
 
+target_link_libraries(SingleTrackFunc SimTreeReader)
+target_link_libraries(PairTrackFunc SimTreeReader)
 target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimCalibrator)
 target_link_libraries(AnalyzeWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimCalibrator)
 target_link_libraries(AnalyzeResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimCalibrator)

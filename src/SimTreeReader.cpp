@@ -186,91 +186,91 @@ SimTreeReader::SimTreeReader(TTreeReader &reader)
 }
 
 // original momentum
-float SimTreeReader::mom_orig(const int i) {return (*b_mom_orig)[i];}
+float SimTreeReader::mom_orig(const int i) const {return (*b_mom_orig)[i];}
 // event variables
-int SimTreeReader::nch() {return *(b_nch->Get());}
-float SimTreeReader::bbcz() {return *(b_bbcz->Get());}
+int SimTreeReader::nch() const {return *(b_nch->Get());}
+float SimTreeReader::bbcz() const {return *(b_bbcz->Get());}
 // charged track variables
-short SimTreeReader::dcarm(const int i) {return (*b_dcarm)[i];}
-float SimTreeReader::phi(const int i) {return (*b_phi)[i];}
-float SimTreeReader::alpha(const int i) {return (*b_alpha)[i];}
-float SimTreeReader::zed(const int i) {return (*b_zed)[i];}
-float SimTreeReader::mom(const int i) {return (*b_mom)[i];}
-float SimTreeReader::the0(const int i) {return (*b_the0)[i];}
-float SimTreeReader::phi0(const int i) {return (*b_phi0)[i];}
-short SimTreeReader::nx1hits(const int i) {return (*b_nx1hits)[i];}
-short SimTreeReader::nx2hits(const int i) {return (*b_nx2hits)[i];}
-short SimTreeReader::qual(const int i) {return (*b_qual)[i];}
-short SimTreeReader::charge(const int i) {return (*b_charge)[i];}
-short SimTreeReader::parent_id(const int i) {return (*b_parent_id)[i];}
-short SimTreeReader::primary_id(const int i) {return (*b_primary_id)[i];}
-short SimTreeReader::particle_id(const int i) {return (*b_particle_id)[i];}
-float SimTreeReader::ttof(const int i) {return (*b_ttof)[i];}
-float SimTreeReader::ttofw(const int i) {return (*b_ttofw)[i];}
-float SimTreeReader::temc(const int i) {return (*b_temc)[i];}
-float SimTreeReader::pltof(const int i) {return (*b_pltof)[i];}
-float SimTreeReader::pltofw(const int i) {return (*b_pltofw)[i];}
-float SimTreeReader::plemc(const int i) {return (*b_plemc)[i];}
-float SimTreeReader::ptofx(const int i) {return (*b_ptofx)[i];}
-float SimTreeReader::ptofy(const int i) {return (*b_ptofy)[i];}
-float SimTreeReader::ptofz(const int i) {return (*b_ptofz)[i];}
-float SimTreeReader::ptofwx(const int i) {return (*b_ptofwx)[i];}
-float SimTreeReader::ptofwy(const int i) {return (*b_ptofwy)[i];}
-float SimTreeReader::ptofwz(const int i) {return (*b_ptofwz)[i];}
-float SimTreeReader::pemcx(const int i) {return (*b_pemcx)[i];}
-float SimTreeReader::pemcy(const int i) {return (*b_pemcy)[i];}
-float SimTreeReader::pemcz(const int i) {return (*b_pemcz)[i];}
-float SimTreeReader::ppc1x(const int i) {return (*b_ppc1x)[i];}
-float SimTreeReader::ppc1y(const int i) {return (*b_ppc1y)[i];}
-float SimTreeReader::ppc1z(const int i) {return (*b_ppc1z)[i];}
-float SimTreeReader::ppc2x(const int i) {return (*b_ppc2x)[i];}
-float SimTreeReader::ppc2y(const int i) {return (*b_ppc2y)[i];}
-float SimTreeReader::ppc2z(const int i) {return (*b_ppc2z)[i];}
-float SimTreeReader::ppc3x(const int i) {return (*b_ppc3x)[i];}
-float SimTreeReader::ppc3y(const int i) {return (*b_ppc3y)[i];}
-float SimTreeReader::ppc3z(const int i) {return (*b_ppc3z)[i];}
-float SimTreeReader::ptecx(const int i) {return (*b_ptecx)[i];}
-float SimTreeReader::ptecy(const int i) {return (*b_ptecy)[i];}
-float SimTreeReader::ptecz(const int i) {return (*b_ptecz)[i];}
-float SimTreeReader::tofdz(const int i) {return (*b_tofdz)[i];}
-float SimTreeReader::tofdphi(const int i) {return (*b_tofdphi)[i];}
-float SimTreeReader::tofwdz(const int i) {return (*b_tofwdz)[i];}
-float SimTreeReader::tofwdphi(const int i) {return (*b_tofwdphi)[i];}
-float SimTreeReader::emcdz(const int i) {return (*b_emcdz)[i];}
-float SimTreeReader::emcdphi(const int i) {return (*b_emcdphi)[i];}
-float SimTreeReader::pc2dz(const int i) {return (*b_pc2dz)[i];}
-float SimTreeReader::pc2dphi(const int i) {return (*b_pc2dphi)[i];}
-float SimTreeReader::pc3dz(const int i) {return (*b_pc3dz)[i];}
-float SimTreeReader::pc3dphi(const int i) {return (*b_pc3dphi)[i];}
-short SimTreeReader::striptofw(const int i) {return (*b_striptofw)[i];}
-short SimTreeReader::slat(const int i) {return (*b_slat)[i];}
-float SimTreeReader::etof(const int i) {return (*b_etof)[i];}
-float SimTreeReader::ecore(const int i) {return (*b_ecore)[i];}
-float SimTreeReader::emce(const int i) {return (*b_emce)[i];}
-float SimTreeReader::ecent(const int i) {return (*b_ecent)[i];}
-float SimTreeReader::e9(const int i) {return (*b_e9)[i];}
-float SimTreeReader::emcchi2(const int i) {return (*b_emcchi2)[i];}
-short SimTreeReader::twrhit(const int i) {return (*b_twrhit)[i];}
-float SimTreeReader::emcdispy(const int i) {return (*b_emcdispy)[i];}
-float SimTreeReader::emcdispz(const int i) {return (*b_emcdispz)[i];}
-float SimTreeReader::prob(const int i) {return (*b_prob)[i];}
-short SimTreeReader::sect(const int i) {return (*b_sect)[i];}
-short SimTreeReader::ysect(const int i) {return (*b_ysect)[i];}
-short SimTreeReader::zsect(const int i) {return (*b_zsect)[i];}
-short SimTreeReader::n0(const int i) {return (*b_n0)[i];}
-short SimTreeReader::npe0(const int i) {return (*b_npe0)[i];}
-short SimTreeReader::n1(const int i) {return (*b_n1)[i];}
-short SimTreeReader::npe1(const int i) {return (*b_npe1)[i];}
-short SimTreeReader::n2(const int i) {return (*b_n2)[i];}
-short SimTreeReader::npe2(const int i) {return (*b_npe2)[i];}
-short SimTreeReader::n3(const int i) {return (*b_n3)[i];}
-short SimTreeReader::npe3(const int i) {return (*b_npe3)[i];}
-float SimTreeReader::center_phi(const int i) {return (*b_center_phi)[i];}
-float SimTreeReader::center_z(const int i) {return (*b_center_z)[i];}
-float SimTreeReader::cross_phi(const int i) {return (*b_cross_phi)[i];}
-float SimTreeReader::cross_z(const int i) {return (*b_cross_z)[i];}
-float SimTreeReader::disp(const int i) {return (*b_disp)[i];}
-float SimTreeReader::chi2(const int i) {return (*b_chi2)[i];}
+short SimTreeReader::dcarm(const int i) const {return (*b_dcarm)[i];}
+float SimTreeReader::phi(const int i) const {return (*b_phi)[i];}
+float SimTreeReader::alpha(const int i) const {return (*b_alpha)[i];}
+float SimTreeReader::zed(const int i) const {return (*b_zed)[i];}
+float SimTreeReader::mom(const int i) const {return (*b_mom)[i];}
+float SimTreeReader::the0(const int i) const {return (*b_the0)[i];}
+float SimTreeReader::phi0(const int i) const {return (*b_phi0)[i];}
+short SimTreeReader::nx1hits(const int i) const {return (*b_nx1hits)[i];}
+short SimTreeReader::nx2hits(const int i) const {return (*b_nx2hits)[i];}
+short SimTreeReader::qual(const int i) const {return (*b_qual)[i];}
+short SimTreeReader::charge(const int i) const {return (*b_charge)[i];}
+short SimTreeReader::parent_id(const int i) const {return (*b_parent_id)[i];}
+short SimTreeReader::primary_id(const int i) const {return (*b_primary_id)[i];}
+short SimTreeReader::particle_id(const int i) const {return (*b_particle_id)[i];}
+float SimTreeReader::ttof(const int i) const {return (*b_ttof)[i];}
+float SimTreeReader::ttofw(const int i) const {return (*b_ttofw)[i];}
+float SimTreeReader::temc(const int i) const {return (*b_temc)[i];}
+float SimTreeReader::pltof(const int i) const {return (*b_pltof)[i];}
+float SimTreeReader::pltofw(const int i) const {return (*b_pltofw)[i];}
+float SimTreeReader::plemc(const int i) const {return (*b_plemc)[i];}
+float SimTreeReader::ptofx(const int i) const {return (*b_ptofx)[i];}
+float SimTreeReader::ptofy(const int i) const {return (*b_ptofy)[i];}
+float SimTreeReader::ptofz(const int i) const {return (*b_ptofz)[i];}
+float SimTreeReader::ptofwx(const int i) const {return (*b_ptofwx)[i];}
+float SimTreeReader::ptofwy(const int i) const {return (*b_ptofwy)[i];}
+float SimTreeReader::ptofwz(const int i) const {return (*b_ptofwz)[i];}
+float SimTreeReader::pemcx(const int i) const {return (*b_pemcx)[i];}
+float SimTreeReader::pemcy(const int i) const {return (*b_pemcy)[i];}
+float SimTreeReader::pemcz(const int i) const {return (*b_pemcz)[i];}
+float SimTreeReader::ppc1x(const int i) const {return (*b_ppc1x)[i];}
+float SimTreeReader::ppc1y(const int i) const {return (*b_ppc1y)[i];}
+float SimTreeReader::ppc1z(const int i) const {return (*b_ppc1z)[i];}
+float SimTreeReader::ppc2x(const int i) const {return (*b_ppc2x)[i];}
+float SimTreeReader::ppc2y(const int i) const {return (*b_ppc2y)[i];}
+float SimTreeReader::ppc2z(const int i) const {return (*b_ppc2z)[i];}
+float SimTreeReader::ppc3x(const int i) const {return (*b_ppc3x)[i];}
+float SimTreeReader::ppc3y(const int i) const {return (*b_ppc3y)[i];}
+float SimTreeReader::ppc3z(const int i) const {return (*b_ppc3z)[i];}
+float SimTreeReader::ptecx(const int i) const {return (*b_ptecx)[i];}
+float SimTreeReader::ptecy(const int i) const {return (*b_ptecy)[i];}
+float SimTreeReader::ptecz(const int i) const {return (*b_ptecz)[i];}
+float SimTreeReader::tofdz(const int i) const {return (*b_tofdz)[i];}
+float SimTreeReader::tofdphi(const int i) const {return (*b_tofdphi)[i];}
+float SimTreeReader::tofwdz(const int i) const {return (*b_tofwdz)[i];}
+float SimTreeReader::tofwdphi(const int i) const {return (*b_tofwdphi)[i];}
+float SimTreeReader::emcdz(const int i) const {return (*b_emcdz)[i];}
+float SimTreeReader::emcdphi(const int i) const {return (*b_emcdphi)[i];}
+float SimTreeReader::pc2dz(const int i) const {return (*b_pc2dz)[i];}
+float SimTreeReader::pc2dphi(const int i) const {return (*b_pc2dphi)[i];}
+float SimTreeReader::pc3dz(const int i) const {return (*b_pc3dz)[i];}
+float SimTreeReader::pc3dphi(const int i) const {return (*b_pc3dphi)[i];}
+short SimTreeReader::striptofw(const int i) const {return (*b_striptofw)[i];}
+short SimTreeReader::slat(const int i) const {return (*b_slat)[i];}
+float SimTreeReader::etof(const int i) const {return (*b_etof)[i];}
+float SimTreeReader::ecore(const int i) const {return (*b_ecore)[i];}
+float SimTreeReader::emce(const int i) const {return (*b_emce)[i];}
+float SimTreeReader::ecent(const int i) const {return (*b_ecent)[i];}
+float SimTreeReader::e9(const int i) const {return (*b_e9)[i];}
+float SimTreeReader::emcchi2(const int i) const {return (*b_emcchi2)[i];}
+short SimTreeReader::twrhit(const int i) const {return (*b_twrhit)[i];}
+float SimTreeReader::emcdispy(const int i) const {return (*b_emcdispy)[i];}
+float SimTreeReader::emcdispz(const int i) const {return (*b_emcdispz)[i];}
+float SimTreeReader::prob(const int i) const {return (*b_prob)[i];}
+short SimTreeReader::sect(const int i) const {return (*b_sect)[i];}
+short SimTreeReader::ysect(const int i) const {return (*b_ysect)[i];}
+short SimTreeReader::zsect(const int i) const {return (*b_zsect)[i];}
+short SimTreeReader::n0(const int i) const {return (*b_n0)[i];}
+short SimTreeReader::npe0(const int i) const {return (*b_npe0)[i];}
+short SimTreeReader::n1(const int i) const {return (*b_n1)[i];}
+short SimTreeReader::npe1(const int i) const {return (*b_npe1)[i];}
+short SimTreeReader::n2(const int i) const {return (*b_n2)[i];}
+short SimTreeReader::npe2(const int i) const {return (*b_npe2)[i];}
+short SimTreeReader::n3(const int i) const {return (*b_n3)[i];}
+short SimTreeReader::npe3(const int i) const {return (*b_npe3)[i];}
+float SimTreeReader::center_phi(const int i) const {return (*b_center_phi)[i];}
+float SimTreeReader::center_z(const int i) const {return (*b_center_z)[i];}
+float SimTreeReader::cross_phi(const int i) const {return (*b_cross_phi)[i];}
+float SimTreeReader::cross_z(const int i) const {return (*b_cross_z)[i];}
+float SimTreeReader::disp(const int i) const {return (*b_disp)[i];}
+float SimTreeReader::chi2(const int i) const {return (*b_chi2)[i];}
 
 SimTreeReader::~SimTreeReader() {}
 

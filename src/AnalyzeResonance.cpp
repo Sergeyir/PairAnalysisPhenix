@@ -161,16 +161,10 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             switch (charge)
             {
                case 1:
-                  positiveTracks.emplace_back(daughter1Mass, 
-                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
+                  positiveTracks.emplace_back(daughter1Mass, simCNT, i);
                   break;
                case -1:
-                  negativeTracks.emplace_back(daughter2Mass,
-                                              simCNT.mom(i)*sin(the0)*cos(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*sin(the0)*sin(simCNT.phi0(i)), 
-                                              simCNT.mom(i)*cos(the0), phi, alpha, zed);
+                  negativeTracks.emplace_back(daughter2Mass, simCNT, i);
                   break;
             }
          }
@@ -186,23 +180,6 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                thrContainer.distrMInv->Fill(pT, mInv, eventWeight);
 
-               // 10 is a rough estimation for gaussian widening 
-               // due to finite momentum resolution of a detector system 
-               if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
-                   mInv < resonanceMass + resonanceGamma*2. + 10.)
-               {
-                  histContainer.distrEAsymVsPT->Fill(pT, (posTrack.e - negTrack.e)/
-                                                     (posTrack.e + negTrack.e), eventWeight);
-                  histContainer.distrPAsymVsPT->Fill(pT, (posTrack.p - negTrack.p)/
-                                                     (posTrack.p + negTrack.p), eventWeight);
-                  histContainer.distrDEVsPT->Fill(pT, posTrack.e - negTrack.e, eventWeight);
-                  histContainer.distrDPVsPT->Fill(pT, posTrack.p - negTrack.p, eventWeight);
-                  histContainer.distrDPhiVsPT->Fill(pT, posTrack.phi - negTrack.phi, eventWeight);
-                  histContainer.distrDAlphaVsPT->Fill(pT, posTrack.alpha - negTrack.alpha, 
-                                                      eventWeight);
-                  histContainer.distrDZedVsPT->Fill(pT, posTrack.zed - negTrack.zed, eventWeight);
-               }
-
                if (IsGhostCut(posTrack, negTrack))
                {
                   thrContainer.distrMInvNoPIDGhostAntiCut->Fill(pT, mInv, eventWeight);
@@ -213,6 +190,25 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   thrContainer.distrMInvNoPIDOneArmAntiCut->Fill(pT, mInv, eventWeight);
                   continue;
+               }
+
+               // 10 is a rough estimation for gaussian widening 
+               // due to finite momentum resolution of a detector system 
+               if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
+                   mInv < resonanceMass + resonanceGamma*2. + 10.)
+               {
+                  histContainer.distrEAsymVsPT->Fill(pT, (posTrack.e - negTrack.e)/
+                                                     (posTrack.e + negTrack.e), mInv, eventWeight);
+                  histContainer.distrPAsymVsPT->Fill(pT, (posTrack.p - negTrack.p)/
+                                                     (posTrack.p + negTrack.p), mInv, eventWeight);
+                  histContainer.distrDEVsPT->Fill(pT, posTrack.e - negTrack.e, mInv, eventWeight);
+                  histContainer.distrDPVsPT->Fill(pT, posTrack.p - negTrack.p, mInv, eventWeight);
+                  histContainer.distrDPhiVsPT->Fill(pT, posTrack.phi - negTrack.phi, 
+                                                    mInv, eventWeight);
+                  histContainer.distrDAlphaVsPT->Fill(pT, posTrack.alpha - negTrack.alpha, 
+                                                      mInv, eventWeight);
+                  histContainer.distrDZedVsPT->Fill(pT, posTrack.zed - negTrack.zed, 
+                                                    mInv, eventWeight);
                }
 
                if (!IsNoPID(posTrack, negTrack)) continue;
@@ -455,13 +451,13 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDGhostAntiCut.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDSailorCut.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDCowboyCut.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrPAsymVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrEAsymVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDEVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDPVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDAlphaVsPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDZedVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrPAsymVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrEAsymVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDEVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDPVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDPhiVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDAlphaVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDZedVsPT.Merge())->Write();
 
    outputFile.Close();
 }

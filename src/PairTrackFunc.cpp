@@ -75,8 +75,7 @@ bool IsGhostCut(const ChargedTrack& track1, const ChargedTrack& track2)
    const double dAlpha = track1.alpha - track2.alpha;
    const double dZed = track1.zed - track2.zed;
 
-   return (fabs(dZed) < 6.0 ||
-           fabs(dPhi - (0.13*dAlpha)) < 0.015 ||
+   return ((fabs(dZed) < 6.0 && fabs(dPhi - (0.13*dAlpha)) < 0.015) ||
            fabs(dPhi - (0.04*dAlpha)) < 0.015 ||
            fabs(dPhi - (-0.065*dAlpha)) < 0.015);
 }
