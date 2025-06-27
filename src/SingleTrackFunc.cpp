@@ -22,7 +22,8 @@ ChargedTrack::ChargedTrack(const double m, const double pX, const double pY, con
    this->phi = phi;
    this->alpha = alpha;
    this->zed = zed;
-   e = sqrt(pX*pX + pY*pY + pZ*pZ + m*m);
+   p = sqrt(pX*pX + pY*pY + pZ*pZ);
+   e = sqrt(p*p + m*m);
 }
 
 bool IsHit(const double dVal)

@@ -47,6 +47,8 @@ struct ChargedTrack
    double pY;
    /// reconstructed Z compoment of momentum of a track [GeV/c]
    double pZ;
+   /// reconstructed momentum of a track [GeV/c^2]
+   double p;
    /// energy of a track [GeV]
    double e;
    /// reconstructed azimuthal angle of a track [rad]

@@ -86,7 +86,7 @@ namespace AnalyzeResonance
    struct ThrContainerCopy
    {
       /// distribution of original generated pT
-      std::shared_ptr<TH1F> distrOrigPT;
+      std::shared_ptr<TH1D> distrOrigPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
       /// invariant mass distribution for all pairs without any cuts on pairs
@@ -101,6 +101,22 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrMInvNoPIDSailorCut;
       /// NoPID invariant mass distribution with cowboy cut applied
       std::shared_ptr<TH2F> distrMInvNoPIDCowboyCut;
+      /// abs(E1 - E2)/(E1 + E2) for a pair of tracks within 2*Gamma + 10 MeV 
+      /// of the center of the signal
+      std::shared_ptr<TH2F> distrEAsymVsPT;
+      /// abs(p1 - p2)/(p1 + p2) for a pair of tracks within 2*Gamma + 10 MeV 
+      /// of the center of the signal
+      std::shared_ptr<TH2F> distrPAsymVsPT;
+      /// E1 - E2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      std::shared_ptr<TH2F> distrDEVsPT;
+      /// p1 - p2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      std::shared_ptr<TH2F> distrDPVsPT;
+      /// phi1 - phi2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      std::shared_ptr<TH2F> distrDPhiVsPT;
+      /// alpha1 - alpha2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      std::shared_ptr<TH2F> distrDAlphaVsPT;
+      /// zed1 - zed2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      std::shared_ptr<TH2F> distrDZedVsPT;
    };
    /* @struct ThrContainer
     * @brief Container for storing ROOT::TThreadedObject variables 
@@ -114,8 +130,8 @@ namespace AnalyzeResonance
       /// @brief writes the merged histograms across all threads into the file with a specified name
       void Write(const std::string& outputFileName);
       /// distribution of original generated pT
-      std::unique_ptr<ROOT::TThreadedObject<TH1F>> distrOrigPT = 
-         std::make_unique<ROOT::TThreadedObject<TH1F>>("orig pT", "p_{T}", 100., 0., 10.);
+      std::unique_ptr<ROOT::TThreadedObject<TH1D>> distrOrigPT = 
+         std::make_unique<ROOT::TThreadedObject<TH1D>>("orig pT", "p_{T}", 100., 0., 10.);
       // distribution of original generated pT vs reconstructed pT in the simulation
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
@@ -142,6 +158,33 @@ namespace AnalyzeResonance
       ROOT::TThreadedObject<TH2F> distrMInvNoPIDCowboyCut{"M_inv: NoPID, cowboy cut", 
                                                           "M_{inv} vs p_{T}", 
                                                           200, 0., 20., 1000, 0., 5.};
+      /// abs(E1 - E2)/(E1 + E2) for a pair of tracks within 2*Gamma + 10 MeV 
+      /// of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrEAsymVsPT{"E asym", "(E_{pos} - E_{neg})/(E_{pos} + E_{neg}) vs p_{T}", 
+                        200, 0., 20., 200, -1., 1.};
+      /// abs(p1 - p2)/(p1 + p2) for a pair of tracks within 2*Gamma + 10 MeV 
+      /// of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T}", 
+                        200, 0., 20., 200, -1., 1.};
+      /// E1 - E2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrDEVsPT{"delta E", "E_{pos} - E_{neg} vs p_{T}", 200, 0., 20., 200, -20., 20.};
+      /// p1 - p2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrDPVsPT{"delta p", "p_{pos} - p_{neg} vs p_{T}", 200, 0., 20., 200, -20., 20.};
+      /// phi1 - phi2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrDPhiVsPT{"delta phi", "#varphi_{pos} - #varphi_{neg} vs p_{T}", 
+                       200, 0., 20., 200, -M_PI, M_PI};
+      /// alpha1 - alpha2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
+         distrDAlphaVsPT{"delta alpha", "#alpha_{pos} - #alpha_{neg} vs p_{T}", 
+                         200, 0., 20., 200, -M_PI, M_PI};
+      /// zed1 - zed2 for a pair of tracks within 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> distrDZedVsPT{"delta zed", "zed_{pos} - zed_{neg} vs p_{T}", 
+                                                200, 0., 20., 200, -150., 150.};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file

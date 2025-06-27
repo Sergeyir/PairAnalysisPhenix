@@ -30,7 +30,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
    TFile simInputFile = TFile(simInputFileName.c_str());
 
-   TH1F *origPTHist = static_cast<TH1F *>(simInputFile.Get("orig_pt"));
+   TH1D *origPTHist = static_cast<TH1D *>(simInputFile.Get("orig_pt"));
 
    // weight function for spectra
    std::unique_ptr<TF1> weightFunc;
@@ -54,7 +54,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
    const double upPTBound = 
       origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
 
-   TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
+   TH1D *centrHist = static_cast<TH1D *>(realDataFile.Get("centrality"));
    if (!centrHist) 
    {
       CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
@@ -89,6 +89,9 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
       weightFunc = std::make_unique<TF1>("weightFunc", "expo");
       weightFunc->SetParameters(0., -1.);
    }
+
+   const double resonanceMass = inputYAMLSim["mass"].as<double>();
+   const double resonanceGamma = inputYAMLSim["gamma"].as<double>();
 
    const double daughter1Mass = ParticleMap::mass[daughter1Id];
    const double daughter2Mass = ParticleMap::mass[daughter2Id];
@@ -176,10 +179,29 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          {
             for (const auto& negTrack : negativeTracks)
             {
+               // invariant mass [GeV/c^2]
                const double mInv = GetPairMass(posTrack, negTrack);
+               // pT of a pair [GeV/c]
                const double pT = GetPairPT(posTrack, negTrack);
 
                thrContainer.distrMInv->Fill(pT, mInv, eventWeight);
+
+               // 10 is a rough estimation for gaussian widening 
+               // due to finite momentum resolution of a detector system 
+               if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
+                   mInv < resonanceMass + resonanceGamma*2. + 10.)
+               {
+                  histContainer.distrEAsymVsPT->Fill(pT, (posTrack.e - negTrack.e)/
+                                                     (posTrack.e + negTrack.e), eventWeight);
+                  histContainer.distrPAsymVsPT->Fill(pT, (posTrack.p - negTrack.p)/
+                                                     (posTrack.p + negTrack.p), eventWeight);
+                  histContainer.distrDEVsPT->Fill(pT, posTrack.e - negTrack.e, eventWeight);
+                  histContainer.distrDPVsPT->Fill(pT, posTrack.p - negTrack.p, eventWeight);
+                  histContainer.distrDPhiVsPT->Fill(pT, posTrack.phi - negTrack.phi, eventWeight);
+                  histContainer.distrDAlphaVsPT->Fill(pT, posTrack.alpha - negTrack.alpha, 
+                                                      eventWeight);
+                  histContainer.distrDZedVsPT->Fill(pT, posTrack.zed - negTrack.zed, eventWeight);
+               }
 
                if (IsGhostCut(posTrack, negTrack))
                {
@@ -195,7 +217,11 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (!IsNoPID(posTrack, negTrack)) continue;
 
-               histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
+               if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
+                   mInv < resonanceMass + resonanceGamma*2. + 10.)
+               {
+                  histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
+               }
 
                if (IsSailorCut(posTrack, negTrack))
                {
@@ -404,6 +430,13 @@ ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
    copy.distrMInvNoPIDGhostAntiCut = distrMInvNoPIDGhostAntiCut.Get();
    copy.distrMInvNoPIDSailorCut = distrMInvNoPIDSailorCut.Get();
    copy.distrMInvNoPIDCowboyCut = distrMInvNoPIDCowboyCut.Get();
+   copy.distrPAsymVsPT = distrPAsymVsPT.Get();
+   copy.distrEAsymVsPT = distrEAsymVsPT.Get();
+   copy.distrDEVsPT = distrDEVsPT.Get();
+   copy.distrDPVsPT = distrDPVsPT.Get();
+   copy.distrDPhiVsPT = distrDPhiVsPT.Get();
+   copy.distrDAlphaVsPT = distrDAlphaVsPT.Get();
+   copy.distrDZedVsPT = distrDZedVsPT.Get();
 
    return copy;
 }
@@ -414,7 +447,7 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    outputFile.SetCompressionLevel(6);
    outputFile.cd();
 
-   static_cast<std::shared_ptr<TH1F>>(distrOrigPT->Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrOrigPT->Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInv.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPID.Merge())->Write();
@@ -422,6 +455,13 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDGhostAntiCut.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDSailorCut.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDCowboyCut.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrPAsymVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrEAsymVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDEVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDPhiVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDAlphaVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrDZedVsPT.Merge())->Write();
 
    outputFile.Close();
 }

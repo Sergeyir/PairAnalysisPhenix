@@ -68,13 +68,13 @@ namespace AnalyzeSingleTrack
    /// number of threads
    int numberOfThreads;
    /// histogram with alpha scaling for DCe, zDC>=0 that is used when reweightForAlpha is true
-   TH1F *alphaReweightDCe0;
+   TH1D *alphaReweightDCe0;
    /// histogram with alpha scaling for DCe, zDC<0 that is used when reweightForAlpha is true
-   TH1F *alphaReweightDCe1;
+   TH1D *alphaReweightDCe1;
    /// histogram with alpha scaling for DCw, zDC>=0 that is used when reweightForAlpha is true
-   TH1F *alphaReweightDCw0;
+   TH1D *alphaReweightDCw0;
    /// histogram with alpha scaling for DCw, zDC<0 that is used when reweightForAlpha is true
-   TH1F *alphaReweightDCw1;
+   TH1D *alphaReweightDCw1;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
    /// parameter for monitoring the progress
@@ -112,9 +112,11 @@ namespace AnalyzeSingleTrack
    struct ThrContainerCopy
    {
       /// distribution of original generated pT
-      std::shared_ptr<TH1F> distrOrigPT;
+      std::shared_ptr<TH1D> distrOrigPT;
+      /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts
+      std::shared_ptr<TH1D> distrRecPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
-      std::shared_ptr<TH2F> distrOrigPTVsRecPT;
+      std::shared_ptr<TH2D> distrOrigPTVsRecPT;
       /// unscaled by alpha heatmap of DCe, zDC>=0
       std::shared_ptr<TH2F> heatmapUnscaledDCe0;
       /// unscaled by alpha heatmap of DCe, zDC<0
@@ -207,6 +209,18 @@ namespace AnalyzeSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCaleOrig;
       /// ecore in EMCalw(0-3) vs pT distributions for original particles only
       std::array<std::shared_ptr<TH2F>, 4> distrECoreVsPTEMCalwOrig;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in PC2
+      std::shared_ptr<TH1D> distrRecPTPC2;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in PC3
+      std::shared_ptr<TH1D> distrRecPTPC3;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in EMCale
+      std::array<std::shared_ptr<TH1D>, 4> distrRecPTEMCale;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in EMCalw
+      std::array<std::shared_ptr<TH1D>, 4> distrRecPTEMCalw;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in TOFe
+      std::shared_ptr<TH1D> distrRecPTTOFe;
+      /// reconstructed pT distribution of tracks regisetered and passed all cuts in TOFw
+      std::shared_ptr<TH1D> distrRecPTTOFw;
       /// eloss vs beta distribution in TOFe
       std::shared_ptr<TH2F> distrBetaVsETOFe;
       /// pc2dphi vs pT distribution for positive tracks
@@ -358,10 +372,11 @@ namespace AnalyzeSingleTrack
       /// @brief writes the merged histograms across all threads into the file with a specified name
       void Write(const std::string& outputFileName);
       /// distribution of original generated pT
-      std::unique_ptr<ROOT::TThreadedObject<TH1F>> distrOrigPT = 
-         std::make_unique<ROOT::TThreadedObject<TH1F>>("orig pT", "p_{T}", 100., 0., 10.);
-      // distribution of original generated pT vs reconstructed pT in the simulation
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH1D> distrOrigPT{"orig pT", "p_{T}", 100., 0., 10.};
+      /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts
+      ROOT::TThreadedObject<TH1D> distrRecPT{"rec pT", "p_{T}", 100., 0., 10.};
+      // distribution of original generated pT vs pT of reconstructed tracks in the simulation
+      ROOT::TThreadedObject<TH2D> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
                             100, 0., 10., 100, 0., 10.};
       /// unscaled by alpha heatmap of DCe, zDC>=0
@@ -484,64 +499,88 @@ namespace AnalyzeSingleTrack
 
       /// heatmap of DCe vs pT, zDC>=0
       ROOT::TThreadedObject<TH3F> heatmapDCe0VsPT{"Heatmap vs pT: DCe, zDC>=0", "board vs alpha", 
-                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+                                                  80, 0., 80., 39, -0.39, 0.39, 10, 0., 10.};
       /// heatmap of DCe vs pT, zDC<0
       ROOT::TThreadedObject<TH3F> heatmapDCe1VsPT{"Heatmap vs pT: DCe, zDC<0", "board vs alpha", 
-                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+                                                  80, 0., 80., 39, -0.39, 0.39, 10, 0., 10.};
       /// heatmap of DCw vs pT, zDC>=0
       ROOT::TThreadedObject<TH3F> heatmapDCw0VsPT{"Heatmap vs pT: DCw, zDC>=0", "board vs alpha", 
-                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+                                                  80, 0., 80., 39, -0.39, 0.39, 10, 0., 10.};
       /// heatmap of DCw vs pT, zDC<0
       ROOT::TThreadedObject<TH3F> heatmapDCw1VsPT{"Heatmap vs pT: DCw, zDC<0", "board vs alpha", 
-                                                  80, 0., 80., 39, -0.39, 0.39, 20, 0., 10.};
+                                                  80, 0., 80., 39, -0.39, 0.39, 10, 0., 10.};
       /// heatmap of PC1e vs pT
       ROOT::TThreadedObject<TH3F> heatmapPC1eVsPT{"Heatmap vs pT: PC1e", "pc1z vs pc1phi", 
-                                                  76, -95., 95., 34, 2.05, 3.75, 20, 0., 10.};
+                                                  76, -95., 95., 34, 2.05, 3.75, 10, 0., 10.};
       /// heatmap of PC1w vs pT
       ROOT::TThreadedObject<TH3F> heatmapPC1wVsPT{"Heatmap vs pT: PC1w", "pc1z vs pc1phi", 
-                                                  76, -95., 95., 34, -0.6, 1.05, 20, 0., 10.};
+                                                  76, -95., 95., 34, -0.6, 1.05, 10, 0., 10.};
       /// heatmap of PC2 vs pT
       ROOT::TThreadedObject<TH3F> 
          heatmapPC2VsPT{"Heatmap vs pT: PC2", "pc3z vs pc3phi", 
-                        66, -165., 165., 33, -0.6, 1.05, 20, 0., 10.};
+                        66, -165., 165., 33, -0.6, 1.05, 10, 0., 10.};
       /// heatmap of PC3e vs pT
       ROOT::TThreadedObject<TH3F> 
          heatmapPC3eVsPT{"Heatmap vs pT: PC3e", "pc3z vs pc3phi",    
-                         78, -195., 195., 34, 2.1, 3.8, 20, 0., 10.};
+                         78, -195., 195., 34, 2.1, 3.8, 10, 0., 10.};
       /// heatmap of PC3w vs pT
       ROOT::TThreadedObject<TH3F> 
          heatmapPC3wVsPT{"Heatmap vs pT: PC3w", "pc3z vs pc3phi", 
-                         78, -195., 195., 34, -0.65, 1.05, 20, 0., 10.};
+                         78, -195., 195., 34, -0.65, 1.05, 10, 0., 10.};
       /// heatmap of TOFe vs pT
       ROOT::TThreadedObject<TH3F> heatmapTOFeVsPT{"Heatmap vs pT: TOFe", "chamber vs slat", 
-                                                  10, 0., 10., 96, 0., 96., 20, 0., 10.};
+                                                  10, 0., 10., 96, 0., 96., 10, 0., 10.};
       /// heatmap of TOFw vs pT
       ROOT::TThreadedObject<TH3F> heatmapTOFwVsPT{"Heatmap vs pT: TOFw", "chamber vs strip", 
-                                                  8, 0., 8., 64, 0., 64., 20, 0., 10.};
+                                                  8, 0., 8., 64, 0., 64., 10, 0., 10.};
       /// heatmaps of EMCale(0-3) vs pT
       std::array<ROOT::TThreadedObject<TH3F>, 4> heatmapEMCaleVsPT
       {
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale0", "ytower vs ztower", 
-                                     48, 0., 48., 97, 0., 97., 20, 0., 10.),
+                                     48, 0., 48., 97, 0., 97., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale1", "ytower vs ztower", 
-                                     48, 0., 48., 97, 0., 97., 20, 0., 10.),
+                                     48, 0., 48., 97, 0., 97., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale2", "ytower vs ztower", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCale3", "ytower vs ztower", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.)
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.)
       };
       /// heatmaps of EMCalw(0-3) vs pT
       std::array<ROOT::TThreadedObject<TH3F>, 4> heatmapEMCalwVsPT
       {
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw0", "pemcy vs pemcz", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw1", "pemcy vs pemcz", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw2", "pemcy vs pemcz", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.),
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.),
          ROOT::TThreadedObject<TH3F>("Heatmap vs pT: EMCalw3", "pemcy vs pemcz", 
-                                     36, 0., 36, 72, 0., 72., 20, 0., 10.)
+                                     36, 0., 36, 72, 0., 72., 10, 0., 10.)
       };
+      /// pT distribution of particles regisetered and passed all cuts in PC2
+      ROOT::TThreadedObject<TH1D> distrRecPTPC2{"rec pT: PC2", "p_{T}", 100., 0., 10.};
+      /// pT distribution of particles regisetered and passed all cuts in PC3
+      ROOT::TThreadedObject<TH1D> distrRecPTPC3{"rec pT: PC3", "p_{T}", 100., 0., 10.};
+      /// pT distribution of particles regisetered and passed all cuts in EMCale(0-3)
+      std::array<ROOT::TThreadedObject<TH1D>, 4> distrRecPTEMCale
+      {
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCale0", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCale1", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCale2", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCale3", "p_{T}", 100., 0., 10.),
+      };
+      /// pT distribution of particles regisetered and passed all cuts in EMCalw(0-3)
+      std::array<ROOT::TThreadedObject<TH1D>, 4> distrRecPTEMCalw
+      {
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw0", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw1", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw2", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw3", "p_{T}", 100., 0., 10.),
+      };
+      /// pT distribution of particles regisetered and passed all cuts in TOFe
+      ROOT::TThreadedObject<TH1D> distrRecPTTOFe{"rec pT: TOFe", "p_{T}", 100., 0., 10.};
+      /// pT distribution of particles regisetered and passed all cuts in TOFw
+      ROOT::TThreadedObject<TH1D> distrRecPTTOFw{"rec pT: TOFw", "p_{T}", 100., 0., 10.};
       /// prob in EMCale(0-3) vs pT distributions
       std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCale
       {

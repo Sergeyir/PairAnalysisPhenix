@@ -32,7 +32,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    TFile simInputFile = TFile(simInputFileName.c_str());
    TFile realDataFile = TFile(realDataFileName.c_str());
 
-   TH1F *origPTHist = static_cast<TH1F *>(simInputFile.Get("orig_pt"));
+   TH1D *origPTHist = static_cast<TH1D *>(simInputFile.Get("orig_pt"));
 
    // weight function for spectra
    std::unique_ptr<TF1> weightFunc;
@@ -51,7 +51,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    const double upPTBound = 
       origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
 
-   TH1F *centrHist = static_cast<TH1F *>(realDataFile.Get("centrality"));
+   TH1D *centrHist = static_cast<TH1D *>(realDataFile.Get("centrality"));
    if (!centrHist) 
    {
       CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
@@ -223,6 +223,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
 
+            histContainer.distrRecPT->Fill(pT, eventWeight);
+
             if (IsHit(simCNT.pc2dphi(i)))
             {
                const double sdphi = simCalibrator.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
@@ -245,13 +247,20 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrSDZVsPTPC2Neg->Fill(sdz, pT, eventWeight);
                }
 
+               const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
+
+
                if (IsMatch(pT, sdphi, sdz, 0.25))
                {
-                  const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
                   histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
                                                  eventWeight*alphaReweight);
                   histContainer.heatmapPC2VsPT->Fill(simCNT.ppc2z(i), pc2phi, pT,
                                                      eventWeight*alphaReweight);
+               }
+
+               if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+               {
+                  histContainer.distrRecPTPC2->Fill(pT, eventWeight);
                }
             }
 
@@ -324,7 +333,11 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                             eventWeight*alphaReweight);
                      }
                   }
-                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi)) isMatchAndGoodPC3 = true;
+                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi)) 
+                  {
+                     isMatchAndGoodPC3 = true;
+                     histContainer.distrRecPTPC3->Fill(pT, eventWeight);
+                  }
                }
             }
 
@@ -481,6 +494,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                               histContainer.distrM2EMCaleNegCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
+                           histContainer.distrRecPTEMCale[simCNT.sect(i)]->Fill(pT, eventWeight);
                         }
                         else
                         {
@@ -496,6 +510,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                               histContainer.distrM2EMCalwNegCharge[simCNT.sect(i)]->
                                  Fill(pT, m2, eventWeight);
                            }
+                           histContainer.distrRecPTEMCalw[simCNT.sect(i)]->Fill(pT, eventWeight);
                         }
                      }
                   }
@@ -554,6 +569,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
                       !dmCutter.IsDeadTOFe(chamber, slat))
                   {
+                     histContainer.distrRecPTTOFe->Fill(pT, eventWeight);
+
                      const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -621,6 +638,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
                       !dmCutter.IsDeadTOFw(chamber, strip))
                   {
+                     histContainer.distrRecPTTOFw->Fill(pT, eventWeight);
+
                      const double tExpPi = sqrt(simCNT.pltofw(i)*simCNT.pltofw(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -809,16 +828,16 @@ int main(int argc, char **argv)
          }
 
          alphaReweightDCe0 = 
-            static_cast<TH1F *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
                                 1, realDataDCe0->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCe1 = 
-            static_cast<TH1F *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
                                 1, realDataDCe1->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCw0 = 
-            static_cast<TH1F *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
                                 1, realDataDCw0->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCw1 = 
-            static_cast<TH1F *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
                                 1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
 
          alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
@@ -1002,7 +1021,7 @@ int main(int argc, char **argv)
 
    CppTools::PrintInfo("Merging output files into one");
 
-   std::string haddCommand = "hadd -f6 " + outputDir + "all.root ";
+   std::string haddCommand = "hadd -f9 -j " + outputDir + "all.root ";
    for (const auto& particle : inputYAMLSim["particles"])
    {
       haddCommand += outputDir + particle["name"].as<std::string>() + ".root ";
@@ -1061,7 +1080,8 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
-   copy.distrOrigPT = distrOrigPT->Get();
+   copy.distrOrigPT = distrOrigPT.Get();
+   copy.distrRecPT = distrRecPT.Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
    copy.heatmapUnscaledDCe0 = heatmapUnscaledDCe0.Get();
    copy.heatmapUnscaledDCe1 = heatmapUnscaledDCe1.Get();
@@ -1097,6 +1117,10 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.heatmapPC3wVsPT = heatmapPC3wVsPT.Get();
    copy.heatmapTOFeVsPT = heatmapTOFeVsPT.Get();
    copy.heatmapTOFwVsPT = heatmapTOFwVsPT.Get();
+   copy.distrRecPTPC2 = distrRecPTPC2.Get();
+   copy.distrRecPTPC3 = distrRecPTPC3.Get();
+   copy.distrRecPTTOFe = distrRecPTTOFe.Get();
+   copy.distrRecPTTOFw = distrRecPTTOFw.Get();
    copy.distrBetaVsETOFe = distrBetaVsETOFe.Get();
    copy.distrDPhiVsPTPC2Pos = distrDPhiVsPTPC2Pos.Get();
    copy.distrDZVsPTPC2Pos = distrDZVsPTPC2Pos.Get();
@@ -1154,6 +1178,8 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.heatmapEMCalwHit[i] = heatmapEMCalwHit[i].Get();
       copy.heatmapEMCaleVsPT[i] = heatmapEMCaleVsPT[i].Get();
       copy.heatmapEMCalwVsPT[i] = heatmapEMCalwVsPT[i].Get();
+      copy.distrRecPTEMCale[i] = distrRecPTEMCale[i].Get();
+      copy.distrRecPTEMCalw[i] = distrRecPTEMCalw[i].Get();
       copy.distrECoreVsPTEMCale[i] = distrECoreVsPTEMCale[i].Get();
       copy.distrECoreVsPTEMCalw[i] = distrECoreVsPTEMCalw[i].Get();
       copy.distrECoreVsPTEMCaleOrig[i] = distrECoreVsPTEMCaleOrig[i].Get();
@@ -1192,8 +1218,9 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    outputFile.SetCompressionLevel(6);
    outputFile.cd();
 
-   static_cast<std::shared_ptr<TH1F>>(distrOrigPT->Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrOrigPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH2D>>(distrOrigPTVsRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe0.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe1.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCw0.Merge())->Write();
@@ -1228,6 +1255,10 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH3F>>(heatmapPC3wVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(heatmapTOFeVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(heatmapTOFwVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPTPC2.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPTPC3.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPTTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPTTOFw.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrBetaVsETOFe.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Pos.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrTTOFe.Merge())->Write();
@@ -1246,6 +1277,8 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
       static_cast<std::shared_ptr<TH2F>>(heatmapEMCalwHit[i].Merge())->Write();
       static_cast<std::shared_ptr<TH3F>>(heatmapEMCaleVsPT[i].Merge())->Write();
       static_cast<std::shared_ptr<TH3F>>(heatmapEMCalwVsPT[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH1D>>(distrRecPTEMCale[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH1D>>(distrRecPTEMCalw[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCale[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCalw[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCaleOrig[i].Merge())->Write();
