@@ -178,6 +178,12 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // pT of a pair [GeV/c]
                const double pT = GetPairPT(posTrack, negTrack);
 
+               // check that shows whether invariant mass is within 2 gamma from mean of the signal
+               // 10 is a rough estimation for gaussian widening 
+               // due to finite momentum resolution of a detector system 
+               const bool isWithin2Gamma = (mInv > resonanceMass - resonanceGamma*2. - 10. && 
+                                            mInv < resonanceMass + resonanceGamma*2. + 10.);
+
                thrContainer.distrMInv->Fill(pT, mInv, eventWeight);
 
                if (IsGhostCut(posTrack, negTrack))
@@ -192,10 +198,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   continue;
                }
 
-               // 10 is a rough estimation for gaussian widening 
-               // due to finite momentum resolution of a detector system 
-               if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
-                   mInv < resonanceMass + resonanceGamma*2. + 10.)
+               if (isWithin2Gamma)
                {
                   histContainer.distrEAsymVsPT->Fill(pT, (posTrack.e - negTrack.e)/
                                                      (posTrack.e + negTrack.e), mInv, eventWeight);
@@ -228,7 +231,47 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   thrContainer.distrMInvNoPIDCowboyCut->Fill(pT, mInv, eventWeight);
                }
 
-               thrContainer.distrMInvNoPID->Fill(pT, mInv, eventWeight);
+               //if (!Is2PID(posTrack, negTrack, daughter1Id, daughter2Id)) continue;
+
+               if (isWithin2Gamma)
+               {
+                  if (IsHit(simCNT.tofdz(posTrack.index)) && 
+                      IsHit(simCNT.tofdz(negTrack.index)))
+                  {
+                     thrContainer.distrDChamberDSlatVsPT->
+                        Fill(static_cast<double>(simCNT.slat(posTrack.index)/96 - 
+                                                 simCNT.slat(negTrack.index)/96) + 0.5,
+                             static_cast<double>((simCNT.slat(posTrack.index) % 96) - 
+                                                 (simCNT.slat(negTrack.index) % 96)) + 0.5,
+                             pT, eventWeight);
+                     if (simCNT.slat(posTrack.index)/96 == simCNT.slat(negTrack.index)/96 &&
+                         (simCNT.slat(posTrack.index) % 96) == (simCNT.slat(negTrack.index) % 96))
+                     {
+                        thrContainer.distrMInvNoPID->Fill(pT, mInv, eventWeight);
+                     }
+                  }
+                  else if (IsHit(simCNT.tofwdz(posTrack.index)) && 
+                           IsHit(simCNT.tofwdz(negTrack.index)))
+                  {
+                     thrContainer.distrDChamberDStripVsPT->
+                        Fill(static_cast<double>(simCNT.striptofw(posTrack.index)/96 - 
+                                                 simCNT.striptofw(negTrack.index)/96) + 0.5,
+                             static_cast<double>((simCNT.striptofw(posTrack.index) % 96) - 
+                                                 (simCNT.striptofw(negTrack.index) % 96)) + 0.5,
+                             pT, eventWeight);
+                  }
+
+                  if (IsHit(simCNT.emcdz(posTrack.index)) &&
+                      simCNT.sect(posTrack.index) == simCNT.sect(negTrack.index))
+                  {
+                     thrContainer.distrDYTowerDZTowerVsPT->
+                        Fill(static_cast<double>(simCNT.ysect(posTrack.index) - 
+                                                 simCNT.ysect(negTrack.index)) + 0.5, 
+                             static_cast<double>(simCNT.zsect(posTrack.index) - 
+                                                 simCNT.zsect(negTrack.index)) + 0.5, 
+                             pT, eventWeight);
+                  }
+               }
             }
          }
       }
@@ -273,14 +316,18 @@ int main(int argc, char **argv)
    pTMin = inputYAMLSimSingleTrack["pt_min"].as<double>();
    pTMax = inputYAMLSimSingleTrack["pt_max"].as<double>();
 
-   reweightForSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
-
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
-   if (reweightForSpectra)
+   if (CppTools::FileExists("data/Parameters/SpectraFit/" + collisionSystemName + 
+                            "/" + inputYAMLSim["name"].as<std::string>() + ".yaml"))
    {
-      CppTools::CheckInputFile("data/Parameters/SpectraFit/" + collisionSystemName + 
-                               "/" + inputYAMLSim["name"].as<std::string>() + ".yaml");
+      CppTools::PrintInfo("Fit parameters for spectra were found");
+      reweightForSpectra = true;
+   }
+   else 
+   {
+      CppTools::PrintInfo("Fit parameters for spectra were not found; setting reweight to e^{-1*pT}");
+      reweightForSpectra = false;
    }
  
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
@@ -433,6 +480,9 @@ ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
    copy.distrDPhiVsPT = distrDPhiVsPT.Get();
    copy.distrDAlphaVsPT = distrDAlphaVsPT.Get();
    copy.distrDZedVsPT = distrDZedVsPT.Get();
+   copy.distrDChamberDSlatVsPT = distrDChamberDSlatVsPT.Get();
+   copy.distrDChamberDStripVsPT = distrDChamberDStripVsPT.Get();
+   copy.distrDYTowerDZTowerVsPT = distrDYTowerDZTowerVsPT.Get();
 
    return copy;
 }
@@ -458,6 +508,9 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH3F>>(distrDPhiVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrDAlphaVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrDZedVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDChamberDSlatVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDChamberDStripVsPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH3F>>(distrDYTowerDZTowerVsPT.Merge())->Write();
 
    outputFile.Close();
 }

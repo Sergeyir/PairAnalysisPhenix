@@ -11,7 +11,6 @@ daughter2_id: -321
 has_antiparticle: true
 branching_ratio: 0.66601
 branching_ratio_uncertainty: 0.00009
-reweight_for_spectra: false # shows whether the simulated particles should be assigned with weight so that the simulated particle production is similar to the one in the experiment
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
 pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)

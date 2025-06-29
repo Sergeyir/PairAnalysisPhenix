@@ -177,7 +177,7 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double mInv = GetPairMass(posTrack, negTrack);
                const double pT = GetPairPT(posTrack, negTrack);
 
-               thrContainer.distrMInvNoPID->Fill(pT, mInv);
+               thrContainer.distrMInvNoPID->Fill(pT, mInv, eventWeight);
             }
          }
       }
@@ -222,14 +222,18 @@ int main(int argc, char **argv)
    pTMin = inputYAMLSimSingleTrack["pt_min"].as<double>();
    pTMax = inputYAMLSimSingleTrack["pt_max"].as<double>();
 
-   reweightForSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
-
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
-   if (reweightForSpectra)
+   if (CppTools::FileExists("data/Parameters/SpectraFit/" + collisionSystemName + 
+                            "/" + inputYAMLSim["name"].as<std::string>() + ".yaml"))
    {
-      CppTools::CheckInputFile("data/Parameters/SpectraFit/" + collisionSystemName + 
-                               "/" + inputYAMLSim["name"].as<std::string>() + ".yaml");
+      CppTools::PrintInfo("Fit parameters for spectra were found");
+      reweightForSpectra = true;
+   }
+   else 
+   {
+      CppTools::PrintInfo("Fit parameters for spectra were not found; setting reweight to e^{-1*x}");
+      reweightForSpectra = false;
    }
  
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
