@@ -60,6 +60,10 @@ struct ChargedTrack
    double alpha;
    /// reconstructed zDC coordinate [cm]
    double zed;
+   /// reconstructed phi obtained from PC2
+   double phiPC2;
+   /// reconstructed phi obtained from PC3
+   double phiPC3;
    /// id of a particle obtained in PC2
    int idPC2 = PART_ID::JUNK;
    /// id of a particle obtained in PC3

@@ -249,7 +249,6 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-
                if (IsMatch(pT, sdphi, sdz, 0.25))
                {
                   histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 

@@ -101,29 +101,29 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrMInvNoPIDSailorCut;
       /// NoPID invariant mass distribution with cowboy cut applied
       std::shared_ptr<TH2F> distrMInvNoPIDCowboyCut;
-      /// abs(E1 - E2)/(E1 + E2) vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrEAsymVsPT;
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrPAsymVsPT;
-      /// E1 - E2 vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrDEVsPT;
-      /// p1 - p2 vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrDPVsPT;
       /// phi1 - phi2 vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrDPhiVsPT;
       /// alpha1 - alpha2 vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrDAlphaVsPT;
       /// zed1 - zed2 vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrDZedVsPT;
+      /// pc2phi1 - pc2phi2 vs pc2z1 - pc2z2 vs pT within 
+      /// 2*Gamma + 10 MeV of the center of the signal for PC2
+      std::shared_ptr<TH2F> distrDPC2PhiDPC2ZVsPT;
+      /// pc2phi1 - pc2phi2 vs pc3z1 - pc3z2 vs pT in the same arm within
+      /// 2*Gamma + 10 MeV of the center of the signal for PC3
+      std::shared_ptr<TH2F> distrDPC3PhiDPC3ZVsPT;
       /// chamber1 - chamber2 vs slat1 - slat2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFe
-      std::shared_ptr<TH3F> distrDChamberDSlatVsPT;
+      std::shared_ptr<TH2F> distrDChamberDSlatVsPT;
       /// chamber1 - chamber2 vs strip1 - strip2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFw
-      std::shared_ptr<TH3F> distrDChamberDStripVsPT;
+      std::shared_ptr<TH2F> distrDChamberDStripVsPT;
       /// ytower1 - ytower2 vs ztower1 - ztower2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      std::shared_ptr<TH3F> distrDYTowerDZTowerVsPT;
+      std::shared_ptr<TH2F> distrDYTowerDZTowerVsPT;
    };
    /* @struct ThrContainer
     * @brief Container for storing ROOT::TThreadedObject variables 
@@ -165,20 +165,10 @@ namespace AnalyzeResonance
       ROOT::TThreadedObject<TH2F> distrMInvNoPIDCowboyCut{"M_inv: NoPID, cowboy cut", 
                                                           "M_{inv} vs p_{T}", 
                                                           200, 0., 20., 1000, 0., 5.};
-      /// abs(E1 - E2)/(E1 + E2) vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> 
-         distrEAsymVsPT{"E asym", "(E_{pos} - E_{neg})/(E_{pos} + E_{neg}) vs p_{T} vs M_{inv}", 
-                        100, 0., 20., 200, -1., 1., 100, 0., 5.};
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       ROOT::TThreadedObject<TH3F> 
          distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T} vs M_{inv}", 
                         100, 0., 20., 200, -1., 1., 100, 0., 5.};
-      /// E1 - E2 vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> distrDEVsPT{"delta E", "E_{pos} - E_{neg} vs p_{T} vs M_{inv}", 
-                                              100, 0., 20., 200, -20., 20., 100, 0., 5.};
-      /// p1 - p2 vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> distrDPVsPT{"delta p", "p_{pos} - p_{neg} vs p_{T} vs M_{inv}", 
-                                              100, 0., 20., 200, -20., 20., 100, 0., 5.};
       /// phi1 - phi2 vs pT vs Minv for pairs of tracks
       ROOT::TThreadedObject<TH3F> 
          distrDPhiVsPT{"delta phi", "#varphi_{pos} - #varphi_{neg} vs p_{T} vs M_{inv}", 
@@ -193,36 +183,36 @@ namespace AnalyzeResonance
                        100, 0., 20., 200, -150., 150., 100, 0., 5.};
       /// pc2phi1 - pc2phi2 vs pc2z1 - pc2z vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      ROOT::TThreadedObject<TH3F> 
+      ROOT::TThreadedObject<TH2F> 
          distrDPC2PhiDPC2ZVsPT{"delta pc2phi vs delta pc2z", 
-                                "#varphi_{1}^{PC2} - #varphi_{2}^{PC2} vs "\
-                                "z_{1}^{PC2} - z_{2}^{PC2} vs p_{T}",
-                                200., -390, 390., 100, -1.7, 1.7, 20., 0., 20.};
-      /// pc3phi1 - pc3phi2 vs pc3z1 - pc3z vs pT within 
-      /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      ROOT::TThreadedObject<TH3F> 
+                                "z_{1}^{PC2} - z_{2}^{PC2} vs "\
+                                "#varphi_{1}^{PC2} - #varphi_{2}^{PC2}",
+                                200, -10., 10., 200, -0.1, 0.1};
+      /// pc3phi1 - pc3phi2 vs pc3z1 - pc3z vs pT in the same arm within 
+      /// 2*Gamma + 10 MeV of the center of the signal
+      ROOT::TThreadedObject<TH2F> 
          distrDPC3PhiDPC3ZVsPT{"delta pc3phi vs delta pc3z", 
-                                "#varphi_{1}^{PC3} - #varphi_{2}^{PC3} vs "\
-                                "z_{1}^{PC3} - z_{2}^{PC3} vs p_{T}",
-                                200., -390, 390., 100, -1.7, 1.7, 20., 0., 20.};
+                                "z_{1}^{PC3} - z_{2}^{PC3} vs "\
+                                "#varphi_{1}^{PC3} - #varphi_{2}^{PC3}",
+                                200, -10., 10., 200., -0.1, 0.1};
       /// ytower1 - ytower2 vs ztower1 - ztower2 vs pT for the pair in the same sector within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      ROOT::TThreadedObject<TH3F> 
+      ROOT::TThreadedObject<TH2F> 
          distrDYTowerDZTowerVsPT{"delta ytower vs delta ztower", 
-                                 "ytower_{1} - ytower_{2} vs ztower_{1} - ztower_{2} vs p_{T}",
-                                 96, -48., 48., 194, -97., 97, 20., 0., 20.};
+                                 "ytower_{1} - ytower_{2} vs ztower_{1} - ztower_{2}",
+                                 96, -48., 48., 194, -97., 97};
       /// chamber1 - chamber2 vs slat1 - slat2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFe
-      ROOT::TThreadedObject<TH3F> 
+      ROOT::TThreadedObject<TH2F> 
          distrDChamberDSlatVsPT{"delta chamber vs delta slat", 
-                                "chamber_{1} - chamber_{2} vs slat_{1} - slat_{2} vs p_{T}",
-                                20, -10., 10., 192, -96., 96, 20., 0., 20.};
+                                "chamber_{1} - chamber_{2} vs slat_{1} - slat_{2}",
+                                20, -10., 10., 192, -96., 96};
       /// chamber1 - chamber2 vs strip1 - strip2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFw
-      ROOT::TThreadedObject<TH3F> 
+      ROOT::TThreadedObject<TH2F> 
          distrDChamberDStripVsPT{"delta chamber vs delta strip", 
-                                "chamber_{1} - chamber_{2} vs strip_{1} - strip_{2} vs p_{T}",
-                                20, -10., 10., 128, -64., 64, 20., 0., 20.};
+                                "chamber_{1} - chamber_{2} vs strip_{1} - strip_{2}",
+                                20, -10., 10., 128, -64., 64};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file
