@@ -117,13 +117,13 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrDPC3PhiDPC3ZVsPT;
       /// chamber1 - chamber2 vs slat1 - slat2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFe
-      std::shared_ptr<TH2F> distrDChamberDSlatVsPT;
+      std::shared_ptr<TH3F> distrDChamberDSlatVsPT;
       /// chamber1 - chamber2 vs strip1 - strip2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFw
-      std::shared_ptr<TH2F> distrDChamberDStripVsPT;
+      std::shared_ptr<TH3F> distrDChamberDStripVsPT;
       /// ytower1 - ytower2 vs ztower1 - ztower2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      std::shared_ptr<TH2F> distrDYTowerDZTowerVsPT;
+      std::shared_ptr<TH3F> distrDYTowerDZTowerVsPT;
    };
    /* @struct ThrContainer
     * @brief Container for storing ROOT::TThreadedObject variables 
@@ -197,22 +197,22 @@ namespace AnalyzeResonance
                                 200, -10., 10., 200., -0.1, 0.1};
       /// ytower1 - ytower2 vs ztower1 - ztower2 vs pT for the pair in the same sector within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrDYTowerDZTowerVsPT{"delta ytower vs delta ztower", 
-                                 "ytower_{1} - ytower_{2} vs ztower_{1} - ztower_{2}",
-                                 96, -48., 48., 194, -97., 97};
+                                 "ytower_{1} - ytower_{2} vs ztower_{1} - ztower_{2} vs p_{T}",
+                                 96, -48., 48., 194, -97., 97, 10, 0., 10.};
       /// chamber1 - chamber2 vs slat1 - slat2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFe
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrDChamberDSlatVsPT{"delta chamber vs delta slat", 
-                                "chamber_{1} - chamber_{2} vs slat_{1} - slat_{2}",
-                                20, -10., 10., 192, -96., 96};
+                                "chamber_{1} - chamber_{2} vs slat_{1} - slat_{2} vs p_{T}",
+                                20, -10., 10., 192, -96., 96, 10, 0., 10.};
       /// chamber1 - chamber2 vs strip1 - strip2 vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for TOFw
-      ROOT::TThreadedObject<TH2F> 
+      ROOT::TThreadedObject<TH3F> 
          distrDChamberDStripVsPT{"delta chamber vs delta strip", 
-                                "chamber_{1} - chamber_{2} vs strip_{1} - strip_{2}",
-                                20, -10., 10., 128, -64., 64};
+                                "chamber_{1} - chamber_{2} vs strip_{1} - strip_{2} vs p_{T}",
+                                20, -10., 10., 128, -64., 64, 10, 0., 10.};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file
