@@ -75,11 +75,11 @@ bool IsTOFwNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 
 bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 {
-   return (IsPC2NoPID(track1, track2) ||
-           IsPC3NoPID(track1, track2) ||
-           IsEMCalNoPID(track1, track2),
-           IsTOFeNoPID(track1, track2) ||
-           IsTOFwNoPID(track1, track2));
+   return (!IsPC2NoPID(track1, track2) &&
+           !IsPC3NoPID(track1, track2) &&
+           !IsEMCalNoPID(track1, track2) &&
+           !IsTOFeNoPID(track1, track2) &&
+           !IsTOFwNoPID(track1, track2));
 }
 
 double GetPairPT(const ChargedTrack& track1, const ChargedTrack& track2)
