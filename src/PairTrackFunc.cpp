@@ -43,10 +43,43 @@ bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id
             track2.idTOFe == id2 || track2.idTOFw == id2));
 }
 
+bool IsPC2NoPID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.idPC2 != PART_ID::JUNK && track2.idPC2 != PART_ID::JUNK && 
+           !IsPC2Ghost(track1, track2));
+}
+
+bool IsPC3NoPID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.idPC3 != PART_ID::JUNK && track2.idPC3 != PART_ID::JUNK && 
+           !IsPC3Ghost(track1, track2));
+}
+
+bool IsEMCalNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.idEMCal != PART_ID::JUNK && track2.idEMCal != PART_ID::JUNK && 
+           !IsEMCalGhost(track1, track2));
+}
+
+bool IsTOFeNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.idTOFe != PART_ID::JUNK && track2.idTOFe != PART_ID::JUNK && 
+           !IsTOFeGhost(track1, track2));
+}
+
+bool IsTOFwNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.idTOFw != PART_ID::JUNK && track2.idTOFw != PART_ID::JUNK && 
+           !IsTOFwGhost(track1, track2));
+}
+
 bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 {
-   // pairs are only selected in a way to satisfy IsNoPID check for now
-   return true;
+   return (IsPC2NoPID(track1, track2) ||
+           IsPC3NoPID(track1, track2) ||
+           IsEMCalNoPID(track1, track2),
+           IsTOFeNoPID(track1, track2) ||
+           IsTOFwNoPID(track1, track2));
 }
 
 double GetPairPT(const ChargedTrack& track1, const ChargedTrack& track2)
@@ -67,6 +100,33 @@ bool IsOneArmCut(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    return ((track1.phi > M_PI/2. && track2.phi < M_PI/2.) ||
            (track1.phi < M_PI/2. && track2.phi > M_PI/2.));
+}
+
+bool IsPC2Ghost(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (fabs(track1.pc2phi - track2.pc2phi) < 0.02 && fabs(track1.pc2z - track2.pc2z) < 4.);
+}
+
+bool IsPC3Ghost(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (fabs(track1.pc3phi - track2.pc3phi) < 0.02 && fabs(track1.pc3z - track2.pc3z) < 4.);
+}
+
+bool IsEMCalGhost(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.sector == track2.sector && 
+           abs(track1.yTower - track1.yTower) < 2 && 
+           abs(track1.zTower - track2.zTower) < 2);
+}
+
+bool IsTOFeGhost(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.slat == track2.slat);
+}
+
+bool IsTOFwGhost(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (track1.strip == track2.strip);
 }
 
 bool IsGhostCut(const ChargedTrack& track1, const ChargedTrack& track2)

@@ -24,6 +24,17 @@ ChargedTrack::ChargedTrack(const double m, const SimTreeReader& simCNT, const in
    zed = simCNT.zed(i);
    p = sqrt(pX*pX + pY*pY + pZ*pZ);
    e = sqrt(p*p + m*m);
+   pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
+   pc2z = simCNT.ppc2z(i);
+   pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
+   pc3z = simCNT.ppc3z(i);
+   sector = simCNT.sect(i);
+   yTower = simCNT.ysect(i);
+   zTower = simCNT.zsect(i);
+   slat = simCNT.slat(i);
+   strip = simCNT.striptofw(i);
+
+   if (simCNT.dcarm(i) == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 }
 
 bool IsHit(const double dVal)

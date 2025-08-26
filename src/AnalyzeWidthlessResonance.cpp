@@ -157,6 +157,95 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
 
+            int idPC2 = PART_ID::JUNK;
+            int idPC3 = PART_ID::JUNK;
+            int idEMCal = PART_ID::JUNK;
+            int idTOFe = PART_ID::JUNK;
+            int idTOFw = PART_ID::JUNK;
+
+            if (IsHit(simCNT.pc2dphi(i)))
+            {
+               const double sdphi = simCalibrator.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
+               const double sdz = simCalibrator.PC2SDZ(simCNT.pc2dz(i), pT, charge);
+               const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
+
+               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+               {
+                  idPC2 = PART_ID::NONE;
+               }
+            }
+
+            if (IsHit(simCNT.pc3dphi(i)))
+            {
+               const double sdphi = simCalibrator.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
+               const double sdz = simCalibrator.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
+
+               double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
+               if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
+
+               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
+               {
+                  idPC3 = PART_ID::NONE;
+               }
+            }
+
+            if (IsHit(simCNT.emcdz(i)))
+            {
+               const double sdphi = 
+                  simCalibrator.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
+               const double sdz = 
+                  simCalibrator.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
+
+               bool isCutByECore;
+               if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
+               else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
+
+               if (IsMatch(pT, sdphi, sdz) && !isCutByECore && 
+                   !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
+               {
+                  idEMCal = PART_ID::NONE;
+               }
+            }
+
+            if (IsHit(simCNT.tofdz(i)))
+            {
+               const double sdphi = simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
+               const double sdz = simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge);
+
+               const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
+               const double eloss = 0.0005*pow(beta, -2.5);
+
+               // slats are organized in 10 lines of 96 we define as chambers
+               const int chamber = simCNT.slat(i)/96;
+               // slat number for the current chamber
+               const int slat = simCNT.slat(i) % 96;
+
+               if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz) && 
+                   !dmCutter.IsDeadTOFe(chamber, slat))
+               {
+                  idTOFe = PART_ID::NONE;
+               }
+            }
+            else if (IsHit(simCNT.tofwdz(i)))
+            {
+               const double sdphi = simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
+               const double sdz = simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
+
+               // strips are organized in 8 lines of 64 we define as chambers
+               const int chamber = simCNT.striptofw(i)/64;
+               // strip number for the current chamber
+               const int strip = simCNT.striptofw(i) % 64;
+
+               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
+               {
+                  idTOFw = PART_ID::NONE;
+               }
+            }
+
+            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && 
+                idEMCal == PART_ID::JUNK && 
+                idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
+
             switch (charge)
             {
                case 1:
@@ -172,7 +261,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          {
             for (const auto& negTrack : negativeTracks)
             {
-               if (IsOneArmCut(posTrack, negTrack) || IsGhostCut(posTrack, negTrack)) continue;
+               if (IsOneArmCut(posTrack, negTrack) || IsGhostCut(posTrack, negTrack) ||
+                   !IsNoPID(posTrack, negTrack)) continue;
 
                const double mInv = GetPairMass(posTrack, negTrack);
                const double pT = GetPairPT(posTrack, negTrack);

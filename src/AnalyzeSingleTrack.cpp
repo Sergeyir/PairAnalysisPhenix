@@ -247,19 +247,22 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrSDZVsPTPC2Neg->Fill(sdz, pT, eventWeight);
                }
 
-               const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
-
-               if (IsMatch(pT, sdphi, sdz, 0.25))
+               if (IsMatch(pT, sdphi, sdz))
                {
-                  histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
-                                                 eventWeight*alphaReweight);
-                  histContainer.heatmapPC2VsPT->Fill(simCNT.ppc2z(i), pc2phi, pT,
-                                                     eventWeight*alphaReweight);
-               }
+                  const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-               if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
-               {
-                  histContainer.distrRecPTPC2->Fill(pT, eventWeight);
+                  if (IsMatch(pT, sdphi, sdz, 0.25))
+                  {
+                     histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
+                                                    eventWeight*alphaReweight);
+                     histContainer.heatmapPC2VsPT->Fill(simCNT.ppc2z(i), pc2phi, pT,
+                                                        eventWeight*alphaReweight);
+                  }
+
+                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+                  {
+                     histContainer.distrRecPTPC2->Fill(pT, eventWeight);
+                  }
                }
             }
 

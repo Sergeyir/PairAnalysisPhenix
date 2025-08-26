@@ -61,9 +61,23 @@ struct ChargedTrack
    /// reconstructed zDC coordinate [cm]
    double zed;
    /// reconstructed phi obtained from PC2
-   double phiPC2;
+   double pc2phi;
+   /// reconstructed z obtained from PC2
+   double pc2z;
    /// reconstructed phi obtained from PC3
-   double phiPC3;
+   double pc3phi;
+   /// reconstructed z obtained from PC3
+   double pc3z;
+   /// EMCal sector
+   int sector;
+   /// y tower number in EMCal
+   int yTower;
+   /// z tower number in EMCal
+   int zTower;
+   /// slat number in TOFe
+   int slat;
+   /// strip number in TOFw
+   int strip;
    /// id of a particle obtained in PC2
    int idPC2 = PART_ID::JUNK;
    /// id of a particle obtained in PC3
@@ -76,7 +90,7 @@ struct ChargedTrack
    int idTOFw = PART_ID::JUNK;
 };
 
-/*! @brief Checks if the hit was detected in the detector
+/*! @brief Checks if the hit was detected in the given detector
  *
  * @param[in] dVal deviation of track (dphi or dz) of the detector the hit is needed to be checked in
  */
