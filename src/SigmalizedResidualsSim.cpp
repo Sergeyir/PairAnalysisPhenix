@@ -104,7 +104,7 @@ int main(int argc, char **argv)
 }
 
 void SigmalizedResidualsSim::PerformCalibrationsForDetector(const std::string& detectorName,
-                                                         const bool performCalibration)
+                                                            const bool performCalibration)
 {
    parametersOutput.open("data/Parameters/SigmalizedResidualsSimSim/" + 
                          runName + "/" + detectorName + ".txt");

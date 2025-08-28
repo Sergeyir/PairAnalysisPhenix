@@ -79,7 +79,6 @@ namespace SigmalizedResidualsSim
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
-   /// This value will be read and updated from .json calibration input file
    const unsigned int fitNTries = 5;
    /// progress bar
    ProgressBar pBar("BLOCK1", "", PBarColor::BOLD_RED);

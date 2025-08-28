@@ -61,9 +61,9 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            static_cast<std::string>(realDataFile.GetName()));
    }
 
-   const double resonancePTMin = inputYAMLSim["pt_bins"][0]["min"].as<double>();
+   const double resonancePTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>();
    const double resonancePTMax = 
-      inputYAMLSim["pt_bins"][inputYAMLSim["pt_bins"].size() - 1]["max"].as<double>();
+      inputYAMLResonance["pt_bins"][inputYAMLResonance["pt_bins"].size() - 1]["max"].as<double>();
 
    eventNormWeight = origPTHist->Integral(1, origPTHist->GetXaxis()->GetNbins())/
                      centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
@@ -293,10 +293,10 @@ int main(int argc, char **argv)
 
    ROOT::EnableImplicitMT(numberOfThreads);
 
-   inputYAMLSim.OpenFile(argv[1]);
-   inputYAMLSim.CheckStatus("resonance");
+   inputYAMLResonance.OpenFile(argv[1]);
+   inputYAMLResonance.CheckStatus("resonance");
 
-   runName = inputYAMLSim["run_name"].as<std::string>();
+   runName = inputYAMLResonance["run_name"].as<std::string>();
 
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
    if (CppTools::FileExists("data/Parameters/SpectraFit/" + collisionSystemName + 
-                            "/" + inputYAMLSim["name"].as<std::string>() + ".yaml"))
+                            "/" + inputYAMLResonance["name"].as<std::string>() + ".yaml"))
    {
       CppTools::PrintInfo("Fit parameters for spectra were found");
       reweightForSpectra = true;
@@ -330,13 +330,13 @@ int main(int argc, char **argv)
    {
       CppTools::CheckInputFile("data/Real/" + runName + "/SingleTrack/sum" + 
                                magneticField["name"].as<std::string>() + ".root");
-      for (const auto& pTRange : inputYAMLSim["pt_ranges"])
+      for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
       {
          std::string simInputFileName = 
             "data/SimTrees/" + runName + "/WidthlessResonance/" + 
-            inputYAMLSim["name"].as<std::string>() + "_" + 
-            ParticleMap::name[inputYAMLSim["daughter1_id"].as<int>()] + 
-            ParticleMap::name[inputYAMLSim["daughter2_id"].as<int>()] + 
+            inputYAMLResonance["name"].as<std::string>() + "_" + 
+            ParticleMap::name[inputYAMLResonance["daughter1_id"].as<int>()] + 
+            ParticleMap::name[inputYAMLResonance["daughter2_id"].as<int>()] + 
             "_" + pTRange["name"].as<std::string>() + 
             magneticField["name"].as<std::string>() + ".root";
 
@@ -352,13 +352,13 @@ int main(int argc, char **argv)
          }
          numberOfEvents += currentConfigurationNumberOfEvents;
 
-         if (inputYAMLSim["has_antiparticle"].as<bool>())
+         if (inputYAMLResonance["has_antiparticle"].as<bool>())
          {
             simInputFileName = 
                "data/SimTrees/" + runName + "/WidthlessResonance/" + 
-               inputYAMLSim["name"].as<std::string>() + "_" + 
-               ParticleMap::name[-1*inputYAMLSim["daughter2_id"].as<int>()] + 
-               ParticleMap::name[-1*inputYAMLSim["daughter1_id"].as<int>()] + 
+               inputYAMLResonance["name"].as<std::string>() + "_" + 
+               ParticleMap::name[-1*inputYAMLResonance["daughter2_id"].as<int>()] + 
+               ParticleMap::name[-1*inputYAMLResonance["daughter1_id"].as<int>()] + 
                "_" + pTRange["name"].as<std::string>() + 
                magneticField["name"].as<std::string>() + ".root";
 
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
    }
 
    std::vector<std::string> pTRangesList;
-   for (const auto& pTRange : inputYAMLSim["pt_ranges"])
+   for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
    {
       pTRangesList.emplace_back(pTRange["name"].as<std::string>());
    }
@@ -392,7 +392,7 @@ int main(int argc, char **argv)
    CppTools::Box box{"Parameters"};
  
    box.AddEntry("Run name", runName);
-   box.AddEntry("Particle", inputYAMLSim["name"].as<std::string>());
+   box.AddEntry("Particle", inputYAMLResonance["name"].as<std::string>());
    if (magneticFieldsList.size() == 1 && magneticFieldsList[0] == "")
    {
       box.AddEntry("Magnetic field", "run default");
@@ -427,18 +427,18 @@ int main(int argc, char **argv)
 
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
    {
-      for (const auto& pTRange : inputYAMLSim["pt_ranges"])
+      for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
       {
-         AnalyzeConfiguration(thrContainer, inputYAMLSim["name"].as<std::string>(), 
-                              inputYAMLSim["daughter1_id"].as<int>(),
-                              inputYAMLSim["daughter2_id"].as<int>(),
+         AnalyzeConfiguration(thrContainer, inputYAMLResonance["name"].as<std::string>(), 
+                              inputYAMLResonance["daughter1_id"].as<int>(),
+                              inputYAMLResonance["daughter2_id"].as<int>(),
                               magneticField["name"].as<std::string>(), 
                               pTRange["name"].as<std::string>());
-         if (inputYAMLSim["has_antiparticle"].as<bool>())
+         if (inputYAMLResonance["has_antiparticle"].as<bool>())
          {
-            AnalyzeConfiguration(thrContainer, inputYAMLSim["name"].as<std::string>(), 
-                                 -1*inputYAMLSim["daughter2_id"].as<int>(),
-                                 -1*inputYAMLSim["daughter1_id"].as<int>(),
+            AnalyzeConfiguration(thrContainer, inputYAMLResonance["name"].as<std::string>(), 
+                                 -1*inputYAMLResonance["daughter2_id"].as<int>(),
+                                 -1*inputYAMLResonance["daughter1_id"].as<int>(),
                                  magneticField["name"].as<std::string>(), 
                                  pTRange["name"].as<std::string>());
          }
@@ -451,7 +451,7 @@ int main(int argc, char **argv)
 
    // writing the result
    std::string outputFileName = "data/PostSim/" + runName + "/WidthlessResonance/" + 
-                                inputYAMLSim["name"].as<std::string>() + ".root";
+                                inputYAMLResonance["name"].as<std::string>() + ".root";
    thrContainer.Write(outputFileName);
 
    return 0;

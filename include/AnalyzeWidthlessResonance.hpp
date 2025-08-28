@@ -58,8 +58,8 @@ namespace AnalyzeWidthlessResonance
    double pTMax;
    /// shows whether the  particles will be reweighted to the corresponding spectra
    bool reweightForSpectra;
-   /// file reader for all required parameters for the simulation processing of widthless resonance
-   InputYAMLReader inputYAMLSim;
+   /// file reader for all required parameters for the resonance and for its simulation processing
+   InputYAMLReader inputYAMLResonance;
    /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
    /// file reader for all required parameters for the simulation processing 
