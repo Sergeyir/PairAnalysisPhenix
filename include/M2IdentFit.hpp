@@ -142,19 +142,6 @@ namespace M2IdentFit
    double GetYield(TH1F *hist, const double mean, const double sigma,
                    const double sigmalizedYieldExtractionRange, TF1 *fitBG,
                    const double vetoLow, const double vetoUp, double &err);
-   /* @brief Draws TCanvas frame
-    *
-    * @param[in] massProj projection of m2 histogram distribution taken from the real data
-    * @param[in] sigmalizedYieldExtractionRange sigmalized yield extraction range 
-    * (i.e. if this variable is set to 2 then yield will be extracted
-    * in the range from mean - 2*sigma to mean + 2*sigma)
-    * @param[in] pT transverse momentum for the current bin [GeV/c]
-    * @param[in] fitPar approximation data container in which the data for the current pT bin will be written to
-    * @param[in] funcBG function that will be used for approximation of a background
-    */
-   void DrawFrame(const double xMin, const double yMin, 
-                  const double xMax, const double yMax,
-                  const std::string& xTitle, const std::string& yTitle);
    /// file with real data
    TFile *inputDataFile;
    /// file reader for all required parameters for the m2 identification

@@ -1,6 +1,6 @@
 /** 
  *  @file   EstimateGaussianBroadening.hpp 
- *  @brief  Contains declarations of functions and variables that are used for estimation gaussian broadening parameter sigma that used as a parameter in gaus which is convoluted with breit-wigner
+ *  @brief  Contains declarations of functions and variables that are used for estimation gaussian broadening parameter sigma used as a parameter in gaus which is convoluted with breit-wigner
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
@@ -58,9 +58,13 @@ namespace EstimateGaussianBroadening
    /// Input file
    TFile *inputFile;
    /// name of the resonance
-   std::string resonanceName;
-   /// Graph containing widths of gausses
-   TGraphErrors grWidths;
+   std::string nameResonance;
+   /// mass of the resonance [GeV/c^2]
+   double massResonance;
+   /// Graph containing widths of gausses of resonance signals [GeV/c^2]
+   TGraphErrors grSigmas;
+   /// histogram with counts vs invariant mass vs pT distribution
+   TH2F *distr2DInvM;
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in

@@ -58,10 +58,7 @@ int main(int argc, char **argv)
    rawYieldsDir = "data/RawYields/SingleTrack/" + runName;
    system(("mkdir -p " + rawYieldsDir).c_str());
 
-   gROOT->ProcessLine("gErrorIngonreLevel = 1001;");
    gErrorIgnoreLevel = kWarning;
-
-   gStyle->SetOptStat(0);
    gStyle->SetOptStat(0);
 
    // calculating the number of iterations needed for this program
@@ -461,8 +458,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
-             "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+   ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1,
+                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -483,8 +480,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
-             "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
+   ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
+                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
 
    fitPiPlus.sigmasVsPTFit->Draw("SAME");
    fitKPlus.sigmasVsPTFit->Draw("SAME");
@@ -501,8 +498,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
-             "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+   ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
+                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -523,8 +520,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.155);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
-             "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
+   ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
+                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
 
    fitPiMinus.sigmasVsPTFit->Draw("SAME");
    fitKMinus.sigmasVsPTFit->Draw("SAME");
@@ -542,8 +539,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetLeftMargin(0.11);
    gPad->SetBottomMargin(0.11);
 
-   DrawFrame(-1.*pTMax - 0.05, -0.4, pTMax + 0.05, 1.4, 
-             "p_{T} #times charge [GeV/c]", "m^{2} [GeV/c^{2})^{2}]");
+   ROOTTools::DrawFrame(-1.*pTMax - 0.05, -0.4, pTMax + 0.05, 1.4, 
+                        "", "p_{T} #times charge [GeV/c]", "m^{2} [GeV/c^{2})^{2}]");
 
    fitPiPlus.extractionRangeLowVsPT.Clone()->Draw("P");
    fitPiPlus.extractionRangeUpVsPT.Clone()->Draw("P");
@@ -741,27 +738,6 @@ double M2IdentFit::GetYield(TH1F *hist, const double mean, const double sigma,
    err = sqrt(yieldNoBGSubtr)/yield/yieldCorrection;
 
    return yield/yieldCorrection;
-}
-
-void M2IdentFit::DrawFrame(const double xMin, const double yMin,
-                           const double xMax, const double yMax,
-                           const std::string& xTitle, const std::string& yTitle)
-{
-   TH1 *frame = gPad->DrawFrame(xMin, yMin, xMax, yMax);
-
-   frame->GetXaxis()->SetTitle(xTitle.c_str());
-   frame->GetYaxis()->SetTitle(yTitle.c_str());
-
-   frame->GetYaxis()->SetTitleOffset(1.);
-   frame->GetYaxis()->SetTitleOffset(1.5);
-
-   frame->GetXaxis()->SetLabelSize(0.05);
-   frame->GetYaxis()->SetLabelSize(0.05);
-   
-   frame->SetTitleSize(0.05, "X");
-   frame->SetTitleSize(0.05, "Y");
-
-   frame->Draw("SAME AXIS X+ Y+");
 }
 
 M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const double massSquared,
