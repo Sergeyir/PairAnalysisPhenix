@@ -91,16 +91,18 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
       /// invariant mass distribution for all pairs without any cuts on pairs
       std::shared_ptr<TH2F> distrMInv;
+      /// invariant mass distribution with the cut opposite to one arm cut
+      std::shared_ptr<TH2F> distrMInvOneArmAntiCut;
       /// NoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvNoPID;
-      /// NoPID invariant mass distribution with the cut opposite to one arm cut
-      std::shared_ptr<TH2F> distrMInvNoPIDOneArmAntiCut;
-      /// NoPID invariant mass distribution with the cut opposite to ghost cut
-      std::shared_ptr<TH2F> distrMInvNoPIDGhostAntiCut;
-      /// NoPID invariant mass distribution with sailor cut applied
-      std::shared_ptr<TH2F> distrMInvNoPIDSailorCut;
-      /// NoPID invariant mass distribution with cowboy cut applied
-      std::shared_ptr<TH2F> distrMInvNoPIDCowboyCut;
+      /// 1PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1PID;
+      /// 2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv2PID;
+      /// TOF2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvTOF2PID;
+      /// EMCal2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvEMCal2PID;
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrPAsymVsPT;
       /// phi1 - phi2 vs pT vs Minv for pairs of tracks
@@ -146,25 +148,25 @@ namespace AnalyzeResonance
       /// invariant mass distribution for all pair without any cuts on pairs
       ROOT::TThreadedObject<TH2F> distrMInv{"M_inv: all pairs", "M_{inv} vs p_{T}", 
                                             200, 0., 20., 1000, 0., 5.};
+      /// invariant mass distribution with the cut opposite to one arm cut
+      ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: NoPID, one arm anti cut", 
+                                                              "M_{inv} vs p_{T}", 
+                                                              200, 0., 20., 1000, 0., 5.};
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
                                                  200, 0., 20., 1000, 0., 5.};
-      /// NoPID invariant mass distribution with the cut opposite to one arm cut
-      ROOT::TThreadedObject<TH2F> distrMInvNoPIDOneArmAntiCut{"M_inv: NoPID, one arm anti cut", 
-                                                              "M_{inv} vs p_{T}", 
-                                                              200, 0., 20., 1000, 0., 5.};
-      /// NoPID invariant mass distribution with the cut opposite to ghost cut
-      ROOT::TThreadedObject<TH2F> distrMInvNoPIDGhostAntiCut{"M_inv: NoPID, ghost anti cut", 
-                                                             "M_{inv} vs p_{T}", 
-                                                             200, 0., 20., 1000, 0., 5.};
-      /// NoPID invariant mass distribution with sailor cut applied
-      ROOT::TThreadedObject<TH2F> distrMInvNoPIDSailorCut{"M_inv: NoPID, sailor cut", 
-                                                          "M_{inv} vs p_{T}", 
-                                                          200, 0., 20., 1000, 0., 5.};
-      /// NoPID invariant mass distribution with cowboy cut applied
-      ROOT::TThreadedObject<TH2F> distrMInvNoPIDCowboyCut{"M_inv: NoPID, cowboy cut", 
-                                                          "M_{inv} vs p_{T}", 
-                                                          200, 0., 20., 1000, 0., 5.};
+      /// 1PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1PID{"M_inv: 1PID", "M_{inv} vs p_{T}", 
+                                                200, 0., 20., 1000, 0., 5.};
+      /// 2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv2PID{"M_inv: 2PID", "M_{inv} vs p_{T}", 
+                                                200, 0., 20., 1000, 0., 5.};
+      /// TOF2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvTOF2PID{"M_inv: TOF2PID", "M_{inv} vs p_{T}", 
+                                                   200, 0., 20., 1000, 0., 5.};
+      /// EMCal2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvEMCal2PID{"M_inv: EMCal2PID", "M_{inv} vs p_{T}", 
+                                                     200, 0., 20., 1000, 0., 5.};
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       ROOT::TThreadedObject<TH3F> 
          distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T} vs M_{inv}", 
