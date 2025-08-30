@@ -41,10 +41,10 @@ namespace EstimateGaussianBroadening
 {
    /*! Performs approximation for the invariant mass distribution for the given pT range
     *
-    * @param[in] pTMin minimum value of a pT range [GeV/c]
-    * @param[in] pTMax maximum value of a pT range [GeV/c]
+    * @param[in] pTMin minimum bin of a pT range
+    * @param[in] pTMax maximum bin of a pT range
     */
-   void PerformInvMassFit(const double pTmin, const double pTMax);
+   void PerformInvMassFit(const int pTBinMin, const int pTBinMax);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
@@ -70,6 +70,8 @@ namespace EstimateGaussianBroadening
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
    const unsigned int fitNTries = 5;
+   /// formula that is uded in TF1 constructor for approximation of sigmas
+   const std::string fitSigmasFormula = "pol1";
 };
 
 int main(int argc, char **argv);

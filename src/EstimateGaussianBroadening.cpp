@@ -54,24 +54,26 @@ int main(int argc, char **argv)
    distr2DInvM = static_cast<TH2F *>(inputFile->Get("M_inv: NoPID"));
 
    const unsigned int pTNBins = inputYAMLResonance["pt_bins"].size() - 1;
+   const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>()/1.1;
+   const double pTMax = inputYAMLResonance["pt_bins"][pTNBins]["max"].as<double>()*1.1;
 
    ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
 
-   for (unsigned int i = 0; i <= pTNBins; i++)
+   for (int i = distr2DInvM->GetXaxis()->FindBin(pTMin); 
+        i < distr2DInvM->GetXaxis()->FindBin(pTMax); i += 2)
    {
-      pBar.Print(static_cast<double>(i)/static_cast<double>(pTNBins + 1));
-      PerformInvMassFit(inputYAMLResonance["pt_bins"][i]["min"].as<double>(), 
-                        inputYAMLResonance["pt_bins"][i]["max"].as<double>());
+      pBar.Print(static_cast<double>(i)/
+                 static_cast<double>(distr2DInvM->GetXaxis()->FindBin(pTMax) - 
+                                     distr2DInvM->GetXaxis()->FindBin(pTMin)));
+      PerformInvMassFit(i, i + 1);
    }
 
    pBar.Finish();
 
-   const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>()/1.1;
-   const double pTMax = inputYAMLResonance["pt_bins"][pTNBins]["max"].as<double>()*1.1;
-
-   TF1 fitSigmas("fit for sigmas", "pol2");
+   TF1 fitSigmas("fit for sigmas", fitSigmasFormula.c_str());
    fitSigmas.SetRange(pTMin, pTMax);
 
+   fitSigmas.SetLineWidth(3);
    fitSigmas.SetLineStyle(2);
    fitSigmas.SetLineColor(kGray + 3);
 
@@ -85,29 +87,36 @@ int main(int argc, char **argv)
 
    gPad->SetRightMargin(0.01);
    gPad->SetTopMargin(0.01);
-   gPad->SetLeftMargin(0.166);
+   gPad->SetLeftMargin(0.17);
    gPad->SetBottomMargin(0.112);
 
    ROOTTools::DrawFrame(pTMin, 0., pTMax, TMath::MaxElement(grSigmas.GetN(), grSigmas.GetY())*1.2,
-                        "", "p_{T} [GeV/c]", "#sigma [GeV/c^{2}]", 1., 1.75);
+                        "", "p_{T} [GeV/c]", "#sigma [GeV/c^{2}]", 1., 1.8);
 
    fitSigmas.Draw("SAME");
    grSigmas.Clone()->Draw("P");
 
    ROOTTools::PrintCanvas(&canv, outputDir + "/" + nameResonance + "_sigmas");
+
+   system(("mkdir -p data/Parameters/GaussianBroadening/" + runName).c_str());
+
+   std::ofstream parametersOutput("data/Parameters/GaussianBroadening/" + runName + 
+                                  "/" + nameResonance + ".txt");
+
+   parametersOutput << fitSigmasFormula << std::endl;
+   parametersOutput << fitSigmas.GetNpar() << std::endl;
+   for (int i = 0; i < fitSigmas.GetNpar() - 1; i++)
+   {
+      parametersOutput << fitSigmas.GetParameter(i) << " ";
+   }
+   parametersOutput << fitSigmas.GetParameter(fitSigmas.GetNpar() - 1);
+
+   CppTools::PrintInfo("EstimateGaussianBroadening executable has finished running succesfully");
 }
 
-void EstimateGaussianBroadening::PerformInvMassFit(const double pTMin, const double pTMax)
+void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int pTBinMax)
 {
-   TH1D *distrInvM = distr2DInvM->
-      ProjectionY("proj", distr2DInvM->GetXaxis()->FindBin(pTMin + 1e-6), 
-                  distr2DInvM->GetXaxis()->FindBin(pTMax - 1e-6));
-
-   distrInvM->SetTitle((CppTools::DtoStr(pTMin, 1) + " < p_{T} < " + 
-                        CppTools::DtoStr(pTMax, 1)).c_str());
-
-   distrInvM->GetXaxis()->SetTitle("M_{inv} [GeV/c^{2}]");
-   distrInvM->SetTitleSize(0.05, "X");
+   TH1D *distrInvM = distr2DInvM->ProjectionY("proj", pTBinMin, pTBinMax);
 
    // fit for resonance+bg approximation
    TF1 fit("resonance + bg fit", "gaus(0) + gaus(3)");
@@ -138,7 +147,7 @@ void EstimateGaussianBroadening::PerformInvMassFit(const double pTMin, const dou
                        fit.GetParameter(2)*(1. + 2./static_cast<double>(i*i*i)));
       fit.SetParLimits(4, fit.GetParameter(4)/(1. + 2./static_cast<double>(i*i*i)),
                        fit.GetParameter(4)*(1. + 2./static_cast<double>(i*i*i)));
-      fit.SetParLimits(5, fit.GetParameter(5)/(1. + 2./static_cast<double>(i*i*i)),
+      fit.SetParLimits(5, fit.GetParameter(2)*5.,
                        fit.GetParameter(5)*(1. + 2./static_cast<double>(i*i*i)));
 
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
@@ -181,10 +190,16 @@ void EstimateGaussianBroadening::PerformInvMassFit(const double pTMin, const dou
 
    TCanvas canv("canv", "", 800, 800);
 
-   gPad->SetBottomMargin(1.2);
-   gPad->SetRightMargin(0.02);
+   gPad->SetRightMargin(0.03);
+   gPad->SetTopMargin(0.08);
+   gPad->SetLeftMargin(0.14);
+   gPad->SetBottomMargin(0.112);
 
-   distrInvM->Draw();
+   const double pTMin = distr2DInvM->GetXaxis()->GetBinLowEdge(pTBinMin);
+   const double pTMax = distr2DInvM->GetXaxis()->GetBinUpEdge(pTBinMax);
+
+   ROOTTools::DrawFrame(distrInvM, CppTools::DtoStr(pTMin, 1) + " < p_{T} < " + 
+                        CppTools::DtoStr(pTMax, 1), "M_{inv} [GeV/c^{2}]", "Counts");
 
    fitBG.Draw("SAME");
    fitResonance.Draw("SAME");
