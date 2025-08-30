@@ -354,16 +354,18 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (dcarm == 0) // EMCale
                {
-                  histContainer.distrECoreVsPTEMCale[simCNT.sect(i)]->Fill(pT, simCNT.ecore(i));
+                  histContainer.distrECoreVsPTEMCale[simCNT.sect(i)]->
+                     Fill(pT, simCNT.ecore(i), eventWeight);
 
                   if (isParticleOrig)
                   {
                      histContainer.distrECoreVsPTEMCaleOrig[simCNT.sect(i)]->
-                        Fill(pT, simCNT.ecore(i));
+                        Fill(pT, simCNT.ecore(i), eventWeight);
                   }
                   if (charge == 1) 
                   {
-                     histContainer.distrProbVsPTEMCale[simCNT.sect(i)]->Fill(pT, simCNT.prob(i));
+                     histContainer.distrProbVsPTEMCale[simCNT.sect(i)]->
+                        Fill(pT, simCNT.prob(i), eventWeight);
 
                      histContainer.distrDPhiVsPTEMCalePos[simCNT.sect(i)]->
                         Fill(simCNT.emcdphi(i), pT, eventWeight);
@@ -390,13 +392,15 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
                else // EMCalw
                {
-                  histContainer.distrProbVsPTEMCalw[simCNT.sect(i)]->Fill(pT, simCNT.prob(i));
-                  histContainer.distrECoreVsPTEMCalw[simCNT.sect(i)]->Fill(pT, simCNT.ecore(i));
+                  histContainer.distrProbVsPTEMCalw[simCNT.sect(i)]->
+                     Fill(pT, simCNT.prob(i), eventWeight);
+                  histContainer.distrECoreVsPTEMCalw[simCNT.sect(i)]->
+                     Fill(pT, simCNT.ecore(i), eventWeight);
 
                   if (isParticleOrig)
                   {
                      histContainer.distrECoreVsPTEMCalwOrig[simCNT.sect(i)]->
-                        Fill(pT, simCNT.ecore(i));
+                        Fill(pT, simCNT.ecore(i), eventWeight);
                   }
 
                   if (charge == 1) 
@@ -475,43 +479,47 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         const double tExpPi = sqrt(simCNT.plemc(i)*simCNT.plemc(i)/
                                                    (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                    (MASS_PION*MASS_PION/
-                                                    simCNT.mom(i)*simCNT.mom(i) + 1.));
+                                                    (simCNT.mom(i)*simCNT.mom(i)) + 1.));
 
+                        const double tEMCal = simCNT.temc(i) + timeShiftEMCal;
                         const double m2 = simCNT.mom(i)*simCNT.mom(i)*
-                                          (simCNT.temc(i)*simCNT.temc(i)*
-                                           SPEED_OF_LIGHT*SPEED_OF_LIGHT/
-                                           (simCNT.plemc(i)*simCNT.plemc(i) - 1.));
+                                          (tEMCal*tEMCal*SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                           (simCNT.plemc(i)*simCNT.plemc(i)) - 1.);
 
                         if (dcarm == 0)
                         {
                            histContainer.distrTEMCale[simCNT.sect(i)]->
                               Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
+
                            if (charge == 1)
                            {
                               histContainer.distrM2EMCalePosCharge[simCNT.sect(i)]->
-                                 Fill(pT, m2, eventWeight);
+                                 Fill(m2, pT, eventWeight);
                            }
                            else
                            {
                               histContainer.distrM2EMCaleNegCharge[simCNT.sect(i)]->
-                                 Fill(pT, m2, eventWeight);
+                                 Fill(m2, pT, eventWeight);
                            }
+
                            histContainer.distrRecPTEMCale[simCNT.sect(i)]->Fill(pT, eventWeight);
                         }
                         else
                         {
                            histContainer.distrTEMCalw[simCNT.sect(i)]->
                               Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
+
                            if (charge == 1)
                            {
                               histContainer.distrM2EMCalwPosCharge[simCNT.sect(i)]->
-                                 Fill(pT, m2, eventWeight);
+                                 Fill(m2, pT, eventWeight);
                            }
                            else
                            {
                               histContainer.distrM2EMCalwNegCharge[simCNT.sect(i)]->
-                                 Fill(pT, m2, eventWeight);
+                                 Fill(m2, pT, eventWeight);
                            }
+
                            histContainer.distrRecPTEMCalw[simCNT.sect(i)]->Fill(pT, eventWeight);
                         }
                      }
@@ -549,7 +557,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.0005*pow(beta, -2.5);
-               histContainer.distrBetaVsETOFe->Fill(beta, simCNT.etof(i));
+               histContainer.distrBetaVsETOFe->Fill(beta, simCNT.etof(i), eventWeight);
 
                if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz))
                {
@@ -576,17 +584,17 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
-                                                 simCNT.mom(i)*simCNT.mom(i) + 1.));
+                                                 (simCNT.mom(i)*simCNT.mom(i)) + 1.));
 
+                     const double tTOFe = simCNT.ttof(i) + timeShiftTOFe;
                      const double m2 = simCNT.mom(i)*simCNT.mom(i)*
-                                       (simCNT.ttof(i)*simCNT.ttof(i)*
-                                        SPEED_OF_LIGHT*SPEED_OF_LIGHT/
-                                        (simCNT.pltof(i)*simCNT.pltof(i) - 1.));
+                                       (tTOFe*tTOFe*SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                        (simCNT.pltof(i)*simCNT.pltof(i)) - 1.);
 
                      histContainer.distrTTOFe->Fill(simCNT.ttof(i) - tExpPi, pT, eventWeight);
 
-                     if (charge == 1) histContainer.distrM2TOFePosCharge->Fill(pT, m2, eventWeight);
-                     else histContainer.distrM2TOFeNegCharge->Fill(pT, m2, eventWeight);
+                     if (charge == 1) histContainer.distrM2TOFePosCharge->Fill(m2, pT, eventWeight);
+                     else histContainer.distrM2TOFeNegCharge->Fill(m2, pT, eventWeight);
                   }
                }
             }
@@ -594,27 +602,31 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             {
                if (charge == 1) 
                {
-                  histContainer.distrDPhiVsPTTOFwPos->Fill(simCNT.tofwdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFwPos->Fill(simCNT.tofwdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFwPos->
+                     Fill(simCNT.tofwdphi(i), pT, eventWeight*correctionTOFw);
+                  histContainer.distrDZVsPTTOFwPos->
+                     Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
                   histContainer.distrSDPhiVsPTTOFwPos->
                      Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge), 
-                          pT, eventWeight);
+                          pT, eventWeight*correctionTOFw);
                   histContainer.distrSDZVsPTTOFwPos->
                      Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge), 
-                          pT, eventWeight);
+                          pT, eventWeight*correctionTOFw);
                }
                else
                {
-                  histContainer.distrDPhiVsPTTOFwNeg->Fill(simCNT.tofwdphi(i), pT, eventWeight);
-                  histContainer.distrDZVsPTTOFwNeg->Fill(simCNT.tofwdz(i), pT, eventWeight);
+                  histContainer.distrDPhiVsPTTOFwNeg->
+                     Fill(simCNT.tofwdphi(i), pT, eventWeight*correctionTOFw);
+                  histContainer.distrDZVsPTTOFwNeg->
+                     Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
                   histContainer.distrSDPhiVsPTTOFwNeg->
                      Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge),
-                          pT, eventWeight);
+                          pT, eventWeight*correctionTOFw);
                   histContainer.distrSDZVsPTTOFwNeg->
                      Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge),
-                          pT, eventWeight);
+                          pT, eventWeight*correctionTOFw);
                }
 
                const double sdphi = simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
@@ -631,31 +643,35 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   {
                      histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
                                                      static_cast<double>(strip) + 0.5, 
-                                                     eventWeight*alphaReweight);
+                                                     eventWeight*alphaReweight*correctionTOFw);
                      histContainer.heatmapTOFwVsPT->Fill(static_cast<double>(chamber) + 0.5, 
-                                                         static_cast<double>(strip) + 0.5, 
-                                                         pT, eventWeight*alphaReweight);
+                                                         static_cast<double>(strip) + 0.5, pT, 
+                                                         eventWeight*alphaReweight*correctionTOFw);
                   }
 
                   if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
                       !dmCutter.IsDeadTOFw(chamber, strip))
                   {
-                     histContainer.distrRecPTTOFw->Fill(pT, eventWeight);
+                     histContainer.distrRecPTTOFw->Fill(pT, eventWeight*correctionTOFw);
 
                      const double tExpPi = sqrt(simCNT.pltofw(i)*simCNT.pltofw(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
-                                                 simCNT.mom(i)*simCNT.mom(i) + 1.));
+                                                 (simCNT.mom(i)*simCNT.mom(i)) + 1.));
+
+                     const double tTOFw = simCNT.ttofw(i) + timeShiftTOFw;
 
                      const double m2 = simCNT.mom(i)*simCNT.mom(i)*
-                                       (simCNT.ttofw(i)*simCNT.ttofw(i)*
-                                        SPEED_OF_LIGHT*SPEED_OF_LIGHT/
-                                        (simCNT.pltofw(i)*simCNT.pltofw(i) - 1.));
+                                       (tTOFw*tTOFw*SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                        (simCNT.pltofw(i)*simCNT.pltofw(i)) - 1.);
 
-                     histContainer.distrTTOFw->Fill(simCNT.ttofw(i) - tExpPi, pT, eventWeight);
+                     histContainer.distrTTOFw->Fill(simCNT.ttofw(i) - tExpPi, pT, 
+                                                    eventWeight*correctionTOFw);
 
-                     if (charge == 1) histContainer.distrM2TOFwPosCharge->Fill(pT, m2, eventWeight);
-                     else histContainer.distrM2TOFwNegCharge->Fill(pT, m2, eventWeight);
+                     if (charge == 1) histContainer.distrM2TOFwPosCharge->
+                        Fill(m2, pT, eventWeight*correctionTOFw);
+                     else histContainer.distrM2TOFwNegCharge->
+                        Fill(m2, pT, eventWeight*correctionTOFw);
                   }
                }
             }
@@ -701,6 +717,11 @@ int main(int argc, char **argv)
 
    reweightForSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
    reweightHeatmapsForAlpha = inputYAMLSim["reweight_heatmaps_for_alpha"].as<bool>();
+
+   correctionTOFw = inputYAMLSim["correction_tofw"].as<double>();
+   timeShiftTOFe = inputYAMLSim["time_shift_tofe"].as<double>();
+   timeShiftTOFw = inputYAMLSim["time_shift_tofw"].as<double>();
+   timeShiftEMCal = inputYAMLSim["time_shift_emcal"].as<double>();
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simCalibrator.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
