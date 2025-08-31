@@ -17,11 +17,11 @@
 using namespace AnalyzeResonance;
 
 void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
-                                                     const std::string& particleName, 
-                                                     const int daughter1Id,
-                                                     const int daughter2Id,
-                                                     const std::string& magneticFieldName, 
-                                                     const std::string &pTRangeName)
+                                            const std::string& particleName, 
+                                            const int daughter1Id,
+                                            const int daughter2Id,
+                                            const std::string& magneticFieldName, 
+                                            const std::string &pTRangeName)
 { 
    std::string simInputFileName = "data/SimTrees/" + runName + "/Resonance/" + 
                                   particleName + "_" + ParticleMap::name[daughter1Id] + 

@@ -14,8 +14,10 @@
 
 /// speed of light in vacuum [cm/ns]
 const double SPEED_OF_LIGHT = 29.9792458;
-/// mass of a charged pion [GeV/c^2]
+/// mass of charged hadrons [GeV/c^2]
 const double MASS_PION = 139.57039e-3;
+const double MASS_KAON = 493.677e-3;
+const double MASS_PROTON = 938.272e-3;
 
 /// @namespace ParticleMap
 /// maps id of particles to their properties (mass, GEANT id, name, etc.)
@@ -71,6 +73,5 @@ namespace ParticleMap
    };
    */
 }
-
 
 #endif /* CONSTANTS_HPP */
