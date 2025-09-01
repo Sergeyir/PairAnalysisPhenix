@@ -10,8 +10,12 @@
 #include <fstream>
 #include <string>
 #include <iostream>
+#include <cmath>
+
+#include "TMath.h"
 
 #include "ErrorHandler.hpp"
+#include "MathTools.hpp"
 
 #include "SingleTrackFunc.hpp"
 
@@ -21,6 +25,8 @@
 class SimM2Identificator
 {
    public:
+   ///@brief default constructor
+   SimM2Identificator();
    /*! @brief Constructor
     *
     * @param[in] moduleName name of the CVS module specified in configure.in
@@ -28,27 +34,32 @@ class SimM2Identificator
     *
     */
    SimM2Identificator(const std::string& runName, const bool useEMCal = false);
+   /*! @brief Initializes the object SimM2Identificator
+    *
+    * @param[in] moduleName name of the CVS module specified in configure.in
+    * @param[in] useEMCal specifies whether the data for EMCal m2 identification will be read an used
+    *
+    */
+   void Initialize(const std::string& runName, const bool useEMCal = false);
    /*! @brief Returns the probability of a particle registered in TOFe being identified 
     * with the use of approximations of signals of charged hadrons from m2 distribution
     *
     * @param[in] id of a particle for which the probability will be calculated
     * @param[in] pT transverse momentum [GeV/c]
-    * @param[in] charge charge of a reconstructed track
     * @param[in] sigmalizedExtrRange sigmalized extraction range in which identification is performed
     * @param[in] sigmalizedVetoRange sigmalized veto range from other particles in which identification is not allowed
     */
-   double GetTOFeIdProb(const int id, const double pT, const int charge,
+   double GetTOFeIdProb(const int id, const double pT,
                         const double sigmalizedExtrRange, const double sigmalizedVetoRange);
    /*! @brief Returns the probability of a particle registered in TOFw being identified 
     * with the use of approximations of signals of charged hadrons from m2 distribution
     *
     * @param[in] id of a particle for which the probability will be calculated
     * @param[in] pT transverse momentum [GeV/c]
-    * @param[in] charge charge of a reconstructed track
     * @param[in] sigmalizedExtrRange sigmalized extraction range in which identification is performed
     * @param[in] sigmalizedVetoRange sigmalized veto range from other particles in which identification is not allowed
     */
-   double GetTOFwIdProb(const int id, const double pT, const int charge,
+   double GetTOFwIdProb(const int id, const double pT,
                         const double sigmalizedExtrRange, const double sigmalizedVetoRange);
    /*! @brief Returns the probability of a particle registered in EMCal being identified 
     * with the use of approximations of signals of charged hadrons from m2 distribution
@@ -57,12 +68,10 @@ class SimM2Identificator
     * @param[in] sector sector of EMCal (2-3 for EMCale, 0-3 for EMCalw)
     * @param[in] id of a particle for which the probability will be calculated
     * @param[in] pT transverse momentum [GeV/c]
-    * @param[in] charge charge of a reconstructed track
     * @param[in] sigmalizedExtrRange sigmalized extraction range in which identification is performed
     * @param[in] sigmalizedVetoRange sigmalized veto range from other particles in which identification is not allowed
     */
-   double GetEMCalIdProb(const int dcarm, const int sector, 
-                         const int id, const double pT, const int charge, 
+   double GetEMCalIdProb(const int dcarm, const int sector, const int id, const double pT, 
                          const double sigmalizedExtrRange, const double sigmalizedVetoRange);
    /// Destructor
    ~SimM2Identificator();

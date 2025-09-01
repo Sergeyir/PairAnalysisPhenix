@@ -1,13 +1,13 @@
 /** 
- *  @file   SimCalibrator.hpp 
- *  @brief  Contains declaration of class SimCalibrator
+ *  @file   SimSigmalizedResiduals.hpp 
+ *  @brief  Contains declaration of class SimSigmalizedResiduals
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/CalPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef SIM_CALIBRATOR_HPP
-#define SIM_CALIBRATOR_HPP
+#ifndef SIM_SIGMALIZED_RESIDUALS_HPP
+#define SIM_SIGMALIZED_RESIDUALS_HPP
 
 #include <array>
 #include <vector>
@@ -17,14 +17,14 @@
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
 
-/*! @class SimCalibrator
- * @brief Class SimCalibrator provides simple means to implement and to use calibrations for analysis of Trees from PHENIX simulation (such as sigmalized residuals calibrations)
+/*! @class SimSigmalizedResiduals
+ * @brief Class SimSigmalizedResiduals provides simple means to implement and to use calibrations for analysis of Trees from PHENIX simulation (such as sigmalized residuals calibrations)
  */
-class SimCalibrator
+class SimSigmalizedResiduals
 {
    public:
    ///@brief default constructor
-   SimCalibrator();
+   SimSigmalizedResiduals();
    /*! @brief Constructor
     *
     * @param[in] runName name of the run
@@ -43,8 +43,8 @@ class SimCalibrator
     *
     * Options example: "1101111" - this one uses all detectors apart from PC2
     */
-   SimCalibrator(const std::string& runName, const std::string& options = "1111111");
-   /*! @brief Initializes the object SimCalibrator
+   SimSigmalizedResiduals(const std::string& runName, const std::string& options = "1111111");
+   /*! @brief Initializes the object SimSigmalizedResiduals
     *
     * @param[in] runName name of the run
     * @param[in] options options that show which detectors cailbrations will be read and utilized
@@ -152,4 +152,4 @@ class SimCalibrator
    std::array<std::array<std::vector<double>, 4>, 4> parSigmasEMCalw;
 };
 
-#endif /* SIM_CALIBRATOR_HPP */
+#endif /* SIM_SIGMALIZED_RESIDUALS_HPP */

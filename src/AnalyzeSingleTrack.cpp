@@ -227,8 +227,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.pc2dphi(i)))
             {
-               const double sdphi = simCalibrator.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
-               const double sdz = simCalibrator.PC2SDZ(simCNT.pc2dz(i), pT, charge);
+               const double sdphi = simSigmRes.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
+               const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
 
                if (charge == 1) 
                {
@@ -270,8 +270,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.pc3dphi(i)))
             {
-               const double sdphi = simCalibrator.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
-               const double sdz = simCalibrator.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
+               const double sdphi = simSigmRes.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
+               const double sdz = simSigmRes.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
 
                if (dcarm == 0) // PC3e
                {
@@ -348,9 +348,9 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             if (IsHit(simCNT.emcdz(i)))
             {
                const double sdphi = 
-                  simCalibrator.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
+                  simSigmRes.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
                const double sdz = 
-                  simCalibrator.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
+                  simSigmRes.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
 
                if (dcarm == 0) // EMCale
                {
@@ -535,10 +535,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrDZVsPTTOFePos->Fill(simCNT.tofdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFePos->
-                     Fill(simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge),
+                     Fill(simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge),
                           pT, eventWeight);
                   histContainer.distrSDZVsPTTOFePos->
-                     Fill(simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge),
+                     Fill(simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge),
                           pT, eventWeight);
                }
                else
@@ -547,13 +547,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrDZVsPTTOFeNeg->Fill(simCNT.tofdz(i), pT, eventWeight);
 
                   histContainer.distrSDPhiVsPTTOFeNeg->
-                     Fill(simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge), pT, eventWeight);
+                     Fill(simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge), pT, eventWeight);
                   histContainer.distrSDZVsPTTOFeNeg->
-                     Fill(simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge), pT, eventWeight);
+                     Fill(simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge), pT, eventWeight);
                }
 
-               const double sdphi = simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge);
+               const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.0005*pow(beta, -2.5);
@@ -608,10 +608,10 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
                   histContainer.distrSDPhiVsPTTOFwPos->
-                     Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge), 
+                     Fill(simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge), 
                           pT, eventWeight*correctionTOFw);
                   histContainer.distrSDZVsPTTOFwPos->
-                     Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge), 
+                     Fill(simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge), 
                           pT, eventWeight*correctionTOFw);
                }
                else
@@ -622,15 +622,15 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
                   histContainer.distrSDPhiVsPTTOFwNeg->
-                     Fill(simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge),
+                     Fill(simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge),
                           pT, eventWeight*correctionTOFw);
                   histContainer.distrSDZVsPTTOFwNeg->
-                     Fill(simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge),
+                     Fill(simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge),
                           pT, eventWeight*correctionTOFw);
                }
 
-               const double sdphi = simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
+               const double sdphi = simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
 
                // strips are organized in 8 lines of 64 we define as chambers
                const int chamber = simCNT.striptofw(i)/64;
@@ -724,7 +724,7 @@ int main(int argc, char **argv)
    timeShiftEMCal = inputYAMLSim["time_shift_emcal"].as<double>();
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
-   simCalibrator.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
+   simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
    if (reweightForSpectra)
    {

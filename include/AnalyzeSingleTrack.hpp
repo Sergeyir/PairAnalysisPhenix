@@ -29,7 +29,7 @@
 #include "SingleTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
-#include "SimCalibrator.hpp"
+#include "SimSigmalizedResiduals.hpp"
 
 #include "PBar.hpp"
 
@@ -88,7 +88,7 @@ namespace AnalyzeSingleTrack
    /// cutter for deadmaps
    DeadMapCutter dmCutter;
    /// calibrator for simulated data
-   SimCalibrator simCalibrator;
+   SimSigmalizedResiduals simSigmRes;
    /* @brief Get the DC heatmap from the specified file
     * @param[in] file file from which the histogram will be read
     * @param[in] histName name of the histogram which will be read

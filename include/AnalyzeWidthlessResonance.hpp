@@ -30,7 +30,7 @@
 #include "PairTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
-#include "SimCalibrator.hpp"
+#include "SimSigmalizedResiduals.hpp"
 
 #include "PBar.hpp"
 
@@ -74,7 +74,7 @@ namespace AnalyzeWidthlessResonance
    /// cutter for deadmaps
    DeadMapCutter dmCutter;
    /// calibrator for simulated data
-   SimCalibrator simCalibrator;
+   SimSigmalizedResiduals simSigmRes;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 

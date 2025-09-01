@@ -30,7 +30,8 @@
 #include "PairTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
-#include "SimCalibrator.hpp"
+#include "SimSigmalizedResiduals.hpp"
+#include "SimM2Identificator.hpp"
 
 #include "PBar.hpp"
 
@@ -73,8 +74,10 @@ namespace AnalyzeResonance
    unsigned long numberOfCalls = 0;
    /// cutter for deadmaps
    DeadMapCutter dmCutter;
-   /// calibrator for simulated data
-   SimCalibrator simCalibrator;
+   /// calibrator for simulated sigmalized residuals of charged tracks sdphi and sdz
+   SimSigmalizedResiduals simSigmRes;
+   /// identificator for m2 hadron identification procedure in MC
+   SimM2Identificator simM2Id;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 

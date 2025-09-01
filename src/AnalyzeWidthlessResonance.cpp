@@ -165,8 +165,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.pc2dphi(i)))
             {
-               const double sdphi = simCalibrator.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
-               const double sdz = simCalibrator.PC2SDZ(simCNT.pc2dz(i), pT, charge);
+               const double sdphi = simSigmRes.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
+               const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
                if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
@@ -177,8 +177,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.pc3dphi(i)))
             {
-               const double sdphi = simCalibrator.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
-               const double sdz = simCalibrator.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
+               const double sdphi = simSigmRes.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
+               const double sdz = simSigmRes.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
 
                double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
                if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
@@ -192,9 +192,9 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             if (IsHit(simCNT.emcdz(i)))
             {
                const double sdphi = 
-                  simCalibrator.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
+                  simSigmRes.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
                const double sdz = 
-                  simCalibrator.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
+                  simSigmRes.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
 
                bool isCutByECore;
                if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
@@ -209,8 +209,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.tofdz(i)))
             {
-               const double sdphi = simCalibrator.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFeSDZ(simCNT.tofdz(i), pT, charge);
+               const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.0005*pow(beta, -2.5);
@@ -228,8 +228,8 @@ void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             }
             else if (IsHit(simCNT.tofwdz(i)))
             {
-               const double sdphi = simCalibrator.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
-               const double sdz = simCalibrator.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
+               const double sdphi = simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
 
                // strips are organized in 8 lines of 64 we define as chambers
                const int chamber = simCNT.striptofw(i)/64;

@@ -1,24 +1,24 @@
 /** 
- *  @file   SigmalizedResidualsSimCailbration.cpp 
+ *  @file   CalibrateSimSigmalizedResidualsCailbration.cpp 
  *  @brief  Contains realisation of functions that are used for estimation of values for calibration of sigmalized residuals dphi and dz from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef SIGMALIZED_RESIDUALS_SIM_CPP
-#define SIGMALIZED_RESIDUALS_SIM_CPP
+#ifndef CALIBRATE_SIM_SIGMALIZED_RESIDUALS_CPP
+#define CALIBRATE_SIM_SIGMALIZED_RESIDUALS_CPP
 
-#include "../include/SigmalizedResidualsSim.hpp"
+#include "CalibrateSimSigmalizedResiduals.hpp"
 
 // this namespace is only used so that documentation will not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
-using namespace SigmalizedResidualsSim;
+using namespace CalibrateSimSigmalizedResiduals;
 
 int main(int argc, char **argv)
 {
-   using namespace SigmalizedResidualsSim;
+   using namespace CalibrateSimSigmalizedResiduals;
 
    TH1::AddDirectory(false);
    TH2::AddDirectory(false);
@@ -28,7 +28,7 @@ int main(int argc, char **argv)
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + 
                            " parameter(s) were provided \n";
-      errMsg += "Usage: bin/SigmalizedResidualsSim inputFile numberOfThreads=" + 
+      errMsg += "Usage: bin/CalibrateSimSigmalizedResiduals inputFile numberOfThreads=" + 
                 std::to_string(std::thread::hardware_concurrency()) + "*\n";
       errMsg += "*: default argument is the number of threads on the current machine \n";
       CppTools::PrintError(errMsg);
@@ -55,7 +55,7 @@ int main(int argc, char **argv)
 
    ROOT::EnableImplicitMT(numberOfThreads);
 
-   outputDir = "output/SigmalizedResidualsSim/" + runName + "/";
+   outputDir = "output/CalibrateSimSigmalizedResiduals/" + runName + "/";
    system(("mkdir -p " + outputDir).c_str());
 
    const std::string inputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
    numberOfIterations *= 4;
 
-   system(("mkdir -p data/Parameters/SigmalizedResidualsSim/" + runName).c_str());
+   system(("mkdir -p data/Parameters/CalibrateSimSigmalizedResiduals/" + runName).c_str());
 
    PerformCalibrationsForDetector("PC2", (detectorsConfiguration[2] == '1'));
    PerformCalibrationsForDetector("PC3e", (detectorsConfiguration[3] == '1'));
@@ -91,8 +91,10 @@ int main(int argc, char **argv)
    PerformCalibrationsForDetector("TOFw", (detectorsConfiguration[5] == '1'));
    for (int i = 0; i < 4; i++)
    {
-      PerformCalibrationsForDetector("EMCale" + std::to_string(i), detectorsConfiguration[6] == '1');
-      PerformCalibrationsForDetector("EMCalw" + std::to_string(i), detectorsConfiguration[6] == '1');
+      PerformCalibrationsForDetector("EMCale" + std::to_string(i), 
+                                     detectorsConfiguration[6] == '1');
+      PerformCalibrationsForDetector("EMCalw" + std::to_string(i), 
+                                     detectorsConfiguration[6] == '1');
    }
 
    pBar.Finish();
@@ -103,10 +105,10 @@ int main(int argc, char **argv)
    return 0;
 }
 
-void SigmalizedResidualsSim::PerformCalibrationsForDetector(const std::string& detectorName,
-                                                            const bool performCalibration)
+void CalibrateSimSigmalizedResiduals::PerformCalibrationsForDetector(const std::string& detectorName,
+                                                                     const bool performCalibration)
 {
-   parametersOutput.open("data/Parameters/SigmalizedResidualsSimSim/" + 
+   parametersOutput.open("data/Parameters/CalibrateSimSigmalizedResidualsSim/" + 
                          runName + "/" + detectorName + ".txt");
 
    if (!performCalibration)
@@ -135,9 +137,9 @@ void SigmalizedResidualsSim::PerformCalibrationsForDetector(const std::string& d
    parametersOutput.close();
 }
 
-void SigmalizedResidualsSim::PerformCalibrationsVsPT(const std::string& detectorName, 
-                                                     const std::string& variableName,
-                                                     const int charge)
+void CalibrateSimSigmalizedResiduals::PerformCalibrationsVsPT(const std::string& detectorName, 
+                                                              const std::string& variableName,
+                                                              const int charge)
 {
    pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
@@ -440,4 +442,4 @@ void SigmalizedResidualsSim::PerformCalibrationsVsPT(const std::string& detector
    numberOfCalls++;
 }
 
-#endif /* SIGMALIZED_RESIDUALS_SIM_CPP */
+#endif /* CALIBRATE_SIM_SIGMALIZED_RESIDUALS_CPP */

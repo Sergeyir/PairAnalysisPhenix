@@ -1,36 +1,37 @@
 /** 
- *  @file   SimCalibrator.cpp 
- *  @brief  Contains realisation of class SimCalibrator
+ *  @file   SimSigmalizedResiduals.cpp 
+ *  @brief  Contains realisation of class SimSigmalizedResiduals
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/CalPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
 
-#ifndef SIM_CALIBRATOR_CPP
-#define SIM_CALIBRATOR_CPP
+#ifndef SIM_SIGMALIZED_RESIDUALS_CPP
+#define SIM_SIGMALIZED_RESIDUALS_CPP
 
-#include "../include/SimCalibrator.hpp"
+#include "SimSigmalizedResiduals.hpp"
 
-SimCalibrator::SimCalibrator() {}
+SimSigmalizedResiduals::SimSigmalizedResiduals() {}
 
-SimCalibrator::SimCalibrator(const std::string& runName, const std::string& options)
+SimSigmalizedResiduals::SimSigmalizedResiduals(const std::string& runName, 
+                                               const std::string& options)
 {
    Initialize(runName, options);
 }
 
-void SimCalibrator::Initialize(const std::string& runName, const std::string& options)
+void SimSigmalizedResiduals::Initialize(const std::string& runName, const std::string& options)
 {
    if (options.size() != 7)
    {
-      CppTools::PrintError("SimCalibrator: options size is " + std::to_string(options.size()) + 
-                           " while 7 has been expected");
+      CppTools::PrintError("SimSigmalizedResiduals: options size is " + 
+                           std::to_string(options.size()) + " while 7 has been expected");
    }
 
    if (options[0] == '1') doCalDC = true;
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for DC were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for DC were "\
                           "specified to not be initialized");
       doCalDC = false;
    }
@@ -38,7 +39,7 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    if (options[1] == '1') doCalPC1 = true;
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for PC1 were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC1 were "\
                           "specified to not be initialized");
       doCalPC1 = false;
    }
@@ -51,7 +52,7 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    }
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for PC2 were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC2 were "\
                           "specified to not be initialized");
       doCalPC2 = false;
    }
@@ -66,7 +67,7 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    }
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for PC3 were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC3 were "\
                           "specified to not be initialized");
       doCalPC3 = false;
    }
@@ -79,7 +80,7 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    }
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for TOFe were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for TOFe were "\
                           "specified to not be initialized");
       doCalTOFe = false;
    }
@@ -92,7 +93,7 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    }
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for TOFw were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for TOFw were "\
                           "specified to not be initialized");
       doCalTOFw = false;
    }
@@ -112,13 +113,13 @@ void SimCalibrator::Initialize(const std::string& runName, const std::string& op
    }
    else 
    {
-      CppTools::PrintInfo("SimCalibrator: calibrations for EMCal were "\
+      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for EMCal were "\
                           "specified to not be initialized");
       doCalEMCal = false;
    }
 }
 
-double SimCalibrator::PC2SDPhi(const double dphi, const double pT, const int charge)
+double SimSigmalizedResiduals::PC2SDPhi(const double dphi, const double pT, const int charge)
 {
    if (!doCalPC2) return dphi/0.002;
 
@@ -137,7 +138,7 @@ double SimCalibrator::PC2SDPhi(const double dphi, const double pT, const int cha
    return (mean - dphi)/sigma;
 }
 
-double SimCalibrator::PC2SDZ(const double dz, const double pT, const int charge)
+double SimSigmalizedResiduals::PC2SDZ(const double dz, const double pT, const int charge)
 {
    if (!doCalPC2) return dz/2.;
 
@@ -156,7 +157,8 @@ double SimCalibrator::PC2SDZ(const double dz, const double pT, const int charge)
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::PC3SDPhi(const double dphi, const double pT, const int charge, const int dcarm)
+double SimSigmalizedResiduals::PC3SDPhi(const double dphi, const double pT, 
+                                        const int charge, const int dcarm)
 {
    if (!doCalPC3) return dphi/0.002;
 
@@ -192,7 +194,8 @@ double SimCalibrator::PC3SDPhi(const double dphi, const double pT, const int cha
    return (mean - dphi)/sigma;
 }
 
-double SimCalibrator::PC3SDZ(const double dz, const double pT, const int charge, const int dcarm)
+double SimSigmalizedResiduals::PC3SDZ(const double dz, const double pT, 
+                                      const int charge, const int dcarm)
 {
    if (!doCalPC3) return dz/2.;
 
@@ -228,7 +231,7 @@ double SimCalibrator::PC3SDZ(const double dz, const double pT, const int charge,
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::TOFeSDPhi(const double dphi, const double pT, const int charge)
+double SimSigmalizedResiduals::TOFeSDPhi(const double dphi, const double pT, const int charge)
 {
    if (!doCalTOFe) return dphi/0.002;
 
@@ -247,7 +250,7 @@ double SimCalibrator::TOFeSDPhi(const double dphi, const double pT, const int ch
    return (mean - dphi)/sigma;
 }
 
-double SimCalibrator::TOFeSDZ(const double dz, const double pT, const int charge)
+double SimSigmalizedResiduals::TOFeSDZ(const double dz, const double pT, const int charge)
 {
    if (!doCalTOFe) return dz/2.;
 
@@ -266,7 +269,7 @@ double SimCalibrator::TOFeSDZ(const double dz, const double pT, const int charge
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::TOFwSDPhi(const double dphi, const double pT, const int charge)
+double SimSigmalizedResiduals::TOFwSDPhi(const double dphi, const double pT, const int charge)
 {
    if (!doCalTOFw) return dphi/0.002;
 
@@ -285,7 +288,7 @@ double SimCalibrator::TOFwSDPhi(const double dphi, const double pT, const int ch
    return (mean - dphi)/sigma;
 }
 
-double SimCalibrator::TOFwSDZ(const double dz, const double pT, const int charge)
+double SimSigmalizedResiduals::TOFwSDZ(const double dz, const double pT, const int charge)
 {
    if (!doCalTOFw) return dz/2.;
 
@@ -304,8 +307,8 @@ double SimCalibrator::TOFwSDZ(const double dz, const double pT, const int charge
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::EMCalSDPhi(const double dphi, double pT, const int charge, 
-                                 const int dcarm, const int sector)
+double SimSigmalizedResiduals::EMCalSDPhi(const double dphi, double pT, const int charge, 
+                                          const int dcarm, const int sector)
 {
    if (!doCalEMCal) return dphi/0.002;
 
@@ -341,8 +344,8 @@ double SimCalibrator::EMCalSDPhi(const double dphi, double pT, const int charge,
    return (mean - dphi)/sigma;
 }
 
-double SimCalibrator::EMCalSDZ(const double dz, const double pT, const int charge, 
-                          const int dcarm, const int sector)
+double SimSigmalizedResiduals::EMCalSDZ(const double dz, const double pT, const int charge, 
+                                        const int dcarm, const int sector)
 {
    if (!doCalEMCal) return dz/2.;
 
@@ -378,23 +381,23 @@ double SimCalibrator::EMCalSDZ(const double dz, const double pT, const int charg
    return (mean - dz)/sigma;
 }
 
-double SimCalibrator::GetDValMean(double pT, const double *par)
+double SimSigmalizedResiduals::GetDValMean(double pT, const double *par)
 {
    // on pT > ~2.5-3 mean becomes constant
    if (pT > 3.) pT = 3.;
    return par[0] + par[1]/pT + par[2]/(pT*pT) + par[3]*pT;
 }
 
-double SimCalibrator::GetDValSigma(double pT, const double *par)
+double SimSigmalizedResiduals::GetDValSigma(double pT, const double *par)
 {
    // on pT > ~2.5-3 sigma becomes constant
    if (pT > 3.) pT = 3.;
    return par[0] + par[1]/pT + par[2]*pT;
 }
 
-void SimCalibrator::SetParameters(const std::string& inputFileName, 
-                                  std::array<std::vector<double>, 4>& parMeans,
-                                  std::array<std::vector<double>, 4>& parSigmas)
+void SimSigmalizedResiduals::SetParameters(const std::string& inputFileName, 
+                                           std::array<std::vector<double>, 4>& parMeans,
+                                           std::array<std::vector<double>, 4>& parSigmas)
 {
    CppTools::CheckInputFile(inputFileName);
    std::ifstream inputFile(inputFileName);
@@ -404,7 +407,8 @@ void SimCalibrator::SetParameters(const std::string& inputFileName,
 
    if (!isUsed) 
    {
-      CppTools::PrintError("SimCalibrator: Usage was specified as false in file " + inputFileName);
+      CppTools::PrintError("SimSigmalizedResiduals: Usage was specified as false in file " + 
+                           inputFileName);
    }
 
    int numberOfParametersMeans;
@@ -419,14 +423,14 @@ void SimCalibrator::SetParameters(const std::string& inputFileName,
 
    if (numberOfParametersMeans != 4)
    {
-      CppTools::PrintError("SimCalibrator: Mismatching number of parameters "\
+      CppTools::PrintError("SimSigmalizedResiduals: Mismatching number of parameters "\
                            "for means approximation in file " + inputFileName +
                            ": expected 4 while " + std::to_string(numberOfParametersMeans) + 
                            "were provided");
    }
    if (numberOfParametersSigmas != 3)
    {
-      CppTools::PrintError("SimCalibrator: Mismatching number of parameters "\
+      CppTools::PrintError("SimSigmalizedResiduals: Mismatching number of parameters "\
                            "for sigmas approximation in file " + inputFileName +
                            ": expected 3 while " + std::to_string(numberOfParametersSigmas) + 
                            "were provided");
@@ -461,8 +465,8 @@ void SimCalibrator::SetParameters(const std::string& inputFileName,
 
    if (isUnexpectedEndOfFile) 
    {
-      CppTools::PrintError("SimCalibrator: Unexpected end of file: " + inputFileName);
+      CppTools::PrintError("SimSigmalizedResiduals: Unexpected end of file: " + inputFileName);
    }
 }
 
-#endif /* SIM_CALIBRATOR_CPP */
+#endif /* SIM_SIGMALIZED_RESIDUALS_CPP */

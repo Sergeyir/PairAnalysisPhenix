@@ -10,10 +10,17 @@
 
 #include "SimM2Identificator.hpp"
 
-SimM2Identificator::SimM2Identificator(const std::string& moduleName, const bool useEMCal)
+SimM2Identificator::SimM2Identificator() {}
+
+SimM2Identificator::SimM2Identificator(const std::string& runName, const bool useEMCal)
 {
-   SetParameters("M2ParTOFe.txt", parMeanTOFe, parSigmaTOFe);
-   SetParameters("M2ParTOFw.txt", parMeanTOFw, parSigmaTOFw);
+   Initialize(runName, useEMCal);
+}
+
+void SimM2Identificator::Initialize(const std::string& runName, const bool useEMCal)
+{
+   SetParameters("data/Parameters/M2Id/" + runName +"/M2ParTOFe.txt", parMeanTOFe, parSigmaTOFe);
+   SetParameters("data/Parameters/M2Id/" + runName +"/M2ParTOFw.txt", parMeanTOFw, parSigmaTOFw);
 
    this->useEMCal = useEMCal;
 
@@ -32,24 +39,19 @@ SimM2Identificator::SimM2Identificator(const std::string& moduleName, const bool
    }
    else 
    {
-      std::cout << "\033[1m\033[32mInfo:\033[0m SimM2Identificator: m2 identification with EMCal was "\
+      std::cout << "\033[1m\033[32mInfo:\033[0m SimM2Identificator: "\
+                   "m2 identification with EMCal was "\
                    "specified to be not initialized" << std::endl;
    }
 }
 
-double SimM2Identificator::GetTOFeIdProb(const int id, const double pT, 
+double SimM2Identificator::GetTOFeIdProb(const int id, const double pT,
                                          const double sigmalizedExtrRange, 
                                          const double sigmalizedVetoRange)
 {
-   switch (id)
-   {
-      case 211:
-         break;
-   }
-
-   // means and sigmas are for both particles and antiparticles since particle ids are absolute
    double meanPi, meanK, meanP;
-   if (charge == 1)
+
+   if (id > 0)
    {
       meanPi = GetM2Mean(pT, &parMeanTOFe[0][0]);
       meanK = GetM2Mean(pT, &parMeanTOFe[2][0]);
@@ -66,20 +68,43 @@ double SimM2Identificator::GetTOFeIdProb(const int id, const double pT,
    const double sigmaK = GetM2Sigma(pT, meanK, &parSigmaTOFe[0]);
    const double sigmaP = GetM2Sigma(pT, meanP, &parSigmaTOFe[0]);
 
+   switch (abs(id))
+   {
+      case 211:
+         if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
+             meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
+         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                erf(CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                      meanK - sigmalizedVetoRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaPi/TMath::Sqrt2())/2.;
+         break;
+      case 321:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
+             meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
+             meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK - sigmalizedExtrRange*sigmaK)/sigmaK/TMath::Sqrt2())/2. +
+                erf(CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaK/TMath::Sqrt2())/2.;
+         break;
+      case 2212:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
+             meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK + sigmalizedVetoRange*sigmaK,
+                                      meanP + sigmalizedExtrRange*sigmaP)/sigmaP/TMath::Sqrt2())/2. +
+                erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         break;
+   }
    return 0.;
 }
 
-double SimM2Identificator::GetTOFwIdProb(const int id, const double pT, const int charge, 
+double SimM2Identificator::GetTOFwIdProb(const int id, const double pT, 
                                          const double sigmalizedExtrRange, 
                                          const double sigmalizedVetoRange)
 {
-   if (m2 < -9998.) return 0.;
-
-   if (charge != 1 && charge != -1) return 0.;
-
-   // means and sigmas are for both particles and antiparticles since particle ids are absolute
    double meanPi, meanK, meanP;
-   if (charge == 1)
+   if (id > 0)
    {
       meanPi = GetM2Mean(pT, &parMeanTOFw[0][0]);
       meanK = GetM2Mean(pT, &parMeanTOFw[2][0]);
@@ -96,24 +121,51 @@ double SimM2Identificator::GetTOFwIdProb(const int id, const double pT, const in
    const double sigmaK = GetM2Sigma(pT, meanK, &parSigmaTOFw[0]);
    const double sigmaP = GetM2Sigma(pT, meanP, &parSigmaTOFw[0]);
 
+   switch (abs(id))
+   {
+      case 211:
+         if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
+             meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
+         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                erf(CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                      meanK - sigmalizedVetoRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaPi/TMath::Sqrt2())/2.;
+         break;
+      case 321:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
+             meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
+             meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK - sigmalizedExtrRange*sigmaK)/sigmaK/TMath::Sqrt2())/2. +
+                erf(CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaK/TMath::Sqrt2())/2.;
+         break;
+      case 2212:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
+             meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK + sigmalizedVetoRange*sigmaK,
+                                      meanP + sigmalizedExtrRange*sigmaP)/sigmaP/TMath::Sqrt2())/2. +
+                erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         break;
+   }
    return 0.;
 }
 
 double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector, 
-                                          const int id, const double pT, const int charge, 
+                                          const int id, const double pT, 
                                           const double sigmalizedExtrRange, 
                                           const double sigmalizedVetoRange)
 {
-   if (charge != 1 && charge != -1) return 0.;
+   if (!useEMCal) return 0.;
 
-   // means and sigmas are for both particles and antiparticles since particle ids are absolute
    double meanPi, meanK, meanP;
    double sigmaPi, sigmaK, sigmaP;
    if (dcarm == 0) // EMCale
    {
       if (sector < 2) return 0.; // no PbGl
 
-      if (charge == 1)
+      if (id > 0)
       {
          meanPi = GetM2Mean(pT, &parMeanEMCale[sector - 2][0][0]);
          meanK = GetM2Mean(pT, &parMeanEMCale[sector - 2][2][0]);
@@ -132,7 +184,7 @@ double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector,
    }
    else // EMCalw
    {
-      if (charge == 1)
+      if (id > 0)
       {
          meanPi = GetM2Mean(pT, &parMeanEMCalw[sector][0][0]);
          meanK = GetM2Mean(pT, &parMeanEMCalw[sector][2][0]);
@@ -150,13 +202,41 @@ double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector,
       sigmaP = GetM2Sigma(pT, meanP, &parSigmaEMCale[sector][0]);
    }
 
+   switch (abs(id))
+   {
+      case 211:
+         if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
+             meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
+         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                erf(CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                      meanK - sigmalizedVetoRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaPi/TMath::Sqrt2())/2.;
+         break;
+      case 321:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
+             meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
+             meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK - sigmalizedExtrRange*sigmaK)/sigmaK/TMath::Sqrt2())/2. +
+                erf(CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                      meanP - sigmalizedVetoRange*sigmaP)/sigmaK/TMath::Sqrt2())/2.;
+         break;
+      case 2212:
+         if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
+             meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
+         return erf(CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                      meanK + sigmalizedVetoRange*sigmaK,
+                                      meanP + sigmalizedExtrRange*sigmaP)/sigmaP/TMath::Sqrt2())/2. +
+                erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         break;
+   }
    return 0.;
 }
 
 void SimM2Identificator::SetParameters(const std::string& inputFileName, 
                                        double (& parMean)[6][2], double (& parSigma)[5])
 {
-   CheckInputFile(inputFileName);
+   CppTools::CheckInputFile(inputFileName);
    std::ifstream inputFile(inputFileName);
 
    bool isUnexpectedEndOfFile = false;

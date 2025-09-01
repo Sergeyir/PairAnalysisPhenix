@@ -1,13 +1,13 @@
 /** 
- *  @file   SigmalizedResidualsSim.hpp 
+ *  @file   CalibrateSimSigmalizedResiduals.hpp 
  *  @brief  Contains declarations of functions and variables that are used for estimation of values for calibration of sigmalized residuals sdphi and sdz from dphi and dz values from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef SIGMALIZED_RESIDUALS_SIM_HPP
-#define SIGMALIZED_RESIDUALS_SIM_HPP
+#ifndef CALIBRATE_SIM_SIGMALIZED_RESIDUALS_HPP
+#define CALIBRATE_SIM_SIGMALIZED_RESIDUALS_HPP
 
 #include <thread>
 
@@ -34,10 +34,10 @@
 
 #include "InputYAMLReader.hpp"
 
-/*! @namespace SigmalizedResidualsSim
- * @brief Contains all functions and variables for SigmalizedResidualsSim.cpp
+/*! @namespace CalibrateSimSigmalizedResiduals
+ * @brief Contains all functions and variables for CalibrateSimSigmalizedResiduals.cpp
  */
-namespace SigmalizedResidualsSim
+namespace CalibrateSimSigmalizedResiduals
 {
 /*! @brief Performs sdz and sdphi calibrations from dphi and dz values for the given detector, variable, and charge from the PHENIX simulation
  * @param[in] detectorName name of the detector for which the calibrations will be performed
@@ -90,4 +90,4 @@ namespace SigmalizedResidualsSim
 
 int main(int argc, char **argv);
 
-#endif /* SIGMALIZED_RESIDUALS_SIM_HPP */
+#endif /* CALIBRATE_SIM_SIGMALIZED_RESIDUA_HPP */
