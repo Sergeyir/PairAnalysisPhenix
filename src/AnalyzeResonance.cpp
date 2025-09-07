@@ -120,7 +120,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          std::vector<ChargedTrack> positiveTracks;
          std::vector<ChargedTrack> negativeTracks;
 
-         for(int i = 0; i < simCNT.nch(); i++)
+         for(int i = 0; i < simCNT.nch(); i++) // loop over particles in one event
          {
             const double the0 = simCNT.the0(i);
             const double pT = (simCNT.mom(i))*sin(the0);
@@ -163,6 +163,16 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             int idTOFe = PART_ID::JUNK;
             int idTOFw = PART_ID::JUNK;
 
+            double weightPC2 = 0.;
+            double weightPC3 = 0.;
+            double weightEMCal = 0.;
+            double weightTOFe = 0.;
+            double weightTOFw = 0.;
+
+            double weightIdEMCal = 0.;
+            double weightIdTOFe = 0.;
+            double weightIdTOFw = 0.;
+
             if (IsHit(simCNT.pc2dphi(i)))
             {
                const double sdphi = simSigmRes.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
@@ -172,6 +182,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
                {
                   idPC2 = PART_ID::NONE;
+                  weightPC2 = 1.;
                }
             }
 
@@ -186,6 +197,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
                {
                   idPC3 = PART_ID::NONE;
+                  weightPC3 = 1.;
                }
             }
 
@@ -203,7 +215,29 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (IsMatch(pT, sdphi, sdz) && !isCutByECore && 
                    !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
                {
-                  idEMCal = PART_ID::NONE;
+                  weightEMCal = 1.;
+                  if (!(dcarm == 0 && simCNT.sect(i) < 2) &&
+                      !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
+                                                  simCNT.ysect(i), simCNT.zsect(i)))
+                  {
+                     switch (charge)
+                     {
+                        case 1:
+                           idEMCal = daughter1Id;
+                           break;
+                        case -1:
+                           idEMCal = daughter12d;
+                           break;
+                     }
+                     weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                            pT, idEMCal, 2., 2.)*weightEMCal;
+                     if (weightIdEMCal <= 0.)
+                     {
+                        idEMCal = PART_ID::NONE;
+                        weightIdEMCal = 0.;
+                     }
+                  }
+                  else idEMCal = PART_ID::NONE;
                }
             }
 
@@ -223,7 +257,27 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz) && 
                    !dmCutter.IsDeadTOFe(chamber, slat))
                {
-                  idTOFe = PART_ID::NONE;
+                  weightTOFe = 1.;
+                  if (!dmCutter.IsDeadTimingTOFe(chamber, slat))
+                  {
+                     switch (charge)
+                     {
+                        case 1:
+                           idTOFe = daughter1Id;
+                           break;
+                        case -1:
+                           idTOFe = daughter2Id;
+                           break;
+                     }
+                     weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2., 2.)*weightTOFe;
+
+                     if (weightIdTOFe <= 0.)
+                     {
+                        idTOFe = PART_ID::NONE;
+                        weightIdTOFe = 0.;
+                     }
+                  }
+                  else idTOFe = PART_ID::NONE;
                }
             }
             else if (IsHit(simCNT.tofwdz(i)))
@@ -238,12 +292,31 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
                {
-                  idTOFw = PART_ID::NONE;
+                  weightTOFw = 1.;
+                  if (!dmCutter.IsDeadTimingTOFw(chamber, strip))
+                  {
+                     switch (charge)
+                     {
+                        case 1:
+                           idTOFw = daughter1Id;
+                           break;
+                        case -1:
+                           idTOFw = daughter2Id;
+                           break;
+                     }
+                     weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2., 2.)*weightTOFw;
+
+                     if (weightIdTOFw <= 0.)
+                     {
+                        idTOFw = PART_ID::NONE;
+                        weightIdTOFw = 0.;
+                     }
+                  }
+                  else idTOFw = PART_ID::NONE;
                }
             }
 
-            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && 
-                idEMCal == PART_ID::JUNK && 
+            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && idEMCal == PART_ID::JUNK && 
                 idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
 
             switch (charge)
@@ -257,6 +330,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             }
          }
 
+         // looping over pairs of tracks
          for (const auto& posTrack : positiveTracks)
          {
             for (const auto& negTrack : negativeTracks)
