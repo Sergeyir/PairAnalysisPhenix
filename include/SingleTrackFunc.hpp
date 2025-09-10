@@ -88,6 +88,22 @@ struct ChargedTrack
    int idTOFe = PART_ID::JUNK;
    /// id of a particle obtained in TOFw
    int idTOFw = PART_ID::JUNK;
+   /// probability of a particle being registered in PC2
+   int weightPC2 = 0.;
+   /// probability of a particle being registered in PC3
+   int weightPC3 = 0.;
+   /// probability of a particle being registered in EMCal
+   int weightEMCal = 0.;
+   /// probability of a particle being registered in TOFe
+   int weightTOFe = 0.;
+   /// probability of a particle being registered in TOFw
+   int weightTOFw = 0.;
+   /// probability of a particle being identified in EMCal
+   int weightIdEMCal = 0.;
+   /// probability of a particle being identified in TOFe
+   int weightIdTOFe = 0.;
+   /// probability of a particle being identified in TOFw
+   int weightIdTOFw = 0.;
 };
 
 /*! @brief Checks if the hit was detected in the given detector

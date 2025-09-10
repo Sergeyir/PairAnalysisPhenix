@@ -226,7 +226,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            idEMCal = daughter1Id;
                            break;
                         case -1:
-                           idEMCal = daughter12d;
+                           idEMCal = daughter1Id;
                            break;
                      }
                      weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
@@ -323,9 +323,35 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             {
                case 1:
                   positiveTracks.emplace_back(daughter1Mass, simCNT, i);
+                  positiveTracks.back().idPC2 = idPC2;
+                  positiveTracks.back().idPC3 = idPC3;
+                  positiveTracks.back().idEMCal = idEMCal;
+                  positiveTracks.back().idTOFe = idTOFe;
+                  positiveTracks.back().idTOFw = idTOFw;
+                  positiveTracks.back().weightPC2 = weightPC2;
+                  positiveTracks.back().weightPC3 = weightPC3;
+                  positiveTracks.back().weightEMCal = weightEMCal;
+                  positiveTracks.back().weightTOFe = weightTOFe;
+                  positiveTracks.back().weightTOFw = weightTOFw;
+                  positiveTracks.back().weightIdEMCal = weightIdEMCal;
+                  positiveTracks.back().weightIdTOFe = weightIdTOFe;
+                  positiveTracks.back().weightIdTOFw = weightIdTOFw;
                   break;
                case -1:
                   negativeTracks.emplace_back(daughter2Mass, simCNT, i);
+                  negativeTracks.back().idPC2 = idPC2;
+                  negativeTracks.back().idPC3 = idPC3;
+                  negativeTracks.back().idEMCal = idEMCal;
+                  negativeTracks.back().idTOFe = idTOFe;
+                  negativeTracks.back().idTOFw = idTOFw;
+                  negativeTracks.back().weightPC2 = weightPC2;
+                  negativeTracks.back().weightPC3 = weightPC3;
+                  negativeTracks.back().weightEMCal = weightEMCal;
+                  negativeTracks.back().weightTOFe = weightTOFe;
+                  negativeTracks.back().weightTOFw = weightTOFw;
+                  negativeTracks.back().weightIdEMCal = weightIdEMCal;
+                  negativeTracks.back().weightIdTOFe = weightIdTOFe;
+                  negativeTracks.back().weightIdTOFw = weightIdTOFw;
                   break;
             }
          }
