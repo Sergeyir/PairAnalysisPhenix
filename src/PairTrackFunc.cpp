@@ -11,29 +11,38 @@
 
 #include "../include/PairTrackFunc.hpp"
 
+bool IsTOFe2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+                const int id1, const int id2)
+{
+   return (track1.idTOFe == id1 && track2.idTOFe == id2/* && !IsTOFeGhost(track1, track2)*/);
+}
+
+bool IsTOFw2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
+                const int id1, const int id2)
+{
+   return (track1.idTOFw == id1 && track2.idTOFw == id2/* && !IsTOFwGhost(track1, track2)*/);
+}
+
 bool IsTOF2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                const int id1, const int id2)
 {
-   return ((track1.idTOFe == id1 && track2.idTOFe == id2) ||
-           (track1.idTOFw == id1 && track2.idTOFw == id2));
+   return (IsTOFe2PID(track1, track2, id1, id2) || IsTOFw2PID(track1, track2, id1, id2));
 }
 
 bool IsEMCal2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                  const int id1, const int id2)
 {
-   return (track1.idEMCal == id1 && track2.idEMCal == id2);
+   return (track1.idEMCal == id1 && track2.idEMCal == id2 && !IsEMCalGhost(track1, track2));
 }
 
 bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
             const int id1, const int id2)
 {
-   return (IsTOF2PID(track1, track2, id1, id2) || 
-           IsEMCal2PID(track1, track2, id1, id2) ||
-           (track1.idEMCal == id1 && track2.idTOFe == id2) ||
-           (track1.idEMCal == id1 && track2.idTOFw == id2) ||
-           (track1.idTOFe == id1 && track2.idEMCal == id2) ||
-           (track1.idEMCal == id1 && track2.idTOFw == id2));
-           
+   return ((IsTOF2PID(track1, track2, id1, id2) || IsEMCal2PID(track1, track2, id1, id2)) ||
+           (((track1.idEMCal == id1 && (track2.idTOFe == id2 || track2.idTOFw == id2)) ||
+             ((track1.idTOFe == id1 || track1.idTOFw == id1) && track2.idEMCal == id2)) && 
+            (!IsTOFeGhost(track1, track2) || !IsTOFwGhost(track1, track2)) && 
+            !IsEMCalGhost(track1, track2)));
 }
 
 bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id1, const int id2)
@@ -75,11 +84,11 @@ bool IsTOFwNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 
 bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2)
 {
-   return (!IsPC2NoPID(track1, track2) &&
-           !IsPC3NoPID(track1, track2) &&
-           !IsEMCalNoPID(track1, track2) &&
-           !IsTOFeNoPID(track1, track2) &&
-           !IsTOFwNoPID(track1, track2));
+   return (IsPC2NoPID(track1, track2) ||
+           IsPC3NoPID(track1, track2) ||
+           IsEMCalNoPID(track1, track2) ||
+           IsTOFeNoPID(track1, track2) ||
+           IsTOFwNoPID(track1, track2));
 }
 
 double GetPairPT(const ChargedTrack& track1, const ChargedTrack& track2)
@@ -115,8 +124,7 @@ bool IsPC3Ghost(const ChargedTrack& track1, const ChargedTrack& track2)
 bool IsEMCalGhost(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    return (track1.sector == track2.sector && 
-           abs(track1.yTower - track1.yTower) < 2 && 
-           abs(track1.zTower - track2.zTower) < 2);
+           abs(track1.yTower - track1.yTower) < 2 && abs(track1.zTower - track2.zTower) < 2);
 }
 
 bool IsTOFeGhost(const ChargedTrack& track1, const ChargedTrack& track2)

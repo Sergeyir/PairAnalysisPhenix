@@ -92,18 +92,32 @@ namespace AnalyzeResonance
       std::shared_ptr<TH1D> distrOrigPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
-      /// invariant mass distribution for all pairs without any cuts on pairs
-      std::shared_ptr<TH2F> distrMInv;
+      /// DCPC1NoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvDCPC1NoPID;
       /// invariant mass distribution with the cut opposite to one arm cut
       std::shared_ptr<TH2F> distrMInvOneArmAntiCut;
       /// NoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvNoPID;
+      /// PC2NoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvPC2NoPID;
+      /// PC3NoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvPC3NoPID;
+      /// TOFeNoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvTOFeNoPID;
+      /// TOFwNoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvTOFwNoPID;
+      /// EMCalNoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvEMCalNoPID;
       /// 1PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1PID;
       /// 2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv2PID;
       /// TOF2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvTOF2PID;
+      /// TOFe2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvTOFe2PID;
+      /// TOFw2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvTOFw2PID;
       /// EMCal2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvEMCal2PID;
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
@@ -148,9 +162,9 @@ namespace AnalyzeResonance
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
                             100, 0., 10., 100, 0., 10.};
-      /// invariant mass distribution for all pair without any cuts on pairs
-      ROOT::TThreadedObject<TH2F> distrMInv{"M_inv: all pairs", "M_{inv} vs p_{T}", 
-                                            200, 0., 20., 1000, 0., 5.};
+      /// DCPC1NoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvDCPC1NoPID{"M_inv: DCPC1NoPID", "M_{inv} vs p_{T}", 
+                                                      200, 0., 20., 1000, 0., 5.};
       /// invariant mass distribution with the cut opposite to one arm cut
       ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: NoPID, one arm anti cut", 
                                                               "M_{inv} vs p_{T}", 
@@ -158,6 +172,21 @@ namespace AnalyzeResonance
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
                                                  200, 0., 20., 1000, 0., 5.};
+      /// PC2NoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvPC2NoPID{"M_inv: PC2NoPID", "M_{inv} vs p_{T}", 
+                                                    200, 0., 20., 1000, 0., 5.};
+      /// PC3NoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvPC3NoPID{"M_inv: PC3NoPID", "M_{inv} vs p_{T}", 
+                                                    200, 0., 20., 1000, 0., 5.};
+      /// TOFeNoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvTOFeNoPID{"M_inv: TOFeNoPID", "M_{inv} vs p_{T}", 
+                                                     200, 0., 20., 1000, 0., 5.};
+      /// TOFwNoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvTOFwNoPID{"M_inv: TOFwNoPID", "M_{inv} vs p_{T}", 
+                                                     200, 0., 20., 1000, 0., 5.};
+      /// EMCalNoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvEMCalNoPID{"M_inv: EMCalNoPID", "M_{inv} vs p_{T}", 
+                                                      200, 0., 20., 1000, 0., 5.};
       /// 1PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1PID{"M_inv: 1PID", "M_{inv} vs p_{T}", 
                                                 200, 0., 20., 1000, 0., 5.};
@@ -167,6 +196,12 @@ namespace AnalyzeResonance
       /// TOF2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvTOF2PID{"M_inv: TOF2PID", "M_{inv} vs p_{T}", 
                                                    200, 0., 20., 1000, 0., 5.};
+      /// TOFe2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvTOFe2PID{"M_inv: TOFe2PID", "M_{inv} vs p_{T}", 
+                                                    200, 0., 20., 1000, 0., 5.};
+      /// TOFw2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvTOFw2PID{"M_inv: TOFw2PID", "M_{inv} vs p_{T}", 
+                                                    200, 0., 20., 1000, 0., 5.};
       /// EMCal2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvEMCal2PID{"M_inv: EMCal2PID", "M_{inv} vs p_{T}", 
                                                      200, 0., 20., 1000, 0., 5.};

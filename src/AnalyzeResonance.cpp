@@ -226,11 +226,11 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            idEMCal = daughter1Id;
                            break;
                         case -1:
-                           idEMCal = daughter1Id;
+                           idEMCal = daughter2Id;
                            break;
                      }
                      weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
-                                                            pT, idEMCal, 2., 2.)*weightEMCal;
+                                                            idEMCal, pT, 1., 2.)*weightEMCal;
                      if (weightIdEMCal <= 0.)
                      {
                         idEMCal = PART_ID::NONE;
@@ -316,8 +316,10 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
+            /*
             if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && idEMCal == PART_ID::JUNK && 
                 idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
+                */
 
             switch (charge)
             {
@@ -372,9 +374,24 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const bool isWithin2Gamma = (mInv > resonanceMass - resonanceGamma*2. - 10. && 
                                             mInv < resonanceMass + resonanceGamma*2. + 10.);
 
-               thrContainer.distrMInv->Fill(pT, mInv, eventWeight);
-
                if (IsGhostCut(posTrack, negTrack)) continue;
+
+               thrContainer.distrMInvDCPC1NoPID->Fill(pT, mInv, eventWeight);
+
+               if (!IsNoPID(posTrack, negTrack)) continue;
+
+               const double posTrackNoPIDProb = 
+                  CppTools::AtLeast1Prob(posTrack.weightPC2, posTrack.weightPC3, 
+                                         posTrack.weightTOFe, posTrack.weightTOFw, 
+                                         posTrack.weightEMCal);
+
+               const double negTrackNoPIDProb = 
+                  CppTools::AtLeast1Prob(negTrack.weightPC2, negTrack.weightPC3, 
+                                         negTrack.weightTOFe, negTrack.weightTOFw, 
+                                         negTrack.weightEMCal);
+
+               thrContainer.distrMInvNoPID->
+                  Fill(pT, mInv, eventWeight*posTrackNoPIDProb*negTrackNoPIDProb);
 
                if (IsOneArmCut(posTrack, negTrack)) 
                {
@@ -437,32 +454,91 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   }
                }
 
-               if (!IsNoPID(posTrack, negTrack)) continue;
-
-               thrContainer.distrMInvNoPID->Fill(pT, mInv, eventWeight);
-
                if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
                    mInv < resonanceMass + resonanceGamma*2. + 10.)
                {
                   histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
                }
 
-               if (Is1PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               if (IsPC2NoPID(posTrack, negTrack))
                {
-                  thrContainer.distrMInv1PID->Fill(pT, mInv, eventWeight);
+                  thrContainer.distrMInvPC2NoPID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightPC2*negTrack.weightPC2);
                }
 
-               if (!Is2PID(posTrack, negTrack, daughter1Id, daughter2Id)) continue;
+               if (IsPC3NoPID(posTrack, negTrack))
+               {
+                  thrContainer.distrMInvPC3NoPID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightPC3*negTrack.weightPC3);
+               }
 
-               thrContainer.distrMInv2PID->Fill(pT, mInv, eventWeight);
+               if (IsTOFeNoPID(posTrack, negTrack))
+               {
+                  thrContainer.distrMInvTOFeNoPID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightTOFe*negTrack.weightTOFe);
+               }
+
+               if (IsTOFwNoPID(posTrack, negTrack))
+               {
+                  thrContainer.distrMInvTOFwNoPID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightTOFw*negTrack.weightTOFw);
+               }
+
+               if (IsEMCalNoPID(posTrack, negTrack))
+               {
+                  thrContainer.distrMInvEMCalNoPID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightEMCal*negTrack.weightEMCal);
+               }
+
+               if (Is1PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               {
+                  thrContainer.distrMInv1PID->
+                     Fill(pT, mInv, eventWeight*
+                          CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
+                                                                        posTrack.weightIdTOFw,
+                                                                        posTrack.weightIdEMCal)*
+                                                 negTrackNoPIDProb, 
+                                                 CppTools::AtLeast1Prob(negTrack.weightIdTOFe + 
+                                                                        negTrack.weightIdTOFw, 
+                                                                        negTrack.weightIdEMCal)*
+                                                 posTrackNoPIDProb));
+               }
+
+               if (Is2PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               {
+                  thrContainer.distrMInv2PID->
+                     Fill(pT, mInv, eventWeight*CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
+                                                                       posTrack.weightIdTOFw, 
+                                                                       posTrack.weightIdEMCal)*
+                                                CppTools::AtLeast1Prob(negTrack.weightIdTOFe + 
+                                                                       negTrack.weightIdTOFw, 
+                                                                       negTrack.weightIdEMCal));
+               }
+
+               if (IsTOFe2PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               {
+                  CppTools::Print(posTrack.idTOFe, negTrack.idTOFe, posTrack.weightIdTOFe, negTrack.weightIdTOFe);
+                  thrContainer.distrMInvTOFe2PID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightIdTOFe*negTrack.weightIdTOFe);
+               }
+
+               if (IsTOFw2PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               {
+                  thrContainer.distrMInvTOFw2PID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightIdTOFw*negTrack.weightIdTOFw);
+               }
+
+               if (IsEMCal2PID(posTrack, negTrack, daughter1Id, daughter2Id))
+               {
+                  thrContainer.distrMInvEMCal2PID->
+                     Fill(pT, mInv, eventWeight*posTrack.weightIdEMCal*negTrack.weightIdEMCal);
+               }
 
                if (IsTOF2PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
-                  thrContainer.distrMInvTOF2PID->Fill(pT, mInv, eventWeight);
-               }
-               if (IsEMCal2PID(posTrack, negTrack, daughter1Id, daughter2Id))
-               {
-                  thrContainer.distrMInvEMCal2PID->Fill(pT, mInv, eventWeight);
+                  thrContainer.distrMInv2PID->
+                     Fill(pT, mInv, eventWeight*(posTrack.weightIdTOFe*negTrack.weightIdTOFe + 
+                                                 posTrack.weightIdTOFw*negTrack.weightIdTOFw));
                }
             }
          }
@@ -662,12 +738,19 @@ ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
 
    copy.distrOrigPT = distrOrigPT->Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
-   copy.distrMInv = distrMInv.Get();
+   copy.distrMInvDCPC1NoPID = distrMInvDCPC1NoPID.Get();
    copy.distrMInvOneArmAntiCut = distrMInvOneArmAntiCut.Get();
    copy.distrMInvNoPID = distrMInvNoPID.Get();
+   copy.distrMInvPC2NoPID = distrMInvPC2NoPID.Get();
+   copy.distrMInvPC3NoPID = distrMInvPC3NoPID.Get();
+   copy.distrMInvTOFeNoPID = distrMInvTOFeNoPID.Get();
+   copy.distrMInvTOFwNoPID = distrMInvTOFwNoPID.Get();
+   copy.distrMInvEMCalNoPID = distrMInvEMCalNoPID.Get();
    copy.distrMInv1PID = distrMInv1PID.Get();
    copy.distrMInv2PID = distrMInv2PID.Get();
    copy.distrMInvTOF2PID = distrMInvTOF2PID.Get();
+   copy.distrMInvTOFe2PID = distrMInvTOFe2PID.Get();
+   copy.distrMInvTOFw2PID = distrMInvTOFw2PID.Get();
    copy.distrMInvEMCal2PID = distrMInvEMCal2PID.Get();
    copy.distrPAsymVsPT = distrPAsymVsPT.Get();
    copy.distrDPhiVsPT = distrDPhiVsPT.Get();
@@ -690,12 +773,19 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
 
    static_cast<std::shared_ptr<TH1D>>(distrOrigPT->Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrMInv.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvDCPC1NoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvOneArmAntiCut.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvPC2NoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvPC3NoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFeNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFwNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvEMCalNoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInv1PID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInv2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvTOF2PID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFe2PID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFw2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvEMCal2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrPAsymVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrDPhiVsPT.Merge())->Write();
