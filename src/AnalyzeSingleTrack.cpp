@@ -17,11 +17,13 @@
 using namespace AnalyzeSingleTrack;
 
 void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer, 
-                                              const std::string& particleName, 
-                                              const short particleGeantId, 
+                                              const int particleId, 
                                               const std::string& magneticFieldName, 
                                               const std::string &pTRangeName)
 { 
+
+   const std::string particleName = ParticleMap::name[particleId];
+   const int particleGeantId = ParticleMap::idGEANT[particleId];
 
    std::string simInputFileName = 
       "data/SimTrees/" + runName + "/SingleTrack/" + 
@@ -223,7 +225,7 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
 
-            histContainer.distrRecPT->Fill(pT, eventWeight);
+            if (isParticleOrig) histContainer.distrRecPT->Fill(pT, eventWeight);
 
             if (IsHit(simCNT.pc2dphi(i)))
             {
@@ -259,14 +261,12 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                         eventWeight*alphaReweight);
                   }
 
-                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi) && isParticleOrig)
                   {
                      histContainer.distrRecPTPC2->Fill(pT, eventWeight);
                   }
                }
             }
-
-            bool isMatchAndGoodPC3 = false;
 
             if (IsHit(simCNT.pc3dphi(i)))
             {
@@ -335,15 +335,12 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                             eventWeight*alphaReweight);
                      }
                   }
-                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi)) 
+                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi) && isParticleOrig) 
                   {
-                     isMatchAndGoodPC3 = true;
                      histContainer.distrRecPTPC3->Fill(pT, eventWeight);
                   }
                }
             }
-
-            bool isMatchAndGoodEMCal = false;
 
             if (IsHit(simCNT.emcdz(i)))
             {
@@ -470,57 +467,70 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   }
 
                   if (!dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), 
-                                            simCNT.ysect(i), simCNT.zsect(i)))
+                                            simCNT.ysect(i), simCNT.zsect(i)) && 
+                      !isCutByECore)
                   {
-                     isMatchAndGoodEMCal = true;
+                     const double tExpPi = sqrt(simCNT.plemc(i)*simCNT.plemc(i)/
+                                                (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
+                                                (MASS_PION*MASS_PION/
+                                                 (simCNT.mom(i)*simCNT.mom(i)) + 1.));
 
-                     if (!isCutByECore)
+                     const double tEMCal = simCNT.temc(i) + timeShiftEMCal;
+                     const double m2 = simCNT.mom(i)*simCNT.mom(i)*
+                                       (tEMCal*tEMCal*SPEED_OF_LIGHT*SPEED_OF_LIGHT/
+                                        (simCNT.plemc(i)*simCNT.plemc(i)) - 1.);
+
+                     if (dcarm == 0)
                      {
-                        const double tExpPi = sqrt(simCNT.plemc(i)*simCNT.plemc(i)/
-                                                   (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
-                                                   (MASS_PION*MASS_PION/
-                                                    (simCNT.mom(i)*simCNT.mom(i)) + 1.));
+                        histContainer.distrTEMCale[simCNT.sect(i)]->
+                           Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
 
-                        const double tEMCal = simCNT.temc(i) + timeShiftEMCal;
-                        const double m2 = simCNT.mom(i)*simCNT.mom(i)*
-                                          (tEMCal*tEMCal*SPEED_OF_LIGHT*SPEED_OF_LIGHT/
-                                           (simCNT.plemc(i)*simCNT.plemc(i)) - 1.);
-
-                        if (dcarm == 0)
+                        if (charge == 1)
                         {
-                           histContainer.distrTEMCale[simCNT.sect(i)]->
-                              Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
-
-                           if (charge == 1)
-                           {
-                              histContainer.distrM2EMCalePosCharge[simCNT.sect(i)]->
-                                 Fill(m2, pT, eventWeight);
-                           }
-                           else
-                           {
-                              histContainer.distrM2EMCaleNegCharge[simCNT.sect(i)]->
-                                 Fill(m2, pT, eventWeight);
-                           }
-
-                           histContainer.distrRecPTEMCale[simCNT.sect(i)]->Fill(pT, eventWeight);
+                           histContainer.distrM2EMCalePosCharge[simCNT.sect(i)]->
+                              Fill(m2, pT, eventWeight);
                         }
                         else
                         {
-                           histContainer.distrTEMCalw[simCNT.sect(i)]->
-                              Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
+                           histContainer.distrM2EMCaleNegCharge[simCNT.sect(i)]->
+                              Fill(m2, pT, eventWeight);
+                        }
 
-                           if (charge == 1)
-                           {
-                              histContainer.distrM2EMCalwPosCharge[simCNT.sect(i)]->
-                                 Fill(m2, pT, eventWeight);
-                           }
-                           else
-                           {
-                              histContainer.distrM2EMCalwNegCharge[simCNT.sect(i)]->
-                                 Fill(m2, pT, eventWeight);
-                           }
+                        if (isParticleOrig)
+                        {
+                           histContainer.distrRecPTEMCale[simCNT.sect(i)]->Fill(pT, eventWeight);
 
+                           if (simCNT.sect(i) > 1)
+                           {
+                              histContainer.distrRecIdPTEMCale[simCNT.sect(i) - 2]->
+                                 Fill(pT, eventWeight*
+                                      simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                             particleId, pT, 1., 2.));
+                           }
+                        }
+                     }
+                     else
+                     {
+                        histContainer.distrTEMCalw[simCNT.sect(i)]->
+                           Fill(simCNT.temc(i) - tExpPi, pT, eventWeight);
+
+                        if (charge == 1)
+                        {
+                           histContainer.distrM2EMCalwPosCharge[simCNT.sect(i)]->
+                              Fill(m2, pT, eventWeight);
+                        }
+                        else
+                        {
+                           histContainer.distrM2EMCalwNegCharge[simCNT.sect(i)]->
+                              Fill(m2, pT, eventWeight);
+                        }
+
+                        if (isParticleOrig)
+                        {
                            histContainer.distrRecPTEMCalw[simCNT.sect(i)]->Fill(pT, eventWeight);
+                           histContainer.distrRecIdPTEMCalw[simCNT.sect(i)]->
+                              Fill(pT, simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                              particleId, pT, 1., 2.)*eventWeight);
                         }
                      }
                   }
@@ -576,11 +586,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                          simCNT.etof(i)*eventWeight*alphaReweight);
                   }
 
-                  if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
-                      !dmCutter.IsDeadTOFe(chamber, slat))
+                  if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
-                     histContainer.distrRecPTTOFe->Fill(pT, eventWeight);
-
                      const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -595,6 +602,13 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                      if (charge == 1) histContainer.distrM2TOFePosCharge->Fill(m2, pT, eventWeight);
                      else histContainer.distrM2TOFeNegCharge->Fill(m2, pT, eventWeight);
+
+                     if (isParticleOrig)
+                     {
+                        histContainer.distrRecPTTOFe->Fill(pT, eventWeight);
+                        histContainer.distrRecIdPTTOFe->
+                           Fill(pT, eventWeight*simM2Id.GetTOFeIdProb(particleId, pT, 2., 2.));
+                     }
                   }
                }
             }
@@ -649,11 +663,8 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                          eventWeight*alphaReweight*correctionTOFw);
                   }
 
-                  if (isMatchAndGoodPC3 && isMatchAndGoodEMCal &&
-                      !dmCutter.IsDeadTOFw(chamber, strip))
+                  if (!dmCutter.IsDeadTOFw(chamber, strip))
                   {
-                     histContainer.distrRecPTTOFw->Fill(pT, eventWeight*correctionTOFw);
-
                      const double tExpPi = sqrt(simCNT.pltofw(i)*simCNT.pltofw(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -672,6 +683,14 @@ void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         Fill(m2, pT, eventWeight*correctionTOFw);
                      else histContainer.distrM2TOFwNegCharge->
                         Fill(m2, pT, eventWeight*correctionTOFw);
+
+                     if (isParticleOrig)
+                     {
+                        histContainer.distrRecPTTOFw->Fill(pT, eventWeight*correctionTOFw);
+                        histContainer.distrRecIdPTTOFw->
+                           Fill(pT, eventWeight*correctionTOFw*
+                                simM2Id.GetTOFwIdProb(particleId, pT, 2., 2.));
+                     }
                   }
                }
             }
@@ -725,6 +744,7 @@ int main(int argc, char **argv)
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
+   simM2Id.Initialize(runName, true);
 
    if (reweightForSpectra)
    {
@@ -1021,9 +1041,7 @@ int main(int argc, char **argv)
          ThrContainer thrContainer;
          for (const auto& pTRange : inputYAMLSim["pt_ranges"])
          {
-            AnalyzeConfiguration(thrContainer, 
-                                 particle["name"].as<std::string>(), 
-                                 particle["geant_id"].as<short>(), 
+            AnalyzeConfiguration(thrContainer, particle["id"].as<int>(), 
                                  magneticField["name"].as<std::string>(), 
                                  pTRange["name"].as<std::string>());
          }
@@ -1144,6 +1162,8 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    copy.distrRecPTPC3 = distrRecPTPC3.Get();
    copy.distrRecPTTOFe = distrRecPTTOFe.Get();
    copy.distrRecPTTOFw = distrRecPTTOFw.Get();
+   copy.distrRecIdPTTOFe = distrRecIdPTTOFe.Get();
+   copy.distrRecIdPTTOFw = distrRecIdPTTOFw.Get();
    copy.distrBetaVsETOFe = distrBetaVsETOFe.Get();
    copy.distrDPhiVsPTPC2Pos = distrDPhiVsPTPC2Pos.Get();
    copy.distrDZVsPTPC2Pos = distrDZVsPTPC2Pos.Get();
@@ -1203,6 +1223,7 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.heatmapEMCalwVsPT[i] = heatmapEMCalwVsPT[i].Get();
       copy.distrRecPTEMCale[i] = distrRecPTEMCale[i].Get();
       copy.distrRecPTEMCalw[i] = distrRecPTEMCalw[i].Get();
+      copy.distrRecIdPTEMCalw[i] = distrRecIdPTEMCalw[i].Get();
       copy.distrECoreVsPTEMCale[i] = distrECoreVsPTEMCale[i].Get();
       copy.distrECoreVsPTEMCalw[i] = distrECoreVsPTEMCalw[i].Get();
       copy.distrECoreVsPTEMCaleOrig[i] = distrECoreVsPTEMCaleOrig[i].Get();
@@ -1232,13 +1253,19 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
       copy.distrM2EMCalwPosCharge[i] = distrM2EMCalwPosCharge[i].Get();
       copy.distrM2EMCalwNegCharge[i] = distrM2EMCalwNegCharge[i].Get();
    }
+
+   // iterating over PBSc EMCale sectors
+   for (int i = 0; i < 2; i++)
+   {
+      copy.distrRecIdPTEMCale[i] = distrRecIdPTEMCale[i].Get();
+   }
    return copy;
 }
 
 void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
 {
    TFile outputFile(outputFileName.c_str(), "RECREATE");
-   outputFile.SetCompressionLevel(6);
+   outputFile.SetCompressionLevel(8);
    outputFile.cd();
 
    static_cast<std::shared_ptr<TH1D>>(distrOrigPT.Merge())->Write();
@@ -1282,6 +1309,8 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH1D>>(distrRecPTPC3.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecPTTOFe.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecPTTOFw.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecIdPTTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecIdPTTOFw.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrBetaVsETOFe.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Pos.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrTTOFe.Merge())->Write();
@@ -1302,6 +1331,7 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
       static_cast<std::shared_ptr<TH3F>>(heatmapEMCalwVsPT[i].Merge())->Write();
       static_cast<std::shared_ptr<TH1D>>(distrRecPTEMCale[i].Merge())->Write();
       static_cast<std::shared_ptr<TH1D>>(distrRecPTEMCalw[i].Merge())->Write();
+      static_cast<std::shared_ptr<TH1D>>(distrRecIdPTEMCalw[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCale[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCalw[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrECoreVsPTEMCaleOrig[i].Merge())->Write();
@@ -1314,6 +1344,12 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
       static_cast<std::shared_ptr<TH2F>>(distrM2EMCaleNegCharge[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrM2EMCalwPosCharge[i].Merge())->Write();
       static_cast<std::shared_ptr<TH2F>>(distrM2EMCalwNegCharge[i].Merge())->Write();
+   }
+
+   // iterating over PbSc EMCale sectors
+   for (int i = 0; i < 2; i++)
+   {
+      static_cast<std::shared_ptr<TH1D>>(distrRecIdPTEMCale[i].Merge())->Write();
    }
 
    outputFile.mkdir("dphi");

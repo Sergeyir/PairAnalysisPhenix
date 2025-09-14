@@ -30,6 +30,7 @@
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
 #include "SimSigmalizedResiduals.hpp"
+#include "SimM2Identificator.hpp"
 
 #include "PBar.hpp"
 
@@ -89,6 +90,8 @@ namespace AnalyzeSingleTrack
    DeadMapCutter dmCutter;
    /// calibrator for simulated data
    SimSigmalizedResiduals simSigmRes;
+   /// identificator for m2 hadron identification procedure in MC
+   SimM2Identificator simM2Id;
    /* @brief Get the DC heatmap from the specified file
     * @param[in] file file from which the histogram will be read
     * @param[in] histName name of the histogram which will be read
@@ -226,6 +229,14 @@ namespace AnalyzeSingleTrack
       std::shared_ptr<TH1D> distrRecPTTOFe;
       /// reconstructed pT distribution of tracks regisetered and passed all cuts in TOFw
       std::shared_ptr<TH1D> distrRecPTTOFw;
+      /// reconstructed pT distribution of tracks identified in EMCale
+      std::array<std::shared_ptr<TH1D>, 2> distrRecIdPTEMCale;
+      /// reconstructed pT distribution of tracks identified in EMCalw
+      std::array<std::shared_ptr<TH1D>, 4> distrRecIdPTEMCalw;
+      /// reconstructed pT distribution of tracks identified in TOFe
+      std::shared_ptr<TH1D> distrRecIdPTTOFe;
+      /// reconstructed pT distribution of tracks identified in TOFw
+      std::shared_ptr<TH1D> distrRecIdPTTOFw;
       /// eloss vs beta distribution in TOFe
       std::shared_ptr<TH2F> distrBetaVsETOFe;
       /// pc2dphi vs pT distribution for positive tracks
@@ -379,7 +390,7 @@ namespace AnalyzeSingleTrack
       /// distribution of original generated pT
       ROOT::TThreadedObject<TH1D> distrOrigPT{"orig pT", "p_{T}", 100., 0., 10.};
       /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts
-      ROOT::TThreadedObject<TH1D> distrRecPT{"rec pT", "p_{T}", 100., 0., 10.};
+      ROOT::TThreadedObject<TH1D> distrRecPT{"rec pT: DC-PC1", "p_{T}", 100., 0., 10.};
       // distribution of original generated pT vs pT of reconstructed tracks in the simulation
       ROOT::TThreadedObject<TH2D> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
@@ -573,7 +584,7 @@ namespace AnalyzeSingleTrack
          ROOT::TThreadedObject<TH1D>("rec pT: EMCale0", "p_{T}", 100., 0., 10.),
          ROOT::TThreadedObject<TH1D>("rec pT: EMCale1", "p_{T}", 100., 0., 10.),
          ROOT::TThreadedObject<TH1D>("rec pT: EMCale2", "p_{T}", 100., 0., 10.),
-         ROOT::TThreadedObject<TH1D>("rec pT: EMCale3", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCale3", "p_{T}", 100., 0., 10.)
       };
       /// pT distribution of particles regisetered and passed all cuts in EMCalw(0-3)
       std::array<ROOT::TThreadedObject<TH1D>, 4> distrRecPTEMCalw
@@ -581,12 +592,30 @@ namespace AnalyzeSingleTrack
          ROOT::TThreadedObject<TH1D>("rec pT: EMCalw0", "p_{T}", 100., 0., 10.),
          ROOT::TThreadedObject<TH1D>("rec pT: EMCalw1", "p_{T}", 100., 0., 10.),
          ROOT::TThreadedObject<TH1D>("rec pT: EMCalw2", "p_{T}", 100., 0., 10.),
-         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw3", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec pT: EMCalw3", "p_{T}", 100., 0., 10.)
       };
       /// pT distribution of particles regisetered and passed all cuts in TOFe
       ROOT::TThreadedObject<TH1D> distrRecPTTOFe{"rec pT: TOFe", "p_{T}", 100., 0., 10.};
       /// pT distribution of particles regisetered and passed all cuts in TOFw
       ROOT::TThreadedObject<TH1D> distrRecPTTOFw{"rec pT: TOFw", "p_{T}", 100., 0., 10.};
+      /// pT distribution of particles identified in EMCale(0-3)
+      std::array<ROOT::TThreadedObject<TH1D>, 2> distrRecIdPTEMCale
+      {
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCale2", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCale3", "p_{T}", 100., 0., 10.)
+      };
+      /// pT distribution of particles identified in EMCalw(0-3)
+      std::array<ROOT::TThreadedObject<TH1D>, 4> distrRecIdPTEMCalw
+      {
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCalw0", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCalw1", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCalw2", "p_{T}", 100., 0., 10.),
+         ROOT::TThreadedObject<TH1D>("rec id pT: EMCalw3", "p_{T}", 100., 0., 10.)
+      };
+      /// pT distribution of particles identified in TOFe
+      ROOT::TThreadedObject<TH1D> distrRecIdPTTOFe{"rec id pT: TOFe", "p_{T}", 100., 0., 10.};
+      /// pT distribution of particles identified in TOFw
+      ROOT::TThreadedObject<TH1D> distrRecIdPTTOFw{"rec id pT: TOFw", "p_{T}", 100., 0., 10.};
       /// prob in EMCale(0-3) vs pT distributions
       std::array<ROOT::TThreadedObject<TH2F>, 4> distrProbVsPTEMCale
       {
@@ -1089,9 +1118,8 @@ namespace AnalyzeSingleTrack
     * @param[in] magneticFieldName name of the magnetic field to be analyzed 
     * @param[in] pTRangeName name of the pT range to be analyzed 
     */
-   void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
-                             const short particleGeantId, const std::string& magneticFieldName, 
-                             const std::string& pTRangeName); 
+   void AnalyzeConfiguration(ThrContainer& thrContainer, const int particleId, 
+                             const std::string& magneticFieldName, const std::string& pTRangeName); 
 }
 
 #endif /* ANALYZE_SINGLE_TRACK_HPP */

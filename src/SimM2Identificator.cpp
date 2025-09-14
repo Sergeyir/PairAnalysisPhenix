@@ -68,38 +68,41 @@ double SimM2Identificator::GetTOFeIdProb(const int id, const double pT,
    const double sigmaK = GetM2Sigma(pT, meanK, &parSigmaTOFe[0]);
    const double sigmaP = GetM2Sigma(pT, meanP, &parSigmaTOFe[0]);
 
+   double weight = 0.;
    switch (abs(id))
    {
       case 211:
          if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
              meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
-         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
-                erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
-                                       meanK - sigmalizedVetoRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
-                     sigmaPi/TMath::Sqrt2())/2.;
+         weight = erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                  erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                         meanK - sigmalizedVetoRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
+                      sigmaPi/TMath::Sqrt2())/2.;
          break;
       case 321:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
              meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
              meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
-         return erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK - sigmalizedExtrRange*sigmaK))/
-                    sigmaK/TMath::Sqrt2())/2. +
-                erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanK)/
-                     sigmaK/TMath::Sqrt2())/2.;
+         weight = erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK - sigmalizedExtrRange*sigmaK))/
+                      sigmaK/TMath::Sqrt2())/2. +
+                  erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanK)/
+                       sigmaK/TMath::Sqrt2())/2.;
          break;
       case 2212:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
              meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
-         return erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK + sigmalizedVetoRange*sigmaK,
-                                               meanP + sigmalizedExtrRange*sigmaP))/
-                     sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         weight = erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK + sigmalizedVetoRange*sigmaK,
+                                                 meanP - sigmalizedExtrRange*sigmaP))/
+                       sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
          break;
    }
-   return 0.;
+
+   if (weight < 0.) return 0.;
+   return weight;
 }
 
 double SimM2Identificator::GetTOFwIdProb(const int id, const double pT, 
@@ -124,38 +127,41 @@ double SimM2Identificator::GetTOFwIdProb(const int id, const double pT,
    const double sigmaK = GetM2Sigma(pT, meanK, &parSigmaTOFw[0]);
    const double sigmaP = GetM2Sigma(pT, meanP, &parSigmaTOFw[0]);
 
+   double weight = 0.;
    switch (abs(id))
    {
       case 211:
          if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
              meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
-         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
-                erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
-                                       meanK - sigmalizedVetoRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
-                     sigmaPi/TMath::Sqrt2())/2.;
+         weight = erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                  erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                         meanK - sigmalizedVetoRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
+                       sigmaPi/TMath::Sqrt2())/2.;
          break;
       case 321:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
              meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
              meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
-         return erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK - sigmalizedExtrRange*sigmaK))/
-                    sigmaK/TMath::Sqrt2())/2. +
-                erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanK)/
-                     sigmaK/TMath::Sqrt2())/2.;
+         weight = erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK - sigmalizedExtrRange*sigmaK))/
+                      sigmaK/TMath::Sqrt2())/2. +
+                  erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanK)/
+                       sigmaK/TMath::Sqrt2())/2.;
          break;
       case 2212:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
              meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
-         return erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK + sigmalizedVetoRange*sigmaK,
-                                               meanP + sigmalizedExtrRange*sigmaP))/
-                     sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         weight = erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK + sigmalizedVetoRange*sigmaK,
+                                                 meanP - sigmalizedExtrRange*sigmaP))/
+                       sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
          break;
    }
-   return 0.;
+
+   if (weight < 0.) return 0.;
+   return weight;
 }
 
 double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector, 
@@ -208,38 +214,40 @@ double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector,
       sigmaP = GetM2Sigma(pT, meanP, &parSigmaEMCale[sector][0]);
    }
 
+   double weight = 0.;
    switch (abs(id))
    {
       case 211:
          if (meanK - sigmaK*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi ||
              meanP - sigmaP*sigmalizedVetoRange < meanPi - sigmalizedExtrRange*sigmaPi) return 0.;
-         return erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
-                erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
-                                       meanK - sigmalizedVetoRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
-                     sigmaPi/TMath::Sqrt2())/2.;
+         weight = erf(sigmalizedExtrRange/TMath::Sqrt2())/2. + 
+                  erf((CppTools::Minimum(meanPi + sigmalizedExtrRange*sigmaPi, 
+                                         meanK - sigmalizedVetoRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanPi)/
+                       sigmaPi/TMath::Sqrt2())/2.;
          break;
       case 321:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanK + sigmalizedExtrRange*sigmaK ||
              meanP - sigmaP*sigmalizedVetoRange < meanK - sigmalizedExtrRange*sigmaK ||
              meanPi + sigmaPi*sigmalizedVetoRange > meanP - sigmaP*sigmalizedVetoRange) return 0.;
-         return erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK - sigmalizedExtrRange*sigmaK))/
-                    sigmaK/TMath::Sqrt2())/2. +
-                erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
-                                       meanP - sigmalizedVetoRange*sigmaP) - meanK)/
-                     sigmaK/TMath::Sqrt2())/2.;
+         weight = erf((meanK - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK - sigmalizedExtrRange*sigmaK))/
+                      sigmaK/TMath::Sqrt2())/2. +
+                  erf((CppTools::Minimum(meanK + sigmalizedExtrRange*sigmaK,
+                                         meanP - sigmalizedVetoRange*sigmaP) - meanK)/
+                       sigmaK/TMath::Sqrt2())/2.;
          break;
       case 2212:
          if (meanPi + sigmaPi*sigmalizedVetoRange > meanP + sigmalizedExtrRange*sigmaP ||
              meanK - sigmaK*sigmalizedVetoRange > meanP - sigmalizedExtrRange*sigmaP) return 0.;
-         return erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
-                                               meanK + sigmalizedVetoRange*sigmaK,
-                                               meanP + sigmalizedExtrRange*sigmaP))/
-                     sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
+         weight = erf((meanP - CppTools::Maximum(meanPi + sigmalizedVetoRange*sigmaPi,
+                                                 meanK + sigmalizedVetoRange*sigmaK,
+                                                 meanP - sigmalizedExtrRange*sigmaP))/
+                       sigmaP/TMath::Sqrt2())/2. + erf(sigmalizedExtrRange/TMath::Sqrt2())/2.;
          break;
    }
-   return 0.;
+   if (weight < 0.) return 0.;
+   return weight;
 }
 
 void SimM2Identificator::SetParameters(const std::string& inputFileName, 

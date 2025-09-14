@@ -11,6 +11,11 @@
 
 #include "EstimateSingleTrackEff.hpp"
 
+// this namespace is only used so that documentation does not become a mess
+// so there is no need to enforce the contents inside of it 
+// being accessed only via the scope resolution operator in this file
+using namespace EstimateSingleTrackEff;
+
 int main(int argc, char **argv)
 {
    if (argc != 2) 
@@ -26,7 +31,7 @@ int main(int argc, char **argv)
  
    runName = inputYAMLSim["run_name"].as<std::string>();
 
-   inputYAMLMain.OpenFile("input/" + runName "/main.yaml");
+   inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
    pTMin = inputYAMLSim["pt_min"].as<double>();
@@ -61,31 +66,137 @@ int main(int argc, char **argv)
    inputDataFileKMinus = TFile::Open(inputDataFileNameKMinus.c_str());
    inputDataFilePBar = TFile::Open(inputDataFileNamePBar.c_str());
 
-   distrOrigPTPiPlus = static_cast<TH1F *>(inputDataFilePiPlus.Get("orig pT"));
-   distrOrigPTKPlus = static_cast<TH1F *>(inputDataFileKPlus.Get("orig pT"));
-   distrOrigPTP = static_cast<TH1F *>(inputDataFileP.Get("orig pT"));
-   distrOrigPTPiMinus = static_cast<TH1F *>(inputDataFilePiMinus.Get("orig pT"));
-   distrOrigPTKMinus = static_cast<TH1F *>(inputDataFileKMinus.Get("orig pT"));
-   distrOrigPTPBar = static_cast<TH1F *>(inputDataFilePBar.Get("orig pT"));
+   distrOrigPTPiPlus = static_cast<TH1F *>(inputDataFilePiPlus->Get("orig pT"));
+   distrOrigPTKPlus = static_cast<TH1F *>(inputDataFileKPlus->Get("orig pT"));
+   distrOrigPTP = static_cast<TH1F *>(inputDataFileP->Get("orig pT"));
+   distrOrigPTPiMinus = static_cast<TH1F *>(inputDataFilePiMinus->Get("orig pT"));
+   distrOrigPTKMinus = static_cast<TH1F *>(inputDataFileKMinus->Get("orig pT"));
+   distrOrigPTPBar = static_cast<TH1F *>(inputDataFilePBar->Get("orig pT"));
 
-   EstimateEffForSingleDistribution("PC2");
-   EstimateEffForSingleDistribution("PC3");
-   EstimateEffForSingleDistribution("TOFe");
-   EstimateEffForSingleDistribution("TOFw");
-   EstimateEffForSingleDistribution("EMCale0");
-   EstimateEffForSingleDistribution("EMCale1");
-   EstimateEffForSingleDistribution("EMCale2");
-   EstimateEffForSingleDistribution("EMCale3");
-   EstimateEffForSingleDistribution("EMCalw0");
-   EstimateEffForSingleDistribution("EMCalw1");
-   EstimateEffForSingleDistribution("EMCalw2");
-   EstimateEffForSingleDistribution("EMCalw3");
+   EstimateEffForSingleDetector("DC-PC1");
+   EstimateEffForSingleDetector("PC2");
+   EstimateEffForSingleDetector("PC3");
+   EstimateEffForSingleDetector("TOFe");
+   EstimateEffForSingleDetector("TOFw");
+   EstimateEffForSingleDetector("EMCale0");
+   EstimateEffForSingleDetector("EMCale1");
+   EstimateEffForSingleDetector("EMCale2");
+   EstimateEffForSingleDetector("EMCale3");
+   EstimateEffForSingleDetector("EMCalw0");
+   EstimateEffForSingleDetector("EMCalw1");
+   EstimateEffForSingleDetector("EMCalw2");
+   EstimateEffForSingleDetector("EMCalw3");
+   EstimateEffForSingleDetector("TOFe", true);
+   EstimateEffForSingleDetector("TOFw", true);
+   EstimateEffForSingleDetector("EMCale2", true);
+   EstimateEffForSingleDetector("EMCale3", true);
+   EstimateEffForSingleDetector("EMCalw0", true);
+   EstimateEffForSingleDetector("EMCalw1", true);
+   EstimateEffForSingleDetector("EMCalw2", true);
+   EstimateEffForSingleDetector("EMCalw3", true);
+
+   return 1;
 }
 
-EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& detectorName, 
-                                                     const bools isIdentification)
+void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& detectorName, 
+                                                          const bool isIdentification)
 {
+   std::string nameAux = "";
+   if (isIdentification) nameAux = "id ";
 
+   TH1F* distrRecPTPiPlus = static_cast<TH1F *>
+      (inputDataFilePiPlus->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+   TH1F* distrRecPTKPlus = static_cast<TH1F *>
+      (inputDataFileKPlus->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+   TH1F* distrRecPTP = static_cast<TH1F *>
+      (inputDataFileP->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+   TH1F* distrRecPTPiMinus = static_cast<TH1F *>
+      (inputDataFilePiMinus->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+   TH1F* distrRecPTKMinus = static_cast<TH1F *>
+      (inputDataFileKMinus->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+   TH1F* distrRecPTPBar = static_cast<TH1F *>
+      (inputDataFilePBar->Get(("rec " + nameAux + "pT: " + detectorName).c_str()));
+
+   distrRecPTPiPlus->Divide(distrOrigPTPiPlus);
+   distrRecPTKPlus->Divide(distrOrigPTKPlus);
+   distrRecPTP->Divide(distrOrigPTP);
+   distrRecPTPiMinus->Divide(distrOrigPTPiMinus);
+   distrRecPTKMinus->Divide(distrOrigPTKMinus);
+   distrRecPTPBar->Divide(distrOrigPTPBar);
+
+   distrRecPTPiPlus->SetLineColor(kP6Violet);
+   distrRecPTKPlus->SetLineColor(kP6Gray);
+   distrRecPTP->SetLineColor(kP6Grape);
+   distrRecPTPiMinus->SetLineColor(kP6Red);
+   distrRecPTKMinus->SetLineColor(kP6Yellow);
+   distrRecPTPBar->SetLineColor(kP6Blue);
+
+   distrRecPTPiPlus->SetMarkerColor(kP6Violet);
+   distrRecPTKPlus->SetMarkerColor(kP6Gray);
+   distrRecPTP->SetMarkerColor(kP6Grape);
+   distrRecPTPiMinus->SetMarkerColor(kP6Red);
+   distrRecPTKMinus->SetMarkerColor(kP6Yellow);
+   distrRecPTPBar->SetMarkerColor(kP6Blue);
+
+   distrRecPTPiPlus->SetLineWidth(8);
+   distrRecPTKPlus->SetLineWidth(7);
+   distrRecPTP->SetLineWidth(6);
+   distrRecPTPiMinus->SetLineWidth(5);
+   distrRecPTKMinus->SetLineWidth(4);
+   distrRecPTPBar->SetLineWidth(3);
+
+   TText text;
+   text.SetTextFont(43);
+   text.SetTextSize(60);
+
+   TLegend legend(0.65, 0.15, 0.95, 0.3);
+   legend.SetLineColorAlpha(0, 0.);
+   legend.SetFillColorAlpha(0, 0.);
+   legend.SetNColumns(3);
+
+   TCanvas canv(detectorName.c_str(), "", 800, 800);
+
+   gPad->SetLogy();
+   gPad->SetLeftMargin(0.14);
+   gPad->SetBottomMargin(0.115);
+   gPad->SetRightMargin(0.03);
+   gPad->SetTopMargin(0.02);
+
+   // first bin in pT range (pTMin, pTMax)
+   const int firstBinInRange = distrRecPTP->GetXaxis()->FindBin(pTMin + 1e-6);
+
+   const double yMin = 
+      CppTools::Maximum(CppTools::Minimum(distrRecPTPiPlus->GetBinContent(firstBinInRange),
+                                          distrRecPTKPlus->GetBinContent(firstBinInRange),
+                                          distrRecPTP->GetBinContent(firstBinInRange),
+                                          distrRecPTPiMinus->GetBinContent(firstBinInRange),
+                                          distrRecPTPiMinus->GetBinContent(firstBinInRange),
+                                          distrRecPTPBar->GetBinContent(firstBinInRange))/20., 
+                        1e-8)/2.;
+
+   ROOTTools::DrawFrame(pTMin, yMin, pTMax, 2., "", "p_{T} [GeV/c]", "#varepsilon_{" + 
+                        static_cast<std::string>((isIdentification) ? "id" : "reg") + "}");
+
+   distrRecPTPiPlus->Draw("SAME");
+   distrRecPTKPlus->Draw("SAME");
+   distrRecPTP->Draw("SAME");
+   distrRecPTPiMinus->Draw("SAME");
+   distrRecPTKMinus->Draw("SAME");
+   distrRecPTPBar->Draw("SAME");
+
+   legend.AddEntry(distrRecPTPiPlus, "#pi^{+}");
+   legend.AddEntry(distrRecPTKPlus, "K^{+}");
+   legend.AddEntry(distrRecPTP, "p");
+   legend.AddEntry(distrRecPTPiMinus, "#pi^{-}");
+   legend.AddEntry(distrRecPTKMinus, "K^{-}");
+   legend.AddEntry(distrRecPTPBar, "#bar{p}");
+
+   text.DrawTextNDC(0.3, 0.15, detectorName.c_str());
+
+   legend.Draw();
+
+   ROOTTools::PrintCanvas(&canv, outputDir + "/" + detectorName + 
+                          ((isIdentification) ? "IdEff" : "RecEff"));
 }
 
 #endif /* ESTIMATE_SINGLE_TRACK_EFF_CPP */

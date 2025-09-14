@@ -17,27 +17,20 @@
 #include "TError.h"
 #include "TFile.h"
 #include "TStyle.h"
-#include "TGraphErrors.h"
-#include "TF1.h"
 #include "TH1.h"
-#include "TText.h"
-#include "TLatex.h"
-#include "TLine.h"
 #include "TAttLine.h"
 #include "TColor.h"
+#include "TText.h"
+#include "TLegend.h"
 
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
-#include "MathTools.hpp"
 #include "StrTools.hpp"
-#include "Box.hpp"
-
-#include "PBar.hpp"
+#include "MathTools.hpp"
 
 #include "TCanvasTools.hpp"
 
 #include "InputYAMLReader.hpp"
-
 
 int main(int argc, char **argv);
 
@@ -63,9 +56,9 @@ namespace EstimateSingleTrackEff
    /// name of a run (i.e. Run14HeAu200)
    std::string runName;
    /// pT range lower bound
-   const double pTMin;
+   double pTMin;
    /// pT range upper bound
-   const double pTMax;
+   double pTMax;
    /// file with processed MC \pi^{+} data
    TFile *inputDataFilePiPlus;
    /// file with processed MC K^{+} data
