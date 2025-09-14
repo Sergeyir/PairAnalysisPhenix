@@ -12,5 +12,3 @@ magnetic_field_configurations: # magnetic fields of a run
 - name: ''
 # shows what detectors are in use (if 1 the detector is used, otherwise it is not used). Index in the line go for the detectors in the following order: DC, PC1, PC2, PC3, TOFe, TOFw, EMCal
 detectors_configuration: '1101111' # only PC2 is not used
-# maximum pT for matching cut since on high pT sdphi and sdz are unreliable
-matching_cut_max_pt: 3.

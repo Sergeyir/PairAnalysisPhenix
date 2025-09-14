@@ -92,6 +92,8 @@ namespace AnalyzeResonance
       std::shared_ptr<TH1D> distrOrigPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
+      /// distribution of original resonance pT vs pT of all particles in events (decay products and secondary particles)
+      std::shared_ptr<TH2F> distrOrigPTVsDecayRecPT;
       /// DCPC1NoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvDCPC1NoPID;
       /// invariant mass distribution with the cut opposite to one arm cut
@@ -108,8 +110,18 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrMInvTOFwNoPID;
       /// EMCalNoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvEMCalNoPID;
+      /// DCPC11PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvDCPC11PID;
+      /// 1TOFDCPC11PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1TOFDCPC11PID;
+      /// 1EMCalDCPC11PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1EMCalDCPC11PID;
       /// 1PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1PID;
+      /// 1TOF1PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1TOF1PID;
+      /// 1EMCal1PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1EMCal1PID;
       /// 2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv2PID;
       /// TOF2PID invariant mass distribution
@@ -120,6 +132,8 @@ namespace AnalyzeResonance
       std::shared_ptr<TH2F> distrMInvTOFw2PID;
       /// EMCal2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvEMCal2PID;
+      /// 1TOF1EMCal2PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1TOF1EMCal2PID;
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrPAsymVsPT;
       /// phi1 - phi2 vs pT vs Minv for pairs of tracks
@@ -162,13 +176,17 @@ namespace AnalyzeResonance
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
                             100, 0., 10., 100, 0., 10.};
+      /// distribution of original resonance pT vs pT of all particles in events (decay products and secondary particles)
+      ROOT::TThreadedObject<TH2F> 
+         distrOrigPTVsDecayRecPT{"orig pT vs decay rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
+                                 100, 0., 10., 100, 0., 10.};
       /// DCPC1NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvDCPC1NoPID{"M_inv: DCPC1NoPID", "M_{inv} vs p_{T}", 
                                                       200, 0., 20., 1000, 0., 5.};
       /// invariant mass distribution with the cut opposite to one arm cut
-      ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: NoPID, one arm anti cut", 
-                                                              "M_{inv} vs p_{T}", 
-                                                              200, 0., 20., 1000, 0., 5.};
+      ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: DCPC1NoPID, one arm anti cut", 
+                                                         "M_{inv} vs p_{T}", 
+                                                         200, 0., 20., 1000, 0., 5.};
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
                                                  200, 0., 20., 1000, 0., 5.};
@@ -187,9 +205,25 @@ namespace AnalyzeResonance
       /// EMCalNoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvEMCalNoPID{"M_inv: EMCalNoPID", "M_{inv} vs p_{T}", 
                                                       200, 0., 20., 1000, 0., 5.};
+      /// DCPC11PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvDCPC11PID{"M_inv: DCPC11PID", "M_{inv} vs p_{T}", 
+                                                     200, 0., 20., 1000, 0., 5.};
+      /// 1TOFDCPC11PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1TOFDCPC11PID{"M_inv: 1TOFDCPC11PID", "M_{inv} vs p_{T}", 
+                                                         200, 0., 20., 1000, 0., 5.};
+      /// 1EMCalDCPC11PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1EMCalDCPC11PID{"M_inv: 1EMCalDCPC11PID", 
+                                                           "M_{inv} vs p_{T}", 
+                                                           200, 0., 20., 1000, 0., 5.};
       /// 1PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1PID{"M_inv: 1PID", "M_{inv} vs p_{T}", 
                                                 200, 0., 20., 1000, 0., 5.};
+      /// 1TOF1PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1TOF1PID{"M_inv: 1TOF1PID", "M_{inv} vs p_{T}", 
+                                                    200, 0., 20., 1000, 0., 5.};
+      /// 1EMCal1PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1EMCal1PID{"M_inv: 1EMCal1PID", "M_{inv} vs p_{T}", 
+                                                      200, 0., 20., 1000, 0., 5.};
       /// 2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv2PID{"M_inv: 2PID", "M_{inv} vs p_{T}", 
                                                 200, 0., 20., 1000, 0., 5.};
@@ -205,6 +239,10 @@ namespace AnalyzeResonance
       /// EMCal2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvEMCal2PID{"M_inv: EMCal2PID", "M_{inv} vs p_{T}", 
                                                      200, 0., 20., 1000, 0., 5.};
+      /// 1TOF1EMCal2PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1TOF1EMCal2PID{"M_inv: 1TOF1EMCal2PID", 
+                                                          "M_{inv} vs p_{T}", 
+                                                          200, 0., 20., 1000, 0., 5.};
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       ROOT::TThreadedObject<TH3F> 
          distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T} vs M_{inv}", 
