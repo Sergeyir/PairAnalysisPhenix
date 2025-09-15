@@ -154,6 +154,11 @@ void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& det
    legend.SetFillColorAlpha(0, 0.);
    legend.SetNColumns(3);
 
+   TLine line(pTMin, 1., pTMax, 1.);
+   line.SetLineWidth(4);
+   line.SetLineStyle(2);
+   line.SetLineColorAlpha(kBlack, 0.5);
+
    TCanvas canv(detectorName.c_str(), "", 800, 800);
 
    gPad->SetLogy();
@@ -176,6 +181,8 @@ void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& det
 
    ROOTTools::DrawFrame(pTMin, yMin, pTMax, 2., "", "p_{T} [GeV/c]", "#varepsilon_{" + 
                         static_cast<std::string>((isIdentification) ? "id" : "reg") + "}");
+
+   line.Draw();
 
    distrRecPTPiPlus->Draw("SAME");
    distrRecPTKPlus->Draw("SAME");

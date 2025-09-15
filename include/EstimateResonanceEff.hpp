@@ -1,13 +1,13 @@
 /** 
- *  @file   EstimateGaussianBroadening.hpp 
- *  @brief  Contains declarations of functions and variables that are used for estimation gaussian broadening parameter sigma used as a parameter in gaus which is convoluted with breit-wigner
+ *  @file   EstimateResonanceEff.hpp 
+ *  @brief  Contains declarations of functions and variables that are used for resonance
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ESTIMATE_GAUSSIAN_BROADENING_HPP
-#define ESTIMATE_GAUSSIAN_BROADENING_HPP
+#ifndef GAUSSIAN_BROADENING_HPP
+#define GAUSSIAN_BROADENING_HPP
 
 #include <thread>
 
@@ -33,10 +33,10 @@
 
 #include "InputYAMLReader.hpp"
 
-/*! @namespace EstimateGaussianBroadening
- * @brief Contains all functions and variables for EstimateGaussianBroadening.cpp
+/*! @namespace EstimateResonanceEff
+ * @brief Contains all functions and variables for EstimateResonanceEff.cpp
  */
-namespace EstimateGaussianBroadening
+namespace EstimateResonanceEff
 {
    /*! Performs approximation for the invariant mass distribution for the given pT range
     *
@@ -60,8 +60,8 @@ namespace EstimateGaussianBroadening
    std::string nameResonance;
    /// mass of the resonance [GeV/c^2]
    double massResonance;
-   /// Graph containing widths of gausses of resonance signals [GeV/c^2]
-   TGraphErrors grSigmas;
+   /// Graph containing widths of Breit-Wigner approximations of resonance signals [GeV/c^2]
+   TGraphErrors grGammas;
    /// histogram with counts vs invariant mass vs pT distribution
    TH2F *distr2DInvM;
    /// Number of consequent fits of dphi and dz distributions for better approximation results
@@ -69,10 +69,8 @@ namespace EstimateGaussianBroadening
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
    const unsigned int fitNTries = 5;
-   /// formula that is uded in TF1 constructor for approximation of sigmas
-   const std::string fitSigmasFormula = "pol1";
 };
 
 int main(int argc, char **argv);
 
-#endif /* ESTIMATE_ESTIMATE_GAUSSIAN_BROADENING_HPP */
+#endif /* ESTIMATE_GAUSSIAN_BROADENING_HPP */

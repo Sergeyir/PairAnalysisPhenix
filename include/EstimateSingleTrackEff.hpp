@@ -18,6 +18,7 @@
 #include "TFile.h"
 #include "TStyle.h"
 #include "TH1.h"
+#include "TLine.h"
 #include "TAttLine.h"
 #include "TColor.h"
 #include "TText.h"

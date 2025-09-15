@@ -6,8 +6,8 @@
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef GAUSSIAN_BROADENING_CPP
-#define GAUSSIAN_BROADENING_CPP
+#ifndef ESTIMATE_GAUSSIAN_BROADENING_CPP
+#define ESTIMATE_GAUSSIAN_BROADENING_CPP
 
 #include "EstimateGaussianBroadening.hpp"
 
@@ -130,7 +130,7 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    fit.SetParameters(maxBinVal, massResonance, 5e-3, maxBinVal/20., massResonance, 0.2);
 
    fit.SetParLimits(0, maxBinVal/3., maxBinVal);
-   fit.SetParLimits(1, massResonance - 1e-2, massResonance + 1e-2);
+   fit.SetParLimits(1, massResonance/1.02, massResonance*1.02);
    fit.SetParLimits(2, 1e-3, 2e-2);
    fit.SetParLimits(3, 0., maxBinVal/5.);
    fit.SetParLimits(4, 0., massResonance*10.);
@@ -212,4 +212,4 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    grSigmas.SetPointError(grSigmas.GetN() - 1, 0., 0.0001);
 }
 
-#endif /* ESTIMATE_GAUSSIAN_BROADENING_CPP */
+#endif /* ESTIMATE_ESTIMATE_GAUSSIAN_BROADENING_CPP */
