@@ -1,6 +1,6 @@
 /** 
  *  @file   EstimateResonanceEff.hpp 
- *  @brief  Contains declarations of functions and variables that are used for resonance
+ *  @brief  Contains declarations of functions and variables that are used for estimation of resonance reconstruction efficiency with the use of the data from MC
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
@@ -38,12 +38,11 @@
  */
 namespace EstimateResonanceEff
 {
-   /*! Performs approximation for the invariant mass distribution for the given pT range
+   /*! Performs approximations of invariant mass distributions for all pT ranges for the given method
     *
-    * @param[in] pTMin minimum bin of a pT range
-    * @param[in] pTMax maximum bin of a pT range
+    * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
-   void PerformInvMassFit(const int pTBinMin, const int pTBinMax);
+   void PerformInvMassFits(const std::string& methodName);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
@@ -62,8 +61,8 @@ namespace EstimateResonanceEff
    double massResonance;
    /// Graph containing widths of Breit-Wigner approximations of resonance signals [GeV/c^2]
    TGraphErrors grGammas;
-   /// histogram with counts vs invariant mass vs pT distribution
-   TH2F *distr2DInvM;
+   /// Progress bar that shows progress in terminal
+   ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
