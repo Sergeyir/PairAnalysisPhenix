@@ -63,6 +63,10 @@ namespace EstimateResonanceEff
    TGraphErrors grGammas;
    /// Progress bar that shows progress in terminal
    ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
+   /// Number of calls in an iteration. Needed by pBar
+   unsigned long numberOfCalls = 0;
+   /// Overal number of iterations. Needed by pBar
+   unsigned long numberOfIterations = 0;
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in

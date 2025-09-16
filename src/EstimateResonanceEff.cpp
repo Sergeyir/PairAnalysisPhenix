@@ -55,14 +55,26 @@ int main(int argc, char **argv)
    const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>()/1.1;
    const double pTMax = inputYAMLResonance["pt_bins"][pTNBins]["max"].as<double>()*1.1;
 
-   for (int i = distr2DInvM->GetXaxis()->FindBin(pTMin); 
-        i < distr2DInvM->GetXaxis()->FindBin(pTMax); i += 2)
-   {
-      pBar.Print(static_cast<double>(i)/
-                 static_cast<double>(distr2DInvM->GetXaxis()->FindBin(pTMax) - 
-                                     distr2DInvM->GetXaxis()->FindBin(pTMin)));
-      PerformInvMassFit(i, i + 1);
-   }
+   // 17 different pairs selections methods
+   numberOfIterations = pTNBins*17;
+
+   PerformInvMassFits("DCPC1NoPID");
+   PerformInvMassFits("NoPID");
+   PerformInvMassFits("PC2NoPID");
+   PerformInvMassFits("PC3NoPID");
+   PerformInvMassFits("TOFeNoPID");
+   PerformInvMassFits("TOFwNoPID");
+   PerformInvMassFits("EMCalNoPID");
+   PerformInvMassFits("DCPC11PID");
+   PerformInvMassFits("1TOFDCPC11PID");
+   PerformInvMassFits("1EMCalDCPC11PID");
+   PerformInvMassFits("1PID");
+   PerformInvMassFits("TOF1PID");
+   PerformInvMassFits("EMCal1PID");
+   PerformInvMassFits("2PID");
+   PerformInvMassFits("TOF2PID");
+   PerformInvMassFits("EMCal2PID");
+   PerformInvMassFits("1TOF1EMCal2PID");
 
    pBar.Finish();
 

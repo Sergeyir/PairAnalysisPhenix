@@ -32,6 +32,8 @@ class SimSigmalizedResiduals
     *
     * If the detector calibration is not utilized approximate value of sigmalized residuals will be returned when called the corresponding method (mean = 0 for both dphi and dz, sigma=0.002 for dphi and sigma=2 for dz)
     *
+    * Info: DC and PC1 are not used for calibrations so 1st 2 options do not contribute to SimSigmalizedResiduals. These options were left here to avoid cutting full option string in parts for different classes
+    *
     * Detectors in options go in the following order:
     *  -# DC
     *  -# PC1
@@ -59,6 +61,8 @@ class SimSigmalizedResiduals
     *  -# TOFe
     *  -# TOFw
     *  -# EMCal
+    *
+    * Info: DC and PC1 are not used for calibrations so 1st 2 options do not contribute to SimSigmalizedResiduals. These options were left here to avoid cutting full option string in parts for different classes
     *
     * Options example: "1101111" - this one uses all detectors apart from PC2
     */
@@ -90,14 +94,12 @@ class SimSigmalizedResiduals
    inline double GetDValMean(double pT, const double *par);
    /// @brief Returns sigma of track deviation (sdphi or sdz)
    inline double GetDValSigma(double pT, const double *par);
-   /// read 2D arrays from the file into class attributes
-   void SetParameters(const std::string& inputFileName, 
+   /// Read 2D arrays from the file into class attributes. Returns true if parameters were set succesfully
+   bool SetParameters(const std::string& detectorName, 
                       std::array<std::vector<double>, 4>& parMeans,
                       std::array<std::vector<double>, 4>& parSigmas);
-   /// shows whether option for DC was specified
-   bool doCalDC;
-   /// shows whether option for PC1 was specified
-   bool doCalPC1;
+   /// name of the run
+   std::string runName;
    /// shows whether option for PC2 was specified
    bool doCalPC2;
    /// shows whether option for PC3 was specified

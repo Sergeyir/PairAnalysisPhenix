@@ -11,12 +11,9 @@ daughter2_id: -321
 has_antiparticle: true
 branching_ratio: 0.66601
 branching_ratio_uncertainty: 0.00009
+use_emcal_id: true
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
-sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
-- name: lpt
-- name: mpt
-- name: hpt
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 1.00, min: 0.9, max: 1.1}
   - {value: 1.25, min: 1.1, max: 1.4}
@@ -28,6 +25,23 @@ pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 3.95, min: 3.4, max: 4.5}
   - {value: 5.50, min: 4.5, max: 6.5}
   - {value: 7.50, min: 6.5, max: 8.5}
+sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
+- name: lpt
+- name: mpt
+- name: hpt
+pair_selection_methods:
+- 
+  name: NoPID
+- 
+  name: 1PID
+- 
+  name: TOF1PID
+- 
+  name: 2PID
+- 
+  name: TOF2PID
+- 
+  name: EMCal2PID
 centrality_bins:
 - 
   name: "0-20"

@@ -28,93 +28,81 @@ void SimSigmalizedResiduals::Initialize(const std::string& runName, const std::s
                            std::to_string(options.size()) + " while 7 has been expected");
    }
 
-   if (options[0] == '1') doCalDC = true;
-   else 
-   {
-      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for DC were "\
-                          "specified to not be initialized");
-      doCalDC = false;
-   }
-
-   if (options[1] == '1') doCalPC1 = true;
-   else 
-   {
-      CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC1 were "\
-                          "specified to not be initialized");
-      doCalPC1 = false;
-   }
+   this->runName = runName;
 
    if (options[2] == '1')
    {
-      doCalPC2 = true;
-      SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC2.txt", 
-                    parMeansPC2, parSigmasPC2);
+      doCalPC2 = SetParameters("PC2", parMeansPC2, parSigmasPC2);
    }
    else 
    {
       CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC2 were "\
-                          "specified to not be initialized");
+                          "specified to not be initialized; setting rough "\
+                          "estimation of sdphi and sdz for the PC2: "\
+                          "sdz = dz/2., sdphi = dphi/0.002");
       doCalPC2 = false;
    }
 
    if (options[3] == '1')
    {
-      doCalPC3 = true;
-      SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC3e.txt", 
-                    parMeansPC3e, parSigmasPC3e);
-      SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/PC3w.txt", 
-                    parMeansPC3w, parSigmasPC3w);
+      doCalPC3 = (SetParameters("PC3e", parMeansPC3e, parSigmasPC3e) &&
+                  SetParameters("PC3w", parMeansPC3w, parSigmasPC3w));
    }
    else 
    {
       CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for PC3 were "\
-                          "specified to not be initialized");
+                          "specified to not be initialized; setting rough "\
+                          "estimation of sdphi and sdz for the PC3: "\
+                          "sdz = dz/2., sdphi = dphi/0.002");
       doCalPC3 = false;
    }
 
    if (options[4] == '1')
    {
-      doCalTOFe = true;
-      SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/TOFe.txt", 
-                    parMeansTOFe, parSigmasTOFe);
+      doCalTOFe = SetParameters("TOFe", parMeansTOFe, parSigmasTOFe);
    }
    else 
    {
       CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for TOFe were "\
-                          "specified to not be initialized");
+                          "specified to not be initialized; setting rough "\
+                          "estimation of sdphi and sdz for the TOFe: "\
+                          "sdz = dz/2., sdphi = dphi/0.002");
       doCalTOFe = false;
    }
 
    if (options[5] == '1')
    {
-      doCalTOFw = true;
-      SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + "/TOFw.txt", 
-                    parMeansTOFw, parSigmasTOFw);
+      doCalTOFw = SetParameters("TOFw", parMeansTOFw, parSigmasTOFw);
    }
    else 
    {
       CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for TOFw were "\
-                          "specified to not be initialized");
+                          "specified to not be initialized; setting rough "\
+                          "estimation of sdphi and sdz for the TOFw: "\
+                          "sdz = dz/2., sdphi = dphi/0.002");
       doCalTOFw = false;
    }
 
    if (options[6] == '1')
    {
       doCalEMCal = true;
-      for (int i = 0; i < 4; i++)
+      for (int i = 0; i < 4 && doCalEMCal; i++)
       {
-         SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + 
-                       "/EMCale" + std::to_string(i) + ".txt", 
-                       parMeansEMCale[i], parSigmasEMCale[i]);
-         SetParameters("data/Parameters/SigmalizedResidualsSim/" + runName + 
-                       "/EMCalw" + std::to_string(i) + ".txt", 
-                       parMeansEMCalw[i], parSigmasEMCalw[i]);
+         doCalEMCal = (doCalEMCal && SetParameters("EMCale" + std::to_string(i), 
+                                                   parMeansEMCale[i], parSigmasEMCale[i]));
+      }
+      for (int i = 0; i < 4 && doCalEMCal; i++)
+      {
+         doCalEMCal = (doCalEMCal && SetParameters("EMCalw" + std::to_string(i), 
+                                                   parMeansEMCalw[i], parSigmasEMCalw[i]));
       }
    }
    else 
    {
       CppTools::PrintInfo("SimSigmalizedResiduals: calibrations for EMCal were "\
-                          "specified to not be initialized");
+                          "specified to not be initialized; setting rough "\
+                          "estimation of sdphi and sdz for the EMCal: "\
+                          "sdz = dz/2., sdphi = dphi/0.002");
       doCalEMCal = false;
    }
 }
@@ -395,11 +383,21 @@ double SimSigmalizedResiduals::GetDValSigma(double pT, const double *par)
    return par[0] + par[1]/pT + par[2]*pT;
 }
 
-void SimSigmalizedResiduals::SetParameters(const std::string& inputFileName, 
+bool SimSigmalizedResiduals::SetParameters(const std::string& detectorName, 
                                            std::array<std::vector<double>, 4>& parMeans,
                                            std::array<std::vector<double>, 4>& parSigmas)
 {
-   CppTools::CheckInputFile(inputFileName);
+   const std::string inputFileName = "data/Parameters/SigmalizedResidualsSim/" + 
+                                     runName + "/" + detectorName + ".txt";
+
+   if (!CppTools::FileExists(inputFileName))
+   {
+      CppTools::PrintWarning("SimSigmalizedResiduals: File " + inputFileName + 
+                             " does not exists; setting rough estimation of "\
+                             "sdphi and sdz for the " + detectorName + ": "\
+                             "sdz = dz/2., sdphi = dphi/0.002");
+      return false;
+   }
    std::ifstream inputFile(inputFileName);
 
    bool isUsed;
@@ -467,6 +465,8 @@ void SimSigmalizedResiduals::SetParameters(const std::string& inputFileName,
    {
       CppTools::PrintError("SimSigmalizedResiduals: Unexpected end of file: " + inputFileName);
    }
+
+   return true;
 }
 
 #endif /* SIM_SIGMALIZED_RESIDUALS_CPP */

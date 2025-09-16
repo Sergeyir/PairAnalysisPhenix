@@ -40,7 +40,7 @@ class DeadMapCutter
     *
     * Options example: "1101111" - this one uses all detectors apart from PC2
     */
-   DeadMapCutter(const std::string& runName, const std::string& options = "1111111");
+   DeadMapCutter(const std::string& detectorName, const std::string& options = "1111111");
    /*! @brief Initializes the object DeadMapCutter
     *
     * @param[in] runName name of the run
@@ -81,23 +81,31 @@ class DeadMapCutter
    bool IsDeadTimingEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
 
    private:
-   /// read 2D arrays from the file into class attributes
-   void SetDeadAreas(const std::string& inputFileName, std::vector<std::vector<bool>>& cutAreas,
+   /// Read 2D arrays from the file into class attributes. Returns true if dead areas were set succesfully
+   bool SetDeadAreas(const std::string& inputFileName, std::vector<std::vector<bool>>& cutAreas,
                      double *ranges);
+   /// name of the run
+   std::string runName;
    /// shows whether option for DC was specified
-   bool useDC;
+   bool useDC = false;
    /// shows whether option for PC1 was specified
-   bool usePC1;
+   bool usePC1 = false;
    /// shows whether option for PC2 was specified
-   bool usePC2;
+   bool usePC2 = false;
    /// shows whether option for PC3 was specified
-   bool usePC3;
+   bool usePC3 = false;
    /// shows whether option for TOFe was specified
-   bool useTOFe;
+   bool useTOFe = false;
    /// shows whether option for TOFw was specified
-   bool useTOFw;
+   bool useTOFw = false;
    /// shows whether option for EMCal was specified
-   bool useEMCal;
+   bool useEMCal = false;
+   /// shows whether option for TOFe timing was specified
+   bool useTOFeTiming = false;
+   /// shows whether option for TOFw timing was specified
+   bool useTOFwTiming = false;
+   /// shows whether option for EMCal timing was specified
+   bool useEMCalTiming = false;
    /// cut areas for DCeX1, zDC>=0
    std::vector<std::vector<bool>> cutAreasDCe0X1;
    /// cut areas for DCeX1, zDC<0

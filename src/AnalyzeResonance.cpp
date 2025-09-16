@@ -173,7 +173,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             double weightIdTOFe = 0.;
             double weightIdTOFw = 0.;
 
-            if (IsHit(simCNT.pc2dphi(i)))
+            if (usePC2 && IsHit(simCNT.pc2dphi(i)))
             {
                const double sdphi = simSigmRes.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
                const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
@@ -186,7 +186,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            if (IsHit(simCNT.pc3dphi(i)))
+            if (usePC3 && IsHit(simCNT.pc3dphi(i)))
             {
                const double sdphi = simSigmRes.PC3SDPhi(simCNT.pc3dphi(i), pT, charge, dcarm);
                const double sdz = simSigmRes.PC3SDZ(simCNT.pc3dz(i), pT, charge, dcarm);
@@ -201,7 +201,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            if (IsHit(simCNT.emcdz(i)))
+            if (useEMCal && IsHit(simCNT.emcdz(i)))
             {
                const double sdphi = 
                   simSigmRes.EMCalSDPhi(simCNT.emcdphi(i), pT, charge, dcarm, simCNT.sect(i));
@@ -216,7 +216,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                    !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
                {
                   weightEMCal = 1.;
-                  if (!(dcarm == 0 && simCNT.sect(i) < 2) &&
+                  if (useEMCalId && !(dcarm == 0 && simCNT.sect(i) < 2) &&
                       !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
                                                   simCNT.ysect(i), simCNT.zsect(i)))
                   {
@@ -241,7 +241,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            if (IsHit(simCNT.tofdz(i)))
+            if (useTOFe && IsHit(simCNT.tofdz(i)))
             {
                const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
                const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
@@ -280,7 +280,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   else idTOFe = PART_ID::NONE;
                }
             }
-            else if (IsHit(simCNT.tofwdz(i)))
+            else if (useTOFw && IsHit(simCNT.tofwdz(i)))
             {
                const double sdphi = simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
                const double sdz = simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
@@ -646,7 +646,16 @@ int main(int argc, char **argv)
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
-   simM2Id.Initialize(runName, true);
+
+   usePC2 = (inputYAMLMain["detectors_configuration"].as<std::string>()[2] == '1');
+   usePC3 = (inputYAMLMain["detectors_configuration"].as<std::string>()[3] == '1');
+   useTOFe = (inputYAMLMain["detectors_configuration"].as<std::string>()[4] == '1');
+   useTOFw = (inputYAMLMain["detectors_configuration"].as<std::string>()[5] == '1');
+   useEMCal = (inputYAMLMain["detectors_configuration"].as<std::string>()[6] == '1');
+
+   useEMCalId = inputYAMLResonance["use_emcal_id"].as<bool>();
+
+   simM2Id.Initialize(runName, useEMCalId);
 
    if (CppTools::FileExists("data/Parameters/SpectraFit/" + collisionSystemName + 
                             "/" + inputYAMLResonance["name"].as<std::string>() + ".yaml"))

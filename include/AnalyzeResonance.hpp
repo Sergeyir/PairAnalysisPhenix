@@ -78,6 +78,18 @@ namespace AnalyzeResonance
    SimSigmalizedResiduals simSigmRes;
    /// identificator for m2 hadron identification procedure in MC
    SimM2Identificator simM2Id;
+   /// shows whether PC2 is used
+   bool usePC2;
+   /// shows whether PC3 is used
+   bool usePC3;
+   /// shows whether TOFe is used
+   bool useTOFe;
+   /// shows whether TOFw is used
+   bool useTOFw;
+   /// shows whether EMCal is used
+   bool useEMCal;
+   /// shows whether identification with EMCal is used
+   bool useEMCalId;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 
