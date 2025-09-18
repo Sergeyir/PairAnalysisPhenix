@@ -4,7 +4,6 @@ project(PairAnalysisPhenix)
 
 option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
-
 set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -pipe -O2")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
@@ -12,8 +11,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-
-set(CMAKE_BUILD_TYPE Debug)
 
 find_package(ROOT QUIET)
 
@@ -26,11 +23,12 @@ elseif(EXISTS "${ROOT_PATH}/bin/root")
    set(ROOT_root_CMD "${ROOT_PATH}/bin/root")
    execute_process(COMMAND ${ROOT_root_CMD}-config --glibs OUTPUT_VARIABLE ROOT_LIB_FLAGS)
    string(STRIP ${ROOT_LIB_FLAGS} ROOT_LIB_FLAGS)
-   set(CMAKE_SHARED_LINKER_FLAGS ${ROOT_LIB_FLAGS})
-   set(CMAKE_EXE_LINKER_FLAGS ${ROOT_LIB_FLAGS})
 else()
    message(FATAL_ERROR "ROOT not found: install it via package manager or set ROOT_PATH if you installed it manually")
 endif()
+
+set(CMAKE_SHARED_LINKER_FLAGS "-g ${ROOT_LIB_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "-g ${ROOT_LIB_FLAGS}")
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/CppTools/include ./ROOTTools/include ${CMAKE_SOURCE_DIR}/ProgressBar/include)
 
