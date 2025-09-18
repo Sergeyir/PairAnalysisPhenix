@@ -86,6 +86,8 @@ namespace EstimateSingleTrackEff
    TH1F *distrOrigPTKMinus;
    /// original pT distibution of \bar{p}
    TH1F *distrOrigPTPBar;
+   /// TText object template for quick text insertions
+   TText text;
 }
 
 #endif /* ESTIMATE_SINGLE_TRACK_EFF_HPP */

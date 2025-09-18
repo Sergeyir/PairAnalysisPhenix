@@ -32,6 +32,7 @@
 #include "PBar.hpp"
 
 #include "InputYAMLReader.hpp"
+#include "FitFunc.hpp"
 
 /*! @namespace EstimateResonanceEff
  * @brief Contains all functions and variables for EstimateResonanceEff.cpp
@@ -42,25 +43,38 @@ namespace EstimateResonanceEff
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
-   void PerformInvMassFits(const std::string& methodName);
+   void PerformInvMassFitsForMethod(const std::string& methodName);
+   /// Sets parameters for a function needed for estimating width of 
+   /// gaus for convolution of Gaus and Breit-Wigner
+   void SetGaussianBroadeningParameters();
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
    InputYAMLReader inputYAMLResonance;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
-   /// Output directory
-   std::string outputDir;
    /// File in which widths of gausses will be written
    std::ofstream parametersOutput;
    /// Input file
    TFile *inputFile;
+   /// overall number of generated particles vs pT
+   TH1F *distrOrigVsPT;
    /// name of the resonance
    std::string nameResonance;
    /// mass of the resonance [GeV/c^2]
    double massResonance;
-   /// Graph containing widths of Breit-Wigner approximations of resonance signals [GeV/c^2]
-   TGraphErrors grGammas;
+   /// gamma of the resonance [GeV/c^2]
+   double gammaResonance;
+   /// number of pT bins
+   unsigned int pTNBins;
+   /// pT bins ranges
+   std::vector<double> pTBinRanges;
+   /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
+   std::unique_ptr<TF1> gaussianBroadeningEstimatorFunc;
+   /// TText object template for quick text insertions
+   TText text;
+   /// TLatex object template for quick text insertions
+   TLatex texText;
    /// Progress bar that shows progress in terminal
    ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
    /// Number of calls in an iteration. Needed by pBar

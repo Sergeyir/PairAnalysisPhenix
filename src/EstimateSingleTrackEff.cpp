@@ -59,6 +59,9 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputDataFileNameKMinus);
    CppTools::CheckInputFile(inputDataFileNamePBar);
 
+   text.SetTextFont(43);
+   text.SetTextSize(60);
+
    inputDataFilePiPlus = TFile::Open(inputDataFileNamePiPlus.c_str());
    inputDataFileKPlus = TFile::Open(inputDataFileNameKPlus.c_str());
    inputDataFileP = TFile::Open(inputDataFileNameP.c_str());
@@ -144,10 +147,6 @@ void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& det
    distrRecPTPiMinus->SetLineWidth(5);
    distrRecPTKMinus->SetLineWidth(4);
    distrRecPTPBar->SetLineWidth(3);
-
-   TText text;
-   text.SetTextFont(43);
-   text.SetTextSize(60);
 
    TLegend legend(0.65, 0.15, 0.95, 0.3);
    legend.SetLineColorAlpha(0, 0.);

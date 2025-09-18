@@ -64,6 +64,10 @@ namespace EstimateGaussianBroadening
    TGraphErrors grSigmas;
    /// histogram with counts vs invariant mass vs pT distribution
    TH2F *distr2DInvM;
+   /// TText object template for quick text insertions
+   TText text;
+   /// TLatex object template for quick text insertions
+   TLatex texText;
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in

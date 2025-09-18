@@ -63,6 +63,7 @@ add_executable(M2IdentFit ${CMAKE_SOURCE_DIR}/src/M2IdentFit.cpp)
 
 add_executable(EstimateGaussianBroadening ${CMAKE_SOURCE_DIR}/src/EstimateGaussianBroadening.cpp)
 add_executable(EstimateSingleTrackEff ${CMAKE_SOURCE_DIR}/src/EstimateSingleTrackEff.cpp)
+add_executable(EstimateResonanceEff ${CMAKE_SOURCE_DIR}/src/EstimateResonanceEff.cpp)
 
 target_link_libraries(SingleTrackFunc SimTreeReader)
 target_link_libraries(PairTrackFunc SimTreeReader)
@@ -70,3 +71,4 @@ target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCu
 target_link_libraries(AnalyzeWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals)
 target_link_libraries(AnalyzeResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
 target_link_libraries(DeadMapSys DeadMapCutter)
+target_link_libraries(EstimateResonanceEff FitFunc)
