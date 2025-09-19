@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0...3.31.6 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.0...4.1.1 FATAL_ERROR)
 
 project(PairAnalysisPhenix)
 

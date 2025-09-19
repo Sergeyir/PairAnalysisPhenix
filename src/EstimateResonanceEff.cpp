@@ -324,4 +324,13 @@ void EstimateResonanceEff::SetGaussianBroadeningParameters()
    }
 }
 
+double EstimateResonanceEff::GetYield(TH1D *distrInvM, const TF1& funcBG, 
+                                      const double xMin, const double xMax)
+{
+   for (int i = distrInvM->GetXaxis()->FindBin(xMin); 
+        i <= distrInvM->GetXaxis()->FindBin(xMin); i++)
+   {
+   }
+}
+
 #endif /* ESTIMATE_ESTIMATE_RESONANCE_EFF_CPP */

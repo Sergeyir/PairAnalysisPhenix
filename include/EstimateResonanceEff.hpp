@@ -47,6 +47,14 @@ namespace EstimateResonanceEff
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningParameters();
+   /* Extracts the yield by integrating the distribution and subtracting the background in the specified range
+    *
+    * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
+    * @param[in] funcBG function that approximates the background
+    * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
+    * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
+    */
+   double GetYield(TH1D *distr, const TF1& funcBG, const double xMin, const double xMax);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
@@ -67,7 +75,7 @@ namespace EstimateResonanceEff
    double gammaResonance;
    /// number of pT bins
    unsigned int pTNBins;
-   /// pT bins ranges
+   /// pT bins ranges [GeV/c]
    std::vector<double> pTBinRanges;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
    std::unique_ptr<TF1> gaussianBroadeningEstimatorFunc;
