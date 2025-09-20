@@ -54,7 +54,8 @@ namespace EstimateResonanceEff
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     */
-   double GetYield(TH1D *distr, const TF1& funcBG, const double xMin, const double xMax);
+   double GetYield(TH1D *distr, const TF1& funcBG, 
+                   const double xMin, const double xMax, double &err);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
