@@ -53,6 +53,7 @@ namespace EstimateResonanceEff
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
+    * @param[in] err yield statistical uncertainty
     */
    double GetYield(TH1D *distr, const TF1& funcBG, 
                    const double xMin, const double xMax, double &err);
@@ -66,8 +67,10 @@ namespace EstimateResonanceEff
    std::ofstream parametersOutput;
    /// Input file
    TFile *inputFile;
-   /// overall number of generated particles vs pT
-   TH1F *distrOrigVsPT;
+   /// unscaled pT distribution of original generated particles
+   TH1F *distrOrigUnscaledPT;
+   /// pT distribution of original generated particles
+   TH1F *distrOrigPT;
    /// name of the resonance
    std::string nameResonance;
    /// mass of the resonance [GeV/c^2]

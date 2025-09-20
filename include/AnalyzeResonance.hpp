@@ -100,6 +100,8 @@ namespace AnalyzeResonance
     */
    struct ThrContainerCopy
    {
+      /// distribution of original unscaled generated pT
+      std::shared_ptr<TH1D> distrOrigUnscaledPT;
       /// distribution of original generated pT
       std::shared_ptr<TH1D> distrOrigPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
@@ -181,6 +183,9 @@ namespace AnalyzeResonance
       ThrContainerCopy GetCopy();
       /// @brief writes the merged histograms across all threads into the file with a specified name
       void Write(const std::string& outputFileName);
+      /// distribution of original generated unscaled pT
+      std::unique_ptr<ROOT::TThreadedObject<TH1D>> distrOrigUnscaledPT = 
+         std::make_unique<ROOT::TThreadedObject<TH1D>>("orig unscaled pT", "p_{T}", 100., 0., 10.);
       /// distribution of original generated pT
       std::unique_ptr<ROOT::TThreadedObject<TH1D>> distrOrigPT = 
          std::make_unique<ROOT::TThreadedObject<TH1D>>("orig pT", "p_{T}", 100., 0., 10.);

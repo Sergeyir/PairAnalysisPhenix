@@ -112,6 +112,7 @@ void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
  
          eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
+         histContainer.distrOrigUnscaledPT->Fill(origPT);
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
          const double bbcz = simCNT.bbcz();
@@ -805,6 +806,7 @@ ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
+   copy.distrOrigUnscaledPT = distrOrigUnscaledPT->Get();
    copy.distrOrigPT = distrOrigPT->Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
    copy.distrOrigPTVsDecayRecPT = distrOrigPTVsDecayRecPT.Get();
@@ -847,6 +849,7 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    outputFile.SetCompressionLevel(6);
    outputFile.cd();
 
+   static_cast<std::shared_ptr<TH1D>>(distrOrigUnscaledPT->Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrOrigPT->Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsDecayRecPT.Merge())->Write();

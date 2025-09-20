@@ -39,10 +39,6 @@ int main(int argc, char **argv)
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
-   const std::string inputFileNameGausBroadening = "data/Parameters/GaussianBroadening/" + 
-                                                   runName + "/" + resonanceName + "txt";
-   CppTools::FileExists(inputFile);
-
    nameResonance = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
    gammaResonance = inputYAMLResonance["gamma"].as<double>();
@@ -55,7 +51,8 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
 
-   distrOrigVsPT = static_cast<TH1F *>(inputFile->Get("orig pT"));
+   distrOrigUnscaledPT = static_cast<TH1F *>(inputFile->Get("orig unscaled pT"));
+   distrOrigPT = static_cast<TH1F *>(inputFile->Get("orig pT"));
 
    text.SetTextFont(43);
    text.SetTextSize(50);
@@ -68,29 +65,29 @@ int main(int argc, char **argv)
    {
       pTBinRanges.push_back(inputYAMLResonance["pt_bins"][i]["min"].as<double>());
    }
-   pTBinRanges.push_back(inputYAMLResonance["pt_bins"][i]["max"].as<double>());
+   pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
    // 17 different pairs selections methods
    numberOfIterations = pTNBins*17;
 
    // performing fits for each pair selection method
-   PerformInvMassFits("DCPC1NoPID");
-   PerformInvMassFits("NoPID");
-   PerformInvMassFits("PC2NoPID");
-   PerformInvMassFits("PC3NoPID");
-   PerformInvMassFits("TOFeNoPID");
-   PerformInvMassFits("TOFwNoPID");
-   PerformInvMassFits("EMCalNoPID");
-   PerformInvMassFits("DCPC11PID");
-   PerformInvMassFits("1TOFDCPC11PID");
-   PerformInvMassFits("1EMCalDCPC11PID");
-   PerformInvMassFits("1PID");
-   PerformInvMassFits("TOF1PID");
-   PerformInvMassFits("EMCal1PID");
-   PerformInvMassFits("2PID");
-   PerformInvMassFits("TOF2PID");
-   PerformInvMassFits("EMCal2PID");
-   PerformInvMassFits("1TOF1EMCal2PID");
+   PerformInvMassFitsForMethod("DCPC1NoPID");
+   PerformInvMassFitsForMethod("NoPID");
+   PerformInvMassFitsForMethod("PC2NoPID");
+   PerformInvMassFitsForMethod("PC3NoPID");
+   PerformInvMassFitsForMethod("TOFeNoPID");
+   PerformInvMassFitsForMethod("TOFwNoPID");
+   PerformInvMassFitsForMethod("EMCalNoPID");
+   PerformInvMassFitsForMethod("DCPC11PID");
+   PerformInvMassFitsForMethod("1TOFDCPC11PID");
+   PerformInvMassFitsForMethod("1EMCalDCPC11PID");
+   PerformInvMassFitsForMethod("1PID");
+   PerformInvMassFitsForMethod("TOF1PID");
+   PerformInvMassFitsForMethod("EMCal1PID");
+   PerformInvMassFitsForMethod("2PID");
+   PerformInvMassFitsForMethod("TOF2PID");
+   PerformInvMassFitsForMethod("EMCal2PID");
+   PerformInvMassFitsForMethod("1TOF1EMCal2PID");
 
    pBar.Finish();
 
@@ -142,7 +139,7 @@ int main(int argc, char **argv)
 
 void EstimateResonanceEff::PerformInvMassFitsForMethod(const std::string& methodName)
 {
-   TH2F *distrInvM distrInvM = static_cast<TH2F *>(inputFile->Get(("M_inv:" + methodName).c_str()));
+   TH2F *distr2DInvM = static_cast<TH2F *>(inputFile->Get(("M_inv:" + methodName).c_str()));
 
    const std::string outputDir = "output/ResonanceEff/" + runName + "/" + methodName;
    system(("mkdir -p " + outputDir).c_str());
@@ -151,47 +148,61 @@ void EstimateResonanceEff::PerformInvMassFitsForMethod(const std::string& method
    TH1D distrSigmasVsPT("sigmas vs pT", "", pTNBins, &pTBinRanges[0]);
    TH1D distrRecEffVsPT("reconstruction efficiency vs pT", "", pTNBins, &pTBinRanges[0]);
 
-   for (for unsigned int i = 0; i < pTNBins; i++)
+   for (unsigned int i = 0; i < pTNBins; i++)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
       TH1D *distrInvM = distr2DInvM->
-         ProjectionY("proj", distr2DInvM->GetXaixs()->FindBin(pTBinRanges[i] + 1e-6),
-                     distr2DInvM->GetXaixs()->FindBin(pTBinRanges[i + 1] - 1e-6));
+         ProjectionY("proj", distr2DInvM->GetXaxis()->FindBin(pTBinRanges[i] + 1e-6),
+                     distr2DInvM->GetXaxis()->FindBin(pTBinRanges[i + 1] - 1e-6));
 
       // sigma of a gaus that is convoluted with Breit-Wigner
-      const double gaussBroadeningSigma = gaussianBroadeningEstimatorFunc.Eval();
+      const double gaussianBroadeningSigma = 
+         gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
       // number of generated resonance particles in the current pT bin
+      // statistical uncertainty of this value is insignificant and therefore can be ignored
       const double numberOfGenerated = 
-         distrOrig->Integral(distrOrig->GetXaxis()->FindBin(pTBinRanges[i] + 1e-6), 
-                             distrOrig->GetXaxis()->FindBin(pTBinRanges[i] - 1e-6));
+         distrOrigPT->Integral(distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i] + 1e-6), 
+                               distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i + 1] - 1e-6));
+      // relative uncertanty of the number of generated particles in the current pT bin
+      const double numberOfGeneratedRelativeErr = 
+         1./sqrt(distrOrigUnscaledPT->
+                 Integral(distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i] + 1e-6), 
+                          distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i + 1] - 1e-6)));
 
       // for low entries inputs background is ignored since the value 
       // of the statistical uncertainty is significantly larger
-      if (distrInvM->GetEntries() < 200) 
+      if (distrInvM->GetEntries() < 200.) 
       {
-         const double reconstructedYield = distrInvMProj->
+         const double reconstructedYield = distrInvM->
             Integral(distrInvM->GetXaxis()->FindBin(massResonance - gammaResonance*3. - 
-                                                    gaussBroadeningSigma*3.),
+                                                    gaussianBroadeningSigma*3.),
                      distrInvM->GetXaxis()->FindBin(massResonance + gammaResonance*3. +
-                                                    gaussBroadeningSigma*3.));
-         // reconstruction efficiency and its statistical uncertainty (i.e. error)
+                                                    gaussianBroadeningSigma*3.));
+         // reconstruction efficiency
          const double recEff = reconstructedYield/numberOfGenerated;
-         const double recEffErr = CppTools::UncertaintyProp(1./sqrt(reconstructedYield), 
-                                                            1./sqrt(numberOfGenerated))*recEff;
-         distrRecEffVsPT->SetBinContent(i, recEff);
-         distrRecEffVsPT->SetBinError(i, recEffErr);
+         // reconstructed yield relative statistical uncertainty
+         // due to the spectra scaling statistical uncertainty is not tied to the integral 
+         // but rather to the number of entries of the signal
+         double recYieldRelativeErr = 
+            1./sqrt(distrInvM->GetEntries()*reconstructedYield/
+                    distrInvM->Integral(1, distrInvM->GetXaxis()->GetNbins()));
+         const double recEffErr = CppTools::UncertaintyProp(numberOfGeneratedRelativeErr, 
+                                                            recYieldRelativeErr)*recEff;
+
+         distrRecEffVsPT.SetBinContent(i, recEff);
+         distrRecEffVsPT.SetBinError(i, recEffErr);
       }
 
       // fit for resonance+bg approximation
-      TF1 fit("resonance + bg fit", &RBWConvGausBGGaus, 
+      TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGGaus, 
               massResonance - gammaResonance*3., massResonance + gammaResonance*3., 7);
       // fit for resonance approximation
-      TF1 fitResonance("resonance fit", &RBWConvGaus, massResonance - gammaResonance*3., 
+      TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
                        massResonance + gammaResonance*3., 7);
       // fit for bg approximation
-      TF1 fitBG("bg fit", &Gaus, massResonance - gammaResonance*3., 
+      TF1 fitBG("bg fit", &FitFunc::Gaus, massResonance - gammaResonance*3., 
                 massResonance + gammaResonance*3., 7);
 
       const double maxBinVal = distrInvM->GetBinContent(distrInvM->GetMaximumBin());
@@ -280,7 +291,8 @@ void EstimateResonanceEff::PerformInvMassFitsForMethod(const std::string& method
       fit.Draw("SAME");
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + nameResonance + "_" + 
-                             CppTools::DtoStr(pTMin, 1) + "-" + CppTools::DtoStr(pTMax, 1));
+                             CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                             CppTools::DtoStr(pTBinRanges[i + 1], 1));
 
       /*
       grSigmas.AddPoint(CppTools::Average(pTMin, pTMax), fit.GetParameter(2));
@@ -297,7 +309,7 @@ void EstimateResonanceEff::SetGaussianBroadeningParameters()
 
    if (!CppTools::FileExists(inputFileName))
    {
-      CppTools::PrintError(inputFileName " + does not exists. "\
+      CppTools::PrintError(inputFileName + " + does not exists. "\
                            "Run executable bin/EstimateGassianBroadening first");
    }
 
@@ -311,7 +323,7 @@ void EstimateResonanceEff::SetGaussianBroadeningParameters()
       CppTools::PrintError("Unexpected end of file " + inputFileName);
    }
 
-   gaussianBroadeningEstimationFunc = std::make_unique<TF1>("sigma estimator", function.c_str());
+   gaussianBroadeningEstimatorFunc = std::make_unique<TF1>("sigma estimator", function.c_str());
 
    for (int i = 0; i < numberOfParameters; i++)
    {
@@ -327,12 +339,31 @@ void EstimateResonanceEff::SetGaussianBroadeningParameters()
 double EstimateResonanceEff::GetYield(TH1D *distrInvM, const TF1& funcBG, 
                                       const double xMin, const double xMax, double &err)
 {
-   double yield;
+   // integral over the signal
+   double integral = 0.;
+   // integral over the background
+   double integralBG = 0.;
+
    for (int i = distrInvM->GetXaxis()->FindBin(xMin); 
         i <= distrInvM->GetXaxis()->FindBin(xMin); i++)
    {
-      
+      integral += distrInvM->GetBinContent(i);
+
+      // integrating background over the single bin for better estimation
+      for (double m = distrInvM->GetXaxis()->GetBinLowEdge(i); 
+           m <= distrInvM->GetXaxis()->GetBinUpEdge(i); 
+           m += distrInvM->GetXaxis()->GetBinWidth(i)/100.)
+      {
+         integralBG += funcBG.Eval(m);
+      }
    }
+   // due to the spectra scaling statistical uncertainty is not tied to the integral 
+   // but rather to the number of entries of the signal
+   err = distrInvM->GetEntries()*integral/distrInvM->Integral(1, distrInvM->GetXaxis()->GetNbins());
+   // normalizing background integral by the number of integration steps
+   integral -= integralBG/100.;
+
+   return integral;
 }
 
 #endif /* ESTIMATE_ESTIMATE_RESONANCE_EFF_CPP */
