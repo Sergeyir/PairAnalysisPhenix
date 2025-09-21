@@ -84,7 +84,7 @@ namespace EstimateResonanceEff
    /// pT bins ranges [GeV/c]
    std::vector<double> pTBinRanges;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
-   std::unique_ptr<TF1> gaussianBroadeningEstimatorFunc;
+   TF1 *gaussianBroadeningEstimatorFunc;
    /// TText object template for quick text insertions
    TText text;
    /// TLatex object template for quick text insertions
