@@ -51,7 +51,7 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
 
-   distr2DInvM = static_cast<TH2F *>(inputFile->Get("M_inv: NoPID"));
+   distr2DMInv = static_cast<TH2F *>(inputFile->Get("M_inv: NoPID"));
 
    const unsigned int pTNBins = inputYAMLResonance["pt_bins"].size() - 1;
    const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>()/1.1;
@@ -64,13 +64,13 @@ int main(int argc, char **argv)
 
    ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
 
-   for (int i = distr2DInvM->GetXaxis()->FindBin(pTMin); 
-        i < distr2DInvM->GetXaxis()->FindBin(pTMax); i += 2)
+   for (int i = distr2DMInv->GetXaxis()->FindBin(pTMin); 
+        i < distr2DMInv->GetXaxis()->FindBin(pTMax); i += 2)
    {
       pBar.Print(static_cast<double>(i)/
-                 static_cast<double>(distr2DInvM->GetXaxis()->FindBin(pTMax) - 
-                                     distr2DInvM->GetXaxis()->FindBin(pTMin)));
-      PerformInvMassFit(i, i + 1);
+                 static_cast<double>(distr2DMInv->GetXaxis()->FindBin(pTMax) - 
+                                     distr2DMInv->GetXaxis()->FindBin(pTMin)));
+      PerformMInvFit(i, i + 1);
    }
 
    pBar.Finish();
@@ -119,9 +119,9 @@ int main(int argc, char **argv)
    CppTools::PrintInfo("EstimateGaussianBroadening executable has finished running succesfully");
 }
 
-void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int pTBinMax)
+void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pTBinMax)
 {
-   TH1D *distrInvM = distr2DInvM->ProjectionY("proj", pTBinMin, pTBinMax);
+   TH1D *distrMInv = distr2DMInv->ProjectionY("proj", pTBinMin, pTBinMax);
 
    // fit for resonance+bg approximation
    TF1 fit("resonance + bg fit", "gaus(0) + gaus(3)");
@@ -130,7 +130,7 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    // fit for bg approximation
    TF1 fitBG("bg fit", "gaus");
 
-   const double maxBinVal = distrInvM->GetBinContent(distrInvM->GetMaximumBin());
+   const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
 
    fit.SetParameters(maxBinVal, massResonance, 5e-3, maxBinVal/20., massResonance, 0.2);
 
@@ -142,46 +142,47 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    fit.SetParLimits(5, 5e-2, 1.);
 
    fit.SetRange(massResonance - 1e-2, massResonance + 1e-2);
-   distrInvM->Fit(&fit, "RQMNB");
+   distrMInv->Fit(&fit, "RQMNB");
 
-   for (unsigned int i = 1; i <= fitNTries; i++)
+   for (unsigned int j = 1; j <= fitNTries; j++)
    {
-      fit.SetParLimits(1, fit.GetParameter(1) - 1e-2/static_cast<double>(i*i*i), 
-                       fit.GetParameter(1) + 1e-2/static_cast<double>(i*i*i));
-      fit.SetParLimits(2, fit.GetParameter(2)/(1. + 2./static_cast<double>(i*i*i)),
-                       fit.GetParameter(2)*(1. + 2./static_cast<double>(i*i*i)));
-      fit.SetParLimits(4, fit.GetParameter(4)/(1. + 2./static_cast<double>(i*i*i)),
-                       fit.GetParameter(4)*(1. + 2./static_cast<double>(i*i*i)));
+      fit.SetParLimits(1, fit.GetParameter(1) - 1e-2/static_cast<double>(j*j*j), 
+                       fit.GetParameter(1) + 1e-2/static_cast<double>(j*j*j));
+      fit.SetParLimits(2, fit.GetParameter(2)/(1. + 2./static_cast<double>(j*j*j)),
+                       fit.GetParameter(2)*(1. + 2./static_cast<double>(j*j*j)));
+      fit.SetParLimits(4, fit.GetParameter(4)/(1. + 2./static_cast<double>(j*j*j)),
+                       fit.GetParameter(4)*(1. + 2./static_cast<double>(j*j*j)));
       fit.SetParLimits(5, fit.GetParameter(2)*5.,
-                       fit.GetParameter(5)*(1. + 2./static_cast<double>(i*i*i)));
+                       fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j*j)));
 
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
 
-      distrInvM->Fit(&fit, "RQMNB");
+      distrMInv->Fit(&fit, "RQMNB");
    }
 
-   for (int i = 0; i < fitResonance.GetNpar(); i++)
+   for (int j = 0; j < fitResonance.GetNpar(); j++)
    {
-      fitResonance.SetParameter(i, fit.GetParameter(i));
+      fitResonance.SetParameter(j, fit.GetParameter(j));
    }
 
-   for (int i = 0; i < fitBG.GetNpar(); i++)
+   for (int j = 0; j < fitBG.GetNpar(); j++)
    {
-      fitBG.SetParameter(i, fit.GetParameter(i + fitResonance.GetNpar()));
+      fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
    }
+
    fitResonance.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                          fit.GetParameter(1) + fit.GetParameter(2)*10.);
    fitBG.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
-   distrInvM->GetXaxis()->
-      SetRange(distrInvM->GetXaxis()->FindBin(fit.GetParameter(1) - fit.GetParameter(2)*10.), 
-               distrInvM->GetXaxis()->FindBin(fit.GetParameter(1) + fit.GetParameter(2)*10.));
+   distrMInv->GetXaxis()->
+      SetRange(distrMInv->GetXaxis()->FindBin(fit.GetParameter(1) - fit.GetParameter(2)*10.), 
+               distrMInv->GetXaxis()->FindBin(fit.GetParameter(1) + fit.GetParameter(2)*10.));
 
    fit.SetLineWidth(4);
    fitResonance.SetLineWidth(4);
    fitBG.SetLineWidth(4);
-   distrInvM->SetLineWidth(2);
+   distrMInv->SetLineWidth(2);
 
    fit.SetLineColorAlpha(kRed - 3, 0.8);
    fitResonance.SetLineColorAlpha(kAzure - 3, 0.8);
@@ -190,8 +191,8 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    fitResonance.SetLineStyle(2);
    fitBG.SetLineStyle(7);
 
-   distrInvM->SetLineColor(kBlack);
-   distrInvM->SetMarkerColor(kBlack);
+   distrMInv->SetLineColor(kBlack);
+   distrMInv->SetMarkerColor(kBlack);
 
    TCanvas canv("canv", "", 800, 800);
 
@@ -200,10 +201,10 @@ void EstimateGaussianBroadening::PerformInvMassFit(const int pTBinMin, const int
    gPad->SetLeftMargin(0.142);
    gPad->SetBottomMargin(0.112);
 
-   const double pTMin = distr2DInvM->GetXaxis()->GetBinLowEdge(pTBinMin);
-   const double pTMax = distr2DInvM->GetXaxis()->GetBinUpEdge(pTBinMax);
+   const double pTMin = distr2DMInv->GetXaxis()->GetBinLowEdge(pTBinMin);
+   const double pTMax = distr2DMInv->GetXaxis()->GetBinUpEdge(pTBinMax);
 
-   ROOTTools::DrawFrame(distrInvM, "", "#it{M}_{inv} [GeV/c^{2}]", "Weighted counts");
+   ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Weighted counts");
 
    texText.DrawLatexNDC(0.17, 0.9, (CppTools::DtoStr(pTMin, 1) + " < #it{p}_{T} < " + 
                         CppTools::DtoStr(pTMax, 1)).c_str());

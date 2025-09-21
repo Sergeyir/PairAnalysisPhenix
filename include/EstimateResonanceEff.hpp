@@ -43,7 +43,7 @@ namespace EstimateResonanceEff
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
-   void PerformInvMassFitsForMethod(const std::string& methodName);
+   void PerformMInvFitsForMethod(const std::string& methodName);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningParameters();
@@ -65,6 +65,8 @@ namespace EstimateResonanceEff
    std::string runName;
    /// File in which widths of gausses will be written
    std::ofstream parametersOutput;
+   /// Name of the input file
+   std::string inputFileName;
    /// Input file
    TFile *inputFile;
    /// unscaled pT distribution of original generated particles

@@ -39,9 +39,7 @@ double FitFunc::RBWConvGaus(double *x, double *par)
    {
       sum += TMath::Gaus(t, 0., par[3])*
          TMath::BreitWigner(x[0] - t, par[1], par[2]);
-      // TMath::Gaus already has a maximum 1 at the mean so no 
-      // need to add it to normalization constant
-      norm += TMath::BreitWigner(par[1] - t, par[1], par[2]);
+      norm += TMath::BreitWigner(par[1] - t, par[1], par[2])*TMath::Gaus(t, 0., par[3]);
    }
 
    return par[0]*sum/norm;

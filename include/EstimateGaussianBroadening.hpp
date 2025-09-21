@@ -43,7 +43,7 @@ namespace EstimateGaussianBroadening
     * @param[in] pTMin minimum bin of a pT range
     * @param[in] pTMax maximum bin of a pT range
     */
-   void PerformInvMassFit(const int pTBinMin, const int pTBinMax);
+   void PerformMInvFit(const int pTBinMin, const int pTBinMax);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
@@ -63,7 +63,7 @@ namespace EstimateGaussianBroadening
    /// Graph containing widths of gausses of resonance signals [GeV/c^2]
    TGraphErrors grSigmas;
    /// histogram with counts vs invariant mass vs pT distribution
-   TH2F *distr2DInvM;
+   TH2F *distr2DMInv;
    /// TText object template for quick text insertions
    TText text;
    /// TLatex object template for quick text insertions
