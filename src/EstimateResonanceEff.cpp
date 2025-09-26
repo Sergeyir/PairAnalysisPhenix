@@ -77,6 +77,7 @@ int main(int argc, char **argv)
    numberOfIterations = pTNBins*17;
 
    // performing fits for each pair selection method
+   /*
    PerformMInvFitsForMethod("DCPC1NoPID");
    PerformMInvFitsForMethod("NoPID");
    PerformMInvFitsForMethod("PC2NoPID");
@@ -91,9 +92,12 @@ int main(int argc, char **argv)
    PerformMInvFitsForMethod("1TOF1PID");
    PerformMInvFitsForMethod("1EMCal1PID");
    PerformMInvFitsForMethod("2PID");
+   */
    PerformMInvFitsForMethod("TOF2PID");
+   /*
    PerformMInvFitsForMethod("EMCal2PID");
    PerformMInvFitsForMethod("1TOF1EMCal2PID");
+   */
 
    pBar.Finish();
 
@@ -141,7 +145,8 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                  Integral(distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i] + 1e-6), 
                           distrOrigPT->GetXaxis()->FindBin(pTBinRanges[i + 1] - 1e-6)));
 
-      // for low entries inputs background is ignored since the value 
+      /*
+      // for low entries inputs background contributino is ignored since the value 
       // of the statistical uncertainty is significantly larger
       if (distrMInv->GetEntries() < 200.) 
       {
@@ -166,6 +171,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
          continue; 
       }
+      */
 
       // fit for resonance+bg approximation
       TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGGaus, 
