@@ -42,13 +42,13 @@ int main(int argc, char **argv)
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
-   nameResonance = inputYAMLResonance["name"].as<std::string>();
+   resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
    gammaResonance = inputYAMLResonance["gamma"].as<double>();
 
    SetGaussianBroadeningFunction();
 
-   inputFileName = "data/PostSim/" + runName + "/Resonance/" + nameResonance + ".root";
+   inputFileName = "data/PostSim/" + runName + "/Resonance/" + resonanceName + ".root";
 
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
@@ -76,8 +76,13 @@ int main(int argc, char **argv)
    // 17 different pairs selections methods
    numberOfIterations = pTNBins*17;
 
+   const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
+   system(("mkdir -p " + parametersOutputDir).c_str());
+
+   // file in which all important data will be written
+   TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
+
    // performing fits for each pair selection method
-   /*
    PerformMInvFitsForMethod("DCPC1NoPID");
    PerformMInvFitsForMethod("NoPID");
    PerformMInvFitsForMethod("PC2NoPID");
@@ -92,13 +97,11 @@ int main(int argc, char **argv)
    PerformMInvFitsForMethod("1TOF1PID");
    PerformMInvFitsForMethod("1EMCal1PID");
    PerformMInvFitsForMethod("2PID");
-   */
    PerformMInvFitsForMethod("TOF2PID");
-   /*
    PerformMInvFitsForMethod("EMCal2PID");
    PerformMInvFitsForMethod("1TOF1EMCal2PID");
-   */
 
+   parametersOutput.Close();
    pBar.Finish();
 
    CppTools::PrintInfo("EstimateResonanceEff executable has finished running succesfully");
@@ -114,11 +117,14 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    const std::string outputDir = "output/ResonanceEff/" + runName + "/" + methodName;
    system(("mkdir -p " + outputDir).c_str());
 
-   TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrGammasVsPT("sigmas vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawSpectraVsPT("raw spectra vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRecEffVsPT("reconstruction efficiency vs pT", "", pTNBins, &pTBinRanges[0]);
+   TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
+   TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRawYieldVsPT((methodName + ": raw yield vs pT").c_str(), 
+                          "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRawSpectraVsPT((methodName + ": raw spectra vs pT").c_str(), 
+                            "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRecEffVsPT((methodName + ": reconstruction efficiency vs pT").c_str(), 
+                        "", pTNBins, &pTBinRanges[0]);
 
    text.SetTextAngle(270.);
 
@@ -192,8 +198,8 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
       fit.SetParLimits(0, maxBinVal/1.2, maxBinVal);
       fit.SetParLimits(1, massResonance/1.1, massResonance*1.1);
-      //fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
-      fit.FixParameter(2, gammaResonance);
+      fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
+      //fit.FixParameter(2, gammaResonance);
       fit.FixParameter(3, gaussianBroadeningSigma);
       fit.SetParLimits(4, 0., maxBinVal/3.);
       fit.SetParLimits(5, 0., massResonance*10.);
@@ -209,10 +215,8 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                           fit.GetParameter(0)*(1. + 0.05/static_cast<double>(j*j)));
          fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
                           fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-         /*
-         fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.2/static_cast<double>(j*j)),
+         fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.1/static_cast<double>(j*j)),
                           fit.GetParameter(2)*(1. + 0.2/static_cast<double>(j*j)));
-                          */
          fit.SetParLimits(5, fit.GetParameter(5)/(1. + 2./static_cast<double>(j*j)),
                           fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j)));
          fit.SetParLimits(6, fit.GetParameter(6)/(1. + 1./static_cast<double>(j*j)),
@@ -246,8 +250,9 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
          GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
                   fit.GetParameter(1) + fit.GetParameter(2)*2., recYieldErr);
 
-      distrRawYieldVsPT.SetBinContent(i + 1, recYield);
-      distrRawYieldVsPT.SetBinError(i + 1, recYieldErr/recYield);
+      distrRawYieldVsPT.SetBinContent(i + 1, recYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
+      distrRawYieldVsPT.SetBinError(i + 1, recYieldErr/recYield/
+                                    (pTBinRanges[i + 1] - pTBinRanges[i]));
 
       const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
                                    (pTBinRanges[i + 1] - pTBinRanges[i]));
@@ -298,7 +303,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
       ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Weighted counts", 1., 1.9);
 
-      text.DrawTextNDC(0.9, 0.95, methodName.c_str());
+      text.DrawTextNDC(0.9, 0.95, ("MC " + methodName).c_str());
       texText.DrawLatexNDC(0.2, 0.9, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                            CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
       texText.DrawLatexNDC(0.2, 0.83, 
@@ -317,7 +322,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
       fitResonance.Draw("SAME");
       fit.Draw("SAME");
 
-      ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + nameResonance + "_" + 
+      ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
                              CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                              CppTools::DtoStr(pTBinRanges[i + 1], 1));
 
@@ -369,13 +374,13 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    gPad->SetLeftMargin(0.172);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/c]", 
-                        "#it{#mu} [GeV/c^{2}]", 1., 1.82);
+   ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#mu} [GeV/#it{c}^{2}]", 1., 1.82);
 
-   text.DrawTextNDC(0.45, 0.9, methodName.c_str());
+   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
    massResonancePDG.Draw();
 
-   ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + nameResonance + "_means");
+   ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + resonanceName + "_means");
 
    TCanvas canvGammasVsPT("canv gammas vs pT", "", 800, 800);
 
@@ -384,13 +389,13 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    gPad->SetLeftMargin(0.172);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/c]", 
-                        "#it{#sigma} [GeV/c^{2}]", 1., 1.82);
+   ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#Gamma} [GeV/#it{c}^{2}]", 1., 1.82);
 
-   text.DrawTextNDC(0.45, 0.9, methodName.c_str());
+   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
    gammaResonancePDG.Draw();
 
-   ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + nameResonance + "_gammas");
+   ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + "_gammas");
 
    TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
 
@@ -398,15 +403,15 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
    gPad->SetRightMargin(0.03);
    gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.15);
+   gPad->SetLeftMargin(0.141);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/c]", 
-                        "1/(2 #pi p_{T}) d^{2}Y_{raw}/dp_{T}dy");
+   ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
 
-   text.DrawTextNDC(0.45, 0.9, methodName.c_str());
+   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
 
-   ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + nameResonance + "_raw_spectra");
+   ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + "_raw_yield");
 
    TCanvas canvRawSpectraVsPT("canv raw spectra vs pT", "", 800, 800);
 
@@ -414,15 +419,16 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
    gPad->SetRightMargin(0.03);
    gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.15);
+   gPad->SetLeftMargin(0.141);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(&distrRawSpectraVsPT, "", "#it{p}_{T} [GeV/c]", 
-                        "1/(2 #pi #it{p}_{T}) d^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy}");
+   ROOTTools::DrawFrame(&distrRawSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
+                        "[(GeV/#it{c})^{-2})]", 1., 1.35);
 
-   text.DrawTextNDC(0.45, 0.9, methodName.c_str());
+   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
 
-   ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + nameResonance + "_raw_spectra");
+   ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + resonanceName + "_raw_spectra");
 
    TCanvas canvRecEffVsPT("canv rec eff vs pT", "", 800, 800);
 
@@ -433,17 +439,21 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    gPad->SetLeftMargin(0.142);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(&distrRecEffVsPT, "", "#it{p}_{T} [GeV/c]", "#it{#varepsilon}_{rec}");
+   ROOTTools::DrawFrame(&distrRecEffVsPT, "", "#it{p}_{T} [GeV/#it{c}]", "#it{#varepsilon}_{rec}");
 
-   text.DrawTextNDC(0.45, 0.9, methodName.c_str());
+   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
 
-   ROOTTools::PrintCanvas(&canvRecEffVsPT, outputDir + "/" + nameResonance + "_rec_eff");
+   ROOTTools::PrintCanvas(&canvRecEffVsPT, outputDir + "/" + resonanceName + "_rec_eff");
+
+   distrMeansVsPT.Write();
+   distrGammasVsPT.Write();
+   distrRecEffVsPT.Write();
 }
 
 void EstimateResonanceEff::SetGaussianBroadeningFunction()
 {
    const std::string inputFileName = "data/Parameters/GaussianBroadening/" + 
-                                     runName + "/" + nameResonance + ".root";
+                                     runName + "/" + resonanceName + ".root";
 
    if (!CppTools::FileExists(inputFileName))
    {
@@ -478,8 +488,8 @@ double EstimateResonanceEff::GetYield(TH1D *distrMInv, const TF1& funcBG,
    }
    // due to the spectra scaling statistical uncertainty is not tied to the integral 
    // but rather to the number of entries of the signal
-   err = 1./sqrt(distrMInv->GetEntries()*integral/
-                 distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()));
+   err = sqrt(distrMInv->GetEntries()*integral/
+              distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()));
    // normalizing background integral by the number of integration steps
    integral -= integralBG/101.;
 

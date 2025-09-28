@@ -42,11 +42,11 @@ int main(int argc, char **argv)
    outputDir = "output/GaussianBroadening/" + runName;
    system(("mkdir -p " + outputDir).c_str());
 
-   nameResonance = inputYAMLResonance["name"].as<std::string>();
+   resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
 
    const std::string inputFileName = "data/PostSim/" + runName + "/WidthlessResonance/" + 
-                                     nameResonance + ".root";
+                                     resonanceName + ".root";
 
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
@@ -104,12 +104,12 @@ int main(int argc, char **argv)
    fitSigmas.Draw("SAME");
    grSigmas.Clone()->Draw("P");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/" + nameResonance + "_sigmas");
+   ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_sigmas");
 
    const std::string parametersOutputDir = "data/Parameters/GaussianBroadening/" + runName;
    system(("mkdir -p " + parametersOutputDir).c_str());
 
-   TFile parametersOutput((parametersOutputDir + "/" + nameResonance + ".root").c_str(), "RECREATE");
+   TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
    parametersOutput.cd();
 
    fitSigmas.Write();
@@ -212,7 +212,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
    fitResonance.Draw("SAME");
    fit.Draw("SAME");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/" + nameResonance + "_" + 
+   ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_" + 
                           CppTools::DtoStr(pTMin, 1) + "-" + CppTools::DtoStr(pTMax, 1));
 
    grSigmas.AddPoint(CppTools::Average(pTMin, pTMax), fit.GetParameter(2));

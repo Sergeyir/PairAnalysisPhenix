@@ -74,7 +74,7 @@ namespace EstimateResonanceEff
    /// pT distribution of original generated particles
    TH1F *distrOrigPT;
    /// name of the resonance
-   std::string nameResonance;
+   std::string resonanceName;
    /// mass of the resonance [GeV/c^2]
    double massResonance;
    /// gamma of the resonance [GeV/c^2]

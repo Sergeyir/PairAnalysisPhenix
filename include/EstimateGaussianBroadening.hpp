@@ -57,7 +57,7 @@ namespace EstimateGaussianBroadening
    /// Input file
    TFile *inputFile;
    /// name of the resonance
-   std::string nameResonance;
+   std::string resonanceName;
    /// mass of the resonance [GeV/c^2]
    double massResonance;
    /// Graph containing widths of gausses of resonance signals [GeV/c^2]
