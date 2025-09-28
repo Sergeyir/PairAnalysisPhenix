@@ -75,7 +75,7 @@ int main(int argc, char **argv)
 
    pBar.Finish();
 
-   TF1 fitSigmas("fit for sigmas", fitSigmasFormula.c_str());
+   TF1 fitSigmas("gaussian broadening sigma fit", fitSigmasFormula.c_str());
    fitSigmas.SetRange(pTMin, pTMax);
 
    fitSigmas.SetLineWidth(3);
@@ -87,6 +87,9 @@ int main(int argc, char **argv)
    grSigmas.SetMarkerStyle(20);
    grSigmas.SetMarkerSize(1.4);
    grSigmas.SetMarkerColor(kRed - 3);
+
+   grSigmas.SetLineWidth(2);
+   grSigmas.SetLineColor(kRed + 2);
 
    TCanvas canv("canv", "", 800, 800);
 
@@ -103,18 +106,13 @@ int main(int argc, char **argv)
 
    ROOTTools::PrintCanvas(&canv, outputDir + "/" + nameResonance + "_sigmas");
 
-   system(("mkdir -p data/Parameters/GaussianBroadening/" + runName).c_str());
+   const std::string parametersOutputDir = "data/Parameters/GaussianBroadening/" + runName;
+   system(("mkdir -p " + parametersOutputDir).c_str());
 
-   std::ofstream parametersOutput("data/Parameters/GaussianBroadening/" + runName + 
-                                  "/" + nameResonance + ".txt");
+   TFile parametersOutput((parametersOutputDir + "/" + nameResonance + ".root").c_str(), "RECREATE");
+   parametersOutput.cd();
 
-   parametersOutput << fitSigmasFormula << std::endl;
-   parametersOutput << fitSigmas.GetNpar() << std::endl;
-   for (int i = 0; i < fitSigmas.GetNpar() - 1; i++)
-   {
-      parametersOutput << fitSigmas.GetParameter(i) << " ";
-   }
-   parametersOutput << fitSigmas.GetParameter(fitSigmas.GetNpar() - 1);
+   fitSigmas.Write();
 
    CppTools::PrintInfo("EstimateGaussianBroadening executable has finished running succesfully");
 }
@@ -142,7 +140,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
    fit.SetParLimits(5, 5e-2, 1.);
 
    fit.SetRange(massResonance - 1e-2, massResonance + 1e-2);
-   distrMInv->Fit(&fit, "RQMNB");
+   distrMInv->Fit(&fit, "RQMNBL");
 
    for (unsigned int j = 1; j <= fitNTries; j++)
    {
@@ -158,7 +156,8 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
 
-      distrMInv->Fit(&fit, "RQMNB");
+      distrMInv->Fit(&fit, "RQMNBL");
+      if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
    }
 
    for (int j = 0; j < fitResonance.GetNpar(); j++)
@@ -217,7 +216,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
                           CppTools::DtoStr(pTMin, 1) + "-" + CppTools::DtoStr(pTMax, 1));
 
    grSigmas.AddPoint(CppTools::Average(pTMin, pTMax), fit.GetParameter(2));
-   grSigmas.SetPointError(grSigmas.GetN() - 1, 0., 0.0001);
+   grSigmas.SetPointError(grSigmas.GetN() - 1, 0., fit.GetParError(2));
 }
 
 #endif /* ESTIMATE_ESTIMATE_GAUSSIAN_BROADENING_CPP */

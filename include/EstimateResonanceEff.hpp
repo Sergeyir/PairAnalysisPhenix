@@ -46,7 +46,7 @@ namespace EstimateResonanceEff
    void PerformMInvFitsForMethod(const std::string& methodName);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
-   void SetGaussianBroadeningParameters();
+   void SetGaussianBroadeningFunction();
    /* Extracts the yield by integrating the distribution and subtracting the background in the specified range
     *
     * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
@@ -99,7 +99,7 @@ namespace EstimateResonanceEff
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
-   const unsigned int fitNTries = 5;
+   const unsigned int fitNTries = 3;
 };
 
 int main(int argc, char **argv);

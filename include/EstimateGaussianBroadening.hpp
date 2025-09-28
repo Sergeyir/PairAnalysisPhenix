@@ -72,7 +72,7 @@ namespace EstimateGaussianBroadening
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
-   const unsigned int fitNTries = 5;
+   const unsigned int fitNTries = 3;
    /// formula that is uded in TF1 constructor for approximation of sigmas
    const std::string fitSigmasFormula = "pol1";
 };
