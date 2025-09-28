@@ -16,7 +16,6 @@ __*
 *.log
 *.swp
 *.png
-*.root
 *.backup
 *.exe
 *.o
