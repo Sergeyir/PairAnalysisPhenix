@@ -1,22 +1,22 @@
 /** 
- *  @file   AnalyzeSingleTrack.hpp
+ *  @file   AnalyzeSimSingleTrack.hpp
  *  @brief  Contains declarations of functions and variables that are used for analysis of a single track from a trees acquired from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ANALYZE_SINGLE_TRACK_CPP
-#define ANALYZE_SINGLE_TRACK_CPP
+#ifndef ANALYZE_SIM_SINGLE_TRACK_CPP
+#define ANALYZE_SIM_SINGLE_TRACK_CPP
 
-#include "../include/AnalyzeSingleTrack.hpp"
+#include "../include/AnalyzeSimSingleTrack.hpp"
 
 // this namespace is only used so that documentation does not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
-using namespace AnalyzeSingleTrack;
+using namespace AnalyzeSimSingleTrack;
 
-void AnalyzeSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer, 
+void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer, 
                                               const int particleId, 
                                               const std::string& magneticFieldName, 
                                               const std::string &pTRangeName)
@@ -705,8 +705,8 @@ int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 3) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSingleTrack ";
+      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimSingleTrack ";
       errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
@@ -1072,7 +1072,7 @@ int main(int argc, char **argv)
    return 0;
 }
 
-TH2F *AnalyzeSingleTrack::GetHistogramFromFile(TFile& file, const std::string& histName)
+TH2F *AnalyzeSimSingleTrack::GetHistogramFromFile(TFile& file, const std::string& histName)
 {
    /// why the f doesn't ROOT allow to read the thing from read only TFile when its const
    TH2F *hist = static_cast<TH2F *>(file.Get(histName.c_str()));
@@ -1083,7 +1083,7 @@ TH2F *AnalyzeSingleTrack::GetHistogramFromFile(TFile& file, const std::string& h
    return hist;
 }
 
-void AnalyzeSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
+void AnalyzeSimSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
 {
    if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
    {
@@ -1117,7 +1117,7 @@ void AnalyzeSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
    }
 }
 
-ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
+ThrContainerCopy AnalyzeSimSingleTrack::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
@@ -1262,7 +1262,7 @@ ThrContainerCopy AnalyzeSingleTrack::ThrContainer::GetCopy()
    return copy;
 }
 
-void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
+void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileName)
 {
    TFile outputFile(outputFileName.c_str(), "RECREATE");
    outputFile.SetCompressionLevel(8);
@@ -1442,4 +1442,4 @@ void AnalyzeSingleTrack::ThrContainer::Write(const std::string& outputFileName)
    outputFile.Close();
 }
 
-#endif /* ANALYZE_SINGLE_TRACK_CPP */
+#endif /* ANALYZE_SIM_SINGLE_TRACK_CPP */

@@ -1,13 +1,13 @@
 /** 
- *  @file   EstimateResonanceEff.hpp 
- *  @brief  Contains declarations of functions and variables that are used for estimation of resonance reconstruction efficiency with the use of the data from MC
+ *  @file   AnalyzeRealMInv.hpp 
+ *  @brief  Contains declarations of functions and variables that are used for analyzis of experimental invariant mass distributions
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ESTIMATE_RESONANCE_EFF_HPP
-#define ESTIMATE_RESONANCE_EFF_HPP
+#ifndef ANALYZE_REAL_M_INV_HPP
+#define ANALYZE_REAL_M_INV_HPP
 
 #include "TFile.h"
 #include "TH1.h"
@@ -31,16 +31,32 @@
 #include "InputYAMLReader.hpp"
 #include "FitFunc.hpp"
 
-/*! @namespace EstimateResonanceEff
- * @brief Contains all functions and variables for EstimateResonanceEff.cpp
+/*! @namespace AnalyzeRealMInv
+ * @brief Contains all functions and variables for AnalyzeRealMInv.cpp
  */
-namespace EstimateResonanceEff
+namespace AnalyzeRealMInv
 {
    /*! Performs approximations of invariant mass distributions for all pT ranges for the given method
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
    void PerformMInvFitsForMethod(const std::string& methodName);
+   /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy)
+    *
+    * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
+    * @param[in] distrMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms
+    * @param[in] distrMergedBG histogram to pass that will be filled with contents of all scaled background histograms
+    * @param[out] merged invariant mass distribution with background extracted
+    */
+   TH1F *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
+                   TH1F *distrMergedFG, TH1F *distrMergedBG);
+   /*! Subtracts background for the specified histogram 
+    *
+    * @param[in] distrFG foreground M_{inv} distribution from which background will be extracted
+    * @param[in] distrFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
+    * @param[out] invariant mass distribution with background subtracted
+    */
+   TH1F *SubtractBG(TH1F *distrFG, TH1F *distrBG);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -60,14 +76,12 @@ namespace EstimateResonanceEff
    InputYAMLReader inputYAMLResonance;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
+   /// Number of a taxi
+   int taxiNumber;
    /// Name of the input file
    std::string inputFileName;
    /// Input file
    TFile *inputFile;
-   /// unscaled pT distribution of original generated particles
-   TH1F *distrOrigUnscaledPT;
-   /// pT distribution of original generated particles
-   TH1F *distrOrigPT;
    /// name of the resonance
    std::string resonanceName;
    /// mass of the resonance [GeV/c^2]
@@ -99,4 +113,4 @@ namespace EstimateResonanceEff
 
 int main(int argc, char **argv);
 
-#endif /* ESTIMATE_RESONANCE_EFF_HPP */
+#endif /* ANALYZE_REAL_M_INV_HPP */

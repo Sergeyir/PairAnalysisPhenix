@@ -9,8 +9,6 @@
 #ifndef ESTIMATE_GAUSSIAN_BROADENING_HPP
 #define ESTIMATE_GAUSSIAN_BROADENING_HPP
 
-#include <thread>
-
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -52,8 +50,6 @@ namespace EstimateGaussianBroadening
    std::string runName;
    /// Output directory
    std::string outputDir;
-   /// File in which widths of gausses will be written
-   std::ofstream parametersOutput;
    /// Input file
    TFile *inputFile;
    /// name of the resonance

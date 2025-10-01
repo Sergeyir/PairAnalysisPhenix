@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 3) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
+      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/M2IdentFit \
                  inputYAMLName detectorName=all* \n\
                  * you can specify the name of a detector you want for this program to run for or \

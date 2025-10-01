@@ -1,22 +1,22 @@
 /** 
- *  @file   AnalyzeWidthlessResonance.hpp
+ *  @file   AnalyzeSimWidthlessResonance.hpp
  *  @brief  Contains declarations of functions and variables that are used for analysis of a widthless resonance from a trees acquired from the PHENIX simulation. Widthless resonances are used for determining the determination of a mass resolution of a detector system for a given resonance.
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ANALYZE_WIDTHLESS_RESONANCE_CPP
-#define ANALYZE_WIDTHLESS_RESONANCE_CPP
+#ifndef ANALYZE_SIM_WIDTHLESS_RESONANCE_CPP
+#define ANALYZE_SIM_WIDTHLESS_RESONANCE_CPP
 
-#include "../include/AnalyzeWidthlessResonance.hpp"
+#include "../include/AnalyzeSimWidthlessResonance.hpp"
 
 // this namespace is only used so that documentation does not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
-using namespace AnalyzeWidthlessResonance;
+using namespace AnalyzeSimWidthlessResonance;
 
-void AnalyzeWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
+void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
                                                      const std::string& particleName, 
                                                      const int daughter1Id,
                                                      const int daughter2Id,
@@ -280,8 +280,8 @@ int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 3) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeWidthlessResonance ";
+      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimWidthlessResonance ";
       errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
@@ -457,7 +457,7 @@ int main(int argc, char **argv)
    return 0;
 }
 
-ThrContainerCopy AnalyzeWidthlessResonance::ThrContainer::GetCopy()
+ThrContainerCopy AnalyzeSimWidthlessResonance::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
@@ -468,7 +468,7 @@ ThrContainerCopy AnalyzeWidthlessResonance::ThrContainer::GetCopy()
    return copy;
 }
 
-void AnalyzeWidthlessResonance::ThrContainer::Write(const std::string& outputFileName)
+void AnalyzeSimWidthlessResonance::ThrContainer::Write(const std::string& outputFileName)
 {
    TFile outputFile(outputFileName.c_str(), "RECREATE");
    outputFile.SetCompressionLevel(6);
@@ -481,4 +481,4 @@ void AnalyzeWidthlessResonance::ThrContainer::Write(const std::string& outputFil
    outputFile.Close();
 }
 
-#endif /* ANALYZE_WIDTHLESS_RESONANCE_CPP */
+#endif /* ANALYZE_SIM_WIDTHLESS_RESONANCE_CPP */

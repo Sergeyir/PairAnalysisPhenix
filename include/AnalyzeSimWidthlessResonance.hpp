@@ -1,13 +1,13 @@
 /** 
- *  @file   AnalyzeWidthlessResonance.hpp
+ *  @file   AnalyzeSimWidthlessResonance.hpp
  *  @brief  Contains declarations of functions and variables that are used for analysis of a widthless simulated resonance obtained from a trees acquired from the PHENIX simulation. Widthless resonances are used for the determination of a mass resolution of a detector system for a given resonance.
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ANALYZE_WIDTLESS_RESONANCE_HPP
-#define ANALYZE_WIDTLESS_RESONANCE_HPP
+#ifndef ANALYZE_SIM_WIDTLESS_RESONANCE_HPP
+#define ANALYZE_SIM_WIDTLESS_RESONANCE_HPP
 
 #include <thread>
 
@@ -38,13 +38,13 @@
 
 int main(int argc, char **argv);
 
-/* @namespace AnalyzeWidthlessResonance
+/* @namespace AnalyzeSimWidthlessResonance
  *
- * @brief Contains all functions, variables, and containers needed for AnalyzeWidthlessResonance 
+ * @brief Contains all functions, variables, and containers needed for AnalyzeSimWidthlessResonance 
  *
  * This namespace is eployed so that documentation will not become a pile of variables, types, and functions from many different files that are intended to be compiled and used as executables. With this namespace finding the needed information for the given executable is easier since everything belongs to the current namespace
  */
-namespace AnalyzeWidthlessResonance
+namespace AnalyzeSimWidthlessResonance
 {
    /// output directory
    std::string outputDir;
@@ -126,4 +126,4 @@ namespace AnalyzeWidthlessResonance
                              const std::string& magneticFieldName, const std::string& pTRangeName); 
 }
 
-#endif /* ANALYZE_WIDTLESS_RESONANCE_HPP */
+#endif /* ANALYZE_SIM_WIDTLESS_RESONANCE_HPP */

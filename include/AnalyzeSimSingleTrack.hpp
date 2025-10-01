@@ -1,13 +1,13 @@
 /** 
- *  @file   AnalyzeSingleTrack.hpp
+ *  @file   AnalyzeSimSingleTrack.hpp
  *  @brief  Contains declarations of functions and variables that are used for analysis of a single track from a trees acquired from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ANALYZE_SINGLE_TRACK_HPP
-#define ANALYZE_SINGLE_TRACK_HPP
+#ifndef ANALYZE_SIM_SINGLE_TRACK_HPP
+#define ANALYZE_SIM_SINGLE_TRACK_HPP
 
 #include <thread>
 
@@ -38,13 +38,13 @@
 
 int main(int argc, char **argv);
 
-/* @namespace AnalyzeSingleTrack
+/* @namespace AnalyzeSimSingleTrack
  *
- * @brief Contains all functions, variables, and containers needed for AnalyzeSingleTrack 
+ * @brief Contains all functions, variables, and containers needed for AnalyzeSimSingleTrack 
  *
  * This namespace is eployed so that documentation will not become a pile of variables, types, and functions from many different files that are intended to be compiled and used as executables. With this namespace finding the needed information for the given executable is easier since everything belongs to the current namespace
  */
-namespace AnalyzeSingleTrack
+namespace AnalyzeSimSingleTrack
 {
    /// output directory
    std::string outputDir;
@@ -1122,4 +1122,4 @@ namespace AnalyzeSingleTrack
                              const std::string& magneticFieldName, const std::string& pTRangeName); 
 }
 
-#endif /* ANALYZE_SINGLE_TRACK_HPP */
+#endif /* ANALYZE_SIM_SINGLE_TRACK_HPP */

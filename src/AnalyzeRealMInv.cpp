@@ -1,32 +1,34 @@
 /** 
- *  @file   EstimateResonanceEff.cpp 
- *  @brief  Contains realisations of functions that are used for estimation of resonance reconstruction efficiency witht he use of the data from MC
+ *  @file   AnalyzeRealMInv.cpp 
+ *  @brief  Contains realisations of functions that are used for analyzis of expeirmental invariant mass distributions 
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ESTIMATE_RESONANCE_EFF_CPP
-#define ESTIMATE_RESONANCE_EFF_CPP
+#ifndef ANALYZE_REAL_M_INV_CPP
+#define ANALYZE_REAL_M_INV_CPP
 
-#include "EstimateResonanceEff.hpp"
+#include "AnalyzeRealMInv.hpp"
 
-using namespace EstimateResonanceEff;
+using namespace AnalyzeRealMInv;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
+   if (argc < 3 || argc > 4) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/EstimateResonanceEff ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
+      std::string errMsg = "Expected 2-3 parameters while " + std::to_string(argc - 1) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeRealMInv ";
+      errMsg += "inputYAMLName taxiNumber numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
+
+   taxiNumber = std::stoi(argv[2]);
  
-   if (argc == 2) ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-   else ROOT::EnableImplicitMT(std::stoi(argv[2]));
+   if (argc == 3) ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
+   else ROOT::EnableImplicitMT(std::stoi(argv[3]));
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
@@ -48,17 +50,10 @@ int main(int argc, char **argv)
 
    SetGaussianBroadeningFunction();
 
-   inputFileName = "data/PostSim/" + runName + "/Resonance/" + resonanceName + ".root";
+   inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
 
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
-
-   distrOrigUnscaledPT = static_cast<TH1F *>(inputFile->Get("orig unscaled pT"));
-   if (!distrOrigUnscaledPT) CppTools::PrintError("Original unscaled pT distribution was not found "\
-                                                  " in file " + inputFileName);
-   distrOrigPT = static_cast<TH1F *>(inputFile->Get("orig pT"));
-   if (!distrOrigPT) CppTools::PrintError("Original pT distribution was not found in file" + 
-                                          inputFileName);
 
    text.SetTextFont(43);
    text.SetTextSize(45);
@@ -73,41 +68,30 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   // 17 different pairs selections methods
-   numberOfIterations = pTNBins*17;
+   for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
+   {
+      numberOfIterations += method["pt_bin_max"].as<int>() - method["pt_bin_min"].as<int>();
+   }
 
-   const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
-   system(("mkdir -p " + parametersOutputDir).c_str());
+   const std::string yieldOutputDir = "data/Parameters/ResonanceEff/" + runName;
+   system(("mkdir -p " + yieldOutputDir).c_str());
 
    // file in which all important data will be written
-   TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
+   TFile yieldOutput((yieldOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
 
    // performing fits for each pair selection method
-   PerformMInvFitsForMethod("DCPC1NoPID");
-   PerformMInvFitsForMethod("NoPID");
-   PerformMInvFitsForMethod("PC2NoPID");
-   PerformMInvFitsForMethod("PC3NoPID");
-   PerformMInvFitsForMethod("TOFeNoPID");
-   PerformMInvFitsForMethod("TOFwNoPID");
-   PerformMInvFitsForMethod("EMCalNoPID");
-   PerformMInvFitsForMethod("DCPC11PID");
-   PerformMInvFitsForMethod("1TOFDCPC11PID");
-   PerformMInvFitsForMethod("1EMCalDCPC11PID");
-   PerformMInvFitsForMethod("1PID");
-   PerformMInvFitsForMethod("1TOF1PID");
-   PerformMInvFitsForMethod("1EMCal1PID");
-   PerformMInvFitsForMethod("2PID");
-   PerformMInvFitsForMethod("TOF2PID");
-   PerformMInvFitsForMethod("EMCal2PID");
-   PerformMInvFitsForMethod("1TOF1EMCal2PID");
+   for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
+   {
+      PerformMInvFitsForMethod(method["name"].as<double>());
+   }
 
    parametersOutput.Close();
    pBar.Finish();
 
-   CppTools::PrintInfo("EstimateResonanceEff executable has finished running succesfully");
+   CppTools::PrintInfo("AnalyzeRealMInv executable has finished running succesfully");
 }
 
-void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodName)
+void AnalyzeRealMInv::PerformMInvFitsForMethod(const std::string& methodName)
 {
    const std::string distr2DMInvName = "M_inv: " + methodName;
    TH2F *distr2DMInv = static_cast<TH2F *>(inputFile->Get(distr2DMInvName.c_str()));
@@ -450,7 +434,59 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    distrRecEffVsPT.Write();
 }
 
-void EstimateResonanceEff::SetGaussianBroadeningFunction()
+TH1F *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
+                                 TH1F *distrMergedFG, TH1F *distrMergedBG)
+{
+   TH1F *distrMInvMerged;
+   // iterating over CabanaBoy centrality bins
+   for (int i = centralityBin["cb_c_bin_min"].as<int>(); 
+        i <= centralityBin["cb_c_bin_max"].as<int>(); i++)
+   {
+      const std::string cName = (i > 9) ? std::to_string(i) : "0" + std::to_string(i);
+
+      // iterating over CabanaBoy z_{vtx} bins
+      for (int j = 0; j <= inputYAMLMain["cb_z_bins"].as<int>(); j++)
+      {
+         const std::string zName = (j > 9) ? std::to_string(j) : "0" + std::to_string(j);
+
+         // iterating over CabanaBoy r_{vtx} bins
+         for (int k = 0; k <= inputYAMLMain["cb_r_bins"].as<int>(); k++)
+         {
+            const std::string rName = (k > 9) ? std::to_string(k) : "0" + std::to_string(k);
+
+            const std::string histNameFG = "c" + cName + "_z" + zName + "_r" + rName + "/" + 
+                                           methodName + ": " + channelName + "_FG12";
+            const std::string histNameBG = "c" + cName + "_z" + zName + "_r" + rName + "/" + 
+                                           methodName + ": " + channelName + "_BG12";
+
+            TH1F distrMInvFG = static_cast<TH1F *> (inputFile.Get(histNameFG.c_str()));
+            if (!distrMInvFG)
+            {
+               CppTools::PrintError("Histogram named " + histNameFG + 
+                                    " does not exist in file " + inputFileName);
+            }
+
+            TH1F distrMInvBG = static_cast<TH1F *> (inputFile.Get(histNameBG.c_str()));
+            if (!distrMInvBG)
+            {
+               CppTools::PrintError("Histogram named " + histNameBG + 
+                                    " does not exist in file " + inputFileName);
+            }
+
+            if (!distrMInvMerged) distrMInvMerged = distrMInvFG;
+            else distrMInvMerged.Add(distrMInvFG);
+         }
+      }
+   }
+}
+
+TH1F *AnalyzeRealMInv::SubtractBG(TH1F *distrFG, TH1F *distrBG)
+{
+   TH1F *distrSubtr = distrFG.Clone();
+   return distrSubtr;
+}
+
+void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 {
    const std::string inputFileName = "data/Parameters/GaussianBroadening/" + 
                                      runName + "/" + resonanceName + ".root";
@@ -465,7 +501,7 @@ void EstimateResonanceEff::SetGaussianBroadeningFunction()
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
 }
 
-double EstimateResonanceEff::GetYield(TH1D *distrMInv, const TF1& funcBG, 
+double AnalyzeRealMInv::GetYield(TH1D *distrMInv, const TF1& funcBG, 
                                       const double xMin, const double xMax, double &err)
 {
    // integral over the signal
@@ -496,4 +532,4 @@ double EstimateResonanceEff::GetYield(TH1D *distrMInv, const TF1& funcBG,
    return integral;
 }
 
-#endif /* ESTIMATE_RESONANCE_EFF_CPP */
+#endif /* ANALYZE_REAL_M_INV_CPP */

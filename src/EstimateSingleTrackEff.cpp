@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 {
    if (argc != 2) 
    {
-      std::string errMsg = "Expected 1 parameter while " + std::to_string(argc) + " ";
+      std::string errMsg = "Expected 1 parameter while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/EstimateSingleTrackEff ";
       errMsg += "inputYAMLName/path to .yaml input";
       CppTools::PrintError(errMsg);

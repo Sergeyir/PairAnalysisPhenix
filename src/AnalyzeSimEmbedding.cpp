@@ -1,24 +1,7 @@
-// $SOURCE$
-//------------------------------------------------------------------------------------------------
-//                           AnalyzeEmbedding functions realisation
-//------------------------------------------------------------------------------------------------
-// AnalyzeEmbedding
-//
-// ** Code for use in PHENIX related projects **
-//
-// Author: Sergei Antsupov
-// Email: antsupov0124@gmail.com
-//
-/**
- * Basic macro for embedding study
- * from simulation output of event-like TTrees to processed histograms
- **/
-//------------------------------------------------------------------------------------------------
+#ifndef ANALYZE_SIM_EMBEDDING_CPP
+#define ANALYZE_SIM_EMBEDDING_CPP
 
-#ifndef ANALYZE_EMBEDDING_CPP
-#define ANALYZE_EMBEDDING_CPP
-
-#include "../include/AnalyzeEmbedding.hpp"
+#include "../include/AnalyzeSimEmbedding.hpp"
 
 ThrContainer::ThrContainer(std::string runType)
 {
@@ -433,4 +416,4 @@ int main()
    return 0;
 }
 
-#endif /*ANALYZE_EMBEDDING_CPP*/
+#endif /*ANALYZE_SIM_EMBEDDING_CPP*/

@@ -53,9 +53,9 @@ add_library(FitFunc ${CMAKE_SOURCE_DIR}/src/FitFunc.cpp)
 
 link_libraries(InputYAMLReader)
 
-add_executable(AnalyzeSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSingleTrack.cpp)
-add_executable(AnalyzeWidthlessResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeWidthlessResonance.cpp)
-add_executable(AnalyzeResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeResonance.cpp)
+add_executable(AnalyzeSimSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSimSingleTrack.cpp)
+add_executable(AnalyzeSimWidthlessResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeSimWidthlessResonance.cpp)
+add_executable(AnalyzeSimResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeSimResonance.cpp)
 add_executable(CalibrateSimSigmalizedResiduals ${CMAKE_SOURCE_DIR}/src/CalibrateSimSigmalizedResiduals.cpp)
 
 add_executable(DeadMapSys ${CMAKE_SOURCE_DIR}/src/DeadMapSys.cpp)
@@ -67,8 +67,8 @@ add_executable(EstimateResonanceEff ${CMAKE_SOURCE_DIR}/src/EstimateResonanceEff
 
 target_link_libraries(SingleTrackFunc SimTreeReader)
 target_link_libraries(PairTrackFunc SimTreeReader)
-target_link_libraries(AnalyzeSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
-target_link_libraries(AnalyzeWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals)
-target_link_libraries(AnalyzeResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
+target_link_libraries(AnalyzeSimSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
+target_link_libraries(AnalyzeSimWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals)
+target_link_libraries(AnalyzeSimResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
 target_link_libraries(DeadMapSys DeadMapCutter)
 target_link_libraries(EstimateResonanceEff FitFunc)

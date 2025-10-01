@@ -1,22 +1,22 @@
 /** 
- *  @file   AnalyzeResonance.hpp
+ *  @file   AnalyzeSimResonance.hpp
  *  @brief  Contains declarations of functions and variables that are used for analysis of a resonance from a trees acquired from the PHENIX simulation
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef ANALYZE_RESONANCE_CPP
-#define ANALYZE_RESONANCE_CPP
+#ifndef ANALYZE_SIM_RESONANCE_CPP
+#define ANALYZE_SIM_RESONANCE_CPP
 
-#include "../include/AnalyzeResonance.hpp"
+#include "../include/AnalyzeSimResonance.hpp"
 
 // this namespace is only used so that documentation does not become a mess
 // so there is no need to enforce the contents inside of it 
 // being accessed only via the scope resolution operator in this file
-using namespace AnalyzeResonance;
+using namespace AnalyzeSimResonance;
 
-void AnalyzeResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
+void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
                                             const std::string& particleName, 
                                             const int daughter1Id,
                                             const int daughter2Id,
@@ -613,8 +613,8 @@ int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 3) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeResonance ";
+      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
+      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance ";
       errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
@@ -802,7 +802,7 @@ int main(int argc, char **argv)
    return 0;
 }
 
-ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
+ThrContainerCopy AnalyzeSimResonance::ThrContainer::GetCopy()
 {
    ThrContainerCopy copy;
 
@@ -843,7 +843,7 @@ ThrContainerCopy AnalyzeResonance::ThrContainer::GetCopy()
    return copy;
 }
 
-void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
+void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
 {
    TFile outputFile(outputFileName.c_str(), "RECREATE");
    outputFile.SetCompressionLevel(6);
@@ -886,4 +886,4 @@ void AnalyzeResonance::ThrContainer::Write(const std::string& outputFileName)
    outputFile.Close();
 }
 
-#endif /* ANALYZE_RESONANCE_CPP */
+#endif /* ANALYZE_SIM_RESONANCE_CPP */
