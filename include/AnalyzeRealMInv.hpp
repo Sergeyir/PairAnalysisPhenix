@@ -40,23 +40,23 @@ namespace AnalyzeRealMInv
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
-   void PerformMInvFitsForMethod(const std::string& methodName);
+   void PerformMInvFitsForMethod(const YAML::Node& method);
    /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy)
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
-    * @param[in] distrMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms
-    * @param[in] distrMergedBG histogram to pass that will be filled with contents of all scaled background histograms
+    * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms. The value that is passed for this histogram must be nullptr.
+    * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms. The value that is passed for this histogram must be nullptr.
     * @param[out] merged invariant mass distribution with background extracted
     */
-   TH1F *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                   TH1F *distrMergedFG, TH1F *distrMergedBG);
+   TH1D *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
+                   const int pTBin, TH1D *distrMInvMergedFG, TH1D *distrMInvMergedBG);
    /*! Subtracts background for the specified histogram 
     *
-    * @param[in] distrFG foreground M_{inv} distribution from which background will be extracted
-    * @param[in] distrFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
+    * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted
+    * @param[in] distrMInvFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
     * @param[out] invariant mass distribution with background subtracted
     */
-   TH1F *SubtractBG(TH1F *distrFG, TH1F *distrBG);
+   TH1D *SubtractBG(TH1D *distrMInvFG, TH1D *distrMInvBG);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();

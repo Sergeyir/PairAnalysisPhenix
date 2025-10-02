@@ -9,6 +9,8 @@
 #ifndef ESTIMATE_RESONANCE_EFF_HPP
 #define ESTIMATE_RESONANCE_EFF_HPP
 
+#include <thread>
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"

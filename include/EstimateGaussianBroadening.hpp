@@ -9,6 +9,8 @@
 #ifndef ESTIMATE_GAUSSIAN_BROADENING_HPP
 #define ESTIMATE_GAUSSIAN_BROADENING_HPP
 
+#include <thread>
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
