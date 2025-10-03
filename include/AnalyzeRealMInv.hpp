@@ -9,6 +9,8 @@
 #ifndef ANALYZE_REAL_M_INV_HPP
 #define ANALYZE_REAL_M_INV_HPP
 
+#include <thread>
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -30,6 +32,7 @@
 
 #include "InputYAMLReader.hpp"
 #include "FitFunc.hpp"
+#include "Constants.hpp"
 
 /*! @namespace AnalyzeRealMInv
  * @brief Contains all functions and variables for AnalyzeRealMInv.cpp
@@ -49,14 +52,14 @@ namespace AnalyzeRealMInv
     * @param[out] merged invariant mass distribution with background extracted
     */
    TH1D *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                   const int pTBin, TH1D *distrMInvMergedFG, TH1D *distrMInvMergedBG);
+                   const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG);
    /*! Subtracts background for the specified histogram 
     *
     * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted
     * @param[in] distrMInvFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
     * @param[out] invariant mass distribution with background subtracted
     */
-   TH1D *SubtractBG(TH1D *distrMInvFG, TH1D *distrMInvBG);
+   TH1D *SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -88,6 +91,16 @@ namespace AnalyzeRealMInv
    double massResonance;
    /// gamma of the resonance [GeV/c^2]
    double gammaResonance;
+   /// id of 1st decay product
+   int daughter1Id;
+   /// id of 2nd decay product
+   int daughter2Id;
+   /// shows whether a resonance has an antiparticel (for which idDaugther1 and idDaughter2 are swapped)
+   bool hasAntiparticle;
+   /// M_{inv} range minimum value [GeV/c^2]
+   double minMInv;
+   /// M_{inv} range maximum value [GeV/c^2]
+   double maxMInv;
    /// number of pT bins
    unsigned int pTNBins;
    /// pT bins ranges [GeV/c]

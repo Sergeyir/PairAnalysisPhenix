@@ -53,10 +53,10 @@ int main(int argc, char **argv)
    outputDir = "output/M2Id/" + runName;
 
    parametersDir = "data/Parameters/M2Id/" + runName;
-   system(("mkdir -p " + parametersDir).c_str());
+   void(system(("mkdir -p " + parametersDir).c_str()));
 
    rawYieldsDir = "data/RawYields/SingleTrack/" + runName;
-   system(("mkdir -p " + rawYieldsDir).c_str());
+   void(system(("mkdir -p " + rawYieldsDir).c_str()));
 
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
@@ -85,7 +85,7 @@ int main(int argc, char **argv)
    {
       if (argc == 3 && detector["name"].as<std::string>() != 
           static_cast<std::string>(argv[2])) continue;
-      system(("mkdir -p " + outputDir + "/" + detector["name"].as<std::string>()).c_str());
+      void(system(("mkdir -p " + outputDir + "/" + detector["name"].as<std::string>()).c_str()));
       PerformFitsForDetector(detector, inputYAMLMain["centrality_min"].as<double>(), 
                              inputYAMLMain["centrality_max"].as<double>());
       pBar.HandleOutput(" " + detector["name"].as<std::string>() + " done");

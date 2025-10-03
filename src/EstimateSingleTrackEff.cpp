@@ -41,7 +41,7 @@ int main(int argc, char **argv)
    gErrorIgnoreLevel = kWarning;
 
    outputDir = "output/SingleTrackEff/" + runName;
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    const std::string inputDir = "data/PostSim/" + runName + "/SingleTrack/";
 

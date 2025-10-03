@@ -14,7 +14,9 @@ branching_ratio_uncertainty: 0.00009
 use_emcal_id: true
 cb_c_bins: 10 # number of centrality bins specified in CabanaBoy
 cb_z_bins: 3 # number of z_{vtx} bins specified in CabanaBoy
-cb_r_bins: 0 # number of r_{vtx} bins specified in CabanaBoy
+cb_r_bins: 1 # number of r_{vtx} bins specified in CabanaBoy
+m_inv_range_min: 0.7 # minimum value of a range of M_{inv} to be drawn
+m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP

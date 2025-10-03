@@ -106,7 +106,7 @@ void GoodRunsSelector()
 	CheckInputFile(input_dir + Par.ref_file_name2);
 	
 	std::string ls_com = "cd " + input_dir + " && ls se* > runs.txt";
-	system(ls_com.c_str());
+	void(system(ls_com.c_str()));
 
 	std::string runs_file_name = input_dir + "runs.txt";
 	ifstream runs_file(runs_file_name.c_str());
@@ -330,7 +330,7 @@ void GoodRunsSelector()
 	range_hist.SetMinimum(0.);
 	
 	std::string output_dir = "../output/deadmaps/" + Par.run_type + "/";
-	system(("mkdir -p " + output_dir).c_str());
+	void(system(("mkdir -p " + output_dir).c_str()));
 
 	range_hist.SetMaximum(2.);
 

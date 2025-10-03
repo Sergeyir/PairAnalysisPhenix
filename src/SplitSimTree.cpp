@@ -640,7 +640,7 @@ int main(int argc, char **argv)
    collisionSystemName = inputYAMLMain["collision_system_name"].as<std::string>();
 
    outputDir = "data/PostSim/" + runName + "/Resonance/";
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    pTMin = inputYAMLSimSingleTrack["pt_min"].as<double>();
    pTMax = inputYAMLSimSingleTrack["pt_max"].as<double>();

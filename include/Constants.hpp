@@ -47,6 +47,18 @@ namespace ParticleMap
       {-321, "k-"},
       {-2212, "pbar"}
    };
+   /// short names (for decay channels)
+   std::unordered_map<int, std::string> nameShort =
+   {
+      {11, "e"},
+      {211, "pi"},
+      {321, "K"},
+      {2212, "p"},
+      {-11, "e"},
+      {-211, "pi"},
+      {-321, "K"},
+      {-2212, "p"}
+   };
    /// ids by GEANT numbering scheme (https://www.star.bnl.gov/public/comp/simu/newsite/gstar/Manual/particle_id.html)
    std::unordered_map<int, int> idGEANT =
    {

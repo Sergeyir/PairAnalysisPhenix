@@ -77,7 +77,7 @@ int main(int argc, char **argv)
    numberOfIterations = pTNBins*17;
 
    const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
-   system(("mkdir -p " + parametersOutputDir).c_str());
+   void(system(("mkdir -p " + parametersOutputDir).c_str()));
 
    // file in which all important data will be written
    TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
@@ -115,7 +115,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                                           "was not found in file " + inputFileName);
 
    const std::string outputDir = "output/ResonanceEff/" + runName + "/" + methodName;
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
    TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);

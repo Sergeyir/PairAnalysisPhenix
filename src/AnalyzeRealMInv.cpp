@@ -52,6 +52,14 @@ int main(int argc, char **argv)
    massResonance = inputYAMLResonance["mass"].as<double>();
    gammaResonance = inputYAMLResonance["gamma"].as<double>();
 
+   daughter1Id = inputYAMLResonance["daughter1_id"].as<int>();
+   daughter2Id = inputYAMLResonance["daughter2_id"].as<int>();
+
+   hasAntiparticle = inputYAMLResonance["has_antiparticle"].as<bool>();
+
+   minMInv = inputYAMLResonance["m_inv_range_min"].as<double>();
+   maxMInv = inputYAMLResonance["m_inv_range_max"].as<double>();
+
    SetGaussianBroadeningFunction();
 
    inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
@@ -72,6 +80,7 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
+   int methodIndex = -1;
    if (methodToAnalyze == "all")
    {
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
@@ -83,14 +92,24 @@ int main(int argc, char **argv)
    }
    else
    {
+      for (int i = 0; i < static_cast<int>(inputYAMLResonance["pair_selection_methods"].size()); i++)
+      {
+         if (inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>() ==
+             methodToAnalyze) methodIndex = i;
+      }
+      if (methodIndex == -1)
+      {
+         CppTools::PrintError("No method named " + methodToAnalyze + " in input file");
+      }
+
       numberOfIterations = 
-         (inputYAMLResonance["pair_selection_methods"][method.c_str()]["pt_bin_max"].as<int>() - 
-          inputYAMLResonance["pair_selection_methods"][method.c_str()]["pt_bin_min"].as<int>())*
+         (inputYAMLResonance["pair_selection_methods"][methodIndex]["pt_bin_max"].as<int>() - 
+          inputYAMLResonance["pair_selection_methods"][methodIndex]["pt_bin_min"].as<int>())*
          inputYAMLResonance["centrality_bins"].size();
    }
 
    const std::string yieldOutputDir = "data/Parameters/ResonanceEff/" + runName;
-   system(("mkdir -p " + yieldOutputDir).c_str());
+   void(system(("mkdir -p " + yieldOutputDir).c_str()));
 
    // file in which all important data will be written
    TFile yieldOutput((yieldOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
@@ -103,9 +122,8 @@ int main(int argc, char **argv)
          PerformMInvFitsForMethod(method);
       }
    }
-   else PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][method.c_str()]);
+   else PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][methodIndex]);
 
-   parametersOutput.Close();
    pBar.Finish();
 
    CppTools::PrintInfo("AnalyzeRealMInv executable has finished running succesfully");
@@ -116,7 +134,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    const std::string methodName = method["name"].as<std::string>();
 
    const std::string outputDir = "output/MInv/" + runName + "/" + methodName;
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    /*
    TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
@@ -131,15 +149,71 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
-      for (unsigned int i = method["pt_bin_min"].as<int>(); 
-           i <= method["pt_bin_min"].as<int>(); i++)
+      for (int i = method["pt_bin_min"].as<int>(); 
+           i <= method["pt_bin_max"].as<int>(); i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
-         TH1D *distrMInvFG, *distrMInvBG;
+         TH1D *distrMInvFG = nullptr;
+         TH1D *distrMInvBG = nullptr;
          TH1D *distrMInv = MergeMInv(methodName, centralityBin, i, distrMInvFG, distrMInvBG);
 
-         if (distrMInv->GetEntries() == 0) continue;
+         if (!distrMInv)
+         {
+            pBar.Clear();
+            CppTools::PrintError("Resulting M_{inv} histogram could not be constructed for " + 
+                                 centralityBin["name"].as<std::string>() + " " +
+                                 CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                 CppTools::DtoStr(pTBinRanges[i + 1], 2));
+         }
+         else if (distrMInv->GetEntries() == 0)
+         {
+            pBar.Clear();
+            CppTools::PrintWarning("Resulting histogram is empty in " + 
+                                   centralityBin["name"].as<std::string>() + " " +
+                                   CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            pBar.RePrint();
+         }
+
+         if (!distrMInvFG)
+         {
+            pBar.Clear();
+            CppTools::PrintError("Resulting M_{inv} foreground histogram "\
+                                 "could not be constructed for " + 
+                                 centralityBin["name"].as<std::string>() + " " +
+                                 CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                 CppTools::DtoStr(pTBinRanges[i + 1], 2));
+         }
+         else if (distrMInvFG->GetEntries() == 0)
+         {
+            pBar.Clear();
+            CppTools::PrintWarning("Resulting foreground histogram is empty in " + 
+                                   centralityBin["name"].as<std::string>() + " " +
+                                   CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            pBar.RePrint();
+         }
+
+         if (!distrMInvBG)
+         {
+            pBar.Clear();
+            CppTools::PrintWarning("Resulting M_{inv} foreground histogram "\
+                                   "could not be constructed for " + 
+                                   centralityBin["name"].as<std::string>() + " " +
+                                   CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            pBar.RePrint();
+         }
+         else if (distrMInvBG->GetEntries() == 0)
+         {
+            pBar.Clear();
+            CppTools::PrintWarning("Resulting background histogram is empty in " + 
+                                   centralityBin["name"].as<std::string>() + 
+                                   CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            pBar.RePrint();
+         }
 
          /*
          // sigma of a gaus that is convoluted with Breit-Wigner
@@ -232,17 +306,9 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
                         fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
 
-         distrMInv->GetXaxis()->
-            SetRange(CppTools::Maximum(distrMInv->GetXaxis()->FindBin(fit.GetParameter(1) - 
-                                                                      fit.GetParameter(2)*5. -
-                                                                      gaussianBroadeningSigma*5.), 1), 
-                     distrMInv->GetXaxis()->FindBin(fit.GetParameter(1) + fit.GetParameter(2)*5. +
-                                                    gaussianBroadeningSigma*5.));
-
          fit.SetLineWidth(4);
          fitResonance.SetLineWidth(4);
          fitBG.SetLineWidth(4);
-         distrMInv->SetLineWidth(2);
 
          fit.SetLineColorAlpha(kRed - 3, 0.8);
          fitResonance.SetLineColorAlpha(kAzure - 3, 0.8);
@@ -251,26 +317,46 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          fitResonance.SetLineStyle(2);
          fitBG.SetLineStyle(7);
 
+         */
+
+         distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv), 
+                                         distrMInv->GetXaxis()->FindBin(maxMInv));
+
+         distrMInv->SetLineWidth(2);
          distrMInv->SetLineColor(kBlack);
          distrMInv->SetMarkerColor(kBlack);
 
+         if (distrMInvFG)
+         {
+            distrMInvFG->SetLineWidth(3);
+            distrMInvFG->SetLineColor(kRed - 3);
+            distrMInvFG->SetMarkerColor(kRed - 3);
+         }
+
+         if (distrMInvBG)
+         {
+            distrMInvBG->SetLineWidth(4);
+            distrMInvBG->SetLineColor(kAzure - 3);
+            distrMInvBG->SetMarkerColor(kAzure - 3);
+         }
+
          TCanvas canvMInv("canv MInv", "", 800, 800);
 
-         gPad->SetRightMargin(0.03);
-         gPad->SetTopMargin(0.02);
-         gPad->SetLeftMargin(0.173);
-         gPad->SetBottomMargin(0.112);
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.02); 
+         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Weighted counts", 1., 1.9);
+         ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
 
-         text.DrawTextNDC(0.9, 0.95, ("MC " + methodName).c_str());
+         text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
          texText.DrawLatexNDC(0.2, 0.9, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+         /*
          texText.DrawLatexNDC(0.2, 0.83, 
                               ("#it{#chi}^{2}/NDF = " + 
                                CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 2)).c_str());
-
+                               */
          /*
+
          texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
                                          " [MeV/c^{2}]").c_str());
          texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
@@ -278,13 +364,96 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                           " [MeV/c^{2}]").c_str());
                                           */
 
+         /*
          fitBG.Draw("SAME");
          fitResonance.Draw("SAME");
          fit.Draw("SAME");
+         */
 
          ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
+                                centralityBin["name"].as<std::string>() + "_" +
                                 CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                 CppTools::DtoStr(pTBinRanges[i + 1], 1));
+
+         TCanvas canvMInvSummary("canv MInv summary", "", 800, 800);
+
+         canvMInvSummary.Divide(2, 2);
+         
+         canvMInvSummary.cd(1);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
+                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
+
+         canvMInvSummary.cd(3);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
+                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
+
+         canvMInvSummary.cd(2);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+         distrMInv->GetXaxis()->SetRange(1, distrMInv->GetXaxis()->GetNbins());
+
+         if (distrMInvFG)
+         {
+            ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9,
+                                 0.05, 0.05, true, false);
+         }
+         else
+         {
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9,
+                                 0.05, 0.05, true, false);
+         }
+
+         if (distrMInvBG) distrMInvBG->Draw("SAME");
+         else text.DrawTextNDC(0.75, 0.9, "No data on background");
+         if (distrMInvFG) distrMInvFG->Draw("SAME");
+         else text.DrawTextNDC(0.85, 0.9, "No data on foreground");
+         distrMInv->Draw("SAME");
+
+         texText.DrawLatexNDC(0.3, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+
+         canvMInvSummary.cd(4);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+         if (distrMInvBG && distrMInvFG)
+         {
+            TH1D *ratioFGBG = static_cast<TH1D *>(distrMInvFG->Clone());
+            ratioFGBG->Divide(distrMInvBG);
+
+            ratioFGBG->GetXaxis()->SetRange(ratioFGBG->GetXaxis()->FindBin(minMInv), 
+                                            ratioFGBG->GetXaxis()->FindBin(maxMInv));
+
+            ratioFGBG->SetLineWidth(2);
+            ratioFGBG->SetLineColor(kBlack);
+            ratioFGBG->SetMarkerColor(kBlack);
+
+            ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.9);
+         }
+         else
+         {
+            text.DrawTextNDC(0.75, 0.9, "No data");
+         }
+
+         text.DrawTextNDC(0.85, 0.9, (methodName).c_str());
+
+         ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
+                                centralityBin["name"].as<std::string>() + "_" +
+                                CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                                CppTools::DtoStr(pTBinRanges[i + 1], 1), true, false);
+
+         TCanvas canvMInvFGVsBG("canv MInv FG vs BG", "", 800, 800);
 
          numberOfCalls++;
       }
@@ -292,6 +461,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
    text.SetTextAngle(0.);
 
+   /*
    distrMeansVsPT.SetLineColor(kRed - 2);
    distrMeansVsPT.SetMarkerColor(kRed - 2);
    distrMeansVsPT.SetLineWidth(4);
@@ -334,7 +504,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                         "#it{#mu} [GeV/#it{c}^{2}]", 1., 1.82);
 
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
+   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
    massResonancePDG.Draw();
 
    ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + resonanceName + "_means");
@@ -349,7 +519,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                         "#it{#Gamma} [GeV/#it{c}^{2}]", 1., 1.82);
 
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
+   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
    gammaResonancePDG.Draw();
 
    ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + "_gammas");
@@ -366,7 +536,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                         "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
 
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
+   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
 
    ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + "_raw_yield");
 
@@ -383,13 +553,14 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                         "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
                         "[(GeV/#it{c})^{-2})]", 1., 1.35);
 
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
+   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
 
    ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + resonanceName + "_raw_spectra");
+   */
 }
 
 TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                                 const int pTBin, TH1D *distrMInvMergedFG, TH1D *distrMInvMergedBG)
+                                 const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG)
 {
    if (distrMInvMergedFG)
    {
@@ -402,12 +573,16 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
    if (distrMInvMergedBG)
    {
       CppTools::PrintError("TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, "\
-                           "const YAML::Node& centralityBin, TH1D *distrMInvMergedFG, "\
+                           "const YAML::Node& centralityBin, TH1D *distrMInvMergedBG, "\
                            "TH1D *distrMInvMergedBG)) : \n"\
                            "distrMInvMergedBG value must be nullptr");
    }
 
-   TH1D *distrMInvMerged;
+   // decay channel name
+   const std::string channelName = ParticleMap::nameShort[daughter1Id] +
+                                   ParticleMap::nameShort[daughter2Id];
+
+   TH1D *distrMInvMerged = nullptr;
    // iterating over CabanaBoy centrality bins
    for (int c = centralityBin["cb_c_bin_min"].as<int>(); 
         c <= centralityBin["cb_c_bin_max"].as<int>(); c++)
@@ -415,12 +590,12 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
       const std::string cName = (c > 9) ? std::to_string(c) : "0" + std::to_string(c);
 
       // iterating over CabanaBoy z_{vtx} bins
-      for (int z = 0; z <= inputYAMLMain["cb_z_bins"].as<int>(); z++)
+      for (int z = 0; z < inputYAMLResonance["cb_z_bins"].as<int>(); z++)
       {
          const std::string zName = (z > 9) ? std::to_string(z) : "0" + std::to_string(z);
 
          // iterating over CabanaBoy r_{vtx} bins
-         for (int r = 0; r <= inputYAMLMain["cb_r_bins"].as<int>(); r++)
+         for (int r = 0; r < inputYAMLResonance["cb_r_bins"].as<int>(); r++)
          {
             const std::string rName = (r > 9) ? std::to_string(r) : "0" + std::to_string(r);
 
@@ -428,11 +603,13 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
                "c" + cName + "_z" + zName + "_r" + rName + "/" + 
                 methodName + ": " + channelName + "_FG12";
 
-            TH2F distrMInvVsPTFG = static_cast<TH2F *> (inputFile.Get(distrMINvVsPTFGName.c_str()));
+            TH2F *distrMInvVsPTFG = 
+               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTFGName.c_str()));
 
             if (!distrMInvVsPTFG)
             {
-               CppTools::PrintError("Histogram named " + histNameFG + 
+               pBar.Clear();
+               CppTools::PrintError("Histogram named " + distrMInvVsPTFGName + 
                                     " does not exist in file " + inputFileName);
             }
 
@@ -440,51 +617,71 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
                "c" + cName + "_z" + zName + "_r" + rName + "/" + 
                 methodName + ": " + channelName + "_BG12";
 
-            TH2F distrMInvVsPTBG = static_cast<TH2F *> (inputFile.Get(distrMINvVsPTBGName.c_str()));
+            TH2F *distrMInvVsPTBG = 
+               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTBGName.c_str()));
 
             if (!distrMInvVsPTBG)
             {
-               CppTools::PrintError("Histogram named " + histNameBG + 
+               pBar.Clear();
+               CppTools::PrintError("Histogram named " + distrMInvVsPTBGName + 
                                     " does not exist in file " + inputFileName);
             }
 
-            for (int i = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] - 1e-6); 
-                 i <= distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] + 1e-6); i++)
+            for (int i = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6); 
+                 i <= distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6); i++)
             {
-               distrMInvFG = distrMInvVsPTFG->ProjectionY(std::to_string(i).c_str(), i, i);
-               distrMInvBG = distrMInvVsPTBG->ProjectionY(std::to_string(i).c_str(), i, i);
+               TH1D *distrMInvFG = 
+                  distrMInvVsPTFG->ProjectionY((distrMInvVsPTFG->GetName() + 
+                                                std::to_string(c) + std::to_string(z) + 
+                                                std::to_string(r) + std::to_string(i)).c_str(), 
+                                               i, i);
+               /*
+               CppTools::Print(distrMInvVsPTFG->GetName() + 
+                                                std::to_string(c) + std::to_string(z) + 
+                                                std::to_string(r) + std::to_string(i));
+                                                */
+               TH1D *distrMInvBG = 
+                  distrMInvVsPTBG->ProjectionY((distrMInvVsPTBG->GetName() + 
+                                                std::to_string(c) + std::to_string(z) + 
+                                                std::to_string(r) + std::to_string(i)).c_str(), 
+                                               i, i);
 
-               if (distrMInvFG->GetEntries() < 1e-6) continue;
+               if (distrMInvFG->GetEntries() < 1e-3) continue;
+
+               distrMInvFG->Sumw2();
+               distrMInvBG->Sumw2();
 
                if (!distrMInvMerged) 
                {
-                  if (distrMInvBG->GetEntries() < 1e-6) distrMInvMerged = distrMInvFG;
+                  if (distrMInvBG->GetEntries() < 1e-3) 
+                  {
+                     distrMInvMerged = static_cast<TH1D *>(distrMInvFG->Clone());
+                  }
                   else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG);
 
-                  distrMInvMergedFG = distrMInvFG;
-                  distrMInvMergedBG = distrMInvBG;
+                  distrMInvMergedFG = static_cast<TH1D *>(distrMInvFG->Clone());
+                  distrMInvMergedBG = static_cast<TH1D *>(distrMInvBG->Clone());
                }
                else 
                {
-                  if (distrMInvBG->GetEntries() < 1e-6) distrMInvMerged.Add(distrMInvFG);
-                  else distrMInvMerged.Add(SubtractBG(distrMInvFG, distrMInvBG));
+                  if (distrMInvBG->GetEntries() < 1e-3) distrMInvMerged->Add(distrMInvFG);
+                  else distrMInvMerged->Add(SubtractBG(distrMInvFG, distrMInvBG));
 
-                  distrMInvMerged.Add(SubtractBG(distrMInvFG, distrMInvBG));
-                  distrMInvMergedFG.Add(distrMInvFG);
-                  distrMInvMergedBG.Add(distrMInvBG);
+                  distrMInvMergedFG->Add(distrMInvFG);
+                  distrMInvMergedBG->Add(distrMInvBG);
                }
             }
          }
       }
    }
+
+   return distrMInvMerged;
 }
 
-TH1D *AnalyzeRealMInv::SubtractBG(TH1D *distrMInvFG, TH1D *distrMInvBG)
+TH1D *AnalyzeRealMInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG)
 {
-   TH1D *distrMInvSubtr = distrMInvFG.Clone();
-
    const double integralMInvFG = distrMInvFG->Integral(1, distrMInvFG->GetXaxis()->GetNbins());
-   const double integralMInvBG = distrMInvBG->Integral(1, distrMInvFG->GetXaxis()->GetNbins());
+   const double integralMInvBG = distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins());
 
    double tailIntegralMInvFG = 0.;
    double tailIntegralMInvBG = 0.;
@@ -493,8 +690,8 @@ TH1D *AnalyzeRealMInv::SubtractBG(TH1D *distrMInvFG, TH1D *distrMInvBG)
 
    for (int i = distrMInvFG->GetXaxis()->GetNbins(); i >= 1; i--)
    {
-      if (tailIntegralMInvFG > integralMInvFG*0.05 && 
-          tailIntegralMInvBG > integralMInvBG*0.05) 
+      if (tailIntegralMInvFG > integralMInvFG*0.1 && 
+          tailIntegralMInvBG > integralMInvBG*0.1) 
       {
          tailBinBegin = i;
          break;
@@ -504,19 +701,25 @@ TH1D *AnalyzeRealMInv::SubtractBG(TH1D *distrMInvFG, TH1D *distrMInvBG)
       tailIntegralMInvBG += distrMInvBG->GetBinContent(i);
    }
 
-   double scaleFactorBG= tailIntegralMInvFG/tailIntegralMInvBG;
-   
+   double scaleFactorBG = tailIntegralMInvFG/tailIntegralMInvBG;
+
    // if background was overestimated, some bins will be negative after BG subtraction
    // this needs to be resolved by rescaling (if needed)
    for (int i = 1; i <= tailBinBegin; i++)
    {
-      if (distrMInvBG->GetBinContent(i)*scaleFactor > distrMInvFG->GetBinContent(i))
+      if (distrMInvBG->GetBinContent(i) < 1e-3) continue;
+      if (distrMInvFG->GetBinContent(i) < 1e-3) continue;
+
+      if (distrMInvBG->GetBinContent(i)*scaleFactorBG > distrMInvFG->GetBinContent(i))
       {
          scaleFactorBG *= distrMInvFG->GetBinContent(i)/distrMInvBG->GetBinContent(i);
       }
    }
 
    distrMInvBG->Scale(scaleFactorBG);
+
+   TH1D *distrMInvSubtr = static_cast<TH1D *>(distrMInvFG->Clone());
+   distrMInvSubtr->Add(distrMInvBG, -1.);
 
    return distrMInvSubtr;
 }

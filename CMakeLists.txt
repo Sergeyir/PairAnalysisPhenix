@@ -2,15 +2,15 @@ cmake_minimum_required(VERSION 3.0...4.1.1 FATAL_ERROR)
 
 project(PairAnalysisPhenix)
 
-option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
-
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -pipe -O2")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -pipe -O2 -g")
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
+
+option(BUILD_SHARED_LIBS "Build using shared libraries" ON)
 
 find_package(ROOT QUIET)
 
@@ -27,8 +27,8 @@ else()
    message(FATAL_ERROR "ROOT not found: install it via package manager or set ROOT_PATH if you installed it manually")
 endif()
 
-set(CMAKE_SHARED_LINKER_FLAGS "-g ${ROOT_LIB_FLAGS}")
-set(CMAKE_EXE_LINKER_FLAGS "-g ${ROOT_LIB_FLAGS}")
+set(CMAKE_SHARED_LINKER_FLAGS "${ROOT_LIB_FLAGS}")
+set(CMAKE_EXE_LINKER_FLAGS "${ROOT_LIB_FLAGS}")
 
 include_directories(${CMAKE_SOURCE_DIR}/include ${ROOT_INCLUDE_DIRS} ${CMAKE_SOURCE_DIR}/CppTools/include ./ROOTTools/include ${CMAKE_SOURCE_DIR}/ProgressBar/include)
 
@@ -64,6 +64,7 @@ add_executable(M2IdentFit ${CMAKE_SOURCE_DIR}/src/M2IdentFit.cpp)
 add_executable(EstimateGaussianBroadening ${CMAKE_SOURCE_DIR}/src/EstimateGaussianBroadening.cpp)
 add_executable(EstimateSingleTrackEff ${CMAKE_SOURCE_DIR}/src/EstimateSingleTrackEff.cpp)
 add_executable(EstimateResonanceEff ${CMAKE_SOURCE_DIR}/src/EstimateResonanceEff.cpp)
+add_executable(AnalyzeRealMInv ${CMAKE_SOURCE_DIR}/src/AnalyzeRealMInv.cpp)
 
 target_link_libraries(SingleTrackFunc SimTreeReader)
 target_link_libraries(PairTrackFunc SimTreeReader)

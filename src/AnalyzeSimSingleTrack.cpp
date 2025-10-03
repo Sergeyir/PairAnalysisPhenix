@@ -729,7 +729,7 @@ int main(int argc, char **argv)
    collisionSystemName = inputYAMLMain["collision_system_name"].as<std::string>();
 
    outputDir = "data/PostSim/" + runName + "/SingleTrack/";
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    pTMin = inputYAMLSim["pt_min"].as<double>();
    pTMax = inputYAMLSim["pt_max"].as<double>();
@@ -978,7 +978,8 @@ int main(int argc, char **argv)
    }
 
    CppTools::PrintInfo("Clearing output directory: " + outputDir);
-   system(("find " + outputDir + " ! -name 'all.root' ! -name 'alpha_reweight.root' -type f -exec rm -f {} +").c_str());
+   void(system(("find " + outputDir + " ! -name 'all.root' ! "\
+               "-name 'alpha_reweight.root' -type f -exec rm -f {} +").c_str()));
 
    std::vector<std::string> particleList;
    for (const auto& particle : inputYAMLSim["particles"])
@@ -1067,7 +1068,7 @@ int main(int argc, char **argv)
    {
       haddCommand += outputDir + particle["name"].as<std::string>() + ".root ";
    }
-   system(haddCommand.c_str());
+   void(system(haddCommand.c_str()));
 
    return 0;
 }

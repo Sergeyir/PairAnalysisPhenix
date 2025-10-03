@@ -56,7 +56,7 @@ int main(int argc, char **argv)
    ROOT::EnableImplicitMT(numberOfThreads);
 
    outputDir = "output/CalibrateSimSigmalizedResiduals/" + runName + "/";
-   system(("mkdir -p " + outputDir).c_str());
+   void(system(("mkdir -p " + outputDir).c_str()));
 
    const std::string inputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
    CppTools::CheckInputFile(inputFileName);
@@ -82,7 +82,7 @@ int main(int argc, char **argv)
 
    numberOfIterations *= 4;
 
-   system(("mkdir -p data/Parameters/CalibrateSimSigmalizedResiduals/" + runName).c_str());
+   void(system(("mkdir -p data/Parameters/CalibrateSimSigmalizedResiduals/" + runName).c_str()));
 
    PerformCalibrationsForDetector("PC2", (detectorsConfiguration[2] == '1'));
    PerformCalibrationsForDetector("PC3e", (detectorsConfiguration[3] == '1'));
