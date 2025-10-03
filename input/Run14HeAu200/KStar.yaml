@@ -15,32 +15,34 @@ use_emcal_id: true
 cb_c_bins: 10 # number of centrality bins specified in CabanaBoy
 cb_z_bins: 3 # number of z_{vtx} bins specified in CabanaBoy
 cb_r_bins: 1 # number of r_{vtx} bins specified in CabanaBoy
-m_inv_range_min: 0.7 # minimum value of a range of M_{inv} to be drawn
+m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
-  - {value: 1.00, min: 0.9, max: 1.1}
-  - {value: 1.25, min: 1.1, max: 1.4}
-  - {value: 1.55, min: 1.4, max: 1.7}
-  - {value: 1.80, min: 1.7, max: 1.9}
-  - {value: 2.10, min: 1.9, max: 2.3}
-  - {value: 2.45, min: 2.3, max: 2.6}
-  - {value: 3.00, min: 2.6, max: 3.4}
-  - {value: 3.95, min: 3.4, max: 4.5}
-  - {value: 5.50, min: 4.5, max: 6.5}
-  - {value: 7.50, min: 6.5, max: 8.5}
+  - {value: 1.00, min: 0.9, max: 1.1} # 0
+  - {value: 1.25, min: 1.1, max: 1.4} # 1
+  - {value: 1.55, min: 1.4, max: 1.7} # 2
+  - {value: 1.80, min: 1.7, max: 1.9} # 3
+  - {value: 2.10, min: 1.9, max: 2.3} # 4
+  - {value: 2.45, min: 2.3, max: 2.6} # 5
+  - {value: 3.00, min: 2.6, max: 3.4} # 6
+  - {value: 3.95, min: 3.4, max: 4.5} # 7
+  - {value: 5.50, min: 4.5, max: 6.5} # 8
+  - {value: 7.50, min: 6.5, max: 8.5} # 9
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
 - name: lpt
 - name: mpt
 - name: hpt
 pair_selection_methods:
-  - {name: NoPID,     pt_bin_min: 0, pt_bin_max: 9}
-  - {name: 1PID,      pt_bin_min: 0, pt_bin_max: 9}
-  - {name: TOF1PID,   pt_bin_min: 0, pt_bin_max: 9}
-  - {name: 2PID,      pt_bin_min: 0, pt_bin_max: 9}
-  - {name: TOF2PID,   pt_bin_min: 0, pt_bin_max: 9}
-  - {name: EMCal2PID, pt_bin_min: 0, pt_bin_max: 9}
+  - {name: DCPC1NoPID,     pt_bin_min: 4, pt_bin_max: 9}
+  - {name: NoPID,          pt_bin_min: 4, pt_bin_max: 9}
+  - {name: EMCalNoPID,     pt_bin_min: 4, pt_bin_max: 9}
+#  - {name: 1PID,           pt_bin_min: 0, pt_bin_max: 9}
+#  - {name: TOF1PID,        pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 2PID,           pt_bin_min: 0, pt_bin_max: 7}
+  - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 7}
+  - {name: EMCal2PID,      pt_bin_min: 0, pt_bin_max: 7}
 centrality_bins:
 - 
   name: "0-20"
