@@ -158,8 +158,11 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          TH1D *distrMInvFG = nullptr;
          TH1D *distrMInvBG = nullptr;
+         TH1D *distrMInvFGLR = nullptr;
+         TH1D *distrMInvBGLR = nullptr;
 
-         TH1D *distrMInv = MergeMInv(methodName, centralityBin, i, distrMInvFG, distrMInvBG);
+         TH1D *distrMInv = MergeMInv(methodName, centralityBin, i, distrMInvFG, distrMInvBG, 
+                                     distrMInvFGLR, distrMInvBGLR);
 
          if (!distrMInv)
          {
@@ -571,22 +574,20 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 }
 
 TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                                 const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG)
+                                 const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
+                                 TH1D*& distrMInvMergedFGLR, TH1D*& ditrMInvmMergedBGLR)
 {
-   if (distrMInvMergedFG)
+   if (distrMInvMergedFG || distrMInvMergedFG || distrMInvMergedFGLR || distrMInvMergedBGLR)
    {
-      CppTools::PrintError("TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, "\
-                           "const YAML::Node& centralityBin, TH1D *distrMInvMergedFG, "\
-                           "TH1D *distrMInvMergedBG)) : \n"\
-                           "distrMInvMergedFG value must be nullptr");
-   }
-
-   if (distrMInvMergedBG)
-   {
-      CppTools::PrintError("TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, "\
-                           "const YAML::Node& centralityBin, TH1D *distrMInvMergedBG, "\
-                           "TH1D *distrMInvMergedBG)) : \n"\
-                           "distrMInvMergedBG value must be nullptr");
+      CppTools::PrintError("TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, "
+                           "const YAML::Node& centralityBin, TH1D*& distrMInvMergedFG, "
+                           "TH1D*& distrMInvMergedBG, TH1D*& distrMInvMergedFGLR, "
+                           "TH1D*& distrMInvMergedBGLR)) : \n" 
+                           (!distrMInvMergedFG ? "" : "distrMInvMergedFG ")
+                           (!distrMInvMergedBG ? "" : "distrMInvMergedBG ")
+                           (!distrMInvMergedFGLR ? "" : "distrMInvMergedFGLR ")
+                           (!distrMInvMergedBGLR ? "" : "distrMInvMergedBGLR ")
+                           "value(s) must be nullptr");
    }
 
    // decay channel name

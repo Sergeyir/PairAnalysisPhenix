@@ -47,19 +47,25 @@ namespace AnalyzeRealMInv
    /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy)
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
+    * @param[in] centralityBin centrality bin which will be used for invariant mass histogram merging
+    * @param[in] pTBin pT bin which will be used for invariant mass histogram merging
     * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms. The value that is passed for this histogram must be nullptr.
     * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms. The value that is passed for this histogram must be nullptr.
+    * @param[in] distrMInvMergedFGLR histogram to pass that will be filled with contents of all scaled foreground histograms with low resolution (for background scaling). The value that is passed for this histogram must be nullptr.
+    * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling). The value that is passed for this histogram must be nullptr.
     * @param[out] merged invariant mass distribution with background extracted
     */
    TH1D *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                   const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG);
+                   const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
+                   TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR);
    /*! Subtracts background for the specified histogram 
     *
     * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted
     * @param[in] distrMInvFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
     * @param[out] invariant mass distribution with background subtracted
     */
-   TH1D *SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG);
+   TH1D *SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG, 
+                    TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
