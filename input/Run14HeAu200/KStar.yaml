@@ -9,6 +9,7 @@ gamma: 0.0514
 daughter1_id: 211
 daughter2_id: -321
 has_antiparticle: true
+separate_antiparticle: false
 branching_ratio: 0.66601
 branching_ratio_uncertainty: 0.00009
 use_emcal_id: true
@@ -35,11 +36,14 @@ sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange 
 - name: mpt
 - name: hpt
 pair_selection_methods:
-  - {name: DCPC1NoPID,     pt_bin_min: 4, pt_bin_max: 9}
-  - {name: NoPID,          pt_bin_min: 4, pt_bin_max: 9}
-  - {name: EMCalNoPID,     pt_bin_min: 4, pt_bin_max: 9}
-#  - {name: 1PID,           pt_bin_min: 0, pt_bin_max: 9}
-#  - {name: TOF1PID,        pt_bin_min: 0, pt_bin_max: 9}
+  - {name: DCPC1NoPID,     pt_bin_min: 0, pt_bin_max: 9}
+  - {name: NoPID,          pt_bin_min: 0, pt_bin_max: 9}
+  - {name: EMCalNoPID,     pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 1TOFDCPC11PID,  pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 1EMCal1PID,     pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 1TOF1PID,       pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 1PID,           pt_bin_min: 0, pt_bin_max: 9}
+  - {name: 1TOF1PID,       pt_bin_min: 0, pt_bin_max: 9}
   - {name: 2PID,           pt_bin_min: 0, pt_bin_max: 7}
   - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 7}
   - {name: EMCal2PID,      pt_bin_min: 0, pt_bin_max: 7}

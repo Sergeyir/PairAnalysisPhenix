@@ -15,11 +15,11 @@ using namespace AnalyzeRealMInv;
 
 int main(int argc, char **argv)
 {
-   if (argc < 3 || argc > 5) 
+   if (argc < 3 || argc > 6) 
    {
       CppTools::PrintError("Expected 2-3 parameters while " + std::to_string(argc - 1) + " "\
                            "parameter(s) were provided \n Usage: bin/AnalyzeRealMInv "\
-                           "inputYAMLName taxiNumber methodName=all "\
+                           "inputYAMLName taxiNumber methodName=all rebinX=1 "\
                            "numberOfThreads=std::thread::hardware_concurrency()");
    }
  
@@ -27,11 +27,13 @@ int main(int argc, char **argv)
 
    taxiNumber = std::stoi(argv[2]);
  
-   if (argc == 4) ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-   else ROOT::EnableImplicitMT(std::stoi(argv[4]));
+   if (argc == 6) ROOT::EnableImplicitMT(std::stoi(argv[5]));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
+
+   if (argc == 5) rebinX = std::stoi(argv[4]);
 
    std::string methodToAnalyze;
-   if (argc >= 3) methodToAnalyze = argv[3];
+   if (argc >= 4) methodToAnalyze = argv[3];
    else methodToAnalyze = "all";
 
    gStyle->SetOptStat(0);
@@ -54,8 +56,6 @@ int main(int argc, char **argv)
 
    daughter1Id = inputYAMLResonance["daughter1_id"].as<int>();
    daughter2Id = inputYAMLResonance["daughter2_id"].as<int>();
-
-   hasAntiparticle = inputYAMLResonance["has_antiparticle"].as<bool>();
 
    minMInv = inputYAMLResonance["m_inv_range_min"].as<double>();
    maxMInv = inputYAMLResonance["m_inv_range_max"].as<double>();
@@ -135,7 +135,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 {
    const std::string methodName = method["name"].as<std::string>();
 
-   const std::string outputDir = "output/MInv/" + runName + "/" + methodName;
+   const std::string outputDir = 
+      "output/MInv/" + runName + "/" + std::to_string(taxiNumber) + "/" + methodName;
    void(system(("mkdir -p " + outputDir).c_str()));
 
    /*
@@ -161,8 +162,19 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          TH1D *distrMInvFGLR = nullptr;
          TH1D *distrMInvBGLR = nullptr;
 
-         TH1D *distrMInv = MergeMInv(methodName, centralityBin, i, distrMInvFG, distrMInvBG, 
-                                     distrMInvFGLR, distrMInvBGLR);
+         std::string decayMode = ParticleMap::nameShort[daughter1Id] +
+                                 ParticleMap::nameShort[daughter2Id];
+         TH1D *distrMInv = MergeMInv(methodName, decayMode, centralityBin, i, 
+                                     distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR);
+
+         if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
+             !inputYAMLResonance["separate_antiparticle"].as<bool>())
+         {
+            decayMode = ParticleMap::nameShort[daughter2Id] +
+                        ParticleMap::nameShort[daughter1Id];
+            distrMInv->Add(MergeMInv(methodName, decayMode, centralityBin, i, 
+                                     distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR));
+         }
 
          if (!distrMInv)
          {
@@ -219,6 +231,13 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
+         }
+
+         if (rebinX != 1)
+         {
+            distrMInv->Rebin(rebinX);
+            distrMInvFG->Rebin(rebinX);
+            distrMInvBG->Rebin(rebinX);
          }
 
          /*
@@ -325,15 +344,36 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          */
 
-         distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv), 
-                                         distrMInv->GetXaxis()->FindBin(maxMInv));
+         distrMInv->SetMaximum(distrMInv->GetMaximum()*1.1);
+
+         distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                         distrMInv->GetXaxis()->FindBin(maxMInv - 1e-7));
+         distrMInvFG->GetXaxis()->SetRange(distrMInvFG->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                           distrMInvFG->GetXaxis()->FindBin(maxMInv - 1e-7));
+         distrMInvBG->GetXaxis()->SetRange(distrMInvBG->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                           distrMInvBG->GetXaxis()->FindBin(maxMInv - 1e-7));
 
          distrMInv->SetLineWidth(2);
-         distrMInvFG->SetLineWidth(2);
+         distrMInvFG->SetLineWidth(3);
          distrMInvBG->SetLineWidth(2);
+         distrMInvFGLR->SetLineWidth(3);
+         distrMInvBGLR->SetLineWidth(2);
 
          distrMInv->SetLineColorAlpha(kBlack, 0.8);
          distrMInv->SetMarkerColorAlpha(kBlack, 0.8);
+
+         int lastNonZeroBinLR = 1;
+         for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
+         {
+            if (distrMInvFGLR->GetBinContent(i) > 1e-7 || distrMInvBGLR->GetBinContent(i) > 1e-7) 
+            {
+               lastNonZeroBinLR = i;
+               break;
+            }
+         }
+
+         distrMInvFGLR->GetXaxis()->SetRange(1, lastNonZeroBinLR + 2);
+         distrMInvBGLR->GetXaxis()->SetRange(1, lastNonZeroBinLR + 2);
 
          TCanvas canvMInv("canv MInv", "", 800, 800);
 
@@ -343,7 +383,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
 
          text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
-         texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+         texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
          /*
          texText.DrawLatexNDC(0.2, 0.83, 
@@ -370,13 +410,15 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                 CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                 CppTools::DtoStr(pTBinRanges[i + 1], 1));
 
-         distrMInv->SetFillStyle(3001);
-         distrMInvFG->SetFillStyle(3001);
-         distrMInvBG->SetFillStyle(3001);
+         distrMInv->SetFillStyle(3003);
+         distrMInvFG->SetFillStyle(3005);
+         distrMInvBG->SetFillStyle(3004);
+         distrMInvFGLR->SetFillStyle(3005);
+         distrMInvBGLR->SetFillStyle(3004);
 
-         TCanvas canvMInvSummary("canv MInv summary", "", 800, 800);
+         TCanvas canvMInvSummary("canv MInv summary", "", 1920, 1080);
 
-         canvMInvSummary.Divide(2, 2);
+         canvMInvSummary.Divide(3, 2);
          
          canvMInvSummary.cd(1);
 
@@ -384,90 +426,132 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
          ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
-
-         canvMInvSummary.cd(3);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
-
-         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
+                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
 
          canvMInvSummary.cd(4);
 
          gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
          gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-         if (distrMInvBG && distrMInvFG)
+         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
+                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+
+         canvMInvSummary.cd(5);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+         if (distrMInvBG->GetEntries() > 1e-3 && distrMInvFG->GetEntries() > 1e-3)
          {
             TH1D *ratioFGBG = static_cast<TH1D *>(distrMInvFG->Clone());
             ratioFGBG->Divide(distrMInvBG);
-
-            ratioFGBG->GetXaxis()->SetRange(ratioFGBG->GetXaxis()->FindBin(minMInv), 
-                                            ratioFGBG->GetXaxis()->FindBin(maxMInv));
 
             ratioFGBG->SetLineWidth(2);
             ratioFGBG->SetLineColor(kBlack);
             ratioFGBG->SetMarkerColor(kBlack);
 
-            ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.9);
+            ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
          }
          else
          {
-            text.DrawTextNDC(0.75, 0.9, "No data");
+            text.DrawTextNDC(0.88, 0.92, "No data");
          }
 
-         text.DrawTextNDC(0.85, 0.9, (methodName).c_str());
+         canvMInvSummary.cd(6);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
+
+         if (distrMInvBGLR->GetEntries() > 1e-3 && distrMInvFGLR->GetEntries() > 1e-3)
+         {
+            TH1D *ratioFGBGLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
+            ratioFGBGLR->Divide(distrMInvBGLR);
+
+            ratioFGBGLR->SetLineWidth(2);
+            ratioFGBGLR->SetLineColor(kBlack);
+            ratioFGBGLR->SetMarkerColor(kBlack);
+
+            ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
+         }
+         else
+         {
+            text.DrawTextNDC(0.88, 0.92, "No data");
+         }
+
+         distrMInvFG->SetMaximum(distrMInvFG->GetMaximum()*1.1);
+         distrMInvFGLR->SetMaximum(distrMInvFGLR->GetMaximum()*3.);
 
          canvMInvSummary.cd(2);
 
          gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
-
-         distrMInv->GetXaxis()->SetRange(1, distrMInv->GetXaxis()->GetNbins());
-
-         if (distrMInvFG)
-         {
-            ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9,
-                                 0.05, 0.05, true, false);
-         }
-         else
-         {
-            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9,
-                                 0.05, 0.05, true, false);
-         }
+         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
 
          distrMInv->Sumw2(false);
          distrMInvBG->Sumw2(false);
          distrMInvFG->Sumw2(false);
 
-         if (distrMInvFG) 
+         if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
+         {
+            distrMInvFG->SetMinimum(0.);
+            ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                 0.05, 0.05, true, false);
+         }
+         else
+         {
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                 0.05, 0.05, true, false);
+         }
+
+         if (distrMInvFG->GetEntries() > 1e-3) 
          {
             distrMInvFG->SetLineColorAlpha(kAzure + 2, 0.8);
             distrMInvFG->Draw("SAME PFC");
          }
-         else text.DrawTextNDC(0.85, 0.9, "No data on foreground");
+         else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
-         if (distrMInvBG) 
+         if (distrMInvBG->GetEntries() > 1e-3) 
          {
             distrMInvBG->SetLineColorAlpha(kGreen + 2, 0.8);
             distrMInvBG->Draw("SAME PFC");
          }
-         else text.DrawTextNDC(0.75, 0.9, "No data on background");
+         else text.DrawTextNDC(0.78, 0.9, "No data on background");
 
          distrMInv->SetLineColorAlpha(kRed + 2, 0.8);
          distrMInv->Draw("SAME PFC");
 
-         texText.DrawLatexNDC(0.3, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+         canvMInvSummary.cd(3);
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+         gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
+
+         gPad->SetLogy();
+
+         distrMInvBGLR->Sumw2(false);
+
+         if (distrMInvFGLR->GetEntries() > 1e-3)
+         {
+            ROOTTools::DrawFrame(distrMInvFGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                 0.05, 0.05, true, false);
+            distrMInvFGLR->SetLineColorAlpha(kAzure + 2, 0.8);
+            distrMInvFGLR->Draw("SAME PFC");
+
+            if (distrMInvBGLR->GetEntries() > 1e-3) 
+            {
+               distrMInvBGLR->SetLineColorAlpha(kRed + 2, 0.8);
+               distrMInvBGLR->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.78, 0.9, "No data on background");
+         }
+         else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
+
+         texText.DrawLatexNDC(0.4, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+         text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
 
          ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
                                 centralityBin["name"].as<std::string>() + "_" +
                                 CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                 CppTools::DtoStr(pTBinRanges[i + 1], 1), true, false);
-
-         TCanvas canvMInvFGVsBG("canv MInv FG vs BG", "", 800, 800);
 
          numberOfCalls++;
       }
@@ -573,27 +657,11 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    */
 }
 
-TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                                 const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
-                                 TH1D*& distrMInvMergedFGLR, TH1D*& ditrMInvmMergedBGLR)
+TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const std::string& decayMode, 
+                                 const YAML::Node& centralityBin, const int pTBin, 
+                                 TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
+                                 TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR)
 {
-   if (distrMInvMergedFG || distrMInvMergedFG || distrMInvMergedFGLR || distrMInvMergedBGLR)
-   {
-      CppTools::PrintError("TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, "
-                           "const YAML::Node& centralityBin, TH1D*& distrMInvMergedFG, "
-                           "TH1D*& distrMInvMergedBG, TH1D*& distrMInvMergedFGLR, "
-                           "TH1D*& distrMInvMergedBGLR)) : \n" 
-                           (!distrMInvMergedFG ? "" : "distrMInvMergedFG ")
-                           (!distrMInvMergedBG ? "" : "distrMInvMergedBG ")
-                           (!distrMInvMergedFGLR ? "" : "distrMInvMergedFGLR ")
-                           (!distrMInvMergedBGLR ? "" : "distrMInvMergedBGLR ")
-                           "value(s) must be nullptr");
-   }
-
-   // decay channel name
-   const std::string channelName = ParticleMap::nameShort[daughter1Id] +
-                                   ParticleMap::nameShort[daughter2Id];
-
    TH1D *distrMInvMerged = nullptr;
    // iterating over CabanaBoy centrality bins
    for (int c = centralityBin["cb_c_bin_min"].as<int>(); 
@@ -613,7 +681,7 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
 
             const std::string distrMInvVsPTFGName = 
                "c" + cName + "_z" + zName + "_r" + rName + "/" + 
-                methodName + ": " + channelName + "_FG12";
+                methodName + ": " + decayMode + "_FG12";
 
             TH2F *distrMInvVsPTFG = 
                static_cast<TH2F *>(inputFile->Get(distrMInvVsPTFGName.c_str()));
@@ -627,7 +695,7 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
 
             const std::string distrMInvVsPTBGName = 
                "c" + cName + "_z" + zName + "_r" + rName + "/" + 
-                methodName + ": " + channelName + "_BG12";
+                methodName + ": " + decayMode + "_BG12";
 
             TH2F *distrMInvVsPTBG = 
                static_cast<TH2F *>(inputFile->Get(distrMInvVsPTBGName.c_str()));
@@ -639,19 +707,66 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
                                     " does not exist in file " + inputFileName);
             }
 
+            const std::string distrMInvVsPTFGLRName = 
+               "c" + cName + "_z" + zName + "_r" + rName + "/LR " + 
+                methodName + ": " + decayMode + "_FG12";
+
+            TH2F *distrMInvVsPTFGLR = 
+               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTFGLRName.c_str()));
+
+            if (!distrMInvVsPTFGLR)
+            {
+               pBar.Clear();
+               CppTools::PrintError("Histogram named " + distrMInvVsPTFGLRName + 
+                                    " does not exist in file " + inputFileName);
+            }
+
+            const std::string distrMInvVsPTBGLRName = 
+               "c" + cName + "_z" + zName + "_r" + rName + "/LR " + 
+                methodName + ": " + decayMode + "_BG12";
+
+            TH2F *distrMInvVsPTBGLR = 
+               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTBGLRName.c_str()));
+
+            if (!distrMInvVsPTBGLR)
+            {
+               pBar.Clear();
+               CppTools::PrintError("Histogram named " + distrMInvVsPTBGLRName + 
+                                    " does not exist in file " + inputFileName);
+            }
+
+            const int xAxisMin = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6);
+            const int xAxisMax = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6);
+
+            /*
             for (int i = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6); 
                  i <= distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6); i++)
             {
+            */
                TH1D *distrMInvFG = 
                   distrMInvVsPTFG->ProjectionY((distrMInvVsPTFG->GetName() + 
                                                 std::to_string(c) + std::to_string(z) + 
-                                                std::to_string(r) + std::to_string(i)).c_str(), 
-                                               i, i);
+                                                std::to_string(r) + std::to_string(pTBin)).c_str(), 
+                                               xAxisMin, xAxisMax);
                TH1D *distrMInvBG = 
                   distrMInvVsPTBG->ProjectionY((distrMInvVsPTBG->GetName() + 
                                                 std::to_string(c) + std::to_string(z) + 
-                                                std::to_string(r) + std::to_string(i)).c_str(), 
-                                               i, i);
+                                                std::to_string(r) + std::to_string(pTBin)).c_str(), 
+                                               xAxisMin, xAxisMax);
+
+
+               TH1D *distrMInvFGLR = 
+                  distrMInvVsPTFGLR->ProjectionY((distrMInvVsPTFGLR->GetName() + 
+                                                  std::to_string(c) + std::to_string(z) + 
+                                                  std::to_string(r) + 
+                                                  std::to_string(pTBin)).c_str(), 
+                                                 xAxisMin, xAxisMax);
+               TH1D *distrMInvBGLR = 
+                  distrMInvVsPTBGLR->ProjectionY((distrMInvVsPTBGLR->GetName() + 
+                                                  std::to_string(c) + std::to_string(z) + 
+                                                  std::to_string(r) + 
+                                                  std::to_string(pTBin)).c_str(), 
+                                                 xAxisMin, xAxisMax);
 
                if (distrMInvFG->GetEntries() < 1e-3) continue;
 
@@ -664,20 +779,31 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
                   {
                      distrMInvMerged = static_cast<TH1D *>(distrMInvFG->Clone());
                   }
-                  else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG);
+                  else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG, 
+                                                    distrMInvFGLR, distrMInvBGLR);
 
-                  distrMInvMergedFG = static_cast<TH1D *>(distrMInvFG->Clone());
-                  distrMInvMergedBG = static_cast<TH1D *>(distrMInvBG->Clone());
                }
                else 
                {
                   if (distrMInvBG->GetEntries() < 1e-3) distrMInvMerged->Add(distrMInvFG);
-                  else distrMInvMerged->Add(SubtractBG(distrMInvFG, distrMInvBG));
-
+                  else distrMInvMerged->Add(SubtractBG(distrMInvFG, distrMInvBG, 
+                                                       distrMInvFGLR, distrMInvBGLR));
+               }
+               if (!distrMInvMergedFG)
+               {
+                  distrMInvMergedFG = static_cast<TH1D *>(distrMInvFG->Clone());
+                  distrMInvMergedBG = static_cast<TH1D *>(distrMInvBG->Clone());
+                  distrMInvMergedFGLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
+                  distrMInvMergedBGLR = static_cast<TH1D *>(distrMInvBGLR->Clone());
+               }
+               else
+               {
                   distrMInvMergedFG->Add(distrMInvFG);
                   distrMInvMergedBG->Add(distrMInvBG);
+                  distrMInvMergedFGLR->Add(distrMInvFGLR);
+                  distrMInvMergedBGLR->Add(distrMInvBGLR);
                }
-            }
+            //}
          }
       }
    }
@@ -685,49 +811,54 @@ TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const YAML::Node
    return distrMInvMerged;
 }
 
-TH1D *AnalyzeRealMInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG)
+TH1D *AnalyzeRealMInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG, TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR)
 {
-   const double integralMInvFG = distrMInvFG->Integral(1, distrMInvFG->GetXaxis()->GetNbins());
-   const double integralMInvBG = distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins());
+   const double integralMInvFGLR = distrMInvFGLR->Integral(1, distrMInvFGLR->GetXaxis()->GetNbins());
+   const double integralMInvBGLR = distrMInvBGLR->Integral(1, distrMInvBGLR->GetXaxis()->GetNbins());
 
-   double partIntegralMInvFG = 0.;
-   double partIntegralMInvBG = 0.;
+   double partIntegralMInvFGLR = 0.;
+   double partIntegralMInvBGLR = 0.;
 
-   for (int i = distrMInvFG->GetXaxis()->GetNbins(); i >= 1; i--)
+   for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
    {
-      if (partIntegralMInvFG > integralMInvFG*0.1 && 
-          partIntegralMInvBG > integralMInvBG*0.1) break;
+      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
+          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
 
-      partIntegralMInvFG += distrMInvFG->GetBinContent(i);
-      partIntegralMInvBG += distrMInvBG->GetBinContent(i);
+      if (distrMInvBGLR->GetBinContent(i) < 1e-6) continue;
+
+      partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
+      partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
    }
 
-   double scaleFactorBG = partIntegralMInvFG/partIntegralMInvBG;
+   double scaleFactorBG = partIntegralMInvFGLR/partIntegralMInvBGLR;
 
-   partIntegralMInvFG = 0.;
-   partIntegralMInvBG = 0.;
+   /*
+   partIntegralMInvFGLR = 0.;
+   partIntegralMInvBGLR = 0.;
 
    // if background was overestimated, some bins will be negative after BG subtraction
    // this needs to be resolved by rescaling (if needed)
-   for (int i = 100; i <= distrMInvFG->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= distrMInvFGLR->GetXaxis()->GetNbins(); i++)
    {
-      if (distrMInvBG->GetBinContent(i) < 1e-3) continue;
-      if (distrMInvFG->GetBinContent(i) < 1e-3) continue;
+      if (distrMInvBGLR->GetBinContent(i) < 1e-3) continue;
+      if (distrMInvFGLR->GetBinContent(i) < 1e-3) continue;
 
-      if (partIntegralMInvFG > integralMInvFG*0.1 && 
-          partIntegralMInvBG > integralMInvBG*0.1) break;
+      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
+          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
 
-      partIntegralMInvFG += distrMInvFG->GetBinContent(i);
-      partIntegralMInvBG += distrMInvBG->GetBinContent(i);
+      partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
+      partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
 
-      if (distrMInvBG->GetBinContent(i)*scaleFactorBG > distrMInvFG->GetBinContent(i))
+      if ((distrMInvBGLR->GetBinContent(i) - distrMInvBGLR->GetBinError(i))*scaleFactorBG > 
+          distrMInvFGLR->GetBinContent(i) + distrMInvFGLR->GetBinError(i))
       {
-         CppTools::Print(distrMInvFG->GetBinContent(i)/distrMInvBG->GetBinContent(i));
-         scaleFactorBG *= distrMInvFG->GetBinContent(i)/distrMInvBG->GetBinContent(i);
+         scaleFactorBG *= distrMInvFGLR->GetBinContent(i)/distrMInvBGLR->GetBinContent(i);
       }
    }
+   */
 
-   distrMInvBG->Scale(scaleFactorBG);
+   distrMInvBG->Scale(scaleFactorBG*0.95);
+   distrMInvBGLR->Scale(scaleFactorBG*0.95);
 
    TH1D *distrMInvSubtr = static_cast<TH1D *>(distrMInvFG->Clone());
    distrMInvSubtr->Add(distrMInvBG, -1.);

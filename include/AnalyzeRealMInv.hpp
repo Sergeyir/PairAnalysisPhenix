@@ -46,17 +46,19 @@ namespace AnalyzeRealMInv
    void PerformMInvFitsForMethod(const YAML::Node& method);
    /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy)
     *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
+    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
+    * @param[in] decayMode decay mode of which all histograms will be merged
     * @param[in] centralityBin centrality bin which will be used for invariant mass histogram merging
     * @param[in] pTBin pT bin which will be used for invariant mass histogram merging
-    * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms. The value that is passed for this histogram must be nullptr.
-    * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms. The value that is passed for this histogram must be nullptr.
-    * @param[in] distrMInvMergedFGLR histogram to pass that will be filled with contents of all scaled foreground histograms with low resolution (for background scaling). The value that is passed for this histogram must be nullptr.
-    * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling). The value that is passed for this histogram must be nullptr.
+    * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms
+    * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms
+    * @param[in] distrMInvMergedFGLR histogram to pass that will be filled with contents of all scaled foreground histograms with low resolution (for background scaling)
+    * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling)
     * @param[out] merged invariant mass distribution with background extracted
     */
-   TH1D *MergeMInv(const std::string& methodName, const YAML::Node& centralityBin,
-                   const int pTBin, TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
+   TH1D *MergeMInv(const std::string& methodName, const std::string& decayMode,
+                   const YAML::Node& centralityBin, const int pTBin, 
+                   TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
                    TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR);
    /*! Subtracts background for the specified histogram 
     *
@@ -101,14 +103,14 @@ namespace AnalyzeRealMInv
    int daughter1Id;
    /// id of 2nd decay product
    int daughter2Id;
-   /// shows whether a resonance has an antiparticel (for which idDaugther1 and idDaughter2 are swapped)
-   bool hasAntiparticle;
    /// M_{inv} range minimum value [GeV/c^2]
    double minMInv;
    /// M_{inv} range maximum value [GeV/c^2]
    double maxMInv;
    /// number of pT bins
    unsigned int pTNBins;
+   /// Rebin value for M_{inv} i.e. x axis 
+   int rebinX = 1;
    /// pT bins ranges [GeV/c]
    std::vector<double> pTBinRanges;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
