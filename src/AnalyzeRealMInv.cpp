@@ -72,6 +72,8 @@ int main(int argc, char **argv)
    texText.SetTextFont(43);
    texText.SetTextSize(45);
 
+   text.SetTextAngle(270.);
+
    pTNBins = inputYAMLResonance["pt_bins"].size();
 
    for (unsigned int i = 0; i < pTNBins; i++)
@@ -87,9 +89,7 @@ int main(int argc, char **argv)
    {
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
       {
-         numberOfIterations += (method["pt_bin_max"].as<int>() - 
-                                method["pt_bin_min"].as<int>() + 1)*
-                               inputYAMLResonance["centrality_bins"].size();
+         numberOfIterations += pTNBins*inputYAMLResonance["centrality_bins"].size();
       }
    }
    else
@@ -104,10 +104,7 @@ int main(int argc, char **argv)
          CppTools::PrintError("No method named " + methodToAnalyze + " in input file");
       }
 
-      numberOfIterations = 
-         (inputYAMLResonance["pair_selection_methods"][methodIndex]["pt_bin_max"].as<int>() - 
-          inputYAMLResonance["pair_selection_methods"][methodIndex]["pt_bin_min"].as<int>() + 1)*
-         inputYAMLResonance["centrality_bins"].size();
+      numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
    }
 
    const std::string yieldOutputDir = "data/Parameters/ResonanceEff/" + runName;
@@ -135,8 +132,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 {
    const std::string methodName = method["name"].as<std::string>();
 
-   const std::string outputDir = 
-      "output/MInv/" + runName + "/" + std::to_string(taxiNumber) + "/" + methodName;
+   const std::string outputDir = "output/MInv/" + runName + "/" + 
+                                 std::to_string(taxiNumber) + "/" + methodName;
    void(system(("mkdir -p " + outputDir).c_str()));
 
    /*
@@ -148,12 +145,12 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                             "", pTNBins, &pTBinRanges[0]);
                         */
 
-   text.SetTextAngle(270.);
+   int pTBinFitMin = method["pt_bin_min"].as<int>();
+   int pTBinFitMax = method["pt_bin_max"].as<int>();
 
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
-      for (int i = method["pt_bin_min"].as<int>(); 
-           i <= method["pt_bin_max"].as<int>(); i++)
+      for (int i = 0; i <= pTBins; i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
@@ -161,6 +158,10 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          TH1D *distrMInvBG = nullptr;
          TH1D *distrMInvFGLR = nullptr;
          TH1D *distrMInvBGLR = nullptr;
+
+         // shows whether to perform approximations for the current bin
+         // if false the histograms will not be approximated but will be printed anyways
+         const bool performFit = (i >= ptBinFitMin && i <= pTBinFitMax);
 
          std::string decayMode = ParticleMap::nameShort[daughter1Id] +
                                  ParticleMap::nameShort[daughter2Id];
@@ -184,7 +185,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                  CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 2));
          }
-         else if (distrMInv->GetEntries() == 0)
+         else if (performFit && distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()) < 1e-7)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting histogram is empty in " + 
@@ -203,7 +204,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                  CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 2));
          }
-         else if (distrMInvFG->GetEntries() == 0)
+         else if (performFit && distrMInvFG->Integral(1, distrMInvFG->GetXaxis()->GetNbins()) < 1e-7)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting foreground histogram is empty in " + 
@@ -223,7 +224,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
          }
-         else if (distrMInvBG->GetEntries() == 0)
+         else if (performFit && distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins()) < 1e-7)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting background histogram is empty in " + 
@@ -344,7 +345,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          */
 
-         distrMInv->SetMaximum(distrMInv->GetMaximum()*1.1);
+         distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
 
          distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv + 1e-7), 
                                          distrMInv->GetXaxis()->FindBin(maxMInv - 1e-7));
@@ -382,9 +383,10 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
 
-         text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
-         texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+         text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
+         texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+         texText.DrawLatexNDC(0.2, 0.81, centralityBin["name_tex"].as<std::string>().c_str());
          /*
          texText.DrawLatexNDC(0.2, 0.83, 
                               ("#it{#chi}^{2}/NDF = " + 
@@ -427,6 +429,11 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
                               "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+
+         texText.DrawLatexNDC(0.4, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+         texText.DrawLatexNDC(0.6, 0.74, centralityBin["name_tex"].as<std::string>().c_str());
+         text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
 
          canvMInvSummary.cd(4);
 
@@ -544,9 +551,6 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          }
          else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
-         texText.DrawLatexNDC(0.4, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
 
          ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
                                 centralityBin["name"].as<std::string>() + "_" +
