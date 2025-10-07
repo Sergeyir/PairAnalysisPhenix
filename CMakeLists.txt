@@ -50,6 +50,7 @@ add_library(DeadMapCutter ${CMAKE_SOURCE_DIR}/src/DeadMapCutter.cpp)
 add_library(SimSigmalizedResiduals ${CMAKE_SOURCE_DIR}/src/SimSigmalizedResiduals.cpp)
 add_library(SimM2Identificator ${CMAKE_SOURCE_DIR}/src/SimM2Identificator.cpp)
 add_library(FitFunc ${CMAKE_SOURCE_DIR}/src/FitFunc.cpp)
+add_library(MInv ${CMAKE_SOURCE_DIR}/src/MInv.cpp)
 
 link_libraries(InputYAMLReader)
 
@@ -73,3 +74,4 @@ target_link_libraries(AnalyzeSimWidthlessResonance SimTreeReader SingleTrackFunc
 target_link_libraries(AnalyzeSimResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
 target_link_libraries(DeadMapSys DeadMapCutter)
 target_link_libraries(EstimateResonanceEff FitFunc)
+target_link_libraries(AnalyzeRealMInv FitFunc MInv)

@@ -120,7 +120,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
    TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
    TH1D distrRawYieldVsPT((methodName + ": raw yield vs pT").c_str(), 
-                          "", pTNBins, &pTBinRanges[0]);
+                            "", pTNBins, &pTBinRanges[0]);
    TH1D distrRawSpectraVsPT((methodName + ": raw spectra vs pT").c_str(), 
                             "", pTNBins, &pTBinRanges[0]);
    TH1D distrRecEffVsPT((methodName + ": reconstruction efficiency vs pT").c_str(), 
@@ -424,7 +424,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
    ROOTTools::DrawFrame(&distrRawSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                         "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
-                        "[(GeV/#it{c})^{-2})]", 1., 1.35);
+                        "[(GeV/#it{c})^{-2}]", 1., 1.35);
 
    text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
 

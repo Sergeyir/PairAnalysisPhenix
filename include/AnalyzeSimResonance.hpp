@@ -112,6 +112,12 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrMInvDCPC1NoPID;
       /// invariant mass distribution with the cut opposite to one arm cut
       std::shared_ptr<TH2F> distrMInvOneArmAntiCut;
+      /// TOFeNoPID invariant mass distribution with ghost anti cut
+      std::shared_ptr<TH2F> distrMInvTOFeGhostNoPID;
+      /// TOFwNoPID invariant mass distribution with ghost anti cut
+      std::shared_ptr<TH2F> distrMInvTOFwGhostNoPID;
+      /// EMCalNoPID invariant mass distribution with ghost anti cut
+      std::shared_ptr<TH2F> distrMInvEMCalGhostNoPID;
       /// NoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvNoPID;
       /// PC2NoPID invariant mass distribution
@@ -204,6 +210,18 @@ namespace AnalyzeSimResonance
       ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: DCPC1NoPID, one arm anti cut", 
                                                          "M_{inv} vs p_{T}", 
                                                          200, 0., 20., 1000, 0., 5.};
+      /// TOFeNoPID invariant mass distribution with TOFe ghost anticut
+      ROOT::TThreadedObject<TH2F> distrMInvTOFeGhostNoPID{"M_inv: TOFeNoPID, ghost anticut", 
+                                                          "M_{inv} vs p_{T}", 
+                                                          200, 0., 20., 1000, 0., 5.};
+      /// TOFwNoPID invariant mass distribution with TOFw ghost anticut
+      ROOT::TThreadedObject<TH2F> distrMInvTOFwGhostNoPID{"M_inv: TOFwNoPID, ghost anticut", 
+                                                          "M_{inv} vs p_{T}", 
+                                                          200, 0., 20., 1000, 0., 5.};
+      /// EMCalNoPID invariant mass distribution with EMCal ghost anticut
+      ROOT::TThreadedObject<TH2F> distrMInvEMCalGhostNoPID{"M_inv: EMCalNoPID, ghost anticut", 
+                                                           "M_{inv} vs p_{T}", 
+                                                           200, 0., 20., 1000, 0., 5.};
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
                                                  200, 0., 20., 1000, 0., 5.};

@@ -107,11 +107,12 @@ int main(int argc, char **argv)
       numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
    }
 
-   const std::string yieldOutputDir = "data/Parameters/ResonanceEff/" + runName;
-   void(system(("mkdir -p " + yieldOutputDir).c_str()));
+   const std::string parametersOutputDir = "data/Parameters/Real/" + runName;
+   void(system(("mkdir -p " + parametersOutputDir).c_str()));
 
    // file in which all important data will be written
-   TFile yieldOutput((yieldOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
+   TFile parametersOutputFile((parametersOutputDir + "/" + resonanceName + ".root").c_str(), 
+                              "RECREATE");
 
    // performing fits for specified pair selection methods
    if (methodToAnalyze == "all")
@@ -121,7 +122,10 @@ int main(int argc, char **argv)
          PerformMInvFitsForMethod(method);
       }
    }
-   else PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][methodIndex]);
+   else 
+   {
+      PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][methodIndex]);
+   }
 
    pBar.Finish();
 
@@ -136,21 +140,19 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                  std::to_string(taxiNumber) + "/" + methodName;
    void(system(("mkdir -p " + outputDir).c_str()));
 
-   /*
    TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
    TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
    TH1D distrRawYieldVsPT((methodName + ": raw yield vs pT").c_str(), 
                           "", pTNBins, &pTBinRanges[0]);
    TH1D distrRawSpectraVsPT((methodName + ": raw spectra vs pT").c_str(), 
                             "", pTNBins, &pTBinRanges[0]);
-                        */
 
-   int pTBinFitMin = method["pt_bin_min"].as<int>();
-   int pTBinFitMax = method["pt_bin_max"].as<int>();
+   unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
+   unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
 
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
-      for (int i = 0; i <= pTBins; i++)
+      for (unsigned int i = 0; i < pTNBins; i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
@@ -161,20 +163,31 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          // shows whether to perform approximations for the current bin
          // if false the histograms will not be approximated but will be printed anyways
-         const bool performFit = (i >= ptBinFitMin && i <= pTBinFitMax);
+         const bool performFit = (i >= pTBinFitMin && i <= pTBinFitMax);
 
          std::string decayMode = ParticleMap::nameShort[daughter1Id] +
                                  ParticleMap::nameShort[daughter2Id];
-         TH1D *distrMInv = MergeMInv(methodName, decayMode, centralityBin, i, 
-                                     distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR);
+
+         TH1D *distrMInv = 
+            MInv::Merge(inputFile, methodName, decayMode, 
+                        centralityBin["cb_c_min"].as<int>(), centralityBin["cb_c_max"].as<int>(),
+                        0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
+                        0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
+                        pTBinRanges[i], pTBinRanges[i + 1],
+                        distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR);
 
          if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
              !inputYAMLResonance["separate_antiparticle"].as<bool>())
          {
             decayMode = ParticleMap::nameShort[daughter2Id] +
                         ParticleMap::nameShort[daughter1Id];
-            distrMInv->Add(MergeMInv(methodName, decayMode, centralityBin, i, 
-                                     distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR));
+            distrMInv->Add(MInv::Merge(inputFile, methodName, decayMode, 
+                                       centralityBin["cb_c_min"].as<int>(), 
+                                       centralityBin["cb_c_max"].as<int>(),
+                                       0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
+                                       0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
+                                       pTBinRanges[i], pTBinRanges[i + 1],
+                                       distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR));
          }
 
          if (!distrMInv)
@@ -193,6 +206,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
+            continue;
          }
 
          if (!distrMInvFG)
@@ -203,15 +217,6 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                  centralityBin["name"].as<std::string>() + " " +
                                  CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 2));
-         }
-         else if (performFit && distrMInvFG->Integral(1, distrMInvFG->GetXaxis()->GetNbins()) < 1e-7)
-         {
-            pBar.Clear();
-            CppTools::PrintWarning("Resulting foreground histogram is empty in " + 
-                                   centralityBin["name"].as<std::string>() + " " +
-                                   CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                                   CppTools::DtoStr(pTBinRanges[i + 1], 2));
-            pBar.RePrint();
          }
 
          if (!distrMInvBG)
@@ -241,109 +246,97 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             distrMInvBG->Rebin(rebinX);
          }
 
-         /*
          // sigma of a gaus that is convoluted with Breit-Wigner
          const double gaussianBroadeningSigma = 
             gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
          // fit for resonance+bg approximation
-         TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGGaus, 
-                 massResonance - gammaResonance*3., massResonance + gammaResonance*3., 7);
+         TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGPol3, 
+                 massResonance - gammaResonance*3., massResonance + gammaResonance*3., 8);
          // fit for resonance approximation
          TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
                           massResonance + gammaResonance*3., 4);
          // fit for bg approximation
-         TF1 fitBG("bg fit", &FitFunc::Gaus, massResonance - gammaResonance*3., 
-                   massResonance + gammaResonance*3., 3);
+         TF1 fitBG("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
+                   massResonance + gammaResonance*3., 4);
 
-         const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
-
-         fit.SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma,
-                           maxBinVal/20., massResonance, gammaResonance*4.);
-
-         fit.SetParLimits(0, maxBinVal/1.2, maxBinVal);
-         fit.SetParLimits(1, massResonance/1.1, massResonance*1.1);
-         fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
-         //fit.FixParameter(2, gammaResonance);
-         fit.FixParameter(3, gaussianBroadeningSigma);
-         fit.SetParLimits(4, 0., maxBinVal/3.);
-         fit.SetParLimits(5, 0., massResonance*10.);
-         fit.SetParLimits(6, gammaResonance*2., gammaResonance*20.);
-
-         distrMInv->Fit(&fit, "RQMNBLC");
-
-         fit.SetParLimits(0, maxBinVal/3., maxBinVal);
-
-         for (unsigned int j = 1; j <= fitNTries; j++)
+         if (performFit)
          {
-            fit.SetParLimits(0, fit.GetParameter(0)/(1. + 0.05/static_cast<double>(j*j)), 
-                             fit.GetParameter(0)*(1. + 0.05/static_cast<double>(j*j)));
-            fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
-                             fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-            fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.1/static_cast<double>(j*j)),
-                             fit.GetParameter(2)*(1. + 0.2/static_cast<double>(j*j)));
-            fit.SetParLimits(5, fit.GetParameter(5)/(1. + 2./static_cast<double>(j*j)),
-                             fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j)));
-            fit.SetParLimits(6, fit.GetParameter(6)/(1. + 1./static_cast<double>(j*j)),
-                             fit.GetParameter(6)*(1. + 1./static_cast<double>(j*j)));
+            const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
+            const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
 
-            fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                         fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+            fit.SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
+
+            fit.SetParLimits(0, 1., maxBinVal - minBinVal);
+            fit.SetParLimits(1, massResonance/1.05, massResonance*1.05);
+            fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
+            fit.FixParameter(3, gaussianBroadeningSigma);
 
             distrMInv->Fit(&fit, "RQMNBLC");
-            if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
+
+            for (unsigned int j = 1; j <= fitNTries; j++)
+            {
+               fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
+                                fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
+               fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.1/static_cast<double>(j*j)),
+                                fit.GetParameter(2)*(1. + 0.2/static_cast<double>(j*j)));
+
+               fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
+                                                   gaussianBroadeningSigma)*3., 
+                            fit.GetParameter(1) + (fit.GetParameter(2) + 
+                                                   gaussianBroadeningSigma)*3.);
+
+               distrMInv->Fit(&fit, "RQMNBLC");
+               if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
+            }
+
+            distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
+            distrMeansVsPT.SetBinError(i + 1, fit.GetParError(1));
+
+            distrGammasVsPT.SetBinContent(i + 1, fit.GetParameter(2));
+            distrGammasVsPT.SetBinError(i + 1, fit.GetParError(2));
+
+            for (int j = 0; j < fitResonance.GetNpar(); j++)
+            {
+               fitResonance.SetParameter(j, fit.GetParameter(j));
+            }
+
+            for (int j = 0; j < fitBG.GetNpar(); j++)
+            {
+               fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
+            }
+
+            double rawYieldErr;
+            const double rawYield = 
+               GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
+                        fit.GetParameter(1) + fit.GetParameter(2)*2., rawYieldErr);
+
+            distrRawYieldVsPT.SetBinContent(i + 1, rawYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
+            distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr/rawYield/
+                                          (pTBinRanges[i + 1] - pTBinRanges[i]));
+
+            const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
+                                         (pTBinRanges[i + 1] - pTBinRanges[i]));
+            distrRawSpectraVsPT.
+               SetBinContent(i + 1, rawYield/rawYieldNorm);
+            distrRawSpectraVsPT.SetBinError(i + 1, rawYieldErr/rawYield/rawYieldNorm);
+
+            fitResonance.SetRange(fit.GetParameter(1) - 
+                                  (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
+                                  fit.GetParameter(1) + 
+                                  (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+
+            fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
+                           fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+
+            fit.SetLineWidth(4);
+            fitBG.SetLineWidth(4);
+
+            fit.SetLineColorAlpha(kRed - 3, 0.8);
+            fitBG.SetLineColorAlpha(kGray + 2, 0.8);
+
+            fitBG.SetLineStyle(7);
          }
-
-         distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
-         distrMeansVsPT.SetBinError(i + 1, fit.GetParError(1));
-
-         distrGammasVsPT.SetBinContent(i + 1, fit.GetParameter(2));
-         distrGammasVsPT.SetBinError(i + 1, fit.GetParError(2));
-
-         for (int j = 0; j < fitResonance.GetNpar(); j++)
-         {
-            fitResonance.SetParameter(j, fit.GetParameter(j));
-         }
-
-         for (int j = 0; j < fitBG.GetNpar(); j++)
-         {
-            fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
-         }
-
-         double recYieldErr;
-         const double recYield = 
-            GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
-                     fit.GetParameter(1) + fit.GetParameter(2)*2., recYieldErr);
-
-         distrRawYieldVsPT.SetBinContent(i + 1, recYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
-         distrRawYieldVsPT.SetBinError(i + 1, recYieldErr/recYield/
-                                       (pTBinRanges[i + 1] - pTBinRanges[i]));
-
-         const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
-                                      (pTBinRanges[i + 1] - pTBinRanges[i]));
-         distrRawSpectraVsPT.
-            SetBinContent(i + 1, recYield/rawYieldNorm);
-         distrRawSpectraVsPT.SetBinError(i + 1, recYieldErr/recYield/rawYieldNorm);
-
-         fitResonance.SetRange(fit.GetParameter(1) - 
-                               (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                               fit.GetParameter(1) + 
-                               (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
-         fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                        fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
-
-         fit.SetLineWidth(4);
-         fitResonance.SetLineWidth(4);
-         fitBG.SetLineWidth(4);
-
-         fit.SetLineColorAlpha(kRed - 3, 0.8);
-         fitResonance.SetLineColorAlpha(kAzure - 3, 0.8);
-         fitBG.SetLineColorAlpha(kGreen - 3, 0.8);
-
-         fitResonance.SetLineStyle(2);
-         fitBG.SetLineStyle(7);
-
-         */
 
          distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
 
@@ -360,8 +353,12 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          distrMInvFGLR->SetLineWidth(3);
          distrMInvBGLR->SetLineWidth(2);
 
-         distrMInv->SetLineColorAlpha(kBlack, 0.8);
-         distrMInv->SetMarkerColorAlpha(kBlack, 0.8);
+         distrMInv->SetLineColor(kGray + 3);
+         distrMInv->SetMarkerColor(kGray + 3);
+
+         distrMInv->SetMarkerStyle(20);
+         distrMInv->SetMarkerSize(0.7);
+         distrMInv->SetMarkerColor(kGray + 3);
 
          int lastNonZeroBinLR = 1;
          for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
@@ -386,26 +383,15 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
          texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         texText.DrawLatexNDC(0.2, 0.81, centralityBin["name_tex"].as<std::string>().c_str());
-         /*
-         texText.DrawLatexNDC(0.2, 0.83, 
-                              ("#it{#chi}^{2}/NDF = " + 
-                               CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 2)).c_str());
-                               */
-         /*
-
-         texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
-                                         " [MeV/c^{2}]").c_str());
-         texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
-                                          CppTools::DtoStr(fit.GetParameter(2)*1000., 1) + 
-                                          " [MeV/c^{2}]").c_str());
-                                          */
-
-         /*
-         fitBG.Draw("SAME");
-         fitResonance.Draw("SAME");
-         fit.Draw("SAME");
-         */
+         text.DrawTextNDC(0.85, 0.93, centralityBin["name_tex"].as<std::string>().c_str());
+         if (performFit)
+         {
+            texText.DrawLatexNDC(0.2, 0.81, 
+                                 ("#it{#chi}^{2}/NDF=" + 
+                                  CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+            fitBG.Draw("SAME");
+            fit.Draw("SAME");
+         }
 
          ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
                                 centralityBin["name"].as<std::string>() + "_" +
@@ -430,10 +416,28 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
                               "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
 
-         texText.DrawLatexNDC(0.4, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+         texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
                               CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         texText.DrawLatexNDC(0.6, 0.74, centralityBin["name_tex"].as<std::string>().c_str());
+         text.DrawTextNDC(0.8, 0.92, centralityBin["name_tex"].as<std::string>().c_str());
          text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
+
+         if (performFit)
+         {
+            texText.DrawLatexNDC(0.2, 0.74, 
+                                 ("#it{#chi}^{2}/NDF = " + 
+                                  CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+            /*
+
+            texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
+                                            " [MeV/c^{2}]").c_str());
+            texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
+                                             CppTools::DtoStr(fit.GetParameter(2)*1000., 1) + 
+                                             " [MeV/c^{2}]").c_str());
+                                             */
+
+            fitBG.Draw("SAME");
+            fit.Draw("SAME");
+         }
 
          canvMInvSummary.cd(4);
 
@@ -563,7 +567,6 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
    text.SetTextAngle(0.);
 
-   /*
    distrMeansVsPT.SetLineColor(kRed - 2);
    distrMeansVsPT.SetMarkerColor(kRed - 2);
    distrMeansVsPT.SetLineWidth(4);
@@ -658,216 +661,6 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
 
    ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + resonanceName + "_raw_spectra");
-   */
-}
-
-TH1D *AnalyzeRealMInv::MergeMInv(const std::string& methodName, const std::string& decayMode, 
-                                 const YAML::Node& centralityBin, const int pTBin, 
-                                 TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
-                                 TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR)
-{
-   TH1D *distrMInvMerged = nullptr;
-   // iterating over CabanaBoy centrality bins
-   for (int c = centralityBin["cb_c_bin_min"].as<int>(); 
-        c <= centralityBin["cb_c_bin_max"].as<int>(); c++)
-   {
-      const std::string cName = (c > 9) ? std::to_string(c) : "0" + std::to_string(c);
-
-      // iterating over CabanaBoy z_{vtx} bins
-      for (int z = 0; z < inputYAMLResonance["cb_z_bins"].as<int>(); z++)
-      {
-         const std::string zName = (z > 9) ? std::to_string(z) : "0" + std::to_string(z);
-
-         // iterating over CabanaBoy r_{vtx} bins
-         for (int r = 0; r < inputYAMLResonance["cb_r_bins"].as<int>(); r++)
-         {
-            const std::string rName = (r > 9) ? std::to_string(r) : "0" + std::to_string(r);
-
-            const std::string distrMInvVsPTFGName = 
-               "c" + cName + "_z" + zName + "_r" + rName + "/" + 
-                methodName + ": " + decayMode + "_FG12";
-
-            TH2F *distrMInvVsPTFG = 
-               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTFGName.c_str()));
-
-            if (!distrMInvVsPTFG)
-            {
-               pBar.Clear();
-               CppTools::PrintError("Histogram named " + distrMInvVsPTFGName + 
-                                    " does not exist in file " + inputFileName);
-            }
-
-            const std::string distrMInvVsPTBGName = 
-               "c" + cName + "_z" + zName + "_r" + rName + "/" + 
-                methodName + ": " + decayMode + "_BG12";
-
-            TH2F *distrMInvVsPTBG = 
-               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTBGName.c_str()));
-
-            if (!distrMInvVsPTBG)
-            {
-               pBar.Clear();
-               CppTools::PrintError("Histogram named " + distrMInvVsPTBGName + 
-                                    " does not exist in file " + inputFileName);
-            }
-
-            const std::string distrMInvVsPTFGLRName = 
-               "c" + cName + "_z" + zName + "_r" + rName + "/LR " + 
-                methodName + ": " + decayMode + "_FG12";
-
-            TH2F *distrMInvVsPTFGLR = 
-               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTFGLRName.c_str()));
-
-            if (!distrMInvVsPTFGLR)
-            {
-               pBar.Clear();
-               CppTools::PrintError("Histogram named " + distrMInvVsPTFGLRName + 
-                                    " does not exist in file " + inputFileName);
-            }
-
-            const std::string distrMInvVsPTBGLRName = 
-               "c" + cName + "_z" + zName + "_r" + rName + "/LR " + 
-                methodName + ": " + decayMode + "_BG12";
-
-            TH2F *distrMInvVsPTBGLR = 
-               static_cast<TH2F *>(inputFile->Get(distrMInvVsPTBGLRName.c_str()));
-
-            if (!distrMInvVsPTBGLR)
-            {
-               pBar.Clear();
-               CppTools::PrintError("Histogram named " + distrMInvVsPTBGLRName + 
-                                    " does not exist in file " + inputFileName);
-            }
-
-            const int xAxisMin = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6);
-            const int xAxisMax = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6);
-
-            /*
-            for (int i = distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6); 
-                 i <= distrMInvVsPTFG->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6); i++)
-            {
-            */
-               TH1D *distrMInvFG = 
-                  distrMInvVsPTFG->ProjectionY((distrMInvVsPTFG->GetName() + 
-                                                std::to_string(c) + std::to_string(z) + 
-                                                std::to_string(r) + std::to_string(pTBin)).c_str(), 
-                                               xAxisMin, xAxisMax);
-               TH1D *distrMInvBG = 
-                  distrMInvVsPTBG->ProjectionY((distrMInvVsPTBG->GetName() + 
-                                                std::to_string(c) + std::to_string(z) + 
-                                                std::to_string(r) + std::to_string(pTBin)).c_str(), 
-                                               xAxisMin, xAxisMax);
-
-
-               TH1D *distrMInvFGLR = 
-                  distrMInvVsPTFGLR->ProjectionY((distrMInvVsPTFGLR->GetName() + 
-                                                  std::to_string(c) + std::to_string(z) + 
-                                                  std::to_string(r) + 
-                                                  std::to_string(pTBin)).c_str(), 
-                                                 xAxisMin, xAxisMax);
-               TH1D *distrMInvBGLR = 
-                  distrMInvVsPTBGLR->ProjectionY((distrMInvVsPTBGLR->GetName() + 
-                                                  std::to_string(c) + std::to_string(z) + 
-                                                  std::to_string(r) + 
-                                                  std::to_string(pTBin)).c_str(), 
-                                                 xAxisMin, xAxisMax);
-
-               if (distrMInvFG->GetEntries() < 1e-3) continue;
-
-               distrMInvFG->Sumw2();
-               distrMInvBG->Sumw2();
-
-               if (!distrMInvMerged) 
-               {
-                  if (distrMInvBG->GetEntries() < 1e-3) 
-                  {
-                     distrMInvMerged = static_cast<TH1D *>(distrMInvFG->Clone());
-                  }
-                  else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG, 
-                                                    distrMInvFGLR, distrMInvBGLR);
-
-               }
-               else 
-               {
-                  if (distrMInvBG->GetEntries() < 1e-3) distrMInvMerged->Add(distrMInvFG);
-                  else distrMInvMerged->Add(SubtractBG(distrMInvFG, distrMInvBG, 
-                                                       distrMInvFGLR, distrMInvBGLR));
-               }
-               if (!distrMInvMergedFG)
-               {
-                  distrMInvMergedFG = static_cast<TH1D *>(distrMInvFG->Clone());
-                  distrMInvMergedBG = static_cast<TH1D *>(distrMInvBG->Clone());
-                  distrMInvMergedFGLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
-                  distrMInvMergedBGLR = static_cast<TH1D *>(distrMInvBGLR->Clone());
-               }
-               else
-               {
-                  distrMInvMergedFG->Add(distrMInvFG);
-                  distrMInvMergedBG->Add(distrMInvBG);
-                  distrMInvMergedFGLR->Add(distrMInvFGLR);
-                  distrMInvMergedBGLR->Add(distrMInvBGLR);
-               }
-            //}
-         }
-      }
-   }
-
-   return distrMInvMerged;
-}
-
-TH1D *AnalyzeRealMInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG, TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR)
-{
-   const double integralMInvFGLR = distrMInvFGLR->Integral(1, distrMInvFGLR->GetXaxis()->GetNbins());
-   const double integralMInvBGLR = distrMInvBGLR->Integral(1, distrMInvBGLR->GetXaxis()->GetNbins());
-
-   double partIntegralMInvFGLR = 0.;
-   double partIntegralMInvBGLR = 0.;
-
-   for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
-   {
-      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
-          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
-
-      if (distrMInvBGLR->GetBinContent(i) < 1e-6) continue;
-
-      partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
-      partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
-   }
-
-   double scaleFactorBG = partIntegralMInvFGLR/partIntegralMInvBGLR;
-
-   /*
-   partIntegralMInvFGLR = 0.;
-   partIntegralMInvBGLR = 0.;
-
-   // if background was overestimated, some bins will be negative after BG subtraction
-   // this needs to be resolved by rescaling (if needed)
-   for (int i = 1; i <= distrMInvFGLR->GetXaxis()->GetNbins(); i++)
-   {
-      if (distrMInvBGLR->GetBinContent(i) < 1e-3) continue;
-      if (distrMInvFGLR->GetBinContent(i) < 1e-3) continue;
-
-      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
-          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
-
-      partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
-      partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
-
-      if ((distrMInvBGLR->GetBinContent(i) - distrMInvBGLR->GetBinError(i))*scaleFactorBG > 
-          distrMInvFGLR->GetBinContent(i) + distrMInvFGLR->GetBinError(i))
-      {
-         scaleFactorBG *= distrMInvFGLR->GetBinContent(i)/distrMInvBGLR->GetBinContent(i);
-      }
-   }
-   */
-
-   distrMInvBG->Scale(scaleFactorBG*0.95);
-   distrMInvBGLR->Scale(scaleFactorBG*0.95);
-
-   TH1D *distrMInvSubtr = static_cast<TH1D *>(distrMInvFG->Clone());
-   distrMInvSubtr->Add(distrMInvBG, -1.);
-
-   return distrMInvSubtr;
 }
 
 void AnalyzeRealMInv::SetGaussianBroadeningFunction()

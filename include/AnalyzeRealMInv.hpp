@@ -34,6 +34,8 @@
 #include "FitFunc.hpp"
 #include "Constants.hpp"
 
+#include "MInv.hpp"
+
 /*! @namespace AnalyzeRealMInv
  * @brief Contains all functions and variables for AnalyzeRealMInv.cpp
  */
@@ -44,30 +46,6 @@ namespace AnalyzeRealMInv
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
     */
    void PerformMInvFitsForMethod(const YAML::Node& method);
-   /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy)
-    *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
-    * @param[in] decayMode decay mode of which all histograms will be merged
-    * @param[in] centralityBin centrality bin which will be used for invariant mass histogram merging
-    * @param[in] pTBin pT bin which will be used for invariant mass histogram merging
-    * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms
-    * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms
-    * @param[in] distrMInvMergedFGLR histogram to pass that will be filled with contents of all scaled foreground histograms with low resolution (for background scaling)
-    * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling)
-    * @param[out] merged invariant mass distribution with background extracted
-    */
-   TH1D *MergeMInv(const std::string& methodName, const std::string& decayMode,
-                   const YAML::Node& centralityBin, const int pTBin, 
-                   TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
-                   TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR);
-   /*! Subtracts background for the specified histogram 
-    *
-    * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted
-    * @param[in] distrMInvFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
-    * @param[out] invariant mass distribution with background subtracted
-    */
-   TH1D *SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG, 
-                    TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -129,7 +107,7 @@ namespace AnalyzeRealMInv
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
-   const unsigned int fitNTries = 3;
+   const unsigned int fitNTries = 1;
 };
 
 int main(int argc, char **argv);

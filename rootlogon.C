@@ -16,6 +16,7 @@
 
    gSystem->Load("lib/libPBar.so");
 
+   gSystem->Load("lib/libInputYAMLReader.so");
    gSystem->Load("lib/libDeadMapCutter.so");
    gSystem->Load("lib/libFitFunc.so");
 

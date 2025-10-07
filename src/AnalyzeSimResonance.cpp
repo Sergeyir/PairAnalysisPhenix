@@ -399,23 +399,29 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                     mInv, eventWeight);
                }
 
-               if (isWithin2Gamma)
+               if (posTrack.idPC2 != PART_ID::JUNK && negTrack.idPC2 != PART_ID::JUNK)
                {
-                  if (posTrack.idPC2 != PART_ID::JUNK && negTrack.idPC2 != PART_ID::JUNK)
+                  if (isWithin2Gamma)
                   {
                      thrContainer.distrDPC2PhiDPC2ZVsPT->Fill(posTrack.pc2z - negTrack.pc2z, 
                                                               posTrack.pc2phi - negTrack.pc2phi,
                                                               eventWeight);
                   }
+               }
 
-                  if (posTrack.idPC3 != PART_ID::JUNK && negTrack.idPC3 != PART_ID::JUNK)
+               if (posTrack.idPC3 != PART_ID::JUNK && negTrack.idPC3 != PART_ID::JUNK)
+               {
+                  if (isWithin2Gamma)
                   {
                      thrContainer.distrDPC3PhiDPC3ZVsPT->Fill(posTrack.pc3z - negTrack.pc3z, 
                                                               posTrack.pc3phi - negTrack.pc3phi, 
                                                               eventWeight);
                   }
+               }
 
-                  if (posTrack.idTOFe != PART_ID::JUNK && negTrack.idTOFe != PART_ID::JUNK)
+               if (posTrack.idTOFe != PART_ID::JUNK && negTrack.idTOFe != PART_ID::JUNK)
+               {
+                  if (isWithin2Gamma)
                   {
                      thrContainer.distrDChamberDSlatVsPT->
                         Fill(static_cast<double>(posTrack.slat/96 - negTrack.slat/96) + 0.5,
@@ -423,7 +429,15 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                  (negTrack.slat % 96)) + 0.5,
                              pT, eventWeight);
                   }
-                  else if (posTrack.idTOFw != PART_ID::JUNK && negTrack.idTOFw != PART_ID::JUNK)
+
+                  if (posTrack.slat == negTrack.slat)
+                  {
+                     thrContainer.distrMInvTOFeGhostNoPID->Fill(pT, mInv, eventWeight);
+                  }
+               }
+               else if (posTrack.idTOFw != PART_ID::JUNK && negTrack.idTOFw != PART_ID::JUNK)
+               {
+                  if (isWithin2Gamma)
                   {
                      thrContainer.distrDChamberDStripVsPT->
                         Fill(static_cast<double>(posTrack.strip/96 - negTrack.strip/96) + 0.5,
@@ -431,14 +445,25 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                  (negTrack.strip % 96)) + 0.5,
                              pT, eventWeight);
                   }
+                  if (posTrack.strip == negTrack.strip)
+                  {
+                     thrContainer.distrMInvTOFwGhostNoPID->Fill(pT, mInv, eventWeight);
+                  }
+               }
 
-                  if (posTrack.idEMCal != PART_ID::JUNK && negTrack.idEMCal != PART_ID::JUNK &&
-                      posTrack.sector == negTrack.sector)
+               if (posTrack.idEMCal != PART_ID::JUNK && negTrack.idEMCal != PART_ID::JUNK &&
+                   posTrack.sector == negTrack.sector)
+               {
+                  if (isWithin2Gamma)
                   {
                      thrContainer.distrDYTowerDZTowerVsPT->
                         Fill(static_cast<double>(posTrack.yTower - negTrack.yTower) + 0.5, 
                              static_cast<double>(posTrack.zTower - negTrack.zTower) + 0.5, 
                              pT, eventWeight);
+                  }
+                  if (posTrack.yTower == negTrack.yTower && posTrack.zTower == negTrack.zTower)
+                  {
+                     thrContainer.distrMInvEMCalGhostNoPID->Fill(pT, mInv, eventWeight);
                   }
                }
 
@@ -666,7 +691,7 @@ int main(int argc, char **argv)
    }
    else 
    {
-      CppTools::PrintInfo("Fit parameters for spectra were not found;" \
+      CppTools::PrintInfo("Fit parameters for spectra were not found; " \
                           "setting reweight to e^{-p_{T}}");
       reweightForSpectra = false;
    }
@@ -812,6 +837,9 @@ ThrContainerCopy AnalyzeSimResonance::ThrContainer::GetCopy()
    copy.distrOrigPTVsDecayRecPT = distrOrigPTVsDecayRecPT.Get();
    copy.distrMInvDCPC1NoPID = distrMInvDCPC1NoPID.Get();
    copy.distrMInvOneArmAntiCut = distrMInvOneArmAntiCut.Get();
+   copy.distrMInvTOFeGhostNoPID = distrMInvTOFeGhostNoPID.Get();
+   copy.distrMInvTOFwGhostNoPID = distrMInvTOFwGhostNoPID.Get();
+   copy.distrMInvEMCalGhostNoPID = distrMInvEMCalGhostNoPID.Get();
    copy.distrMInvNoPID = distrMInvNoPID.Get();
    copy.distrMInvPC2NoPID = distrMInvPC2NoPID.Get();
    copy.distrMInvPC3NoPID = distrMInvPC3NoPID.Get();
@@ -855,6 +883,9 @@ void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsDecayRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvDCPC1NoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvOneArmAntiCut.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFeGhostNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvTOFwGhostNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvEMCalGhostNoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvNoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvPC2NoPID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvPC3NoPID.Merge())->Write();
