@@ -67,8 +67,22 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
 
+   const std::string inputFileRecEffName = "input/data/ResonanceEff/" + runName + 
+                                           "/" + resonanceName + ".root";
+
+   if (CppTools::FileExists(inputFileRecEffName))
+   {
+      inputFileRecEff = TFile::Open(inputFileRecEffName);
+   }
+   else
+   {
+      PrintWarning("File " + inputFileRecEffName + " does not exists; spectra will "\
+                   "not be normalized by the reconstruction efficiency");
+   }
+
    text.SetTextFont(43);
    text.SetTextSize(45);
+
    texText.SetTextFont(43);
    texText.SetTextSize(45);
 
@@ -107,12 +121,11 @@ int main(int argc, char **argv)
       numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
    }
 
-   const std::string parametersOutputDir = "data/Parameters/Real/" + runName;
+   const std::string parametersOutputDir = "data/RawYields/Resonance/" + runName;
    void(system(("mkdir -p " + parametersOutputDir).c_str()));
 
-   // file in which all important data will be written
-   TFile parametersOutputFile((parametersOutputDir + "/" + resonanceName + ".root").c_str(), 
-                              "RECREATE");
+   parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
+                                       "_" + resonanceName + ".root").c_str(), "RECREATE");
 
    // performing fits for specified pair selection methods
    if (methodToAnalyze == "all")
@@ -127,6 +140,8 @@ int main(int argc, char **argv)
       PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][methodIndex]);
    }
 
+   parametersOutputFile->Close();
+
    pBar.Finish();
 
    CppTools::PrintInfo("AnalyzeRealMInv executable has finished running succesfully");
@@ -140,18 +155,33 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                  std::to_string(taxiNumber) + "/" + methodName;
    void(system(("mkdir -p " + outputDir).c_str()));
 
-   TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
-   TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawYieldVsPT((methodName + ": raw yield vs pT").c_str(), 
-                          "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawSpectraVsPT((methodName + ": raw spectra vs pT").c_str(), 
-                            "", pTNBins, &pTBinRanges[0]);
-
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
 
+   parametersOutputFile->mkdir(methodName.c_str());
+   parametersOutputFile->cd(methodName.c_str());
+
+   TH1D* distrRecEffVsPT = nullptr;
+
+   if (inputFileRecEff)
+   {
+      distrRecEffVsPT = 
+         static_cast<TH1D *>(inputFileRecEff->Get((methodName + 
+                                                   ": reconstruction efficiency vs pT").c_str()));
+   }
+
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
+      const std::string centralityName = centralityBin["name"].as<std::string>();
+
+      parametersOutputFile->mkdir((methodName + "/" + centralityName).c_str());
+      parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
+
+      TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrSpectraVsPT("spectra vs pT", "", pTNBins, &pTBinRanges[0]);
+
       for (unsigned int i = 0; i < pTNBins; i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
@@ -161,9 +191,9 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          TH1D *distrMInvFGLR = nullptr;
          TH1D *distrMInvBGLR = nullptr;
 
-         // shows whether to perform approximations for the current bin
-         // if false the histograms will not be approximated but will be printed anyways
-         const bool performFit = (i >= pTBinFitMin && i <= pTBinFitMax);
+            // shows whether to perform approximations for the current bin
+            // if false the histograms will not be approximated but will be printed anyways
+            const bool performFit = (i >= pTBinFitMin && i <= pTBinFitMax);
 
          std::string decayMode = ParticleMap::nameShort[daughter1Id] +
                                  ParticleMap::nameShort[daughter2Id];
@@ -278,8 +308,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             {
                fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
                                 fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-               fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.1/static_cast<double>(j*j)),
-                                fit.GetParameter(2)*(1. + 0.2/static_cast<double>(j*j)));
+               fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.05/static_cast<double>(j*j)),
+                                fit.GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
 
                fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
                                                    gaussianBroadeningSigma)*3., 
@@ -317,9 +347,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
             const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
                                          (pTBinRanges[i + 1] - pTBinRanges[i]));
-            distrRawSpectraVsPT.
-               SetBinContent(i + 1, rawYield/rawYieldNorm);
-            distrRawSpectraVsPT.SetBinError(i + 1, rawYieldErr/rawYield/rawYieldNorm);
+            distrSpectraVsPT.SetBinContent(i + 1, rawYield/rawYieldNorm);
+            distrSpectraVsPT.SetBinError(i + 1, rawYieldErr/rawYield/rawYieldNorm);
 
             fitResonance.SetRange(fit.GetParameter(1) - 
                                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
@@ -555,7 +584,6 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          }
          else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
-
          ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
                                 centralityBin["name"].as<std::string>() + "_" +
                                 CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
@@ -563,104 +591,110 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          numberOfCalls++;
       }
+
+      distrMeansVsPT.SetLineColor(kRed - 2);
+      distrMeansVsPT.SetMarkerColor(kRed - 2);
+      distrMeansVsPT.SetLineWidth(4);
+
+      distrGammasVsPT.SetLineColor(kRed - 2);
+      distrGammasVsPT.SetMarkerColor(kRed - 2);
+      distrGammasVsPT.SetLineWidth(4);
+
+      distrRawYieldVsPT.SetLineColor(kRed - 2);
+      distrRawYieldVsPT.SetMarkerColor(kRed - 2);
+      distrRawYieldVsPT.SetLineWidth(4);
+
+      distrSpectraVsPT.SetLineColor(kRed - 2);
+      distrSpectraVsPT.SetMarkerColor(kRed - 2);
+      distrSpectraVsPT.SetLineWidth(4);
+
+      TLine massResonancePDG(pTBinRanges[0], massResonance, pTBinRanges[pTNBins], massResonance);
+      massResonancePDG.SetLineColorAlpha(kBlack, 0.5);
+      massResonancePDG.SetLineStyle(2);
+      massResonancePDG.SetLineWidth(4);
+
+      TLine gammaResonancePDG(pTBinRanges[0], gammaResonance, pTBinRanges[pTNBins], gammaResonance);
+      gammaResonancePDG.SetLineColorAlpha(kBlack, 0.5);
+      gammaResonancePDG.SetLineStyle(2);
+      gammaResonancePDG.SetLineWidth(4);
+
+      distrMeansVsPT.SetMaximum(massResonance*1.05);
+      distrMeansVsPT.SetMinimum(massResonance*0.95);
+
+      distrGammasVsPT.SetMaximum(gammaResonance*1.5);
+      distrGammasVsPT.SetMinimum(gammaResonance/2.);
+
+      TCanvas canvMeansVsPT("canv means vs pT", "", 800, 800);
+
+      gPad->SetRightMargin(0.03);
+      gPad->SetTopMargin(0.02);
+      gPad->SetLeftMargin(0.172);
+      gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                           "#it{#mu} [GeV/#it{c}^{2}]", 1., 1.82);
+
+      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      massResonancePDG.Draw();
+
+      ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + resonanceName + 
+                             "_means_" + centralityName);
+
+      TCanvas canvGammasVsPT("canv gammas vs pT", "", 800, 800);
+
+      gPad->SetRightMargin(0.03);
+      gPad->SetTopMargin(0.02);
+      gPad->SetLeftMargin(0.172);
+      gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                           "#it{#Gamma} [GeV/#it{c}^{2}]", 1., 1.82);
+
+      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      gammaResonancePDG.Draw();
+
+      ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + 
+                             "_gammas_" + centrailtyName);
+
+      TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
+
+      gPad->SetLogy();
+
+      gPad->SetRightMargin(0.03);
+      gPad->SetTopMargin(0.02);
+      gPad->SetLeftMargin(0.141);
+      gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                           "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
+
+      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+
+      ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
+                             "_raw_yield_" + centralityName);
+
+      TCanvas canvSpectraVsPT("canv spectra vs pT", "", 800, 800);
+
+      gPad->SetLogy();
+
+      gPad->SetRightMargin(0.03);
+      gPad->SetTopMargin(0.02);
+      gPad->SetLeftMargin(0.141);
+      gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                           "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
+                           "[(GeV/#it{c})^{-2})]", 1., 1.35);
+
+      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+
+      ROOTTools::PrintCanvas(&canvSpectraVsPT, outputDir + "/" + resonanceName + 
+                             "_spectra_" + centralityName);
+
+      distrMeansVsPT.Write();
+      distrGammasVsPT.Write();
+      distrRawYieldVsPT.Write();
    }
-
-   text.SetTextAngle(0.);
-
-   distrMeansVsPT.SetLineColor(kRed - 2);
-   distrMeansVsPT.SetMarkerColor(kRed - 2);
-   distrMeansVsPT.SetLineWidth(4);
-
-   distrGammasVsPT.SetLineColor(kRed - 2);
-   distrGammasVsPT.SetMarkerColor(kRed - 2);
-   distrGammasVsPT.SetLineWidth(4);
-
-   distrRawYieldVsPT.SetLineColor(kRed - 2);
-   distrRawYieldVsPT.SetMarkerColor(kRed - 2);
-   distrRawYieldVsPT.SetLineWidth(4);
-
-   distrRawSpectraVsPT.SetLineColor(kRed - 2);
-   distrRawSpectraVsPT.SetMarkerColor(kRed - 2);
-   distrRawSpectraVsPT.SetLineWidth(4);
-
-   TLine massResonancePDG(pTBinRanges[0], massResonance, pTBinRanges[pTNBins], massResonance);
-   massResonancePDG.SetLineColorAlpha(kBlack, 0.5);
-   massResonancePDG.SetLineStyle(2);
-   massResonancePDG.SetLineWidth(4);
-
-   TLine gammaResonancePDG(pTBinRanges[0], gammaResonance, pTBinRanges[pTNBins], gammaResonance);
-   gammaResonancePDG.SetLineColorAlpha(kBlack, 0.5);
-   gammaResonancePDG.SetLineStyle(2);
-   gammaResonancePDG.SetLineWidth(4);
-
-   distrMeansVsPT.SetMaximum(massResonance*1.025);
-   distrMeansVsPT.SetMinimum(massResonance*0.975);
-
-   distrGammasVsPT.SetMaximum(gammaResonance*1.5);
-   distrGammasVsPT.SetMinimum(gammaResonance/2.);
-
-   TCanvas canvMeansVsPT("canv means vs pT", "", 800, 800);
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.172);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "#it{#mu} [GeV/#it{c}^{2}]", 1., 1.82);
-
-   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
-   massResonancePDG.Draw();
-
-   ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + resonanceName + "_means");
-
-   TCanvas canvGammasVsPT("canv gammas vs pT", "", 800, 800);
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.172);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "#it{#Gamma} [GeV/#it{c}^{2}]", 1., 1.82);
-
-   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
-   gammaResonancePDG.Draw();
-
-   ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + "_gammas");
-
-   TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
-
-   gPad->SetLogy();
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.141);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
-
-   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
-
-   ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + "_raw_yield");
-
-   TCanvas canvRawSpectraVsPT("canv raw spectra vs pT", "", 800, 800);
-
-   gPad->SetLogy();
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.141);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrRawSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
-                        "[(GeV/#it{c})^{-2})]", 1., 1.35);
-
-   text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
-
-   ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + resonanceName + "_raw_spectra");
 }
 
 void AnalyzeRealMInv::SetGaussianBroadeningFunction()

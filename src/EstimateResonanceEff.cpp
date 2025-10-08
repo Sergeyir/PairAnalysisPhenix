@@ -79,8 +79,8 @@ int main(int argc, char **argv)
    const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
    void(system(("mkdir -p " + parametersOutputDir).c_str()));
 
-   // file in which all important data will be written
-   TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
+   outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
+                             ".root").c_str(), "RECREATE");
 
    // performing fits for each pair selection method
    PerformMInvFitsForMethod("DCPC1NoPID");
@@ -101,7 +101,7 @@ int main(int argc, char **argv)
    PerformMInvFitsForMethod("EMCal2PID");
    PerformMInvFitsForMethod("1TOF1EMCal2PID");
 
-   parametersOutput.Close();
+   outputFile->Close();
    pBar.Finish();
 
    CppTools::PrintInfo("EstimateResonanceEff executable has finished running succesfully");
@@ -117,14 +117,14 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    const std::string outputDir = "output/ResonanceEff/" + runName + "/" + methodName;
    void(system(("mkdir -p " + outputDir).c_str()));
 
-   TH1D distrMeansVsPT((methodName + ": means vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
-   TH1D distrGammasVsPT((methodName + ": gammas vs pT").c_str(), "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawYieldVsPT((methodName + ": raw yield vs pT").c_str(), 
-                            "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawSpectraVsPT((methodName + ": raw spectra vs pT").c_str(), 
-                            "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRecEffVsPT((methodName + ": reconstruction efficiency vs pT").c_str(), 
-                        "", pTNBins, &pTBinRanges[0]);
+   outputFile->mkdir(methodName.c_str());
+   outputFile->cd(methodName.c_str());
+
+   TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
+   TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRawSpectraVsPT("raw spectra vs pT", "", pTNBins, &pTBinRanges[0]);
+   TH1D distrRecEffVsPT("reconstruction efficiency vs pT", "", pTNBins, &pTBinRanges[0]);
 
    text.SetTextAngle(270.);
 

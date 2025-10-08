@@ -67,10 +67,14 @@ namespace AnalyzeRealMInv
    std::string runName;
    /// Number of a taxi
    int taxiNumber;
-   /// Name of the input file
+   /// Name of the input file (for getting invariant mass distributions from the real data)
    std::string inputFileName;
-   /// Input file
+   /// Input file (for getting invariant mass distributions from the real data)
    TFile *inputFile;
+   /// Input file with reconstruction efficiencies
+   TFile *inputFileRecEff = nullptr;
+   /// File in which all parameters and yields will be written
+   TFile *parametersOutputFile;
    /// name of the resonance
    std::string resonanceName;
    /// mass of the resonance [GeV/c^2]

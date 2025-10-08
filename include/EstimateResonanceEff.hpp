@@ -66,6 +66,8 @@ namespace EstimateResonanceEff
    std::string inputFileName;
    /// Input file
    TFile *inputFile;
+   /// Output file (for writing means, gammas, efficiency reconstruction, etc. vs pT)
+   TFile *outputFile;
    /// unscaled pT distribution of original generated particles
    TH1F *distrOrigUnscaledPT;
    /// pT distribution of original generated particles
