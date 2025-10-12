@@ -72,12 +72,12 @@ int main(int argc, char **argv)
 
    if (CppTools::FileExists(inputFileRecEffName))
    {
-      inputFileRecEff = TFile::Open(inputFileRecEffName);
+      inputFileRecEff = TFile::Open(inputFileRecEffName.c_str(), "READ");
    }
    else
    {
-      PrintWarning("File " + inputFileRecEffName + " does not exists; spectra will "\
-                   "not be normalized by the reconstruction efficiency");
+      CppTools::PrintWarning("File " + inputFileRecEffName + " does not exists; spectra will "\
+                             "not be normalized by the reconstruction efficiency");
    }
 
    text.SetTextFont(43);
@@ -161,6 +161,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    parametersOutputFile->mkdir(methodName.c_str());
    parametersOutputFile->cd(methodName.c_str());
 
+   /*
    TH1D* distrRecEffVsPT = nullptr;
 
    if (inputFileRecEff)
@@ -169,6 +170,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          static_cast<TH1D *>(inputFileRecEff->Get((methodName + 
                                                    ": reconstruction efficiency vs pT").c_str()));
    }
+   */
 
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
@@ -654,7 +656,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       gammaResonancePDG.Draw();
 
       ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + 
-                             "_gammas_" + centrailtyName);
+                             "_gammas_" + centralityName);
 
       TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
 
