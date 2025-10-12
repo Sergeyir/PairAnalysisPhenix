@@ -67,7 +67,7 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
 
-   const std::string inputFileRecEffName = "input/data/ResonanceEff/" + runName + 
+   const std::string inputFileRecEffName = "data/Parameters/ResonanceEff/" + runName + 
                                            "/" + resonanceName + ".root";
 
    if (CppTools::FileExists(inputFileRecEffName))
@@ -161,16 +161,22 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
    parametersOutputFile->mkdir(methodName.c_str());
    parametersOutputFile->cd(methodName.c_str());
 
-   /*
    TH1D* distrRecEffVsPT = nullptr;
 
    if (inputFileRecEff)
    {
+      const std::string distrRecEffVsPTName = methodName + "/reconstruction efficiency vs pT";
       distrRecEffVsPT = 
-         static_cast<TH1D *>(inputFileRecEff->Get((methodName + 
-                                                   ": reconstruction efficiency vs pT").c_str()));
+         static_cast<TH1D *>(inputFileRecEff->Get(distrRecEffVsPTName.c_str()));
+
+      if (!distrRecEffVsPT)
+      {
+         CppTools::PrintWarning("Histogram named \"" +  distrRecEffVsPTName + 
+                                "\" does not exist in file" + 
+                                static_cast<std::string>(inputFileRecEff->GetName()) + 
+                                "; correction on reconstruction efficiency will not be applied");
+      }
    }
-   */
 
    for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
    {
@@ -200,13 +206,16 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          std::string decayMode = ParticleMap::nameShort[daughter1Id] +
                                  ParticleMap::nameShort[daughter2Id];
 
+         double numberOfEvents = 0.;
+
          TH1D *distrMInv = 
             MInv::Merge(inputFile, methodName, decayMode, 
                         centralityBin["cb_c_min"].as<int>(), centralityBin["cb_c_max"].as<int>(),
                         0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                         0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                         pTBinRanges[i], pTBinRanges[i + 1],
-                        distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR);
+                        distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR, 
+                        numberOfEvents);
 
          if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
              !inputYAMLResonance["separate_antiparticle"].as<bool>())
@@ -219,7 +228,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                                        0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                                        0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                                        pTBinRanges[i], pTBinRanges[i + 1],
-                                       distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR));
+                                       distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR,
+                                       numberOfEvents));
          }
 
          if (!distrMInv)
@@ -347,8 +357,9 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr/rawYield/
                                           (pTBinRanges[i + 1] - pTBinRanges[i]));
 
-            const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
-                                         (pTBinRanges[i + 1] - pTBinRanges[i]));
+            const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
+                                        (pTBinRanges[i + 1] - pTBinRanges[i])*numberOfEvents;
+
             distrSpectraVsPT.SetBinContent(i + 1, rawYield/rawYieldNorm);
             distrSpectraVsPT.SetBinError(i + 1, rawYieldErr/rawYield/rawYieldNorm);
 
@@ -594,6 +605,11 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          numberOfCalls++;
       }
 
+      if (distrRecEffVsPT)
+      {
+         distrSpectraVsPT.Divide(distrRecEffVsPT);
+      }
+
       distrMeansVsPT.SetLineColor(kRed - 2);
       distrMeansVsPT.SetMarkerColor(kRed - 2);
       distrMeansVsPT.SetLineWidth(4);
@@ -636,7 +652,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       ROOTTools::DrawFrame(&distrMeansVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                            "#it{#mu} [GeV/#it{c}^{2}]", 1., 1.82);
 
-      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
       massResonancePDG.Draw();
 
       ROOTTools::PrintCanvas(&canvMeansVsPT, outputDir + "/" + resonanceName + 
@@ -652,7 +668,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       ROOTTools::DrawFrame(&distrGammasVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                            "#it{#Gamma} [GeV/#it{c}^{2}]", 1., 1.82);
 
-      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
       gammaResonancePDG.Draw();
 
       ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + 
@@ -670,7 +686,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
                            "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
 
-      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
 
       ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
                              "_raw_yield_" + centralityName);
@@ -684,11 +700,20 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       gPad->SetLeftMargin(0.141);
       gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                           "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
-                           "[(GeV/#it{c})^{-2})]", 1., 1.35);
+      if (distrRecEffVsPT)
+      {
+         ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                              "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{N}/#it{dp}_{T}#it{dy} "\
+                              "[(GeV/#it{c})^{-2})]", 1., 1.35);
+      }
+      else
+      {
+         ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
+                              "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
+                              "[(GeV/#it{c})^{-2})]", 1., 1.35);
+      }
 
-      text.DrawTextNDC(0.38, 0.9, (methodName).c_str());
+      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
 
       ROOTTools::PrintCanvas(&canvSpectraVsPT, outputDir + "/" + resonanceName + 
                              "_spectra_" + centralityName);
