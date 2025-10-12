@@ -42,7 +42,7 @@ namespace MInv
                const int cMin, const int cMax, const int zMin, const int zMax, 
                const int rMin, const int rMax, const double pTMin, const double pTMax,
                TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
-               TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR);
+               TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR, double& numberOfEvents);
    /*! Subtracts background for the specified histogram 
     *
     * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted

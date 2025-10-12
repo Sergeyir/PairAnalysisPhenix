@@ -16,7 +16,8 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
                   const int zMin, const int zMax, const int rMin, const int rMax, 
                   const double pTMin, const double pTMax,
                   TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
-                  TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR)
+                  TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR,
+                  double& numberOfEvents)
 {
    TH1D *distrMInvMerged = nullptr;
    // iterating over CabanaBoy centrality bins
@@ -29,7 +30,7 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
       {
          const std::string zName = (z > 9) ? std::to_string(z) : "0" + std::to_string(z);
 
-         // iterating over CabanaBoy r_{vtx} bins
+         // iterating over CabanaBoy reaction plane bins
          for (int r = rMin; r <= rMax; r++)
          {
             const std::string rName = (r > 9) ? std::to_string(r) : "0" + std::to_string(r);
@@ -43,10 +44,24 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
 
             if (!distrMInvVsPTFG)
             {
-               CppTools::PrintError("Histogram named " + distrMInvVsPTFGName + 
-                                    " does not exist in file" + 
+               CppTools::PrintError("Histogram named \"" + distrMInvVsPTFGName + 
+                                    "\" does not exist in file" + 
                                     static_cast<std::string>(inputFile->GetName()));
             }
+
+            const std::string poolStatName = "c" + cName + "_z" + zName + 
+                                             "_r" + rName + "/PoolStatistics";
+
+            TH1D *poolStat = static_cast<TH1D *>(inputFile->Get(poolStatName.c_str()));
+
+            if (!poolStat)
+            {
+               CppTools::PrintError("Histogram named \"" + poolStatName + 
+                                    "\" does not exist in file" + 
+                                    static_cast<std::string>(inputFile->GetName()));
+            }
+
+            numberOfEvents += poolStat->GetBinContent(2);
 
             const std::string distrMInvVsPTBGName = 
                "c" + cName + "_z" + zName + "_r" + rName + "/" + 
