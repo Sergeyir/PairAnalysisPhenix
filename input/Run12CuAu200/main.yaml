@@ -1,12 +1,12 @@
-# This file contains all important information about Run14HeAuMinBias run
+# This file contains all important information about Run12CuAuMinBias run
 ---
 status: main # required field for checking the file application
-run_name: Run14HeAu200
-collision_system_name: HeAu200
-collision_system_name_tex: 'He+Au, #sqrt{s_NN}} = 200 GeV'
+run_name: Run12CuAu200
+collision_system_name: CuAu200
+collision_system_name_tex: 'Cu+Au, #sqrt{s_NN}} = 200 GeV'
 is_pp: false # shows whether the collision is p+p; if false centrality_min and centrality_max will not be used
 centrality_min: 0
-centrality_max: 88
+centrality_max: 92
 embedding: false # shows whether the embedding is needed for this run
 magnetic_field_configurations: # magnetic fields of a run
 - name: ''

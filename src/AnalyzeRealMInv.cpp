@@ -415,192 +415,258 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          distrMInvFGLR->GetXaxis()->SetRange(1, lastNonZeroBinLR + 2);
          distrMInvBGLR->GetXaxis()->SetRange(1, lastNonZeroBinLR + 2);
 
-         TCanvas canvMInv("canv MInv", "", 800, 800);
+         { /* canvas with invariant mass distribution with subtracted background only */
+            TCanvas canvMInv("canv MInv", "", 800, 800);
 
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
 
-         text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
-         texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         text.DrawTextNDC(0.85, 0.93, centralityBin["name_tex"].as<std::string>().c_str());
-         if (performFit)
-         {
-            texText.DrawLatexNDC(0.2, 0.81, 
-                                 ("#it{#chi}^{2}/NDF=" + 
-                                  CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
-            fitBG.Draw("SAME");
-            fit.Draw("SAME");
-         }
-
-         ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
-                                centralityBin["name"].as<std::string>() + "_" +
-                                CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 1));
-
-         distrMInv->SetFillStyle(3003);
-         distrMInvFG->SetFillStyle(3005);
-         distrMInvBG->SetFillStyle(3004);
-         distrMInvFGLR->SetFillStyle(3005);
-         distrMInvBGLR->SetFillStyle(3004);
-
-         TCanvas canvMInvSummary("canv MInv summary", "", 1920, 1080);
-
-         canvMInvSummary.Divide(3, 2);
-         
-         canvMInvSummary.cd(1);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
-
-         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
-
-         texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         text.DrawTextNDC(0.8, 0.92, centralityBin["name_tex"].as<std::string>().c_str());
-         text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
-
-         if (performFit)
-         {
-            texText.DrawLatexNDC(0.2, 0.74, 
-                                 ("#it{#chi}^{2}/NDF = " + 
-                                  CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
-            /*
-
-            texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
-                                            " [MeV/c^{2}]").c_str());
-            texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
-                                             CppTools::DtoStr(fit.GetParameter(2)*1000., 1) + 
-                                             " [MeV/c^{2}]").c_str());
-                                             */
-
-            fitBG.Draw("SAME");
-            fit.Draw("SAME");
-         }
-
-         canvMInvSummary.cd(4);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
-
-         ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                              "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
-
-         canvMInvSummary.cd(5);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
-
-         if (distrMInvBG->GetEntries() > 1e-3 && distrMInvFG->GetEntries() > 1e-3)
-         {
-            TH1D *ratioFGBG = static_cast<TH1D *>(distrMInvFG->Clone());
-            ratioFGBG->Divide(distrMInvBG);
-
-            ratioFGBG->SetLineWidth(2);
-            ratioFGBG->SetLineColor(kBlack);
-            ratioFGBG->SetMarkerColor(kBlack);
-
-            ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
-         }
-         else
-         {
-            text.DrawTextNDC(0.88, 0.92, "No data");
-         }
-
-         canvMInvSummary.cd(6);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
-
-         if (distrMInvBGLR->GetEntries() > 1e-3 && distrMInvFGLR->GetEntries() > 1e-3)
-         {
-            TH1D *ratioFGBGLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
-            ratioFGBGLR->Divide(distrMInvBGLR);
-
-            ratioFGBGLR->SetLineWidth(2);
-            ratioFGBGLR->SetLineColor(kBlack);
-            ratioFGBGLR->SetMarkerColor(kBlack);
-
-            ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
-         }
-         else
-         {
-            text.DrawTextNDC(0.88, 0.92, "No data");
-         }
-
-         distrMInvFG->SetMaximum(distrMInvFG->GetMaximum()*1.1);
-         distrMInvFGLR->SetMaximum(distrMInvFGLR->GetMaximum()*3.);
-
-         canvMInvSummary.cd(2);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
-
-         distrMInv->Sumw2(false);
-         distrMInvBG->Sumw2(false);
-         distrMInvFG->Sumw2(false);
-
-         if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
-         {
-            distrMInvFG->SetMinimum(0.);
-            ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                 0.05, 0.05, true, false);
-         }
-         else
-         {
-            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                 0.05, 0.05, true, false);
-         }
-
-         if (distrMInvFG->GetEntries() > 1e-3) 
-         {
-            distrMInvFG->SetLineColorAlpha(kAzure + 2, 0.8);
-            distrMInvFG->Draw("SAME PFC");
-         }
-         else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
-
-         if (distrMInvBG->GetEntries() > 1e-3) 
-         {
-            distrMInvBG->SetLineColorAlpha(kGreen + 2, 0.8);
-            distrMInvBG->Draw("SAME PFC");
-         }
-         else text.DrawTextNDC(0.78, 0.9, "No data on background");
-
-         distrMInv->SetLineColorAlpha(kRed + 2, 0.8);
-         distrMInv->Draw("SAME PFC");
-
-         canvMInvSummary.cd(3);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
-
-         gPad->SetLogy();
-
-         distrMInvBGLR->Sumw2(false);
-
-         if (distrMInvFGLR->GetEntries() > 1e-3)
-         {
-            ROOTTools::DrawFrame(distrMInvFGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                 0.05, 0.05, true, false);
-            distrMInvFGLR->SetLineColorAlpha(kAzure + 2, 0.8);
-            distrMInvFGLR->Draw("SAME PFC");
-
-            if (distrMInvBGLR->GetEntries() > 1e-3) 
+            text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
+            texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+                                 CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+            text.DrawTextNDC(0.85, 0.93, centralityBin["name_tex"].as<std::string>().c_str());
+            if (performFit)
             {
-               distrMInvBGLR->SetLineColorAlpha(kRed + 2, 0.8);
-               distrMInvBGLR->Draw("SAME PFC");
+               /*
+               texText.DrawLatexNDC(0.2, 0.81, 
+                                    ("#it{#chi}^{2}/NDF=" + 
+                                     CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+                                     */
+               fitBG.Draw("SAME");
+               fit.Draw("SAME");
+            }
+
+            ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
+                                   centralityBin["name"].as<std::string>() + "_" +
+                                   CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 1));
+         } /* canvas with invariant mass distribution with subtracted background only */
+
+
+         { /* summary canvas: MInv, FGBG, FG/BG */
+            TCanvas canvMInvSummary("canv MInv summary", "", 1920, 1080);
+
+            distrMInv->SetFillStyle(3003);
+            distrMInvFG->SetFillStyle(3005);
+            distrMInvBG->SetFillStyle(3004);
+            distrMInvFGLR->SetFillStyle(3005);
+            distrMInvBGLR->SetFillStyle(3004);
+
+            canvMInvSummary.Divide(3, 2);
+            
+            canvMInvSummary.cd(1);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+            ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
+                                 "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+
+            texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + 
+                                 " < #it{p}_{T} < " + 
+                                 CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
+            text.DrawTextNDC(0.8, 0.92, centralityBin["name_tex"].as<std::string>().c_str());
+            text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
+
+            if (performFit)
+            {
+               /*
+               texText.DrawLatexNDC(0.2, 0.74, 
+                                    ("#it{#chi}^{2}/NDF = " + 
+                                     CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+                                     */
+               /*
+
+               texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
+                                               " [MeV/c^{2}]").c_str());
+               texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
+                                                CppTools::DtoStr(fit.GetParameter(2)*1000., 1) + 
+                                                " [MeV/c^{2}]").c_str());
+                                                */
+
+               fitBG.Draw("SAME");
+               fit.Draw("SAME");
+            }
+
+            canvMInvSummary.cd(4);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+            ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
+                                 "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+
+            canvMInvSummary.cd(5);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+            if (distrMInvBG->GetEntries() > 1e-3 && distrMInvFG->GetEntries() > 1e-3)
+            {
+               TH1D *ratioFGBG = static_cast<TH1D *>(distrMInvFG->Clone());
+               ratioFGBG->Divide(distrMInvBG);
+
+               ratioFGBG->SetLineWidth(2);
+               ratioFGBG->SetLineColor(kBlack);
+               ratioFGBG->SetMarkerColor(kBlack);
+
+               ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
+            }
+            else
+            {
+               text.DrawTextNDC(0.88, 0.92, "No data");
+            }
+
+            canvMInvSummary.cd(6);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
+
+            if (distrMInvBGLR->GetEntries() > 1e-3 && distrMInvFGLR->GetEntries() > 1e-3)
+            {
+               TH1D *ratioFGBGLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
+               ratioFGBGLR->Divide(distrMInvBGLR);
+
+               ratioFGBGLR->SetLineWidth(2);
+               ratioFGBGLR->SetLineColor(kBlack);
+               ratioFGBGLR->SetMarkerColor(kBlack);
+
+               ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
+            }
+            else
+            {
+               text.DrawTextNDC(0.88, 0.92, "No data");
+            }
+
+            distrMInvFG->SetMaximum(distrMInvFG->GetMaximum()*1.15);
+            distrMInvFGLR->SetMaximum(distrMInvFGLR->GetMaximum()*3.);
+
+            canvMInvSummary.cd(2);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+            distrMInv->Sumw2(false);
+            distrMInvBG->Sumw2(false);
+            distrMInvFG->Sumw2(false);
+
+            if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
+            {
+               distrMInvFG->SetMinimum(0.);
+               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                    0.05, 0.05, true, false);
+            }
+            else
+            {
+               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                    0.05, 0.05, true, false);
+            }
+
+            if (distrMInvFG->GetEntries() > 1e-3) 
+            {
+               distrMInvFG->SetLineColorAlpha(kAzure + 2, 0.8);
+               distrMInvFG->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
+
+            if (distrMInvBG->GetEntries() > 1e-3) 
+            {
+               distrMInvBG->SetLineColorAlpha(kGreen + 2, 0.8);
+               distrMInvBG->Draw("SAME PFC");
             }
             else text.DrawTextNDC(0.78, 0.9, "No data on background");
-         }
-         else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
-         ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
-                                centralityBin["name"].as<std::string>() + "_" +
-                                CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 1), true, false);
+            distrMInv->SetLineColorAlpha(kRed + 2, 0.8);
+            distrMInv->Draw("SAME PFC");
+
+            canvMInvSummary.cd(3);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
+
+            gPad->SetLogy();
+
+            distrMInvBGLR->Sumw2(false);
+
+            if (distrMInvFGLR->GetEntries() > 1e-3)
+            {
+               ROOTTools::DrawFrame(distrMInvFGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                    0.05, 0.05, true, false);
+               distrMInvFGLR->SetLineColorAlpha(kAzure + 2, 0.8);
+               distrMInvFGLR->Draw("SAME PFC");
+
+               if (distrMInvBGLR->GetEntries() > 1e-3) 
+               {
+                  distrMInvBGLR->SetLineColorAlpha(kRed + 2, 0.8);
+                  distrMInvBGLR->Draw("SAME PFC");
+               }
+               else text.DrawTextNDC(0.78, 0.9, "No data on background");
+            }
+            else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
+
+            ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
+                                   centralityBin["name"].as<std::string>() + "_" +
+                                   CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 1), true, false);
+         } /* summary canvas: MInv, FGBG, FG/BG */
+
+         { /* FG, BG, and signal on the same canvas */
+            TCanvas canvMInvFGBG("canv MInv FGBG", "", 800, 800);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+            distrMInv->Sumw2(false);
+            distrMInvBG->Sumw2(false);
+            distrMInvFG->Sumw2(false);
+
+            if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
+            {
+               distrMInvFG->SetMinimum(0.);
+               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                    0.05, 0.05, true, false);
+            }
+            else
+            {
+               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
+                                    0.05, 0.05, true, false);
+            }
+
+            if (distrMInvFG->GetEntries() > 1e-3) 
+            {
+               distrMInvFG->SetLineColorAlpha(kAzure + 2, 0.8);
+               distrMInvFG->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
+
+            if (distrMInvBG->GetEntries() > 1e-3) 
+            {
+               distrMInvBG->SetLineColorAlpha(kGreen + 2, 0.8);
+               distrMInvBG->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.78, 0.9, "No data on background");
+
+            distrMInv->SetLineColorAlpha(kRed + 2, 0.8);
+            distrMInv->Draw("SAME PFC");
+
+            TLegend legend(0.3, 0.86, 0.98, 0.94);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
+            legend.SetNColumns(3);
+
+            legend.AddEntry(distrMInvFG, "FG", "PFC");
+            legend.AddEntry(distrMInvBG, "BG", "PFC");
+            legend.AddEntry(distrMInv, "FG-BG", "PFC");
+
+            legend.Draw();
+
+            ROOTTools::PrintCanvas(&canvMInvFGBG, outputDir + "/FGBG_" + resonanceName + "_" + 
+                                   centralityBin["name"].as<std::string>() + "_" +
+                                   CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
+         } /* FG, BG, and signal on the same canvas */
 
          numberOfCalls++;
       }

@@ -36,32 +36,18 @@ sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange 
 - name: mpt
 - name: hpt
 pair_selection_methods:
-#  - {name: DCPC1NoPID,     pt_bin_min: 5, pt_bin_max: 8}
-#  - {name: NoPID,          pt_bin_min: 6, pt_bin_max: 9}
-#  - {name: 1TOF1PID,       pt_bin_min: 5, pt_bin_max: 7}
-#  - {name: 1PID,           pt_bin_min: 4, pt_bin_max: 7}
-#  - {name: EMCalNoPID,     pt_bin_min: 6, pt_bin_max: 8}
-#  - {name: 1TOF1PID,       pt_bin_min: 5, pt_bin_max: 5}
+  - {name: DCPC1NoPID,     pt_bin_min: 5, pt_bin_max: 8}
+  - {name: NoPID,          pt_bin_min: 6, pt_bin_max: 9}
+  - {name: 1TOF1PID,       pt_bin_min: 5, pt_bin_max: 7}
+  - {name: 1PID,           pt_bin_min: 4, pt_bin_max: 7}
+  - {name: EMCalNoPID,     pt_bin_min: 6, pt_bin_max: 8}
+  - {name: 1TOF1PID,       pt_bin_min: 5, pt_bin_max: 5}
   - {name: 2PID,           pt_bin_min: 0, pt_bin_max: 6}
-#  - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 4}
-#  - {name: EMCal2PID,      pt_bin_min: 0, pt_bin_max: 3}
+  - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 4}
+  - {name: EMCal2PID,      pt_bin_min: 0, pt_bin_max: 3}
 #  - {name: 1TOFDCPC11PID,  pt_bin_min: 10, pt_bin_max: 10}
 #  - {name: 1EMCal1PID,     pt_bin_min: 10, pt_bin_max: 10}
 centrality_bins:
-- 
-  name: "0-88"
-  name_tex: "0-88%"
-  value_min: 0
-  value_max: 88
-  cb_c_min: 0
-  cb_c_max: 8
-  color: "#5790fc" 
-  marker_style: 47
-  n_colls: 10.4
-  n_colls_uncertainty: 0.7
-  bias_factor: 0.89
-  bias_factor_uncertainty: 0.01
-  is_mb: true
 - 
   name: "0-20"
   name_tex: "0-20%"
@@ -118,3 +104,17 @@ centrality_bins:
   bias_factor: 1.03
   bias_factor_uncertainty: 0.05
   is_mb: false
+- 
+  name: "0-88"
+  name_tex: "0-88%"
+  value_min: 0
+  value_max: 88
+  cb_c_min: 0
+  cb_c_max: 8
+  color: "#5790fc" 
+  marker_style: 47
+  n_colls: 10.4
+  n_colls_uncertainty: 0.7
+  bias_factor: 0.89
+  bias_factor_uncertainty: 0.01
+  is_mb: true
