@@ -101,11 +101,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
          double eventWeight;
  
-         if (reweightForSpectra) 
-         {
-            eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
-         }
-         else eventWeight = 1.;
+         eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
@@ -253,13 +249,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-                  if (IsMatch(pT, sdphi, sdz, 0.25))
-                  {
-                     histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
-                                                    eventWeight*alphaReweight);
-                     histContainer.heatmapPC2VsPT->Fill(simCNT.ppc2z(i), pc2phi, pT,
-                                                        eventWeight*alphaReweight);
-                  }
+                  histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
+                                                 eventWeight*alphaReweight);
+                  histContainer.heatmapPC2VsPT->Fill(simCNT.ppc2z(i), pc2phi, pT,
+                                                     eventWeight*alphaReweight);
 
                   if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi) && isParticleOrig)
                   {
@@ -318,22 +311,19 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                   if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-                  if (IsMatch(pT, sdphi, sdz, 0.25))
+                  if (dcarm == 0) // PC3e
                   {
-                     if (dcarm == 0) // PC3e
-                     {
-                        histContainer.heatmapPC3e->Fill(simCNT.ppc3z(i), pc3phi, 
-                                                        eventWeight*alphaReweight);
-                        histContainer.heatmapPC3eVsPT->Fill(simCNT.ppc3z(i), pc3phi, pT,
-                                                            eventWeight*alphaReweight);
-                     }
-                     else // PC3w
-                     {
-                        histContainer.heatmapPC3w->Fill(simCNT.ppc3z(i), pc3phi, 
-                                                        eventWeight*alphaReweight);
-                        histContainer.heatmapPC3wVsPT->Fill(simCNT.ppc3z(i), pc3phi, pT,
-                                                            eventWeight*alphaReweight);
-                     }
+                     histContainer.heatmapPC3e->Fill(simCNT.ppc3z(i), pc3phi, 
+                                                     eventWeight*alphaReweight);
+                     histContainer.heatmapPC3eVsPT->Fill(simCNT.ppc3z(i), pc3phi, pT,
+                                                         eventWeight*alphaReweight);
+                  }
+                  else // PC3w
+                  {
+                     histContainer.heatmapPC3w->Fill(simCNT.ppc3z(i), pc3phi, 
+                                                     eventWeight*alphaReweight);
+                     histContainer.heatmapPC3wVsPT->Fill(simCNT.ppc3z(i), pc3phi, pT,
+                                                         eventWeight*alphaReweight);
                   }
                   if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi) && isParticleOrig) 
                   {
@@ -432,7 +422,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
                   else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
 
-                  if (!isCutByECore && IsMatch(pT, sdphi, sdz, 0.25))
+                  if (!isCutByECore)
                   { 
                      if (dcarm == 0) // EMCale
                      {
@@ -576,15 +566,12 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   // slat number for the current chamber
                   const int slat = simCNT.slat(i) % 96;
 
-                  if (IsMatch(pT, sdphi, sdz, 0.25))
-                  {
-                     histContainer.heatmapTOFe->Fill(static_cast<double>(chamber) + 0.5, 
-                                                     static_cast<double>(slat) + 0.5, 
-                                                     simCNT.etof(i)*eventWeight*alphaReweight);
-                     histContainer.heatmapTOFeVsPT->Fill(static_cast<double>(chamber) + 0.5, 
-                                                         static_cast<double>(slat) + 0.5, pT,
-                                                         simCNT.etof(i)*eventWeight*alphaReweight);
-                  }
+                  histContainer.heatmapTOFe->Fill(static_cast<double>(chamber) + 0.5, 
+                                                  static_cast<double>(slat) + 0.5, 
+                                                  simCNT.etof(i)*eventWeight*alphaReweight);
+                  histContainer.heatmapTOFeVsPT->Fill(static_cast<double>(chamber) + 0.5, 
+                                                      static_cast<double>(slat) + 0.5, pT,
+                                                      simCNT.etof(i)*eventWeight*alphaReweight);
 
                   if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
@@ -653,15 +640,12 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (IsMatch(pT, sdphi, sdz))
                {
-                  if (IsMatch(pT, sdphi, sdz, 0.25))
-                  {
-                     histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
-                                                     static_cast<double>(strip) + 0.5, 
-                                                     eventWeight*alphaReweight*correctionTOFw);
-                     histContainer.heatmapTOFwVsPT->Fill(static_cast<double>(chamber) + 0.5, 
-                                                         static_cast<double>(strip) + 0.5, pT, 
-                                                         eventWeight*alphaReweight*correctionTOFw);
-                  }
+                  histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
+                                                  static_cast<double>(strip) + 0.5, 
+                                                  eventWeight*alphaReweight*correctionTOFw);
+                  histContainer.heatmapTOFwVsPT->Fill(static_cast<double>(chamber) + 0.5, 
+                                                      static_cast<double>(strip) + 0.5, pT, 
+                                                      eventWeight*alphaReweight*correctionTOFw);
 
                   if (!dmCutter.IsDeadTOFw(chamber, strip))
                   {
@@ -744,7 +728,7 @@ int main(int argc, char **argv)
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
-   simM2Id.Initialize(runName, true);
+   simM2Id.Initialize(runName, false);
 
    if (reweightForSpectra)
    {
@@ -999,7 +983,7 @@ int main(int argc, char **argv)
       pTRangesList.emplace_back(pTRange["name"].as<std::string>());
    }
 
-   CppTools::Box box{"Parameters"};
+   CppTools::Box box{"AnalyzeSimSingleTrack"};
  
    box.AddEntry("Run name", runName);
    box.AddEntry("Particles", particleList);
@@ -1313,7 +1297,6 @@ void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileNam
    static_cast<std::shared_ptr<TH1D>>(distrRecIdPTTOFe.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecIdPTTOFw.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrBetaVsETOFe.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Pos.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrTTOFe.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrTTOFw.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrM2TOFePosCharge.Merge())->Write();
@@ -1378,6 +1361,7 @@ void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileNam
    outputFile.mkdir("dz");
    outputFile.cd("dz");
 
+   static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Pos.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC2Neg.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3ePos.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrDZVsPTPC3eNeg.Merge())->Write();
