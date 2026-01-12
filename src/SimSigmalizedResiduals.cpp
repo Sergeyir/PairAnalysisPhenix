@@ -387,7 +387,7 @@ bool SimSigmalizedResiduals::SetParameters(const std::string& detectorName,
                                            std::array<std::vector<double>, 4>& parMeans,
                                            std::array<std::vector<double>, 4>& parSigmas)
 {
-   const std::string inputFileName = "data/Parameters/SigmalizedResidualsSim/" + 
+   const std::string inputFileName = "data/Parameters/CalibrateSimSigmalizedResiduals/" + 
                                      runName + "/" + detectorName + ".txt";
 
    if (!CppTools::FileExists(inputFileName))
