@@ -84,6 +84,10 @@ class SimM2Identificator
    double GetM2Mean(const double pT, double *par);
    /// function that was used for approximation of m2 distirbutions sigmas
    double GetM2Sigma(const double pT, const double m2Mean, double *par);
+   /// shows whether TOFe identification will be employed
+   bool useTOFe = true;
+   /// shows whether TOFw identification will be employed
+   bool useTOFw = true;
    /// shows whether EMCal identification will be employed
    bool useEMCal;
    /// TOFe parameters for means
