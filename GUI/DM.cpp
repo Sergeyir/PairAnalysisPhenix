@@ -15,9 +15,9 @@ void DM()
    system("ls data/Real/");
 
    CppTools::Print("Choose the run from the above ant type it in");
-   std::string runName = "Run14HeAu200";
-   //std::cout << ">> ";
-   //std::cin >> runName;
+   std::string runName;
+   std::cout << ">> ";
+   std::cin >> runName;
 
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    const std::string simInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
@@ -52,6 +52,8 @@ void DM()
       CppTools::PrintError("No histogram named" + heatmapIdentifierName + ": " + 
                            detectorName + " in file " + simInputFileName);
    }
+
+   simHist->Scale(realHist->Integral()/simHist->Integral());
 
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
