@@ -5,7 +5,7 @@ run_name: Run12CuAu200 # required field for searching main.yaml
 pt_min: 0.3
 pt_max: 10
 correction_tofw: 0.7796 # correction to TOFw due to ADC cut and efficiency correction
-reweight_for_spectra: true # shows whether the simulated particles should be assigned with weight so that the simulated particle production is similar to the one in the experiment
+reweight_for_spectra: false # shows whether the simulated particles should be assigned with weight so that the simulated particle production is similar to the one in the experiment
 particles: # particles that will be analyzed when AnalyzeSingleTrack executable is called
 - {name: pi+, id: 211, geant_id: 8}
 - {name: pi-, id: -211, geant_id: 9}
@@ -24,9 +24,9 @@ time_shift_tofe: 0.
 time_shift_tofw: -1.174
 time_shift_emcal: 0.141
 # m2 identification corrections for EMCal
-emcale2_m2_id_eff: 0.65
-emcale3_m2_id_eff: 0.65
-emcalw0_m2_id_eff: 0.65
-emcalw1_m2_id_eff: 0.65
-emcalw2_m2_id_eff: 0.65
-emcalw3_m2_id_eff: 0.65
+emcale2_m2_id_eff: 1.
+emcale3_m2_id_eff: 1.
+emcalw0_m2_id_eff: 1.
+emcalw1_m2_id_eff: 1.
+emcalw2_m2_id_eff: 1.
+emcalw3_m2_id_eff: 1.
