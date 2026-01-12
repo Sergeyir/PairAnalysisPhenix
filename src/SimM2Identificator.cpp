@@ -19,22 +19,65 @@ SimM2Identificator::SimM2Identificator(const std::string& runName, const bool us
 
 void SimM2Identificator::Initialize(const std::string& runName, const bool useEMCal)
 {
-   SetParameters("data/Parameters/M2Id/" + runName +"/M2ParTOFe.txt", parMeanTOFe, parSigmaTOFe);
-   SetParameters("data/Parameters/M2Id/" + runName +"/M2ParTOFw.txt", parMeanTOFw, parSigmaTOFw);
+   // TOFe
+   std::string inputFileName = "data/Parameters/M2Id/" + runName +"/M2ParTOFe.txt";
 
+   if (CppTools::FileExists(inputFileName)) SetParameters(inputFileName, parMeanTOFe, parSigmaTOFe);
+   else 
+   {
+      CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
+                             " identification with TOFe is disabled");
+      useTOFe = false;
+   }
+
+   // TOFw
+   inputFileName = "data/Parameters/M2Id/" + runName +"/M2ParTOFw.txt";
+
+   if (CppTools::FileExists(inputFileName)) SetParameters(inputFileName, parMeanTOFw, parSigmaTOFw);
+   else 
+   {
+      CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
+                             " identification with TOFw is disabled");
+      useTOFw = false;
+   }
+
+   // EMCal
    this->useEMCal = useEMCal;
 
    if (useEMCal)
    {
       for (int i = 0; i < 2; i++)
       {
-         SetParameters("data/Parameters/M2Id/" + runName + "/M2ParEMCale" + 
-                       std::to_string(i + 2) + ".txt", parMeanEMCale[i], parSigmaEMCale[i]);
+         inputFileName = "data/Parameters/M2Id/" + runName + "/M2ParEMCale" + 
+                         std::to_string(i + 2) + ".txt";
+
+         if (CppTools::FileExists(inputFileName)) 
+         {
+            SetParameters(inputFileName, parMeanEMCale[i], parSigmaEMCale[i]);
+         }
+         else 
+         {
+            CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
+                                   " identification with EMCal is disabled");
+            this->useEMCal = false;
+            break;
+         }
       }
       for (int i = 0; i < 4; i++)
       {
-         SetParameters("data/Parameters/M2Id/" + runName + "/M2ParEMCalw" + 
-                       std::to_string(i) + ".txt", parMeanEMCalw[i], parSigmaEMCalw[i]);
+         inputFileName = "data/Parameters/M2Id/" + runName + "/M2ParEMCalw" + 
+                          std::to_string(i) + ".txt";
+         if (CppTools::FileExists(inputFileName)) 
+         {
+            SetParameters(inputFileName, parMeanEMCalw[i], parSigmaEMCalw[i]);
+         }
+         else 
+         {
+            CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
+                                   " identification with EMCal is disabled");
+            this->useEMCal = false;
+            break;
+         }
       }
    }
    else 
@@ -49,6 +92,7 @@ double SimM2Identificator::GetTOFeIdProb(const int id, const double pT,
                                          const double sigmalizedExtrRange, 
                                          const double sigmalizedVetoRange)
 {
+   if (!useTOFe) return 0.;
    double meanPi, meanK, meanP;
 
    if (id > 0)
@@ -109,6 +153,7 @@ double SimM2Identificator::GetTOFwIdProb(const int id, const double pT,
                                          const double sigmalizedExtrRange, 
                                          const double sigmalizedVetoRange)
 {
+   if (!useTOFw) return 0.;
    double meanPi, meanK, meanP;
    if (id > 0)
    {
@@ -253,7 +298,6 @@ double SimM2Identificator::GetEMCalIdProb(const int dcarm, const int sector,
 void SimM2Identificator::SetParameters(const std::string& inputFileName, 
                                        double (& parMean)[6][2], double (& parSigma)[5])
 {
-   CppTools::CheckInputFile(inputFileName);
    std::ifstream inputFile(inputFileName);
 
    bool isUnexpectedEndOfFile = false;
