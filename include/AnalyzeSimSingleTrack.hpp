@@ -424,7 +424,7 @@ namespace AnalyzeSimSingleTrack
       ROOT::TThreadedObject<TH2F> heatmapDCw1{"_Heatmap: DCw, zDC<0", "board vs alpha", 
                                               400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC>=0
-      ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"_Heatmap: DCeX1, zDC>=0", "board vs alpha", 
+      ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"Heatmap: DCeX1, zDC>=0", "board vs alpha", 
                                                 400, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCe1X1{"Heatmap: DCeX1, zDC<0", "board vs alpha", 

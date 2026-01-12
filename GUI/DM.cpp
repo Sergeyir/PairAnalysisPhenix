@@ -40,8 +40,8 @@ void DM()
 
    if (!realHist) 
    {
-      CppTools::PrintError("No histogram named" + heatmapIdentifierName + ": " + detectorName + 
-                           " in file " + realInputFileName);
+      CppTools::PrintError("No histogram named \"" + heatmapIdentifierName + ": " + detectorName + 
+                           "\" in file " + realInputFileName);
    }
 
    TH2D *simHist = static_cast<TH2D *>
@@ -53,7 +53,7 @@ void DM()
                            detectorName + " in file " + simInputFileName);
    }
 
-   simHist->Scale(realHist->Integral()/simHist->Integral());
+   //simHist->Scale(realHist->Integral()/simHist->Integral());
 
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
