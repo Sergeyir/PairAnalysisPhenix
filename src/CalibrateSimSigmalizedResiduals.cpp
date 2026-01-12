@@ -108,7 +108,7 @@ int main(int argc, char **argv)
 void CalibrateSimSigmalizedResiduals::PerformCalibrationsForDetector(const std::string& detectorName,
                                                                      const bool performCalibration)
 {
-   parametersOutput.open("data/Parameters/CalibrateSimSigmalizedResidualsSim/" + 
+   parametersOutput.open("data/Parameters/CalibrateSimSigmalizedResiduals/" + 
                          runName + "/" + detectorName + ".txt");
 
    if (!performCalibration)
