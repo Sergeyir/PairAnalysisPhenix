@@ -454,7 +454,7 @@ namespace AnalyzeSimSingleTrack
       ROOT::TThreadedObject<TH2F> heatmapPC1w{"Heatmap: PC1w", "pc1z vs pc1phi", 
                                               380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC2
-      ROOT::TThreadedObject<TH2F> heatmapPC2{"Heatmap: PC2", "pc3z vs pc3phi", 
+      ROOT::TThreadedObject<TH2F> heatmapPC2{"Heatmap: PC2", "pc2z vs pc2phi", 
                                              330, -165., 165., 165, -0.6, 1.05};
       /// heatmap of PC3e
       ROOT::TThreadedObject<TH2F> heatmapPC3e{"Heatmap: PC3e", "pc3z vs pc3phi", 
