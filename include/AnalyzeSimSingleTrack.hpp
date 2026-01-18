@@ -52,14 +52,20 @@ namespace AnalyzeSimSingleTrack
    std::string collisionSystemName;
    /// run name
    std::string runName;
+   /// board DCe offset
+   double boardOffsetDCe;
+   /// board DCw offset
+   double boardOffsetDCw;
    /// minimum pT of a charged track
    double pTMin;
    /// maximum pT of a charged track
    double pTMax;
-   /// shows whether the  particles will be reweighted to the corresponding spectra
-   bool reweightForSpectra;
-   /// shows whether heatmaps will be reweighted so that the discrepancy between real data and simulation is canceled
-   bool reweightHeatmapsForAlpha;
+   /// shows whether the  particles will be weighted to the corresponding spectra
+   bool doWeightSpectra;
+   /// Shows whether a reweight is applied for alpha distribution for improving DC and PC1 heatmaps
+   bool doReweightAlpha;
+   /// Shows whether a reweight is applied to rescale pc1phi and pc1z to get better PC2, PC3, TOFe(w), EMCale(w) heatmaps
+   bool doReweightPC1;
    /// correction for TOFw due to ADC and efficiency correction
    double correctionTOFw;
    /// time shift correction for TOFe in MC
@@ -74,14 +80,22 @@ namespace AnalyzeSimSingleTrack
    InputYAMLReader inputYAMLMain;
    /// number of threads
    int numberOfThreads;
-   /// histogram with alpha scaling for DCe, zDC>=0 that is used when reweightForAlpha is true
+   /// histogram with alpha scaling for DCe, zDC>=0 that is used when doReweightAlpha is true
    TH1D *alphaReweightDCe0;
-   /// histogram with alpha scaling for DCe, zDC<0 that is used when reweightForAlpha is true
+   /// histogram with alpha scaling for DCe, zDC<0 that is used when doReweightAlpha is true
    TH1D *alphaReweightDCe1;
-   /// histogram with alpha scaling for DCw, zDC>=0 that is used when reweightForAlpha is true
+   /// histogram with alpha scaling for DCw, zDC>=0 that is used when doReweightAlpha is true
    TH1D *alphaReweightDCw0;
-   /// histogram with alpha scaling for DCw, zDC<0 that is used when reweightForAlpha is true
+   /// histogram with alpha scaling for DCw, zDC<0 that is used when doReweightAlpha is true
    TH1D *alphaReweightDCw1;
+   /// histogram with alpha scaling for PC1e, charge>0 that is used when doReweightPC1 is true
+   TH1D *alphaReweightPC1ePos;
+   /// histogram with alpha scaling for PC1e, charge<0 that is used when doReweightPC1 is true
+   TH1D *alphaReweightPC1eNeg;
+   /// histogram with alpha scaling for PC1w, charge>0 that is used when doReweightPC1 is true
+   TH1D *alphaReweightPC1wPos;
+   /// histogram with alpha scaling for PC1w, charge<0 that is used when doReweightPC1 is true
+   TH1D *alphaReweightPC1wNeg;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
    /// parameter for monitoring the progress
@@ -161,6 +175,14 @@ namespace AnalyzeSimSingleTrack
       std::shared_ptr<TH2F> heatmapPC1e;
       /// heatmap of PC1w
       std::shared_ptr<TH2F> heatmapPC1w;
+      /// heatmap of PC1e for positive tracks
+      std::shared_ptr<TH2F> heatmapPC1ePos;
+      /// heatmap of PC1e for negative tracks
+      std::shared_ptr<TH2F> heatmapPC1eNeg;
+      /// heatmap of PC1w for positive tracks
+      std::shared_ptr<TH2F> heatmapPC1wPos;
+      /// heatmap of PC1w for negative tracks
+      std::shared_ptr<TH2F> heatmapPC1wNeg;
       /// heatmap of PC2
       std::shared_ptr<TH2F> heatmapPC2;
       /// heatmap of PC3e
@@ -398,61 +420,73 @@ namespace AnalyzeSimSingleTrack
       /// unscaled by alpha heatmap of DCe, zDC>=0
       ROOT::TThreadedObject<TH2F> 
          heatmapUnscaledDCe0{"Unscaled heatmap: DCe, zDC>=0", "board vs alpha", 
-                             400, 0., 80., 195, -0.39, 0.39};
+                             810, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCe, zDC<0
       ROOT::TThreadedObject<TH2F> 
          heatmapUnscaledDCe1{"Unscaled heatmap: DCe, zDC<0", "board vs alpha", 
-                             400, 0., 80., 195, -0.39, 0.39};
+                             810, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCw, zDC>=0
       ROOT::TThreadedObject<TH2F> 
          heatmapUnscaledDCw0{"Unscaled heatmap: DCw, zDC>=0", "board vs alpha", 
-                             400, 0., 80., 195, -0.39, 0.39};
+                             810, 0., 80., 195, -0.39, 0.39};
       /// unscaled by alpha heatmap of DCw, zDC<0
       ROOT::TThreadedObject<TH2F> 
          heatmapUnscaledDCw1{"Unscaled heatmap: DCw, zDC<0", "board vs alpha", 
-                             400, 0., 80., 195, -0.39, 0.39};
+                             810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCe, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCe0{"_Heatmap: DCe, zDC>=0", "board vs alpha", 
-                                              400, 0., 80., 195, -0.39, 0.39};
+                                              810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCe, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCe1{"_Heatmap: DCe, zDC<0", "board vs alpha", 
-                                              400, 0., 80., 195, -0.39, 0.39};
+                                              810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCw, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCw0{"_Heatmap: DCw, zDC>=0", "board vs alpha", 
-                                              400, 0., 80., 195, -0.39, 0.39};
+                                              810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCw, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCw1{"_Heatmap: DCw, zDC<0", "board vs alpha", 
-                                              400, 0., 80., 195, -0.39, 0.39};
+                                              810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCe0X1{"Heatmap: DCeX1, zDC>=0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX1, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCe1X1{"Heatmap: DCeX1, zDC<0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCw0X1{"Heatmap: DCwX1, zDC>=0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX1, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCw1X1{"Heatmap: DCwX1, zDC<0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCe0X2{"Heatmap: DCeX2, zDC>=0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCeX2, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCe1X2{"Heatmap: DCeX2, zDC<0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC>=0
       ROOT::TThreadedObject<TH2F> heatmapDCw0X2{"Heatmap: DCwX2, zDC>=0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of DCwX2, zDC<0
       ROOT::TThreadedObject<TH2F> heatmapDCw1X2{"Heatmap: DCwX2, zDC<0", "board vs alpha", 
-                                                400, 0., 80., 195, -0.39, 0.39};
+                                                810, 0., 80., 195, -0.39, 0.39};
       /// heatmap of PC1e
       ROOT::TThreadedObject<TH2F> heatmapPC1e{"Heatmap: PC1e", "pc1z vs pc1phi", 
                                               380, -95., 95., 170, 2.05, 3.75};
       /// heatmap of PC1w
       ROOT::TThreadedObject<TH2F> heatmapPC1w{"Heatmap: PC1w", "pc1z vs pc1phi", 
                                               380, -95., 95., 165, -0.6, 1.05};
+      /// heatmap of PC1e for positive tracks
+      ROOT::TThreadedObject<TH2F> heatmapPC1ePos{"Heatmap: PC1e, charge>0", "pc1z vs pc1phi", 
+                                                 380, -95., 95., 170, 2.05, 3.75};
+      /// heatmap of PC1e for negative tracks
+      ROOT::TThreadedObject<TH2F> heatmapPC1eNeg{"Heatmap: PC1e, charge<0", "pc1z vs pc1phi", 
+                                                 380, -95., 95., 170, 2.05, 3.75};
+      /// heatmap of PC1w for positive tracks
+      ROOT::TThreadedObject<TH2F> heatmapPC1wPos{"Heatmap: PC1w, charge>0", "pc1z vs pc1phi", 
+                                                 380, -95., 95., 165, -0.6, 1.05};
+      /// heatmap of PC1w for negative tracks
+      ROOT::TThreadedObject<TH2F> heatmapPC1wNeg{"Heatmap: PC1w, charge<0", "pc1z vs pc1phi", 
+                                                 380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC2
       ROOT::TThreadedObject<TH2F> heatmapPC2{"Heatmap: PC2", "pc2z vs pc2phi", 
                                              330, -165., 165., 165, -0.6, 1.05};
