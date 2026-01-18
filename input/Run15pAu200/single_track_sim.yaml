@@ -1,7 +1,7 @@
 # This file contains all important information about Run14HeAu simulation of single track particles (charged pions, charged kaons, protons, and antiprotons)
 ---
 status: single_track_sim # required field for checking the file application
-run_name: Run12CuAu200 # required field for searching main.yaml
+run_name: Run15pAu200 # required field for searching main.yaml
 pt_min: 0.3
 pt_max: 10
 correction_tofw: 0.7796 # correction to TOFw due to ADC cut and efficiency correction

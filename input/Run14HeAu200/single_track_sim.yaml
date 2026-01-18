@@ -18,7 +18,6 @@ pt_ranges: # pT ranges of particles (lpt - low pT, mpt - midrange pT, hpt - high
 - name: hpt
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
-reweight_heatmaps_for_alpha: true # reweight_for_spectra does not give accurate heatmap information due to inaccuracy of approximation so that reweight by DC (simulation and experiment) should be done for heatmaps
 # time shift correction for MC
 time_shift_tofe: 0.
 time_shift_tofw: -1.174

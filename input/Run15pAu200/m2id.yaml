@@ -1,0 +1,188 @@
+# This file contains all important information about m2 identification for Run14HeAuMinBias
+---
+status: m2id # required field for checking the file application
+run_name: Run14HeAu200 # required field for searching for main.yaml
+means_vs_pt_fit_func: "pol1(0)"
+sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
+sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
+                             [3]*[3]/([5]*[5])*4.*pol1(0)*pol1(0)*(1. + pol1(0)/(x*x)) + \
+                             [4]*[4]*2.9972e-4*2.9972e-4/([6]*[6])*4.*x*x*(pol1(0) + x*x))"
+K1: 104. # integral of a magnetic field [mrad*GeV]
+detectors:
+- 
+  name: TOFe
+  # sigmalized range from the mean in which approximation of signals 
+  # in m2 distribution will be performed
+  sigmalized_identification_range: 2 
+  L: 5.2 # distance to the detector
+  sigma_alpha: 1.0 # DC angular resolution [mrad]
+  sigma_ms: 0.9 # multiple scattering resolution [mrad*GeV]
+  sigma_t: 150. # timing resolution [ps]
+  # background is needed to help the approximation
+  pion_bg_func: "exp(pol1(0))" 
+  kaon_bg_func: "exp(pol1(0))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  # minimum and maximum pT for approximation of different particles
+  pi+_pt_bounds: [0.5, 3.5] 
+  k+_pt_bounds: [0.3, 2.2]
+  p_pt_bounds: [0.5, 3.5]
+  pi-_pt_bounds: [0.5, 3.5]
+  k-_pt_bounds: [0.3, 2.2]
+  pbar_pt_bounds: [0.4, 3.5]
+  # makes sigma_alpha, sigma_ms, and sigma_t tigtly limited around values specified in this file
+  is_calibrated: true
+  # makes m2 means tigtly limited around the parameters obtained from the previous fit
+  use_m2_mean_par: true
+- 
+  name: TOFw
+  sigmalized_identification_range: 2
+  L: 4.95
+  sigma_alpha: 0.88
+  sigma_ms: 0.95 
+  sigma_t: 94. 
+  pion_bg_func: "exp(pol1(0))"
+  kaon_bg_func: "exp(pol1(0))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.6, 4.0]
+  k+_pt_bounds: [0.3, 3.0]
+  p_pt_bounds: [0.4, 3.0]
+  pi-_pt_bounds: [0.6, 4.0]
+  k-_pt_bounds: [0.3, 3.0]
+  pbar_pt_bounds: [0.4, 3.0]
+  is_calibrated: true
+  use_m2_mean_par: false
+- 
+  name: EMCale2
+  sigmalized_identification_range: 3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.5
+  sigma_t: 600. 
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.3, 1.8]
+  k+_pt_bounds: [0.4, 0.9]
+  p_pt_bounds: [0.6, 1.8]
+  pi-_pt_bounds: [0.3, 1.6]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.4, 1.6]
+  is_calibrated: true
+  use_m2_mean_par: true
+- 
+  name: EMCale3
+  sigmalized_identification_range: 3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.5
+  sigma_t: 580. 
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.5, 1.9]
+  k+_pt_bounds: [0.4, 0.8]
+  p_pt_bounds: [0.6, 1.9]
+  pi-_pt_bounds: [0.5, 1.7]
+  k-_pt_bounds: [0.3, 0.8]
+  pbar_pt_bounds: [0.3, 1.6]
+  is_calibrated: true
+  use_m2_mean_par: true
+- 
+  name: EMCalw0
+  sigmalized_identification_range: 3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.5
+  sigma_t: 530. 
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.4, 2.0]
+  k+_pt_bounds: [0.4, 1.0]
+  p_pt_bounds: [0.6, 2.0]
+  pi-_pt_bounds: [0.4, 1.9]
+  k-_pt_bounds: [0.3, 1.0]
+  pbar_pt_bounds: [0.3, 1.8]
+  is_calibrated: true
+  use_m2_mean_par: true
+- 
+  name: EMCalw1
+  sigmalized_identification_range: 3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.5
+  sigma_t: 530. 
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.5, 2.]
+  k+_pt_bounds: [0.4, 1.]
+  p_pt_bounds: [0.6, 2.]
+  pi-_pt_bounds: [0.5, 2.]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.3, 1.9]
+  is_calibrated: true
+  use_m2_mean_par: true
+- 
+  name: EMCalw2
+  sigmalized_identification_range: 3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.2 
+  sigma_t: 540
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.4, 2.]
+  k+_pt_bounds: [0.4, 0.9]
+  p_pt_bounds: [0.6, 2.]
+  pi-_pt_bounds: [0.4, 1.8]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.4, 1.8]
+  is_calibrated: true
+  use_m2_mean_par: true
+- 
+  sigmalized_identification_range: 3
+  name: EMCalw3
+  L: 5.22
+  sigma_alpha: 1.0
+  sigma_ms: 1.8
+  sigma_t: 560
+  pion_bg_func: "pol2(0)"
+  kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
+  pi+_pt_bounds: [0.5, 2.]
+  k+_pt_bounds: [0.4, 0.9]
+  p_pt_bounds: [0.6, 2.]
+  pi-_pt_bounds: [0.5, 1.8]
+  k-_pt_bounds: [0.3, 0.9]
+  pbar_pt_bounds: [0.3, 1.8]
+  is_calibrated: true
+  use_m2_mean_par: true
+pt_bins: # [GeV/c]
+  - {min: 0.3, max: 0.4}
+  - {min: 0.4, max: 0.5}
+  - {min: 0.5, max: 0.6}
+  - {min: 0.6, max: 0.7}
+  - {min: 0.7, max: 0.8}
+  - {min: 0.8, max: 0.9}
+  - {min: 0.9, max: 1.0}
+  - {min: 1.0, max: 1.1}
+  - {min: 1.1, max: 1.2}
+  - {min: 1.2, max: 1.3}
+  - {min: 1.3, max: 1.4}
+  - {min: 1.4, max: 1.5}
+  - {min: 1.5, max: 1.6}
+  - {min: 1.6, max: 1.7}
+  - {min: 1.7, max: 1.8}
+  - {min: 1.8, max: 1.9}
+  - {min: 1.9, max: 2.0}
+  - {min: 2.0, max: 2.2}
+  - {min: 2.2, max: 2.5}
+  - {min: 2.5, max: 3.0}
+  - {min: 3.0, max: 3.5}
+  - {min: 3.5, max: 4.0}
+  - {min: 4.0, max: 4.5}
+  - {min: 4.5, max: 5.0}
+  - {min: 5.0, max: 5.5}
+  - {min: 5.5, max: 6.0}
