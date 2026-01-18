@@ -181,10 +181,10 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	realCutDistrProj->SetLineColor(kRed - 3);
 	simCutDistrProj->SetLineColor(kAzure - 3);
 
-	projLegend.AddEntry(realCutDistrProj, "real");
+	projLegend.AddEntry(realCutDistrProj, "data");
 	projLegend.AddEntry(simCutDistrProj, "MC");
 	
-	realCutDistrProj->SetTitle((title + " projections real vs MC").c_str());
+	realCutDistrProj->SetTitle((title + " projections data vs MC").c_str());
 	realCutDistrProj->GetXaxis()->SetTitle(xTitle.c_str());
 
 	realCutDistrProj->SetMaximum(realCutDistrProj->GetMaximum()*1.3);
@@ -304,16 +304,16 @@ double DeadMapSys::GetUncertaintyFromXYProj(TH2F *realDistr, TH2F *simDistr,
 	simCutDistrProjX->SetLineColor(kAzure-3);
 	simCutDistrProjY->SetLineColor(kAzure-3);
 
-	projXLegend.AddEntry(realCutDistrProjX, "real");
+	projXLegend.AddEntry(realCutDistrProjX, "data");
 	projXLegend.AddEntry(simCutDistrProjX, "MC");
 
-	projYLegend.AddEntry(realCutDistrProjY, "real");
+	projYLegend.AddEntry(realCutDistrProjY, "data");
 	projYLegend.AddEntry(simCutDistrProjY, "MC");
 	
-	realCutDistrProjX->SetTitle((title + " X projections real vs MC").c_str());
+	realCutDistrProjX->SetTitle((title + " X projections data vs MC").c_str());
 	realCutDistrProjX->GetXaxis()->SetTitle(xTitle.c_str());
 
-	realCutDistrProjY->SetTitle((title + " Y projections real vs MC").c_str());
+	realCutDistrProjY->SetTitle((title + " Y projections data vs MC").c_str());
 	realCutDistrProjY->GetXaxis()->SetTitle(yTitle.c_str());
 
 	realCutDistrProjX->SetMaximum(realCutDistrProjX->GetMaximum()*1.3);
@@ -518,16 +518,16 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertaintyFromXProj(realHeatmapDCe0, simHeatmapDCe0, 
                                  realCutHeatmapDCe0, simCutHeatmapDCe0, 
-                                 "DCe0", "DC east, zDC>=0", "board", "#alpha", 2) << " " <<
+                                 "DCe0", "DC east, zDC>=0", "board", "#alpha", 3) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCe1, simHeatmapDCe1, 
                                  realCutHeatmapDCe1, simCutHeatmapDCe1, 
-                                 "DCe1", "DC east, zDC<0", "board", "#alpha", 2) << " " <<
+                                 "DCe1", "DC east, zDC<0", "board", "#alpha", 3) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCw0, simHeatmapDCw0, 
                                  realCutHeatmapDCw0, simCutHeatmapDCw0, 
-                                 "DCw0", "DC west, zDC>=0", "board", "#alpha", 2) << " " <<
+                                 "DCw0", "DC west, zDC>=0", "board", "#alpha", 3) << " " <<
          GetUncertaintyFromXProj(realHeatmapDCw1, simHeatmapDCw1, 
                                  realCutHeatmapDCw1, simCutHeatmapDCw1, 
-                                 "DCw1", "DC west, zDC<0", "board", "#alpha", 2);
+                                 "DCw1", "DC west, zDC<0", "board", "#alpha", 3);
    }
    else
    {
