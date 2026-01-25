@@ -187,7 +187,7 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 	realCutDistrProj->SetTitle((title + " projections data vs MC").c_str());
 	realCutDistrProj->GetXaxis()->SetTitle(xTitle.c_str());
 
-	realCutDistrProj->SetMaximum(realCutDistrProj->GetMaximum()*1.3);
+	//realCutDistrProj->SetMaximum(realCutDistrProj->GetMaximum()*1.3);
 	
 	realCutDistrProj->GetXaxis()->SetLabelSize(0.05);
 	realCutDistrProj->GetYaxis()->SetLabelSize(0.05);
@@ -232,6 +232,8 @@ double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr,
 
 	projCanv.cd(3);
 	gPad->SetLeftMargin(0.13);
+	//realCutDistrProj->GetCumulative()->Draw();
+	//simCutDistrProj->GetCumulative()->Draw("SAME HIST");
 	realCutDistrProj->Draw();
 	simCutDistrProj->Draw("SAME HIST");
 
