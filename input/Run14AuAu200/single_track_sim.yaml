@@ -1,0 +1,31 @@
+# This file contains all important information about Run14HeAu simulation of single track particles (charged pions, charged kaons, protons, and antiprotons)
+---
+status: single_track_sim # required field for checking the file application
+run_name: Run14AuAu200 # required field for searching main.yaml
+pt_min: 0.3
+pt_max: 10
+correction_tofw: 0.7796 # correction to TOFw due to ADC cut and efficiency correction
+reweight_for_spectra: false # shows whether the simulated particles should be assigned with weight so that the simulated particle production is similar to the one in the experiment
+particles: # particles that will be analyzed when AnalyzeSingleTrack executable is called
+- {name: pi+, id: 211, geant_id: 8}
+- {name: pi-, id: -211, geant_id: 9}
+#- {name: k+, id: 321, geant_id: 11}
+#- {name: k-, id: -321, geant_id: 12}
+#- {name: p, id: 2212, geant_id: 14}
+#- {name: pbar, id: -2212, geant_id: 15}
+pt_ranges: # pT ranges of particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
+- name: lpt
+- name: hpt
+magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
+- name: ''
+# time shift correction for MC
+time_shift_tofe: 0.
+time_shift_tofw: -1.174
+time_shift_emcal: 0.141
+# m2 identification corrections for EMCal
+emcale2_m2_id_eff: 0.65
+emcale3_m2_id_eff: 0.65
+emcalw0_m2_id_eff: 0.65
+emcalw1_m2_id_eff: 0.65
+emcalw2_m2_id_eff: 0.65
+emcalw3_m2_id_eff: 0.65
