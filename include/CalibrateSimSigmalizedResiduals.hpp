@@ -75,6 +75,10 @@ namespace CalibrateSimSigmalizedResiduals
    double pTMin;
    /// Maximum pT of the whole pT range
    double pTMax;
+   /// absolute maximum dphi mean value
+   const double absMaxDPhiMean = 0.015;
+   /// absolute maximum dz mean value
+   const double absMaxDZMean = 7.;
    /// Number of consequent fits of dphi and dz distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in

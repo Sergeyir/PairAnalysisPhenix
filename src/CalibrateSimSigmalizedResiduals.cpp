@@ -141,6 +141,8 @@ void CalibrateSimSigmalizedResiduals::PerformCalibrationsVsPT(const std::string&
                                                               const std::string& variableName,
                                                               const int charge)
 {
+   const double absMaxMean = (variableName == static_cast<std::string>("dphi") ? absMaxDPhiMean : absMaxDZMean);
+
    pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
    const std::string chargeName = ((charge > 0) ? "charge>0" : "charge<0");
@@ -300,6 +302,9 @@ void CalibrateSimSigmalizedResiduals::PerformCalibrationsVsPT(const std::string&
       }
 
       distrDValProj->Write();
+
+      if (fabs(fitDistrDVal.GetParameter(1)) > absMaxMean) continue;
+      if (fabs(fitDistrDVal.GetParameter(2)) > absMaxMean) continue;
       
       grMeansDVal.AddPoint(distrDValVsPT->GetYaxis()->GetBinCenter(i), 
                            fitDistrDVal.GetParameter(1));
