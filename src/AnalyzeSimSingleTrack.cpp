@@ -126,7 +126,6 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             const double pT = (simCNT.mom(i))*sin(the0);
 
             if (pT < pTMin || pT > pTMax) continue;
-            if (IsQualityCut(simCNT.qual(i))) continue;
 
             const int charge = simCNT.charge(i);
             if (charge != -1 && charge != 1) continue;
@@ -155,10 +154,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             {
                if (zed >= 0) 
                {
-                  histContainer.heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
                   if (doReweightAlpha) alphaReweight = 
                      alphaReweightDCe0->GetBinContent(alphaReweightDCe0->FindBin(alpha));
-                  histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCe0X1->Fill(board, alpha, eventWeight*alphaReweight*
                                                     static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCe0X2->Fill(board, alpha, eventWeight*alphaReweight*
@@ -166,10 +163,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
                else 
                {
-                  histContainer.heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
                   if (doReweightAlpha) alphaReweight = 
                      alphaReweightDCe1->GetBinContent(alphaReweightDCe1->FindBin(alpha));
-                  histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCe1X1->Fill(board, alpha, eventWeight*alphaReweight*
                                                     static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCe1X2->Fill(board, alpha, eventWeight*alphaReweight*
@@ -180,11 +175,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             {
                if (zed >= 0) 
                {
-                  histContainer.heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
                   if (doReweightAlpha) alphaReweight = 
                      alphaReweightDCw0->GetBinContent(alphaReweightDCw0->FindBin(alpha));
-                  histContainer.heatmapDCw0->Fill(board, alpha, static_cast<double>
-                                                  (simCNT.nx1hits(i))*eventWeight*alphaReweight);
                   histContainer.heatmapDCw0X1->Fill(board, alpha, static_cast<double>
                                                     (simCNT.nx1hits(i))*eventWeight*alphaReweight);
                   histContainer.heatmapDCw0X2->Fill(board, alpha, eventWeight*alphaReweight*
@@ -192,14 +184,42 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
                else 
                {
-                  histContainer.heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
                   if (doReweightAlpha) alphaReweight = 
                      alphaReweightDCw1->GetBinContent(alphaReweightDCw1->FindBin(alpha));
-                  histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
                   histContainer.heatmapDCw1X1->Fill(board, alpha, eventWeight*alphaReweight*
                                                     static_cast<double>(simCNT.nx1hits(i)));
                   histContainer.heatmapDCw1X2->Fill(board, alpha, eventWeight*alphaReweight*
                                                     static_cast<double>(simCNT.nx2hits(i)));
+               }
+            }
+
+            if (IsQualityCut(simCNT.qual(i))) continue;
+
+            if (dcarm == 0) // DCe
+            {
+               if (zed >= 0) 
+               {
+                  histContainer.heatmapUnscaledDCe0->Fill(board, alpha, eventWeight);
+                  histContainer.heatmapDCe0->Fill(board, alpha, eventWeight*alphaReweight);
+               }
+               else 
+               {
+                  histContainer.heatmapUnscaledDCe1->Fill(board, alpha, eventWeight);
+                  histContainer.heatmapDCe1->Fill(board, alpha, eventWeight*alphaReweight);
+               }
+            } // DCw
+            else
+            {
+               if (zed >= 0) 
+               {
+                  histContainer.heatmapUnscaledDCw0->Fill(board, alpha, eventWeight);
+                  histContainer.heatmapDCw0->Fill(board, alpha, static_cast<double>
+                                                  (simCNT.nx1hits(i))*eventWeight*alphaReweight);
+               }
+               else 
+               {
+                  histContainer.heatmapUnscaledDCw1->Fill(board, alpha, eventWeight);
+                  histContainer.heatmapDCw1->Fill(board, alpha, eventWeight*alphaReweight);
                }
             }
 
