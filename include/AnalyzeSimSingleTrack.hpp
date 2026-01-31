@@ -88,14 +88,14 @@ namespace AnalyzeSimSingleTrack
    TH1D *alphaReweightDCw0;
    /// histogram with alpha scaling for DCw, zDC<0 that is used when doReweightAlpha is true
    TH1D *alphaReweightDCw1;
-   /// histogram with alpha scaling for PC1e, charge>0 that is used when doReweightPC1 is true
-   TH1D *alphaReweightPC1ePos;
-   /// histogram with alpha scaling for PC1e, charge<0 that is used when doReweightPC1 is true
-   TH1D *alphaReweightPC1eNeg;
-   /// histogram with alpha scaling for PC1w, charge>0 that is used when doReweightPC1 is true
-   TH1D *alphaReweightPC1wPos;
-   /// histogram with alpha scaling for PC1w, charge<0 that is used when doReweightPC1 is true
-   TH1D *alphaReweightPC1wNeg;
+   /// histogram with scaling for PC1e, charge>0 that is used when doReweightPC1 is true
+   TH2F *reweightPC1ePos;
+   /// histogram with scaling for PC1e, charge<0 that is used when doReweightPC1 is true
+   TH2F *reweightPC1eNeg;
+   /// histogram with scaling for PC1w, charge>0 that is used when doReweightPC1 is true
+   TH2F *reweightPC1wPos;
+   /// histogram with scaling for PC1w, charge<0 that is used when doReweightPC1 is true
+   TH2F *reweightPC1wNeg;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
    /// parameter for monitoring the progress
@@ -106,12 +106,24 @@ namespace AnalyzeSimSingleTrack
    SimSigmalizedResiduals simSigmRes;
    /// identificator for m2 hadron identification procedure in MC
    SimM2Identificator simM2Id;
-   /* @brief Get the DC heatmap from the specified file
+   /* @brief Returns the histogram from the specified file
     * @param[in] file file from which the histogram will be read
     * @param[in] histName name of the histogram which will be read
     * @param[out] hist read histogram
     */
    TH2F *GetHistogramFromFile(TFile &file, const std::string& histName);
+   /* @brief Attempts to set alpha reweight parameters
+    * @param[in] realDataInputFileName name of a real data file
+    * @param[in] postSimInputFileName name of a file that was written afrer processing simulated trees
+    */
+   void SetAlphaReweight(const std::string& realDataInputFileName, 
+                         const std::string& postSimInputFileName);
+   /* @brief Attempts to set PC1 reweight parameters. This function needs to be called before AnalyzeSimSingleTrack::SetAlphaReweight
+    * @param[in] realDataInputFileName name of a real data file
+    * @param[in] postSimInputFileName name of a file that was written afrer processing simulated trees
+    */
+   void SetPC1Reweight(const std::string& realDataInputFileName, 
+                       const std::string& postSimInputFileName);
    /* @brief Compares axis of 2 histograms and if the axis are not the same prints error
     *
     * If the number of bins and axis ranges are equal for both histograms 
@@ -122,8 +134,7 @@ namespace AnalyzeSimSingleTrack
     * @param[in] hist2 2nd histogram to be compared with the 1st one
     * @param[out] hist read histogram
     */
-   void CheckHistsAxis(const TH2F *hist1, const TH2F *hist2);
-
+   bool CheckHistsAxis(const TH2F *hist1, const TH2F *hist2);
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 
     * since copying speeds up the calculation because local copies 
@@ -450,16 +461,16 @@ namespace AnalyzeSimSingleTrack
       ROOT::TThreadedObject<TH2F> heatmapPC1w{"Heatmap: PC1w", "pc1z vs pc1phi", 
                                               380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC1e for positive tracks
-      ROOT::TThreadedObject<TH2F> heatmapPC1ePos{"Heatmap: PC1e, charge>0", "pc1z vs pc1phi", 
+      ROOT::TThreadedObject<TH2F> heatmapPC1ePos{"_Heatmap: PC1e, charge>0", "pc1z vs pc1phi", 
                                                  380, -95., 95., 170, 2.05, 3.75};
       /// heatmap of PC1e for negative tracks
-      ROOT::TThreadedObject<TH2F> heatmapPC1eNeg{"Heatmap: PC1e, charge<0", "pc1z vs pc1phi", 
+      ROOT::TThreadedObject<TH2F> heatmapPC1eNeg{"_Heatmap: PC1e, charge<0", "pc1z vs pc1phi", 
                                                  380, -95., 95., 170, 2.05, 3.75};
       /// heatmap of PC1w for positive tracks
-      ROOT::TThreadedObject<TH2F> heatmapPC1wPos{"Heatmap: PC1w, charge>0", "pc1z vs pc1phi", 
-                                                 380, -95., 95., 165, -0.6, 1.05};
+      ROOT::TThreadedObject<TH2F> heatmapPC1wPos{"_Heatmap: PC1w, charge>0", "pc1z vs pc1phi", 
+                                                 380, -95., 95., 170, -0.6, 1.05};
       /// heatmap of PC1w for negative tracks
-      ROOT::TThreadedObject<TH2F> heatmapPC1wNeg{"Heatmap: PC1w, charge<0", "pc1z vs pc1phi", 
+      ROOT::TThreadedObject<TH2F> heatmapPC1wNeg{"_Heatmap: PC1w, charge<0", "pc1z vs pc1phi", 
                                                  380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC2
       ROOT::TThreadedObject<TH2F> heatmapPC2{"Heatmap: PC2", "pc2z vs pc2phi", 
@@ -1061,6 +1072,7 @@ namespace AnalyzeSimSingleTrack
                                      250, -0.5, 2.0, 100, 0., 10.)
       };
    };
+
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file
     *

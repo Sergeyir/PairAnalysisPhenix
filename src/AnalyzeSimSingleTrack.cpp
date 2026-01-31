@@ -148,6 +148,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496 + boardOffsetDCe) :
                ((0.573231 + phi - 0.0046 * cos(phi + 0.05721))/0.01963496 + boardOffsetDCw));
 
+            // reweight for heatmaps
             double alphaReweight = 1.;
 
             if (dcarm == 0) // DCe
@@ -230,6 +231,9 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             double ppc1phi = atan2(simCNT.ppc1y(i), simCNT.ppc1x(i));
 
+            // reweight for heatmaps
+            double reweightPC1 = 1.;
+
             if (dcarm == 1) // PC1w
             {
                histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
@@ -238,11 +242,19 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.heatmapPC1wPos->Fill(simCNT.ppc1z(i), ppc1phi, 
                                                      eventWeight*alphaReweight);
+
+                  if (doReweightPC1) reweightPC1 = reweightPC1wPos->
+                     GetBinContent(reweightPC1wPos->GetXaxis()->FindBin(simCNT.ppc1z(i)),
+                                   reweightPC1wPos->GetYaxis()->FindBin(ppc1phi));
                }
                else
                {
                   histContainer.heatmapPC1wNeg->Fill(simCNT.ppc1z(i), ppc1phi, 
                                                      eventWeight*alphaReweight);
+
+                  if (doReweightPC1) reweightPC1 = reweightPC1wNeg->
+                     GetBinContent(reweightPC1wNeg->GetXaxis()->FindBin(simCNT.ppc1z(i)),
+                                   reweightPC1wNeg->GetYaxis()->FindBin(ppc1phi));
                }
             }
             else // PC1e
@@ -255,11 +267,18 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.heatmapPC1ePos->Fill(simCNT.ppc1z(i), ppc1phi, 
                                                      eventWeight*alphaReweight);
+
+                  if (doReweightPC1) reweightPC1 = reweightPC1ePos->
+                     GetBinContent(reweightPC1ePos->GetXaxis()->FindBin(simCNT.ppc1z(i)),
+                                   reweightPC1ePos->GetYaxis()->FindBin(ppc1phi));
                }
                else
                {
                   histContainer.heatmapPC1eNeg->Fill(simCNT.ppc1z(i), ppc1phi, 
                                                      eventWeight*alphaReweight);
+                  if (doReweightPC1) reweightPC1 = reweightPC1eNeg->
+                     GetBinContent(reweightPC1eNeg->GetXaxis()->FindBin(simCNT.ppc1z(i)),
+                                   reweightPC1eNeg->GetYaxis()->FindBin(ppc1phi));
                }
             }
             if (dmCutter.IsDeadPC1(dcarm, simCNT.ppc1z(i), ppc1phi)) continue;
@@ -295,7 +314,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
                   histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
-                                                 eventWeight*alphaReweight);
+                                                 eventWeight*alphaReweight*reweightPC1);
 
                   if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi) && isParticleOrig)
                   {
@@ -357,12 +376,12 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (dcarm == 0) // PC3e
                   {
                      histContainer.heatmapPC3e->Fill(simCNT.ppc3z(i), pc3phi, 
-                                                     eventWeight*alphaReweight);
+                                                     eventWeight*alphaReweight*reweightPC1);
                   }
                   else // PC3w
                   {
                      histContainer.heatmapPC3w->Fill(simCNT.ppc3z(i), pc3phi, 
-                                                     eventWeight*alphaReweight);
+                                                     eventWeight*alphaReweight*reweightPC1);
                   }
                   if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi) && isParticleOrig) 
                   {
@@ -468,22 +487,22 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         histContainer.heatmapEMCale[simCNT.sect(i)]->
                            Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
                                 static_cast<double>(simCNT.zsect(i)) + 0.5, 
-                                simCNT.ecore(i)*eventWeight*alphaReweight);
+                                simCNT.ecore(i)*eventWeight*alphaReweight*reweightPC1);
                         histContainer.heatmapEMCaleHit[simCNT.sect(i)]->
                            Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
                                 static_cast<double>(simCNT.zsect(i)) + 0.5, 
-                                eventWeight*alphaReweight);
+                                eventWeight*alphaReweight*reweightPC1);
                      }
                      else // EMCalw
                      {
                         histContainer.heatmapEMCalw[simCNT.sect(i)]->
                            Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
                                 static_cast<double>(simCNT.zsect(i)) + 0.5, 
-                                simCNT.ecore(i)*eventWeight*alphaReweight);
+                                simCNT.ecore(i)*eventWeight*alphaReweight*reweightPC1);
                         histContainer.heatmapEMCalwHit[simCNT.sect(i)]->
                            Fill(static_cast<double>(simCNT.ysect(i)) + 0.5, 
                                 static_cast<double>(simCNT.zsect(i)) + 0.5, 
-                                eventWeight*alphaReweight);
+                                eventWeight*alphaReweight*reweightPC1);
                      }
                   }
 
@@ -599,7 +618,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                   histContainer.heatmapTOFe->Fill(static_cast<double>(chamber) + 0.5, 
                                                   static_cast<double>(slat) + 0.5, 
-                                                  simCNT.etof(i)*eventWeight*alphaReweight);
+                                                  simCNT.etof(i)*eventWeight*
+                                                  alphaReweight*reweightPC1);
 
                   if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
@@ -670,7 +690,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
                                                   static_cast<double>(strip) + 0.5, 
-                                                  eventWeight*alphaReweight*correctionTOFw);
+                                                  eventWeight*correctionTOFw*
+                                                  alphaReweight*reweightPC1);
 
                   if (!dmCutter.IsDeadTOFw(chamber, strip))
                   {
@@ -796,198 +817,18 @@ int main(int argc, char **argv)
    }
 
    // real data file in which real data DC heatmaps are stored
-   std::string realDataInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
+   const std::string realDataInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    // file in which simulated unscaled DC heatmaps are stored
-   std::string postSimInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
+   const std::string postSimInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
 
    CppTools::CheckInputFile(realDataInputFileName);
 
-   if (CppTools::CheckInputFile(postSimInputFileName, false)) 
-   {
-      TFile realDataInputFile(realDataInputFileName.c_str());
-      TFile postSimInputFile(postSimInputFileName.c_str());
-
-      TH2F *realDataDCe0 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCe, zDC>=0");
-      TH2F *realDataDCe1 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCe, zDC<0");
-      TH2F *realDataDCw0 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCw, zDC>=0");
-      TH2F *realDataDCw1 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCw, zDC<0");
-
-      TH2F *simUnscaledDCe0 = 
-         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC>=0");
-      TH2F *simUnscaledDCe1 = 
-         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC<0");
-      TH2F *simUnscaledDCw0 = 
-         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC>=0");
-      TH2F *simUnscaledDCw1 = 
-         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC<0");
-
-      CheckHistsAxis(realDataDCe0, simUnscaledDCe0);
-      CheckHistsAxis(realDataDCe1, simUnscaledDCe1);
-      CheckHistsAxis(realDataDCw0, simUnscaledDCw0);
-      CheckHistsAxis(realDataDCw1, simUnscaledDCw1);
-
-      for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
-      {
-         const double board = realDataDCe0->GetXaxis()->GetBinCenter(i);
-         for (int j = 1; j <= realDataDCe0->GetYaxis()->GetNbins(); j++)
-         {
-            const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(j);
-            if (dmCutter.IsDeadDC(1, 1., board, alpha))
-            {
-               realDataDCe0->SetBinContent(i, j, 0.);
-               simUnscaledDCe0->SetBinContent(i, j, 0.);
-            }
-         }
-      }
-      for (int i = 1; i <= realDataDCe1->GetXaxis()->GetNbins(); i++)
-      {
-         const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
-         for (int j = 1; j < realDataDCe1->GetYaxis()->GetNbins(); j++)
-         {
-            const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
-            if (dmCutter.IsDeadDC(1, -1., board, alpha))
-            {
-               realDataDCe1->SetBinContent(i, j, 0.);
-               simUnscaledDCe1->SetBinContent(i, j, 0.);
-            }
-         }
-      }
-      for (int i = 1; i <= realDataDCw0->GetXaxis()->GetNbins(); i++)
-      {
-         const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
-         for (int j = 1; j < realDataDCw0->GetYaxis()->GetNbins(); j++)
-         {
-            const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
-            if (dmCutter.IsDeadDC(0, 1., board, alpha))
-            {
-               realDataDCw0->SetBinContent(i, j, 0.);
-               simUnscaledDCw0->SetBinContent(i, j, 0.);
-            }
-         }
-      }
-      for (int i = 1; i <= realDataDCw1->GetXaxis()->GetNbins(); i++)
-      {
-         const double board = realDataDCw1->GetXaxis()->GetBinCenter(i);
-         for (int j = 1; j < realDataDCw1->GetYaxis()->GetNbins(); j++)
-         {
-            const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(j);
-            if (dmCutter.IsDeadDC(0, -1., board, alpha))
-            {
-               realDataDCw1->SetBinContent(i, j, 0.);
-               simUnscaledDCw1->SetBinContent(i, j, 0.);
-            }
-         }
-      }
-
-      alphaReweightDCe0 = 
-         static_cast<TH1D *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
-                             1, realDataDCe0->GetXaxis()->GetNbins())->Clone());
-      alphaReweightDCe1 = 
-         static_cast<TH1D *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
-                             1, realDataDCe1->GetXaxis()->GetNbins())->Clone());
-      alphaReweightDCw0 = 
-         static_cast<TH1D *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
-                             1, realDataDCw0->GetXaxis()->GetNbins())->Clone());
-      alphaReweightDCw1 = 
-         static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
-                             1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
-
-      alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
-      alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
-      alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
-      alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
-
-      alphaReweightDCe0->Divide(simUnscaledDCe0->ProjectionY("DCe0 proj",
-                                1, simUnscaledDCe0->GetXaxis()->GetNbins()));
-      alphaReweightDCe1->Divide(simUnscaledDCe1->ProjectionY("DCe1 proj",
-                                1, simUnscaledDCe1->GetXaxis()->GetNbins()));
-      alphaReweightDCw0->Divide(simUnscaledDCw0->ProjectionY("DCw0 proj",
-                                1, simUnscaledDCw0->GetXaxis()->GetNbins()));
-      alphaReweightDCw1->Divide(simUnscaledDCw1->ProjectionY("DCw1 proj",
-                                1, simUnscaledDCw1->GetXaxis()->GetNbins()));
-
-      // capping alpha reweight since experiments extends to higher pT than simulation
-      // capped values do not affect the simulation since they are statistically insufficient
-      // capping is only needed to exclude very big weights in some points in the DC map
-      // that are not used for better visibility
-      // also setting 0 bins into 1 since some of the areas might have been cut 
-      // when they are assumed to be bad/dead
-      for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
-      {
-         if (alphaReweightDCe0->GetBinContent(i) > 100.)
-         {
-            alphaReweightDCe0->SetBinContent(i, 100.);
-         }
-         if (alphaReweightDCe0->GetBinContent(i) < 1e-15)
-         {
-            alphaReweightDCe0->SetBinContent(i, 1.);
-         }
-      }
-      for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
-      {
-         if (alphaReweightDCe1->GetBinContent(i) > 100.)
-         {
-            alphaReweightDCe1->SetBinContent(i, 100.);
-         }
-         if (alphaReweightDCe1->GetBinContent(i) < 1e-15)
-         {
-            alphaReweightDCe1->SetBinContent(i, 1.);
-         }
-      }
-      for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
-      {
-         if (alphaReweightDCw0->GetBinContent(i) > 100.)
-         {
-            alphaReweightDCw0->SetBinContent(i, 100.);
-         }
-         if (alphaReweightDCw0->GetBinContent(i) < 1e-15)
-         {
-            alphaReweightDCw0->SetBinContent(i, 1.);
-         }
-      }
-      for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
-      {
-         if (alphaReweightDCw1->GetBinContent(i) > 100.)
-         {
-            alphaReweightDCw1->SetBinContent(i, 100.);
-         }
-         if (alphaReweightDCw1->GetBinContent(i) < 1e-15)
-         {
-            alphaReweightDCw1->SetBinContent(i, 1.);
-         }
-      }
-
-      std::string alphaReweightOutputFileName = 
-         "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
-
-      TFile alphaReweightOutputFile = TFile(alphaReweightOutputFileName.c_str(), "RECREATE");
-
-      alphaReweightOutputFile.cd();
-
-      alphaReweightDCe0->Write();
-      alphaReweightDCe1->Write();
-      alphaReweightDCw0->Write();
-      alphaReweightDCw1->Write();
-
-      alphaReweightDCe0->SetDirectory(0);
-      alphaReweightDCe1->SetDirectory(0);
-      alphaReweightDCw0->SetDirectory(0);
-      alphaReweightDCw1->SetDirectory(0);
-
-      alphaReweightOutputFile.Close();
-      CppTools::PrintInfo("File " + alphaReweightOutputFileName + " was written");
-   }
-   else 
-   {
-      CppTools::PrintInfo("Alpha reweight is now disabled. The missing file will be created "\
-                          "after the current process is finished. Try again after the"\
-                          "missing file is written.");
-      doReweightAlpha = false;
-   }
+   SetPC1Reweight(realDataInputFileName, postSimInputFileName);
+   SetAlphaReweight(realDataInputFileName, postSimInputFileName);
 
    CppTools::PrintInfo("Clearing output directory: " + outputDir);
-   void(system(("find " + outputDir + " ! -name 'all.root' ! "\
-               "-name 'alpha_reweight.root' -type f -exec rm -f {} +").c_str()));
+   void(system(("find " + outputDir + " ! -name 'all.root' ! -name 'alpha_reweight.root' "\
+                "!  -name 'pc1_reweight.root' -type f -exec rm -f {} +").c_str()));
 
    std::vector<std::string> particleList;
    for (const auto& particle : inputYAMLSim["particles"])
@@ -1086,26 +927,430 @@ TH2F *AnalyzeSimSingleTrack::GetHistogramFromFile(TFile& file, const std::string
 {
    /// why the f doesn't ROOT allow to read the thing from read only TFile when its const
    TH2F *hist = static_cast<TH2F *>(file.Get(histName.c_str()));
-   if (!hist) CppTools::PrintError("Histogram " + histName + " was not found in file " + 
-                                   static_cast<std::string>(file.GetName()));
+   if (!hist) CppTools::PrintWarning("Histogram " + histName + " was not found in file " + 
+                                     static_cast<std::string>(file.GetName()));
    // ROOT thing: making histograms not be automatically deleted when the file is closed
    hist->SetDirectory(0);
    return hist;
 }
 
-void AnalyzeSimSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
+void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFileName, 
+                                             const std::string& postSimInputFileName)
 {
+   if (CppTools::FileExists(postSimInputFileName)) 
+   {
+      TFile realDataInputFile(realDataInputFileName.c_str());
+      TFile postSimInputFile(postSimInputFileName.c_str());
+
+      TH2F *realDataDCe0 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCe, zDC>=0");
+      TH2F *realDataDCe1 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCe, zDC<0");
+      TH2F *realDataDCw0 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCw, zDC>=0");
+      TH2F *realDataDCw1 = GetHistogramFromFile(realDataInputFile, "_Heatmap: DCw, zDC<0");
+
+      TH2F *simUnscaledDCe0 = 
+         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC>=0");
+      TH2F *simUnscaledDCe1 = 
+         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCe, zDC<0");
+      TH2F *simUnscaledDCw0 = 
+         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC>=0");
+      TH2F *simUnscaledDCw1 = 
+         GetHistogramFromFile(postSimInputFile, "Unscaled heatmap: DCw, zDC<0");
+
+      if (!realDataDCe0 || !realDataDCe1 || !realDataDCw0 || !realDataDCw1 ||
+          !simUnscaledDCe0 || !simUnscaledDCe1 || !simUnscaledDCw0 || !simUnscaledDCw1)
+      {
+         CppTools::PrintInfo("Alpha reweight is now disabled due to needed histogram not existing");
+         doReweightAlpha = false;
+      }
+
+      if (doReweightAlpha && CheckHistsAxis(realDataDCe0, simUnscaledDCe0) &&
+                             CheckHistsAxis(realDataDCe1, simUnscaledDCe1) &&
+                             CheckHistsAxis(realDataDCw0, simUnscaledDCw0) &&
+                             CheckHistsAxis(realDataDCw1, simUnscaledDCw1))
+      {
+         for (int i = 1; i <= realDataDCe0->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCe0->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j <= realDataDCe0->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(j);
+               if (dmCutter.IsDeadDC(1, 1., board, alpha))
+               {
+                  realDataDCe0->SetBinContent(i, j, 0.);
+                  simUnscaledDCe0->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= realDataDCe1->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCe1->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
+               if (dmCutter.IsDeadDC(1, -1., board, alpha))
+               {
+                  realDataDCe1->SetBinContent(i, j, 0.);
+                  simUnscaledDCe1->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= realDataDCw0->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCe1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCw0->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
+               if (dmCutter.IsDeadDC(0, 1., board, alpha))
+               {
+                  realDataDCw0->SetBinContent(i, j, 0.);
+                  simUnscaledDCw0->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= realDataDCw1->GetXaxis()->GetNbins(); i++)
+         {
+            const double board = realDataDCw1->GetXaxis()->GetBinCenter(i);
+            for (int j = 1; j < realDataDCw1->GetYaxis()->GetNbins(); j++)
+            {
+               const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(j);
+               if (dmCutter.IsDeadDC(0, -1., board, alpha))
+               {
+                  realDataDCw1->SetBinContent(i, j, 0.);
+                  simUnscaledDCw1->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+
+         alphaReweightDCe0 = 
+            static_cast<TH1D *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCe0->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCe1 = 
+            static_cast<TH1D *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCe1->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCw0 = 
+            static_cast<TH1D *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCw0->GetXaxis()->GetNbins())->Clone());
+         alphaReweightDCw1 = 
+            static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+                                1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
+
+         alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
+         alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
+         alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
+         alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
+
+         alphaReweightDCe0->Divide(simUnscaledDCe0->ProjectionY("DCe0 proj",
+                                   1, simUnscaledDCe0->GetXaxis()->GetNbins()));
+         alphaReweightDCe1->Divide(simUnscaledDCe1->ProjectionY("DCe1 proj",
+                                   1, simUnscaledDCe1->GetXaxis()->GetNbins()));
+         alphaReweightDCw0->Divide(simUnscaledDCw0->ProjectionY("DCw0 proj",
+                                   1, simUnscaledDCw0->GetXaxis()->GetNbins()));
+         alphaReweightDCw1->Divide(simUnscaledDCw1->ProjectionY("DCw1 proj",
+                                   1, simUnscaledDCw1->GetXaxis()->GetNbins()));
+
+         // capping alpha reweight since experiments extends to higher pT than simulation
+         // capped values do not affect the simulation since they are statistically insufficient
+         // capping is only needed to exclude very big weights in some points in the DC map
+         // that are not used for better visibility
+         // also setting 0 bins into 1 since some of the areas might have been cut 
+         // when they are assumed to be bad/dead
+         for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCe0->GetBinContent(i) > 100.)
+            {
+               alphaReweightDCe0->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCe0->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCe0->SetBinContent(i, 1.);
+            }
+         }
+         for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCe1->GetBinContent(i) > 100.)
+            {
+               alphaReweightDCe1->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCe1->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCe1->SetBinContent(i, 1.);
+            }
+         }
+         for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCw0->GetBinContent(i) > 100.)
+            {
+               alphaReweightDCw0->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCw0->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCw0->SetBinContent(i, 1.);
+            }
+         }
+         for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCw1->GetBinContent(i) > 100.)
+            {
+               alphaReweightDCw1->SetBinContent(i, 100.);
+            }
+            if (alphaReweightDCw1->GetBinContent(i) < 1e-15)
+            {
+               alphaReweightDCw1->SetBinContent(i, 1.);
+            }
+         }
+
+         const std::string alphaReweightOutputFileName = 
+            "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
+
+         TFile alphaReweightOutputFile(alphaReweightOutputFileName.c_str(), "RECREATE");
+
+         alphaReweightOutputFile.cd();
+
+         alphaReweightDCe0->Write();
+         alphaReweightDCe1->Write();
+         alphaReweightDCw0->Write();
+         alphaReweightDCw1->Write();
+
+         alphaReweightDCe0->SetDirectory(0);
+         alphaReweightDCe1->SetDirectory(0);
+         alphaReweightDCw0->SetDirectory(0);
+         alphaReweightDCw1->SetDirectory(0);
+
+         alphaReweightOutputFile.Close();
+         CppTools::PrintInfo("File " + alphaReweightOutputFileName + " was written");
+      }
+      else if (doReweightPC1)
+      {
+         CppTools::PrintInfo("Alpha reweight is now disabled due to insonsistent histogram axis");
+         doReweightAlpha = false;
+      }
+   }
+   else 
+   {
+      CppTools::PrintWarning("File " + postSimInputFileName + " does not exist."\
+                             "Alpha reweight is now disabled. The missing file will be created "\
+                             "after the current process is finished. Try again after the"\
+                             "missing file is written.");
+      doReweightAlpha = false;
+   }
+}
+
+void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileName, 
+                                           const std::string& postSimInputFileName)
+{
+   const std::string alphaReweightOutputFileName = 
+      "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
+   if (CppTools::FileExists("data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root"))
+   {
+      CppTools::CheckInputFile(postSimInputFileName);
+
+      TFile realDataInputFile(realDataInputFileName.c_str());
+      TFile postSimInputFile(postSimInputFileName.c_str());
+
+      // reading real data histograms into reweight distributions to avoid cloning or copying
+      reweightPC1ePos = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1e, charge>0");
+      reweightPC1eNeg = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1e, charge<0");
+      reweightPC1wPos = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1w, charge>0");
+      reweightPC1wNeg = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1w, charge<0");
+
+      TH2F *simPC1ePos = 
+         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge>0");
+      TH2F *simPC1eNeg = 
+         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge<0");
+      TH2F *simPC1wPos = 
+         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge>0");
+      TH2F *simPC1wNeg = 
+         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge<0");
+
+      if (!reweightPC1ePos || !reweightPC1eNeg || !reweightPC1wPos || !reweightPC1wNeg ||
+          !simPC1ePos || !simPC1eNeg || !simPC1wPos || !simPC1wNeg)
+      {
+         CppTools::PrintInfo("PC1 reweight is now disabled due to needed histogram not existing");
+         doReweightPC1 = false;
+      }
+
+      if (doReweightPC1 && CheckHistsAxis(reweightPC1ePos, simPC1ePos) &&
+                           CheckHistsAxis(reweightPC1eNeg, simPC1eNeg) &&
+                           CheckHistsAxis(reweightPC1wPos, simPC1wPos) &&
+                           CheckHistsAxis(reweightPC1wNeg, simPC1wNeg))
+      {
+         for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(0, reweightPC1ePos->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1ePos->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1ePos->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1eNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(0, reweightPC1eNeg->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1eNeg->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1eNeg->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1wPos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(1, reweightPC1wPos->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1wPos->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1wPos->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1wNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(1, reweightPC1wNeg->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1wNeg->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1wNeg->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+
+         reweightPC1ePos->Scale(1./reweightPC1ePos->Integral());
+         reweightPC1eNeg->Scale(1./reweightPC1eNeg->Integral());
+         reweightPC1wPos->Scale(1./reweightPC1wPos->Integral());
+         reweightPC1wNeg->Scale(1./reweightPC1wNeg->Integral());
+
+         simPC1ePos->Scale(1./simPC1ePos->Integral());
+         simPC1eNeg->Scale(1./simPC1eNeg->Integral());
+         simPC1wPos->Scale(1./simPC1wPos->Integral());
+         simPC1wNeg->Scale(1./simPC1wNeg->Integral());
+
+         for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
+            {
+               if (simPC1ePos->GetBinContent(i, j) > 1e-6)
+               {
+                  const double reweightValue = 
+                     CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
+                                       simPC1ePos->GetBinContent(i, j), 100.);
+
+                  reweightPC1ePos->SetBinContent(i, j, reweightValue);
+               }
+               else reweightPC1ePos->SetBinContent(i, j, 0.);
+            }
+         }
+         for (int i = 1; i <= reweightPC1eNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (simPC1eNeg->GetBinContent(i, j) > 1e-6)
+               {
+                  const double reweightValue = 
+                     CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
+                                       simPC1eNeg->GetBinContent(i, j), 100.);
+
+                  reweightPC1eNeg->SetBinContent(i, j, reweightValue);
+               }
+               else reweightPC1eNeg->SetBinContent(i, j, 0.);
+            }
+         }
+         for (int i = 1; i <= reweightPC1wPos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
+            {
+               if (simPC1wPos->GetBinContent(i, j) > 1e-6)
+               {
+                  const double reweightValue = 
+                     CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
+                                       simPC1wPos->GetBinContent(i, j), 100.);
+
+                  reweightPC1wPos->SetBinContent(i, j, reweightValue);
+               }
+               else reweightPC1wPos->SetBinContent(i, j, 0.);
+            }
+         }
+         for (int i = 1; i <= reweightPC1wNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (simPC1wNeg->GetBinContent(i, j) > 1e-6)
+               {
+                  const double reweightValue = 
+                     CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
+                                       simPC1wNeg->GetBinContent(i, j), 100.);
+
+                  reweightPC1wNeg->SetBinContent(i, j, reweightValue);
+               }
+               else reweightPC1wNeg->SetBinContent(i, j, 0.);
+            }
+         }
+
+         reweightPC1ePos->RebinX(2.);
+         reweightPC1eNeg->RebinX(2.);
+         reweightPC1wPos->RebinX(2.);
+         reweightPC1wNeg->RebinX(2.);
+
+         reweightPC1ePos->RebinY(2.);
+         reweightPC1eNeg->RebinY(2.);
+         reweightPC1wPos->RebinY(2.);
+         reweightPC1wNeg->RebinY(2.);
+
+         reweightPC1ePos->Scale(1./4.);
+         reweightPC1eNeg->Scale(1./4.);
+         reweightPC1wPos->Scale(1./4.);
+         reweightPC1wNeg->Scale(1./4.);
+
+         const std::string reweightPC1OutputFileName = 
+            "data/PostSim/" + runName + "/SingleTrack/pc1_reweight.root";
+
+         TFile reweightPC1OutputFile(reweightPC1OutputFileName.c_str(), "RECREATE");
+
+         reweightPC1OutputFile.cd();
+
+         reweightPC1ePos->Clone()->Write();
+         reweightPC1eNeg->Clone()->Write();
+         reweightPC1wPos->Clone()->Write();
+         reweightPC1wNeg->Clone()->Write();
+
+         reweightPC1OutputFile.Close();
+         CppTools::PrintInfo("File " + reweightPC1OutputFileName + " was written");
+      }
+      else if (doReweightPC1)
+      {
+         CppTools::PrintInfo("PC1 reweight is now disabled due to insonsistent histogram axis");
+      }
+   }
+   else
+   {
+      CppTools::PrintWarning("File " + alphaReweightOutputFileName + " does not exis. "\
+                             "PC1 reweight is now disabled. The missing file will be "\
+                             "created after the current process is finished. "\
+                             "Try again after the missing file is written.");
+      doReweightPC1 = false;
+   }
+}
+
+bool AnalyzeSimSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
+{
+   bool checkPassed = true;
    if (hist1->GetXaxis()->GetNbins() != hist2->GetXaxis()->GetNbins())
    {
       CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
                            "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
-                           "\" have different number of bins on X axis");
+                           "\" have different number of bins on X axis", false);
+      checkPassed = false;
    }
    if (hist1->GetYaxis()->GetNbins() != hist2->GetYaxis()->GetNbins())
    {
       CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
                            "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
-                           "\" have different number of bins on Y axis");
+                           "\" have different number of bins on Y axis", false);
+      checkPassed = false;
    }
    if (fabs(hist1->GetXaxis()->GetBinLowEdge(1) - 
             hist2->GetXaxis()->GetBinLowEdge(1)) > 1e-15 ||
@@ -1114,7 +1359,8 @@ void AnalyzeSimSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
    {
       CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
                            "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
-                           "\" have different ranges on X axis");
+                           "\" have different ranges on X axis", false);
+      checkPassed = false;
    }
    if (fabs(hist1->GetYaxis()->GetBinLowEdge(1) - 
             hist2->GetYaxis()->GetBinLowEdge(1)) > 1e-15 ||
@@ -1123,8 +1369,10 @@ void AnalyzeSimSingleTrack::CheckHistsAxis(const TH2F *hist1, const TH2F *hist2)
    {
       CppTools::PrintError("Histograms \"" + static_cast<std::string>(hist1->GetName()) + 
                            "\" and \"" + static_cast<std::string>(hist2->GetName()) + 
-                           "\" have different ranges on Y axis");
+                           "\" have different ranges on Y axis", false);
+      checkPassed = false;
    }
+   return checkPassed;
 }
 
 ThrContainerCopy AnalyzeSimSingleTrack::ThrContainer::GetCopy()
