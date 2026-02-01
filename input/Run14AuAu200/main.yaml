@@ -14,4 +14,4 @@ magnetic_field_configurations: # magnetic fields of a run
 detectors_configuration: '1111111'
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0
-sim_board_offset_dcw: 0
+sim_board_offset_dcw: 0.35
