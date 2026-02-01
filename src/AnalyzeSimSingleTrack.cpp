@@ -229,6 +229,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (dmCutter.IsDeadDC(dcarm, zed, board, alpha)) continue;
 
+            if (!doReweightAlpha) continue;
+
             double ppc1phi = atan2(simCNT.ppc1y(i), simCNT.ppc1x(i));
 
             // reweight for heatmaps
@@ -927,8 +929,12 @@ TH2F *AnalyzeSimSingleTrack::GetHistogramFromFile(TFile& file, const std::string
 {
    /// why the f doesn't ROOT allow to read the thing from read only TFile when its const
    TH2F *hist = static_cast<TH2F *>(file.Get(histName.c_str()));
-   if (!hist) CppTools::PrintWarning("Histogram " + histName + " was not found in file " + 
-                                     static_cast<std::string>(file.GetName()));
+   if (!hist) 
+   {
+      CppTools::PrintWarning("Histogram " + histName + " was not found in file " + 
+                             static_cast<std::string>(file.GetName()));
+      return nullptr;
+   }
    // ROOT thing: making histograms not be automatically deleted when the file is closed
    hist->SetDirectory(0);
    return hist;
