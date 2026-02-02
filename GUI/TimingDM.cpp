@@ -20,9 +20,9 @@ void TimingDM()
    system("ls data/Real/");
 
    CppTools::Print("Choose the run from the above ant type it in");
-   std::string runName = "Run14HeAu200";
-   //std::cout << ">> ";
-   //std::cin >> runName;
+   std::string runName;
+   std::cout << ">> ";
+   std::cin >> runName;
 
    system(("mkdir -p data/Parameters/TimingDeadmaps/" + runName).c_str());
    system(("mkdir -p data/Parameters/TimingOffsets/" + runName).c_str());
