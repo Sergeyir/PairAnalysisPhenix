@@ -229,7 +229,10 @@ void TimingDM()
             integralFG += fitFG.Eval(distrTime->GetXaxis()->GetBinCenter(k)) - 
                           fitBG.Eval(distrTime->GetXaxis()->GetBinCenter(k)); 
          }
-         ratioFGToFullIntHist.SetBinContent(j, i, integralFG/fullIntegral);
+         //if (!isnan(integralFG) && !isnan(fullIntegral))
+         {
+            ratioFGToFullIntHist.SetBinContent(j, i, integralFG/fullIntegral);
+         }
 
          distrTime->SetLineColor(kBlack);
          fitBG.SetLineColor(kBlue);
