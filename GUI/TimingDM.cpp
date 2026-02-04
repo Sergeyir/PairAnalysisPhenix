@@ -28,11 +28,8 @@ void TimingDM()
    system(("mkdir -p data/Parameters/TimingOffsets/" + runName).c_str());
 
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
-   const std::string simInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
    CppTools::CheckInputFile(realInputFileName);
-   CppTools::CheckInputFile(simInputFileName);
    TFile realInputFile(realInputFileName.c_str());
-   TFile simInputFile(simInputFileName.c_str());
 
    CppTools::PrintInfo("List of heatmaps in " + realInputFileName + " file");
    realInputFile.ls((heatmapIdentifierName + ":*").c_str());
@@ -76,7 +73,7 @@ void TimingDM()
                              realHist->GetZaxis()->GetBinLowEdge(1), 
                              realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
 
-   const std::string outputDir = "output/TimingDeadmaps/" + detectorName;
+   const std::string outputDir = "output/TimingDeadmaps/" + runName + "/" + detectorName;
    system(("mkdir -p " + outputDir).c_str());
 
    ProgressBar pBar("BLOCK", "Preparing heatmaps", PBarColor::BOLD_MAGENTA);
@@ -144,7 +141,7 @@ void TimingDM()
                           " timing offset will not be written");
    }
 
-   TCanvas fitCanv("fit canv", "", 600, 600);
+   TCanvas fitCanv("fit canv", "", 400, 400);
 
    int numberOfBinsWithLowStat = 0;
 
@@ -170,49 +167,41 @@ void TimingDM()
                if (j < realHist->GetYaxis()->GetNbins()) deadmapOutputFile << " ";
                else deadmapOutputFile << std::endl;
             }
-            else
-            {
-               //meanTimeHist.SetBinContent(j, i, -9999.);
-               //sigmaTimeHist.SetBinContent(j, i, -9999.);
-            }
             if (!offsetOutputFileExists)
             {
                offsetOutputFile << 0.;
                if (j < realHist->GetYaxis()->GetNbins()) offsetOutputFile << " ";
                else offsetOutputFile << std::endl;
             }
-            else
-            {
-               //meanTimeHist.SetBinContent(j, i, -9999.);
-               //sigmaTimeHist.SetBinContent(j, i, -9999.);
-            }
             continue;
          }
-
-         // usually the time is distributed by gausses of pions, kaons, and protons
-         // by taking maximum value we extract the value close to the center of pions signal
-         const int maximumBin = distrTime->GetMaximumBin();
 
          // approximation of t-t_exp for pi+
          TF1 fitFG("fg fit", "gaus(0) + gaus(3) + [6]");
          TF1 fitBG("bg fit", "gaus(0) + [3]");
 
-         fitFG.SetParameter(0, distrTime->GetBinContent(maximumBin));
+         fitBG.SetLineColor(kBlue);
+         fitBG.SetLineStyle(2);
+
+         // usually the time is distributed by gausses of pions, kaons, and protons
+         // by taking maximum value we extract the value close to the center of pions signal
+         const int maximumBin = distrTime->GetMaximumBin();
+
+         fitFG.SetParameters(distrTime->GetBinContent(maximumBin), 
+                             distrTime->GetXaxis()->GetBinCenter(maximumBin), 
+                             distrTime->GetXaxis()->GetBinWidth(1)*2., 
+                             distrTime->GetBinContent(maximumBin + 10),
+                             distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 6),
+                             distrTime->GetXaxis()->GetBinWidth(1)*5.);
+
          fitFG.SetParLimits(0, distrTime->GetBinContent(maximumBin)/3., 
                             distrTime->GetBinContent(maximumBin));
-
-         fitFG.SetParameter(1, distrTime->GetXaxis()->GetBinCenter(maximumBin));
          fitFG.SetParLimits(1, distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 1), 
                             distrTime->GetXaxis()->GetBinUpEdge(maximumBin));
-
-         fitFG.SetParameter(2, distrTime->GetXaxis()->GetBinWidth(1)*2.);
-
          fitFG.SetParLimits(3, distrTime->GetBinContent(maximumBin + 10)/2., 
                             distrTime->GetBinContent(maximumBin)/2.);
          fitFG.SetParLimits(4, distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 2),
                             distrTime->GetXaxis()->GetBinCenter(maximumBin + 10));
-
-         fitFG.SetParameter(5, distrTime->GetXaxis()->GetBinWidth(1)*5.);
 
          fitFG.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
                         distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
@@ -223,25 +212,21 @@ void TimingDM()
          meanTimeHist.SetBinContent(j, i, fitFG.GetParameter(1));
          sigmaTimeHist.SetBinContent(j, i, fabs(fitFG.GetParameter(2)));
 
+         for (int k = 0; k < fitBG.GetNpar(); k++)
+         {
+            fitBG.SetParameter(k, fitFG.GetParameter(k + 3));
+         }
+
          double integralFG = 0.;
          for (int k = maximumBin - 5; k <= maximumBin + 5; k++)
          {
             integralFG += fitFG.Eval(distrTime->GetXaxis()->GetBinCenter(k)) - 
                           fitBG.Eval(distrTime->GetXaxis()->GetBinCenter(k)); 
          }
-         //if (!isnan(integralFG) && !isnan(fullIntegral))
-         {
-            ratioFGToFullIntHist.SetBinContent(j, i, integralFG/fullIntegral);
-         }
+
+         ratioFGToFullIntHist.SetBinContent(j, i, integralFG/fullIntegral);
 
          distrTime->SetLineColor(kBlack);
-         fitBG.SetLineColor(kBlue);
-         fitBG.SetLineStyle(2);
-
-         for (int k = 0; k < fitBG.GetNpar(); k++)
-         {
-            fitBG.SetParameter(k, fitFG.GetParameter(k + 3));
-         }
 
          gPad->Clear();
          distrTime->Draw();
@@ -249,7 +234,7 @@ void TimingDM()
          fitBG.Draw("SAME");
          
          fitCanv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
-                        std::to_string(j) + ".png").c_str());
+                         std::to_string(j) + ".png").c_str());
 
          if (!deadmapOutputFileExists)
          {
@@ -274,23 +259,11 @@ void TimingDM()
 
    gROOT->SetBatch(kFALSE);
 
-   /*
-   TH2D *simHist = static_cast<TH2D *>
-      (simInputFile.Get((heatmapIdentifierName + ": " + detectorName).c_str()));
-
-   if (!simHist) 
-   {
-      CppTools::PrintError("No histogram named" + heatmapIdentifierName + ": " + 
-                           detectorName + " in file " + simInputFileName);
-   }
-   */
-
 	TCanvas *canv = new TCanvas("", "", 1080, 1080);
    
    GUIDistrCutter2D::AddHistogram(&meanTimeHist);
    GUIDistrCutter2D::AddHistogram(&sigmaTimeHist);
    GUIDistrCutter2D::AddHistogram(&ratioFGToFullIntHist);
-   //GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
 
    while (detectorName.find(" ") < detectorName.size())
    {
