@@ -468,7 +468,7 @@ namespace AnalyzeSimSingleTrack
                                                  380, -95., 95., 170, 2.05, 3.75};
       /// heatmap of PC1w for positive tracks
       ROOT::TThreadedObject<TH2F> heatmapPC1wPos{"_Heatmap: PC1w, charge>0", "pc1z vs pc1phi", 
-                                                 380, -95., 95., 170, -0.6, 1.05};
+                                                 380, -95., 95., 165, -0.6, 1.05};
       /// heatmap of PC1w for negative tracks
       ROOT::TThreadedObject<TH2F> heatmapPC1wNeg{"_Heatmap: PC1w, charge<0", "pc1z vs pc1phi", 
                                                  380, -95., 95., 165, -0.6, 1.05};
