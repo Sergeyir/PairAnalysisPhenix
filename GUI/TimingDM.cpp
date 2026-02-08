@@ -19,7 +19,7 @@ void TimingDM()
    CppTools::PrintInfo("List of runs in data/Real directory");
    system("ls data/Real/");
 
-   CppTools::Print("Choose the run from the above ant type it in");
+   CppTools::Print("Choose the run from the above and type it in");
    std::string runName;
    std::cout << ">> ";
    std::cin >> runName;
