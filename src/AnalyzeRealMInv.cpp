@@ -421,10 +421,11 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
             gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.9);
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.9);
 
             text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
-            texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + " < #it{p}_{T} < " + 
+            texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + 
+                                 " < #it{p}_{T} < " + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
             text.DrawTextNDC(0.85, 0.93, centralityBin["name_tex"].as<std::string>().c_str());
             if (performFit)
@@ -462,7 +463,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
             ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                                 "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+                                 "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.7);
 
             texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + 
                                  " < #it{p}_{T} < " + 
@@ -496,7 +497,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
             ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                                 "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7);
+                                 "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.7);
 
             canvMInvSummary.cd(5);
 
@@ -512,7 +513,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                ratioFGBG->SetLineColor(kBlack);
                ratioFGBG->SetMarkerColor(kBlack);
 
-               ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
+               ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "FG/BG", 1., 1.7);
             }
             else
             {
@@ -533,7 +535,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
                ratioFGBGLR->SetLineColor(kBlack);
                ratioFGBGLR->SetMarkerColor(kBlack);
 
-               ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "FG/BG", 1., 1.7);
+               ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "FG/BG", 1., 1.7);
             }
             else
             {
@@ -555,13 +558,13 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
             {
                distrMInvFG->SetMinimum(0.);
-               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                    0.05, 0.05, true, false);
+               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
             }
             else
             {
-               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                    0.05, 0.05, true, false);
+               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
             }
 
             if (distrMInvFG->GetEntries() > 1e-3) 
@@ -592,8 +595,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
             if (distrMInvFGLR->GetEntries() > 1e-3)
             {
-               ROOTTools::DrawFrame(distrMInvFGLR, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                    0.05, 0.05, true, false);
+               ROOTTools::DrawFrame(distrMInvFGLR, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
                distrMInvFGLR->SetLineColorAlpha(kAzure + 2, 0.8);
                distrMInvFGLR->Draw("SAME PFC");
 
@@ -625,13 +628,13 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
             {
                distrMInvFG->SetMinimum(0.);
-               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                    0.05, 0.05, true, false);
+               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
             }
             else
             {
-               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Counts", 1., 1.7,
-                                    0.05, 0.05, true, false);
+               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
             }
 
             if (distrMInvFG->GetEntries() > 1e-3) 

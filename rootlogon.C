@@ -13,6 +13,7 @@
 
    gSystem->Load("lib/libTCanvasTools.so");
    gSystem->Load("lib/libGUIDistrCutter2D.so");
+   gSystem->Load("lib/libGUIFit.so");
 
    gSystem->Load("lib/libPBar.so");
 
@@ -21,6 +22,4 @@
    gSystem->Load("lib/libFitFunc.so");
 
    //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
-
-   //gSystem->Load("libjsoncpp.so");
 }
