@@ -20,7 +20,6 @@
    gSystem->Load("lib/libInputYAMLReader.so");
    gSystem->Load("lib/libDeadMapCutter.so");
    gSystem->Load("lib/libFitFunc.so");
-   gSystem->Load("lib/libMInv.so");
 
    //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
 }
