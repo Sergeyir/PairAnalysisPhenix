@@ -122,7 +122,7 @@ int main(int argc, char **argv)
    }
 
    const std::string parametersOutputDir = "data/RawYields/Resonance/" + runName;
-   void(system(("mkdir -p " + parametersOutputDir).c_str()));
+   std::filesystem::create_directories(parametersOutputDir);
 
    parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
                                        "_" + resonanceName + ".root").c_str(), "RECREATE");
@@ -132,12 +132,12 @@ int main(int argc, char **argv)
    {
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
       {
-         PerformMInvFitsForMethod(method);
+         PerformMInvFits(method);
       }
    }
    else 
    {
-      PerformMInvFitsForMethod(inputYAMLResonance["pair_selection_methods"][methodIndex]);
+      PerformMInvFits(inputYAMLResonance["pair_selection_methods"][methodIndex]);
    }
 
    parametersOutputFile->Close();
@@ -147,13 +147,13 @@ int main(int argc, char **argv)
    CppTools::PrintInfo("AnalyzeRealMInv executable has finished running succesfully");
 }
 
-void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
+void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 {
    const std::string methodName = method["name"].as<std::string>();
 
    const std::string outputDir = "output/MInv/" + runName + "/" + 
                                  std::to_string(taxiNumber) + "/" + methodName;
-   void(system(("mkdir -p " + outputDir).c_str()));
+   std::filesystem::create_directories(outputDir);
 
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
@@ -178,9 +178,9 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
       }
    }
 
-   for (const YAML::Node &centralityBin : inputYAMLResonance["centrality_bins"])
+   for (const YAML::Node &centrality : inputYAMLResonance["centrality_bins"])
    {
-      const std::string centralityName = centralityBin["name"].as<std::string>();
+      const std::string centralityName = centrality["name"].as<std::string>();
 
       parametersOutputFile->mkdir((methodName + "/" + centralityName).c_str());
       parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
@@ -196,12 +196,12 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          TH1D *distrMInvFG = nullptr;
          TH1D *distrMInvBG = nullptr;
-         TH1D *distrMInvFGLR = nullptr;
-         TH1D *distrMInvBGLR = nullptr;
+         TH1D *distrMInvFGLR = nullptr; // low resolution (for BG normalization)
+         TH1D *distrMInvBGLR = nullptr; // low resolution (for BG normalization)
 
-            // shows whether to perform approximations for the current bin
-            // if false the histograms will not be approximated but will be printed anyways
-            const bool performFit = (i >= pTBinFitMin && i <= pTBinFitMax);
+         // shows whether to perform approximations for the current bin
+         // if false the histograms will not be approximated but will be printed anyways
+         const bool performFit = (i >= pTBinFitMin && i <= pTBinFitMax);
 
          std::string decayMode = ParticleMap::nameShort[daughter1Id] +
                                  ParticleMap::nameShort[daughter2Id];
@@ -210,7 +210,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
 
          TH1D *distrMInv = 
             MInv::Merge(inputFile, methodName, decayMode, 
-                        centralityBin["cb_c_min"].as<int>(), centralityBin["cb_c_max"].as<int>(),
+                        centrality["cb_c_min"].as<int>(), centrality["cb_c_max"].as<int>(),
                         0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                         0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                         pTBinRanges[i], pTBinRanges[i + 1],
@@ -223,8 +223,8 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             decayMode = ParticleMap::nameShort[daughter2Id] +
                         ParticleMap::nameShort[daughter1Id];
             distrMInv->Add(MInv::Merge(inputFile, methodName, decayMode, 
-                                       centralityBin["cb_c_min"].as<int>(), 
-                                       centralityBin["cb_c_max"].as<int>(),
+                                       centrality["cb_c_min"].as<int>(), 
+                                       centrality["cb_c_max"].as<int>(),
                                        0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                                        0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                                        pTBinRanges[i], pTBinRanges[i + 1],
@@ -236,7 +236,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          {
             pBar.Clear();
             CppTools::PrintError("Resulting M_{inv} histogram could not be constructed for " + 
-                                 centralityBin["name"].as<std::string>() + " " +
+                                 centrality["name"].as<std::string>() + " " +
                                  CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 2));
          }
@@ -244,7 +244,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting histogram is empty in " + 
-                                   centralityBin["name"].as<std::string>() + " " +
+                                   centrality["name"].as<std::string>() + " " +
                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
@@ -256,7 +256,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             pBar.Clear();
             CppTools::PrintError("Resulting M_{inv} foreground histogram "\
                                  "could not be constructed for " + 
-                                 centralityBin["name"].as<std::string>() + " " +
+                                 centrality["name"].as<std::string>() + " " +
                                  CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 2));
          }
@@ -266,7 +266,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             pBar.Clear();
             CppTools::PrintWarning("Resulting M_{inv} foreground histogram "\
                                    "could not be constructed for " + 
-                                   centralityBin["name"].as<std::string>() + " " +
+                                   centrality["name"].as<std::string>() + " " +
                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
@@ -275,7 +275,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting background histogram is empty in " + 
-                                   centralityBin["name"].as<std::string>() + 
+                                   centrality["name"].as<std::string>() + 
                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
@@ -427,7 +427,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + 
                                  " < #it{p}_{T} < " + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-            text.DrawTextNDC(0.85, 0.93, centralityBin["name_tex"].as<std::string>().c_str());
+            text.DrawTextNDC(0.85, 0.93, centrality["name_tex"].as<std::string>().c_str());
             if (performFit)
             {
                /*
@@ -440,7 +440,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             }
 
             ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
-                                   centralityBin["name"].as<std::string>() + "_" +
+                                   centrality["name"].as<std::string>() + "_" +
                                    CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 1));
          } /* canvas with invariant mass distribution with subtracted background only */
@@ -468,7 +468,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + 
                                  " < #it{p}_{T} < " + 
                                  CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-            text.DrawTextNDC(0.8, 0.92, centralityBin["name_tex"].as<std::string>().c_str());
+            text.DrawTextNDC(0.8, 0.92, centrality["name_tex"].as<std::string>().c_str());
             text.DrawTextNDC(0.88, 0.92, (methodName).c_str());
 
             if (performFit)
@@ -610,7 +610,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
             ROOTTools::PrintCanvas(&canvMInvSummary, outputDir + "/Summary_" + resonanceName + "_" + 
-                                   centralityBin["name"].as<std::string>() + "_" +
+                                   centrality["name"].as<std::string>() + "_" +
                                    CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 1), true, false);
          } /* summary canvas: MInv, FGBG, FG/BG */
@@ -666,7 +666,7 @@ void AnalyzeRealMInv::PerformMInvFitsForMethod(const YAML::Node& method)
             legend.Draw();
 
             ROOTTools::PrintCanvas(&canvMInvFGBG, outputDir + "/FGBG_" + resonanceName + "_" + 
-                                   centralityBin["name"].as<std::string>() + "_" +
+                                   centrality["name"].as<std::string>() + "_" +
                                    CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
          } /* FG, BG, and signal on the same canvas */
