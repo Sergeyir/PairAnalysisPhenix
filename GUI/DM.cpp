@@ -1,3 +1,12 @@
+/** 
+ *  @file   DM.cpp 
+ *  @brief  Contains implementation for usage of ROOTTools::GUIDistrCutter2D applying fiducial cuts on 2D distributions on PHENIX processed data
+ *
+ *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
+ *
+ *  @author Sergei Antsupov (antsupov0124@gmail.com)
+ **/
+#pragma once
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
 #include "StrTools.hpp"
@@ -59,7 +68,7 @@ void DM()
    
    GUIDistrCutter2D::AddHistogram(realHist);
    GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
-   system(("mkdir -p data/Parameters/Deadmaps/" + runName).c_str());
+   std::filesystem::create_directory("data/Parameters/Deadmaps/" + runName);
 
    while (detectorName.find(" ") < detectorName.size())
    {

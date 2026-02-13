@@ -1,3 +1,12 @@
+/** 
+ *  @file   TimingDM.cpp 
+ *  @brief  Contains implementation for usage of ROOTTools::GUIDistrCutter2D applying fiducial cuts on timing 2D distributions on PHENIX processed data
+ *
+ *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
+ *
+ *  @author Sergei Antsupov (antsupov0124@gmail.com)
+ **/
+#pragma once
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
 #include "StrTools.hpp"
@@ -24,8 +33,8 @@ void TimingDM()
    std::cout << ">> ";
    std::cin >> runName;
 
-   system(("mkdir -p data/Parameters/TimingDeadmaps/" + runName).c_str());
-   system(("mkdir -p data/Parameters/TimingOffsets/" + runName).c_str());
+   std::filesystem::create_directory("data/Parameters/TimingDeadmaps/" + runName);
+   std::filesystem::create_directory("data/Parameters/TimingOffsets/" + runName);
 
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    CppTools::CheckInputFile(realInputFileName);
@@ -74,7 +83,7 @@ void TimingDM()
                              realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
 
    const std::string outputDir = "output/TimingDeadmaps/" + runName + "/" + detectorName;
-   system(("mkdir -p " + outputDir).c_str());
+   std::filesystem::create_directory(outputDir);
 
    ProgressBar pBar("BLOCK", "Preparing heatmaps", PBarColor::BOLD_MAGENTA);
 
