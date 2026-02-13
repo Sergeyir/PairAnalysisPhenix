@@ -41,8 +41,6 @@
 #include "InputYAMLReader.hpp"
 
 
-int main(int argc, char **argv);
-
 /* @namespace M2IdentFit
  *
  * @brief Contains all functions, variables, and containers needed for M2IdentFit

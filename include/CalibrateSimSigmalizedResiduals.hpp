@@ -92,6 +92,4 @@ namespace CalibrateSimSigmalizedResiduals
    unsigned long numberOfIterations = 0;
 };
 
-int main(int argc, char **argv);
-
 #endif /* CALIBRATE_SIM_SIGMALIZED_RESIDUA_HPP */

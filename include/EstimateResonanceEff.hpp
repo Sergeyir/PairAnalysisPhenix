@@ -101,6 +101,4 @@ namespace EstimateResonanceEff
    const unsigned int fitNTries = 3;
 };
 
-int main(int argc, char **argv);
-
 #endif /* ESTIMATE_RESONANCE_EFF_HPP */

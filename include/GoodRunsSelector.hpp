@@ -35,8 +35,6 @@
 
 #include "ROOT/TTreeProcessorMT.hxx"
 
-int main(int argc, char **argv);
-
 /* @namespace GoodRunsSelector
  *
  * @brief Contains all functions, variables, and containers needed for GoodRunsSelector

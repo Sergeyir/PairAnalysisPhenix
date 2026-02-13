@@ -33,8 +33,6 @@
 
 #include "InputYAMLReader.hpp"
 
-int main(int argc, char **argv);
-
 /* @namespace EstimateSingleTrackEff
  *
  * @brief Contains all functions, variables, and containers needed for EstimateSingleTrackEff

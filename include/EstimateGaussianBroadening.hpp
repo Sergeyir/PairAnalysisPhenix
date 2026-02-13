@@ -75,6 +75,4 @@ namespace EstimateGaussianBroadening
    const std::string fitSigmasFormula = "pol1";
 };
 
-int main(int argc, char **argv);
-
 #endif /* ESTIMATE_ESTIMATE_GAUSSIAN_BROADENING_HPP */

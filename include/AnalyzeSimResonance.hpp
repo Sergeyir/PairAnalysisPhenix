@@ -37,8 +37,6 @@
 
 #include "ROOT/TTreeProcessorMT.hxx"
 
-int main(int argc, char **argv);
-
 /* @namespace AnalyzeSimResonance
  *
  * @brief Contains all functions, variables, and containers needed for AnalyzeSimResonance 

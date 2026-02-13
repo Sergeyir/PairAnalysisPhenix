@@ -26,6 +26,5 @@ struct ThrContainer
 int GetEmcSector(const double phi, const double pemcy);
 void AnalyzeParticleEmbedding(std::string part, const int queueNum);
 void AnalyzeEmbedding();
-int main();
 
 #endif /*ANALYZE_SIM_EMBEDDING_HPP*/

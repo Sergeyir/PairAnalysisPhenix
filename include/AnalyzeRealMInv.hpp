@@ -114,6 +114,4 @@ namespace AnalyzeRealMInv
    const unsigned int fitNTries = 1;
 };
 
-int main(int argc, char **argv);
-
 #endif /* ANALYZE_REAL_M_INV_HPP */

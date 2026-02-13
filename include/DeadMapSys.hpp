@@ -127,6 +127,4 @@ namespace DeadMapSys
    double GetNormRatio(const double ratio);
 };
 
-int main(int argc, char **argv);
-
 #endif /* DEAD_MAP_SYS_HPP */
