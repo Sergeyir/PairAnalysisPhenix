@@ -30,7 +30,11 @@ int main(int argc, char **argv)
    if (argc == 6) ROOT::EnableImplicitMT(std::stoi(argv[5]));
    else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
-   if (argc == 5) rebinX = std::stoi(argv[4]);
+   if (argc == 5) 
+   {
+      rebinX = std::stoi(argv[4]);
+      if (rebinX <= 0) CppTools::PrintError("Rebin value cannot be 0 or negative");
+   }
 
    std::string methodToAnalyze;
    if (argc >= 4) methodToAnalyze = argv[3];

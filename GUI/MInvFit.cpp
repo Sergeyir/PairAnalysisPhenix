@@ -120,6 +120,23 @@ void MInvFit()
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
 
+   /* temporarily disabled since rebin is not needed yet
+   while (true) // ininite loop until exit or valid input is specified
+   {
+      CppTools::Print("Choose the rebin value along X axis "\
+                      "(typing in any text will exit the program)");
+      std::cout << ">> ";
+      if (!(std::cin >> rebinX))
+      {
+         CppTools::PrintInfo("Exiting the program");
+         exit(1);
+      }
+
+      if (rebinX > 0) break;
+      else CppTools::PrintWarning("Rebin value cannot be 0 or negative");
+   }
+   */
+
    resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
    gammaResonance = inputYAMLResonance["gamma"].as<double>();
@@ -133,14 +150,6 @@ void MInvFit()
    SetGaussianBroadeningFunction();
 
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
-
-   text.SetTextFont(43);
-   text.SetTextSize(45);
-
-   texText.SetTextFont(43);
-   texText.SetTextSize(45);
-
-   text.SetTextAngle(270.);
 
    pTNBins = inputYAMLResonance["pt_bins"].size();
 
@@ -160,30 +169,17 @@ void MInvFit()
 
    gROOT->SetBatch(false);
 
-   /*
-	TCanvas *canv = new TCanvas("", "", 900, 900);
+	TCanvas *canv = new TCanvas("", "", 1080, 1080);
    
-   GUIDistrCutter2D::AddHistogram(realHist);
-   GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
-   system(("mkdir -p data/Parameters/Deadmaps/" + runName).c_str());
+   GUIFit::AddFitType("tmp/test.txt", "default"); // 0
 
-   while (detectorName.find(" ") < detectorName.size())
+   for (int i = 0; i < contFit.size(); i++)
    {
-      const unsigned int spacePos = detectorName.find(" ");
-      detectorName.erase(spacePos, 1);
+      GUIFit::AddHistogram(contDistrMInv, CppTools::DtoStr(contDistrMInvPT[i], 2));
+      GUIFit::AddFit(&contFit[i], &contFitBG[i], 0, contFitSignal[i].GetNpar());
    }
 
-   const std::string outputCutsFileName = "data/Parameters/Deadmaps/" + 
-                                          runName + "/" + detectorName + ".txt";
-
-   if (CppTools::FileExists(outputCutsFileName))
-   {
-      GUIDistrCutter2D::ReadCutAreas(outputCutsFileName);
-   }
-   GUIDistrCutter2D::SetOutputFile(outputCutsFileName);
-
-	gPad->AddExec("exec", "GUIDistrCutter2D::Exec()");
-   */
+	gPad->AddExec("exec", "GUIFit::Exec()");
 }
 
 void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node& centrality)
@@ -196,8 +192,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
-
-   const std::string centralityName = centrality["name"].as<std::string>();
 
    pBar.SetText("Preparing M_{inv}");
 
@@ -302,11 +296,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
          gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
       // fit for resonance+bg approximation
-      TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGPol3, 
+      TF1 fit("signal + bg fit", &FitFunc::RBWConvGausBGPol3, 
               massResonance - gammaResonance*3., massResonance + gammaResonance*3., 8);
       // fit for resonance approximation
-      TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
-                       massResonance + gammaResonance*3., 4);
+      TF1 fitSignal("signal fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
+                    massResonance + gammaResonance*3., 4);
       // fit for bg approximation
       TF1 fitBG("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
                 massResonance + gammaResonance*3., 4);
@@ -323,6 +317,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
       distrMInv->Fit(&fit, "RQMNBLC");
 
+      /*
       for (unsigned int j = 1; j <= fitNTries; j++)
       {
          fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
@@ -338,21 +333,22 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
          distrMInv->Fit(&fit, "RQMNBLC");
          //if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
       }
+      */
 
-      for (int j = 0; j < fitResonance.GetNpar(); j++)
+      for (int j = 0; j < fitSignal.GetNpar(); j++)
       {
-         fitResonance.SetParameter(j, fit.GetParameter(j));
+         fitSignal.SetParameter(j, fit.GetParameter(j));
       }
 
       for (int j = 0; j < fitBG.GetNpar(); j++)
       {
-         fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
+         fitBG.SetParameter(j, fit.GetParameter(j + fitSignal.GetNpar()));
       }
 
-      fitResonance.SetRange(fit.GetParameter(1) - 
-                            (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                            fit.GetParameter(1) + 
-                            (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+      fitSignal.SetRange(fit.GetParameter(1) - 
+                         (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
+                         fit.GetParameter(1) + 
+                         (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
 
       fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
                      fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
@@ -385,32 +381,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       distrMInv->SetMarkerSize(0.7);
       distrMInv->SetMarkerColor(kGray + 3);
 
-      { /* canvas with invariant mass distribution with subtracted background only */
-         TCanvas canvMInv("canv MInv", "", 800, 800);
-
-         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
-         gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
-
-         ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.9);
-
-         text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
-         texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + 
-                              " < #it{p}_{T} < " + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 1)).c_str());
-         text.DrawTextNDC(0.85, 0.93, centrality["name_tex"].as<std::string>().c_str());
-         /*
-         texText.DrawLatexNDC(0.2, 0.81, 
-                              ("#it{#chi}^{2}/NDF=" + 
-                               CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
-                               */
-         fitBG.Draw("SAME");
-         fit.Draw("SAME");
-
-         ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
-                                centrality["name"].as<std::string>() + "_" +
-                                CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 1));
-      } /* canvas with invariant mass distribution with subtracted background only */
+      contDistrMInv.push_back(distrMInv);
+      contDistrMInvPT.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
+      contFit.push_back(fit);
+      contFitSignal.push_back(fitSignal);
+      contFitBG.push_back(fitBG);
 
       numberOfCalls++;
    }
