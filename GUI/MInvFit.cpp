@@ -47,11 +47,10 @@ void MInvFit()
 
    CppTools::Print("Choose taxi number (part of .root file, example: 20025) "\
                    "from the above directory list and type it in");
-   int taxiNumber;
    std::cout << ">> ";
    std::cin >> taxiNumber;
    */
-   int taxiNumber = 20025; // temporary for testing
+   taxiNumber = 20025; // temporary for testing
 
    inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
    CppTools::CheckInputFile(inputFileName);
@@ -70,7 +69,8 @@ void MInvFit()
    InputYAMLReader inputYAMLMain("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
-   int methodBinIndex;
+   int methodBinIndex = 0;
+      /*
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::PrintInfo("List of pair selection method bins for " + 
@@ -95,8 +95,10 @@ void MInvFit()
           methodBinIndex >= 0) break;
       else CppTools::PrintWarning("Chosen method bin is out of range");
    }
+   */
 
-   int centralityBinIndex;
+   int centralityBinIndex = 1;
+   /*
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::PrintInfo("List of centrality bins");
@@ -119,6 +121,7 @@ void MInvFit()
           centralityBinIndex >= 0) break;
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
+   */
 
    /* temporarily disabled since rebin is not needed yet
    while (true) // ininite loop until exit or valid input is specified
@@ -175,8 +178,8 @@ void MInvFit()
 
    for (int i = 0; i < contFit.size(); i++)
    {
-      GUIFit::AddHistogram(contDistrMInv, CppTools::DtoStr(contDistrMInvPT[i], 2));
-      GUIFit::AddFit(&contFit[i], &contFitBG[i], 0, contFitSignal[i].GetNpar());
+      GUIFit::AddHistogram(contDistrMInv[i], CppTools::DtoStr(contDistrMInvPT[i], 2));
+      GUIFit::AddFit(contFit[i], contFitBG[i], 0, contFitSignal[i]->GetNpar() - 1);
    }
 
 	gPad->AddExec("exec", "GUIFit::Exec()");
@@ -185,10 +188,6 @@ void MInvFit()
 void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node& centrality)
 {
    const std::string methodName = method["name"].as<std::string>();
-
-   const std::string outputDir = "output/MInv/" + runName + "/" + 
-                                 std::to_string(taxiNumber) + "/" + methodName;
-   std::filesystem::create_directories(outputDir);
 
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
@@ -383,9 +382,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
       contDistrMInv.push_back(distrMInv);
       contDistrMInvPT.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
-      contFit.push_back(fit);
-      contFitSignal.push_back(fitSignal);
-      contFitBG.push_back(fitBG);
+      contFit.push_back(static_cast<TF1 *>(fit.Clone()));
+      contFitSignal.push_back(static_cast<TF1 *>(fitSignal.Clone()));
+      contFitBG.push_back(static_cast<TF1 *>(fitBG.Clone()));
 
       numberOfCalls++;
    }
