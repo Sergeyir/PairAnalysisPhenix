@@ -344,6 +344,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
          fitBG.SetParameter(j, fit.GetParameter(j + fitSignal.GetNpar()));
       }
 
+      fit.SetRange(fit.GetParameter(1) - 
+                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
+                   fit.GetParameter(1) + 
+                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+
       fitSignal.SetRange(fit.GetParameter(1) - 
                          (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
                          fit.GetParameter(1) + 
