@@ -126,13 +126,13 @@ namespace AnalyzeRealMInv
    std::vector<double> contDistrMInvPT;
    /// Contains fits of type signal+background obtained from invariant mass distributions 
    /// in different pT ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1> contFit;
+   std::vector<TF1 *> contFit;
    /// Contains signal fits obtained from invariant mass distributions in different pT 
    /// ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1> contFitSignal;
+   std::vector<TF1 *> contFitSignal;
    /// Contains background fits obtained from invariant mass distributions in different pT 
    /// ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1> contFitBG;
+   std::vector<TF1 *> contFitBG;
 };
 
 #endif /* ANALYZE_REAL_M_INV_HPP */
