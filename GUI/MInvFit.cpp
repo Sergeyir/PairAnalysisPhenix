@@ -16,6 +16,22 @@
 
 #include "AnalyzeRealMInv.hpp"
 
+/// Contains invariant mass distributions in different pT ranges in one centrality class.
+std::vector<TH1D *> distrsMInv;
+/// Contains pT value of invariant mass distributions
+std::vector<double> pTsDistrMInv;
+/// Contains names of invariant mass distributions to be displayed on canvas
+std::vector<std::string> distrMInvNames;
+/// Contains fits of type signal+background obtained from invariant mass distributions 
+/// in different pT ranges in one centrality class
+std::vector<TF1 *> fits;
+/// Contains signal fits obtained from invariant mass distributions in different pT 
+/// ranges in one centrality class
+std::vector<TF1 *> fitsSignal;
+/// Contains background fits obtained from invariant mass distributions in different pT 
+/// ranges in one centrality class
+std::vector<TF1 *> fitsBG;
+
 using namespace AnalyzeRealMInv;
 
 void MInvFit()
@@ -176,12 +192,15 @@ void MInvFit()
    
    GUIFit::AddFitType("tmp/test.txt", "default"); // 0
 
-   for (int i = 0; i < contFit.size(); i++)
+   for (int i = 0; i < fits.size(); i++)
    {
-      GUIFit::AddHistogram(contDistrMInv[i], CppTools::DtoStr(contDistrMInvPT[i], 2));
-      GUIFit::AddFit(contFit[i], contFitBG[i], 0, contFitSignal[i]->GetNpar() - 1);
+      GUIFit::AddHistogram(distrsMInv[i], CppTools::DtoStr(pTsDistrMInv[i], 2), distrMInvNames[i]);
+      GUIFit::AddFit(fits[i], fitsBG[i], 0, fitsSignal[i]->GetNpar());
    }
 
+   gPad->SetTopMargin(0.05);
+   gPad->SetRightMargin(0.05);
+   gPad->SetBottomMargin(0.05);
 	gPad->AddExec("exec", "GUIFit::Exec()");
 }
 
@@ -295,26 +314,32 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
          gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
       // fit for resonance+bg approximation
-      TF1 fit("signal + bg fit", &FitFunc::RBWConvGausBGPol3, 
-              massResonance - gammaResonance*3., massResonance + gammaResonance*3., 8);
+      fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+                             &FitFunc::RBWConvGausBGPol3, 
+                             massResonance - gammaResonance*3., 
+                             massResonance + gammaResonance*3., 8));
       // fit for resonance approximation
-      TF1 fitSignal("signal fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
-                    massResonance + gammaResonance*3., 4);
+      fitsSignal.push_back(new TF1(("signal fit" + std::to_string(i)).c_str(), 
+                                   &FitFunc::RBWConvGaus, 
+                                   massResonance - gammaResonance*3., 
+                                   massResonance + gammaResonance*3., 4));
       // fit for bg approximation
-      TF1 fitBG("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
-                massResonance + gammaResonance*3., 4);
+      fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+                               &FitFunc::Pol3, 
+                               massResonance - gammaResonance*3., 
+                               massResonance + gammaResonance*3., 4));
 
       const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
       const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
 
-      fit.SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
+      fits.back()->SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
 
-      fit.SetParLimits(0, 1., maxBinVal - minBinVal);
-      fit.SetParLimits(1, massResonance/1.05, massResonance*1.05);
-      fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
-      fit.FixParameter(3, gaussianBroadeningSigma);
+      fits.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
+      fits.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+      fits.back()->SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
+      fits.back()->FixParameter(3, gaussianBroadeningSigma);
 
-      distrMInv->Fit(&fit, "RQMNBLC");
+      distrMInv->Fit(fits.back(), "RQMNBLC");
 
       /*
       for (unsigned int j = 1; j <= fitNTries; j++)
@@ -334,36 +359,35 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       }
       */
 
-      for (int j = 0; j < fitSignal.GetNpar(); j++)
+      for (int j = 0; j < fitsSignal.back()->GetNpar(); j++)
       {
-         fitSignal.SetParameter(j, fit.GetParameter(j));
+         fitsSignal.back()->SetParameter(j, fits.back()->GetParameter(j));
       }
 
-      for (int j = 0; j < fitBG.GetNpar(); j++)
+      for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
       {
-         fitBG.SetParameter(j, fit.GetParameter(j + fitSignal.GetNpar()));
+         fitsBG.back()->SetParameter(j, fits.back()->GetParameter(fitsSignal.back()->GetNpar() + j));
       }
 
-      fit.SetRange(fit.GetParameter(1) - 
-                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                   fit.GetParameter(1) + 
-                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+      fits.back()->SetRange(fits.back()->GetParameter(1) - 
+                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                            fits.back()->GetParameter(1) + 
+                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
 
-      fitSignal.SetRange(fit.GetParameter(1) - 
-                         (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                         fit.GetParameter(1) + 
-                         (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+      fitsSignal.back()->SetRange(fits.back()->GetParameter(1) - 
+                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                                  fits.back()->GetParameter(1) + 
+                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
 
-      fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                     fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+      fitsBG.back()->SetRange(fits.back()->GetParameter(1) - 
+                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                              fits.back()->GetParameter(1) + 
+                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
 
-      fit.SetLineWidth(4);
-      fitBG.SetLineWidth(4);
+      fits.back()->SetLineWidth(4);
+      fitsBG.back()->SetLineWidth(4);
 
-      fit.SetLineColorAlpha(kRed - 3, 0.8);
-      fitBG.SetLineColorAlpha(kGray + 2, 0.8);
-
-      fitBG.SetLineStyle(7);
+      fitsBG.back()->SetLineStyle(7);
 
       distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
 
@@ -385,11 +409,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       distrMInv->SetMarkerSize(0.7);
       distrMInv->SetMarkerColor(kGray + 3);
 
-      contDistrMInv.push_back(distrMInv);
-      contDistrMInvPT.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
-      contFit.push_back(static_cast<TF1 *>(fit.Clone()));
-      contFitSignal.push_back(static_cast<TF1 *>(fitSignal.Clone()));
-      contFitBG.push_back(static_cast<TF1 *>(fitBG.Clone()));
+      distrsMInv.emplace_back(distrMInv);
+      distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 2)));
+      pTsDistrMInv.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
       numberOfCalls++;
    }
