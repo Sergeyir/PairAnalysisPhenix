@@ -119,20 +119,6 @@ namespace AnalyzeRealMInv
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
    /// approximation algorithm has only limited resource to perform the gradient descent
    const unsigned int fitNTries = 1;
-   /// Contains invariant mass distributions in different pT ranges in one centrality class.
-   /// This container is only used in GUI/MInvFit.cpp
-   std::vector<TH1D *> contDistrMInv;
-   /// Contains pT value of invariant mass distributions
-   std::vector<double> contDistrMInvPT;
-   /// Contains fits of type signal+background obtained from invariant mass distributions 
-   /// in different pT ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1 *> contFit;
-   /// Contains signal fits obtained from invariant mass distributions in different pT 
-   /// ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1 *> contFitSignal;
-   /// Contains background fits obtained from invariant mass distributions in different pT 
-   /// ranges in one centrality class. This container is only used in GUI/MInvFit.cpp
-   std::vector<TF1 *> contFitBG;
 };
 
 #endif /* ANALYZE_REAL_M_INV_HPP */
