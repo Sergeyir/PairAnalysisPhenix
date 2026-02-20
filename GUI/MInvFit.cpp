@@ -86,7 +86,7 @@ void MInvFit()
    inputYAMLMain.CheckStatus("main");
 
    int methodBinIndex = 0;
-      /*
+   /*
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::PrintInfo("List of pair selection method bins for " + 

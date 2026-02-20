@@ -194,6 +194,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
       TH1D distrSpectraVsPT("spectra vs pT", "", pTNBins, &pTBinRanges[0]);
 
+      std::vector<std::vector<double>> vecParBG;
+      std::vector<double> vecPT;
+
+      const bool isBGFixed = 
+         SetBGParameters("data/ResonanceBGFit/" + runName + "/" + std::to_string(taxiNumber) + 
+                         "/" + methodName + "_" + centralityName + ".txt", vecParBG, vecPT);
+
       for (unsigned int i = 0; i < pTNBins; i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
@@ -841,6 +848,53 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, const TF1& funcBG,
    integral -= integralBG/101.;
 
    return integral;
+}
+
+bool AnalyzeRealMInv::SetBGParameters(const std::string& inputFileName, std::vector<std::vector<double>>& vecParBG, std::vector<double>& vecPT)
+{
+   std::ifstream inputFile(inputFileName);
+   if (!inputFile.is_open()) return false;
+
+   const int lineNumber = 0;
+   while (inputFile.peek() != EOF)
+   {
+      double pT;
+      if (!(inputFile >> pT))
+      {
+         CppTools::PrintWarning("Could not read pT at line" + std::to_string(lineNumber) +
+                                " from file " + inputFileName +
+                                "; disabling fixed BG for this case");
+         return false;
+      }
+      else
+      {
+         lineNumber++;
+         int numberOfParameters;
+         if (!(inputFile >> numberOfParameters))
+         {
+            CppTools::PrintWarning("Could not read parameter number at line" + 
+                                   std::to_string(lineNumber) + " from file " + inputFileName +
+                                   "; disabling fixed BG for this case");
+            return false;
+         }
+         vecPT.push_back(tmp);
+         for (int i = 0; i < numberOfParameters; i++)
+         {
+            double tmp;
+            if (inputFile >> tmp) vecPT.push_back(tmp);
+            else
+            {
+               pBar.Clear();
+               CppTools::PrintWarning("Could not read all parameters at line" + 
+                                      std::to_string(lineNumber) + " in file " + inputFileName +
+                                      "; disabling fixed BG for this case");
+               return false;
+            }
+         }
+      }
+   }
+
+   return true;
 }
 
 #endif /* ANALYZE_REAL_M_INV_CPP */

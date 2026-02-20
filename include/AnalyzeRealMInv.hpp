@@ -66,6 +66,14 @@ namespace AnalyzeRealMInv
     */
    double GetYield(TH1D *distr, const TF1& funcBG, 
                    const double xMin, const double xMax, double &err);
+   /* Sets parameters for background approximation if they were written by GUI/MInvFit.cpp
+    *
+    * @param[in] inputFileName file from which parameters and pT will be written
+    * @param[in] vecPar set of parameters (for each pT)
+    * @param[in] vecPT pT values of distributions at which fits were performed
+    */
+   bool SetBGParameters(const std::string& inputFileName, std::vector<<double>>& vecParBG, 
+                        std::vector<double>& vecPT);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
