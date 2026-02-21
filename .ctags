@@ -1,0 +1,17 @@
+--recurse=yes
+--exclude=.git
+--exclude=bin
+--exclude=CMakeFiles
+--exclude=data
+--exclude=input
+--exclude=output
+--exclude=lib
+--exclude=tmp
+--exclude=*.txt
+--exclude=*.root
+--exclude=*.cmake
+--exclude=*.yaml
+--exclude=*.swp
+--exclude=*.log
+--exclude=Makefile
+--exclude=yaml-cpp
