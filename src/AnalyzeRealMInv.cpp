@@ -197,9 +197,30 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
 
-      const bool isBGFixed = 
-         SetBGParameters("data/ResonanceBGFit/" + runName + "/" + std::to_string(taxiNumber) + 
-                         "/" + methodName + "_" + centralityName + ".txt", vecParBG, vecPT);
+      const std::string inputFileFitsBGName = "data/ResonanceBGFit/" + runName + "/" + 
+                                              std::to_string(taxiNumber) + "/" + methodName + 
+                                              "_" + centralityName + ".txt";
+
+      const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
+
+      // input file with BG fits
+      TFile *inputFileFitsBG = nullptr; 
+
+      if (isBGFixed)
+      {
+         pBar.Clear();
+         CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
+                             " for centrailty " + centralityName);
+         pBar.RePrint();
+         inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
+      }
+      else
+      {
+         pBar.Clear();
+         CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
+                                " for centrailty " + centralityName + "; using free BG fit");
+         pBar.RePrint();
+      }
 
       for (unsigned int i = 0; i < pTNBins; i++)
       {
@@ -299,22 +320,48 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             distrMInvBG->Rebin(rebinX);
          }
 
-         // sigma of a gaus that is convoluted with Breit-Wigner
-         const double gaussianBroadeningSigma = 
-            gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
-
          // fit for resonance+bg approximation
          TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGPol3, 
                  massResonance - gammaResonance*3., massResonance + gammaResonance*3., 8);
          // fit for resonance approximation
-         TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, massResonance - gammaResonance*3., 
+         TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, 
+                          massResonance - gammaResonance*3., 
                           massResonance + gammaResonance*3., 4);
          // fit for bg approximation
-         TF1 fitBG("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
-                   massResonance + gammaResonance*3., 4);
+         TF1 *fitBG = nullptr;
+
+         // sigma of a gaus that is convoluted with Breit-Wigner
+         const double gaussianBroadeningSigma = 
+            gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
          if (performFit)
          {
+            if (isBGFixed)
+            {
+               const std::string pTBinRangeName =  
+                  CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+                  CppTools::DtoStr(pTBinRanges[i + 1], 2);
+
+               TObject *fitBGTmp = inputFileFitsBG->Get(pTBinRangeName.c_str());
+
+               if (fitBG)
+               {
+                  CppTools::PrintWarning("Could not obtain BG approximation for + " + 
+                                         pTBinRangeName + " from file " + inputFileFitsBGName + 
+                                         "; fixed BG will be disable for this pT bin");
+               }
+               else fitBG = static_cast<TF1 *>(fitBGTmp);
+            }
+
+            bool isBGFixedForThisPT = true;
+
+            if (!fitBG)
+            {
+               fitBG = new TF1("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
+                               massResonance + gammaResonance*3., 4);
+               isBGFixedForThisPT = false;
+            }
+
             const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
             const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
 
@@ -324,6 +371,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             fit.SetParLimits(1, massResonance/1.05, massResonance*1.05);
             fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
             fit.FixParameter(3, gaussianBroadeningSigma);
+
+            if (isBGFixedForThisPT)
+            {
+               for (int i = 4; i < fit.GetNpar(); i++)
+               {
+                  fit.FixParameter(i, fitBG->GetParameter(i - 4));
+               }
+            }
 
             distrMInv->Fit(&fit, "RQMNBLC");
 
@@ -340,7 +395,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                                    gaussianBroadeningSigma)*3.);
 
                distrMInv->Fit(&fit, "RQMNBLC");
-               if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
+               //if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
             }
 
             distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
@@ -354,9 +409,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                fitResonance.SetParameter(j, fit.GetParameter(j));
             }
 
-            for (int j = 0; j < fitBG.GetNpar(); j++)
+            if (!isBGFixedForThisPT)
             {
-               fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
+               for (int j = 0; j < fitBG->GetNpar(); j++)
+               {
+                  fitBG->SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
+               }
             }
 
             double rawYieldErr;
@@ -379,16 +437,18 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                   fit.GetParameter(1) + 
                                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
 
-            fitBG.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                           fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+            fitBG->SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
+                                                   gaussianBroadeningSigma)*3., 
+                           fit.GetParameter(1) + (fit.GetParameter(2) + 
+                                                  gaussianBroadeningSigma)*3.);
 
             fit.SetLineWidth(4);
-            fitBG.SetLineWidth(4);
+            fitBG->SetLineWidth(4);
 
             fit.SetLineColorAlpha(kRed - 3, 0.8);
-            fitBG.SetLineColorAlpha(kGray + 2, 0.8);
+            fitBG->SetLineColorAlpha(kGray + 2, 0.8);
 
-            fitBG.SetLineStyle(7);
+            fitBG->SetLineStyle(7);
          }
 
          distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
@@ -446,7 +506,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                     ("#it{#chi}^{2}/NDF=" + 
                                      CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
                                      */
-               fitBG.Draw("SAME");
+               fitBG->Draw("SAME");
                fit.Draw("SAME");
             }
 
@@ -498,7 +558,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                                 " [MeV/c^{2}]").c_str());
                                                 */
 
-               fitBG.Draw("SAME");
+               fitBG->Draw("SAME");
                fit.Draw("SAME");
             }
 
@@ -819,7 +879,7 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
 }
 
-double AnalyzeRealMInv::GetYield(TH1D *distrMInv, const TF1& funcBG, 
+double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, 
                                  const double xMin, const double xMax, double &err)
 {
    // integral over the signal
@@ -837,7 +897,7 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, const TF1& funcBG,
            m <= distrMInv->GetXaxis()->GetBinUpEdge(i); 
            m += distrMInv->GetXaxis()->GetBinWidth(i)/100.)
       {
-         integralBG += funcBG.Eval(m);
+         integralBG += funcBG->Eval(m);
       }
    }
    // due to the spectra scaling statistical uncertainty is not tied to the integral 
@@ -848,53 +908,6 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, const TF1& funcBG,
    integral -= integralBG/101.;
 
    return integral;
-}
-
-bool AnalyzeRealMInv::SetBGParameters(const std::string& inputFileName, std::vector<std::vector<double>>& vecParBG, std::vector<double>& vecPT)
-{
-   std::ifstream inputFile(inputFileName);
-   if (!inputFile.is_open()) return false;
-
-   const int lineNumber = 0;
-   while (inputFile.peek() != EOF)
-   {
-      double pT;
-      if (!(inputFile >> pT))
-      {
-         CppTools::PrintWarning("Could not read pT at line" + std::to_string(lineNumber) +
-                                " from file " + inputFileName +
-                                "; disabling fixed BG for this case");
-         return false;
-      }
-      else
-      {
-         lineNumber++;
-         int numberOfParameters;
-         if (!(inputFile >> numberOfParameters))
-         {
-            CppTools::PrintWarning("Could not read parameter number at line" + 
-                                   std::to_string(lineNumber) + " from file " + inputFileName +
-                                   "; disabling fixed BG for this case");
-            return false;
-         }
-         vecPT.push_back(tmp);
-         for (int i = 0; i < numberOfParameters; i++)
-         {
-            double tmp;
-            if (inputFile >> tmp) vecPT.push_back(tmp);
-            else
-            {
-               pBar.Clear();
-               CppTools::PrintWarning("Could not read all parameters at line" + 
-                                      std::to_string(lineNumber) + " in file " + inputFileName +
-                                      "; disabling fixed BG for this case");
-               return false;
-            }
-         }
-      }
-   }
-
-   return true;
 }
 
 #endif /* ANALYZE_REAL_M_INV_CPP */
