@@ -190,7 +190,8 @@ void MInvFit()
 
 	TCanvas *canv = new TCanvas("", "", 1080, 1080);
    
-   GUIFit::AddFitType("tmp/test.txt", "default"); // 0
+   const std::string defaultFitPar = "tmp/test.root";
+   GUIFit::AddFitType(defaultFitPar, "default"); // 0
 
    for (int i = 0; i < fits.size(); i++)
    {
@@ -418,6 +419,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    }
 }
 
+// copied from AnalyzeRealMInv.cpp
 void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 {
    const std::string inputFileName = "data/Parameters/GaussianBroadening/" + 
@@ -432,3 +434,5 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
    gaussianBroadeningEstimatorFunc = 
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
 }
+
+// copied from AnalyzeRealMInv.cpp
