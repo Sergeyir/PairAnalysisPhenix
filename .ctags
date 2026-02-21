@@ -15,3 +15,4 @@
 --exclude=*.log
 --exclude=Makefile
 --exclude=yaml-cpp
+--exclude=.ctags*
