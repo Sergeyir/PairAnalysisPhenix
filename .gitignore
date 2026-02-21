@@ -22,6 +22,7 @@ __*
 *.so
 *.a
 *.cmake
+tags
 
 CMakeCache.txt
 Makefile
