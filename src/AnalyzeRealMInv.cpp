@@ -344,7 +344,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                TObject *fitBGTmp = inputFileFitsBG->Get(pTBinRangeName.c_str());
 
-               if (fitBG)
+               if (!fitBGTmp)
                {
                   CppTools::PrintWarning("Could not obtain BG approximation for + " + 
                                          pTBinRangeName + " from file " + inputFileFitsBGName + 

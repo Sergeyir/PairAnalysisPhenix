@@ -190,8 +190,11 @@ void MInvFit()
 
 	TCanvas *canv = new TCanvas("", "", 1080, 1080);
    
-   const std::string defaultFitPar = "tmp/test.root";
-   GUIFit::AddFitType(defaultFitPar, "default"); // 0
+   const std::string defaultFitOutputFileName = "data/ResonanceBGFit/" + runName + "/" + 
+                                                std::to_string(taxiNumber) + "/" + methodName + 
+                                                "_" + centralityName + ".txt";
+
+   GUIFit::AddFitType(defaultFitOutputFileName, "default"); // 0
 
    for (int i = 0; i < fits.size(); i++)
    {
@@ -212,7 +215,34 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
 
+   const std::string centralityName = centrality["name"].as<std::string>();
+
    pBar.SetText("Preparing M_{inv}");
+
+   const std::string inputFileFitsBGName = "data/ResonanceBGFit/" + runName + "/" + 
+                                           std::to_string(taxiNumber) + "/" + methodName + 
+                                           "_" + centralityName + ".txt";
+
+   const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
+
+   // input file with BG fits
+   TFile *inputFileFitsBG = nullptr; 
+
+   if (isBGFixed)
+   {
+      pBar.Clear();
+      CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
+                          " for centrailty " + centralityName);
+      pBar.RePrint();
+      inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
+   }
+   else
+   {
+      pBar.Clear();
+      CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
+                             " for centrailty " + centralityName + "; using free BG fit");
+      pBar.RePrint();
+   }
 
    for (unsigned int i = 0; i < pTNBins; i++)
    {
@@ -324,11 +354,38 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
                                    &FitFunc::RBWConvGaus, 
                                    massResonance - gammaResonance*3., 
                                    massResonance + gammaResonance*3., 4));
+
       // fit for bg approximation
       fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
                                &FitFunc::Pol3, 
                                massResonance - gammaResonance*3., 
                                massResonance + gammaResonance*3., 4));
+
+      bool isBGFixedForThisPT = false;
+
+      if (isBGFixed)
+      {
+         const std::string pTBinRangeName =  
+            CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+            CppTools::DtoStr(pTBinRanges[i + 1], 2);
+
+         TF1 *fitBGTmp = static_cast<TF1 *>(inputFileFitsBG->Get(pTBinRangeName.c_str()));
+
+         if (!fitBGTmp)
+         {
+            CppTools::PrintWarning("Could not obtain BG approximation for + " + 
+                                   pTBinRangeName + " from file " + inputFileFitsBGName + 
+                                   "; fixed BG will be disable for this pT bin");
+         }
+         else
+         {
+            for (int i = 0; i < fitBGTmp->GetNpar(); i++)
+            {
+               fitsBG.back()->SetParameter(i, fitBGTmp->GetParameter(i));
+            }
+            isBGFixedForThisPT = true;
+         }
+      }
 
       const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
       const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
@@ -339,6 +396,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       fits.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
       fits.back()->SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
       fits.back()->FixParameter(3, gaussianBroadeningSigma);
+
+      if (isBGFixedForThisPT)
+      {
+         for (int i = 4; i < fits.back()->GetNpar(); i++)
+         {
+            fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - 4));
+         }
+      }
 
       distrMInv->Fit(fits.back(), "RQMNBLC");
 
@@ -365,9 +430,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
          fitsSignal.back()->SetParameter(j, fits.back()->GetParameter(j));
       }
 
-      for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
+      if (!isBGFixedForThisPT)
       {
-         fitsBG.back()->SetParameter(j, fits.back()->GetParameter(fitsSignal.back()->GetNpar() + j));
+         for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
+         {
+            fitsBG.back()->
+               SetParameter(j, fits.back()->GetParameter(fitsSignal.back()->GetNpar() + j));
+         }
       }
 
       fits.back()->SetRange(fits.back()->GetParameter(1) - 
