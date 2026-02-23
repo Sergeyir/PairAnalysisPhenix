@@ -223,7 +223,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    const std::string inputFileFitsBGName = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
                                            std::to_string(taxiNumber) + "/" + methodName + 
                                            "_" + centralityName + ".root";
-   CppTools::Print(inputFileFitsBGName);
 
    const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
 

@@ -197,9 +197,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
 
-      const std::string inputFileFitsBGName = "data/ResonanceBGFit/" + runName + "/" + 
+      const std::string inputFileFitsBGName = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
                                               std::to_string(taxiNumber) + "/" + methodName + 
-                                              "_" + centralityName + ".txt";
+                                              "_" + centralityName + ".root";
 
       const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
 
@@ -858,6 +858,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       ROOTTools::PrintCanvas(&canvSpectraVsPT, outputDir + "/" + resonanceName + 
                              "_spectra_" + centralityName);
 
+      parametersOutputFile->cd();
       distrMeansVsPT.Write();
       distrGammasVsPT.Write();
       distrRawYieldVsPT.Write();
