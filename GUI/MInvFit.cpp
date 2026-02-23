@@ -45,7 +45,6 @@ void MInvFit()
    ROOT::EnableImplicitMT();
    gROOT->SetBatch(true);
 
-   /*
    CppTools::PrintInfo("List of directories in data/Real directory that contain "\
                        "non empty \"Resonance\" directory");
    system("find data/Real/ -name Resonance -type d -not -empty");
@@ -54,10 +53,8 @@ void MInvFit()
                    "from the above directory list and type it in");
    std::cout << ">> ";
    std::cin >> runName;
-   */
-   runName = "Run14HeAu200"; // temporary for testing
+   //runName = "Run14HeAu200"; // temporary for testing
 
-   /*
    CppTools::PrintInfo("List of .root files in " + runName + " taxi directory");
    system(("find data/Real/" + runName + "/Resonance/ -type f -name *.root").c_str());
 
@@ -65,13 +62,13 @@ void MInvFit()
                    "from the above directory list and type it in");
    std::cout << ">> ";
    std::cin >> taxiNumber;
-   */
-   taxiNumber = 20025; // temporary for testing
+
+   //taxiNumber = 20025; // temporary for testing
 
    inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
    CppTools::CheckInputFile(inputFileName);
 
-   /* 
+   /* Temporarily disable since only K*(892) is needed at the moment
    CppTools::Print("Choose the particle");
    std::string particleName;
    std::cout << ">> ";
@@ -85,8 +82,7 @@ void MInvFit()
    InputYAMLReader inputYAMLMain("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
 
-   int methodBinIndex = 0;
-   /*
+   int methodBinIndex;
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::PrintInfo("List of pair selection method bins for " + 
@@ -111,10 +107,8 @@ void MInvFit()
           methodBinIndex >= 0) break;
       else CppTools::PrintWarning("Chosen method bin is out of range");
    }
-   */
 
-   int centralityBinIndex = 1;
-   /*
+   int centralityBinIndex;
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::PrintInfo("List of centrality bins");
@@ -137,9 +131,8 @@ void MInvFit()
           centralityBinIndex >= 0) break;
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
-   */
 
-   /* temporarily disabled since rebin is not needed yet
+   /* temporarily disabled since rebin is not needed at the moment
    while (true) // ininite loop until exit or valid input is specified
    {
       CppTools::Print("Choose the rebin value along X axis "\
@@ -189,10 +182,18 @@ void MInvFit()
    gROOT->SetBatch(false);
 
 	TCanvas *canv = new TCanvas("", "", 1080, 1080);
+
+   const std::string methodName = 
+      inputYAMLResonance["pair_selection_methods"][methodBinIndex]["name"].as<std::string>();
+   const std::string centralityName = 
+      inputYAMLResonance["centrality_bins"][centralityBinIndex]["name"].as<std::string>();
    
-   const std::string defaultFitOutputFileName = "data/ResonanceBGFit/" + runName + "/" + 
-                                                std::to_string(taxiNumber) + "/" + methodName + 
-                                                "_" + centralityName + ".txt";
+   const std::string fitOutputDir = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
+                                    std::to_string(taxiNumber) + "/";
+
+   std::filesystem::create_directories(fitOutputDir);
+   const std::string defaultFitOutputFileName = 
+      fitOutputDir + methodName + "_" + centralityName + ".root";
 
    GUIFit::AddFitType(defaultFitOutputFileName, "default"); // 0
 
@@ -219,9 +220,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
    pBar.SetText("Preparing M_{inv}");
 
-   const std::string inputFileFitsBGName = "data/ResonanceBGFit/" + runName + "/" + 
+   const std::string inputFileFitsBGName = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
                                            std::to_string(taxiNumber) + "/" + methodName + 
-                                           "_" + centralityName + ".txt";
+                                           "_" + centralityName + ".root";
+   CppTools::Print(inputFileFitsBGName);
 
    const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
 
@@ -248,8 +250,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
-      // only bins for which approximation is done needed
-      if (i < pTBinFitMin && i > pTBinFitMax) continue;
+      // only bins for which approximation is done are needed
+      if (i < pTBinFitMin || i > pTBinFitMax) continue;
 
       TH1D *distrMInvFG = nullptr;
       TH1D *distrMInvBG = nullptr;
