@@ -25,12 +25,16 @@ pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 1.25, min: 1.1, max: 1.4} # 1
   - {value: 1.55, min: 1.4, max: 1.7} # 2
   - {value: 1.80, min: 1.7, max: 1.9} # 3
-  - {value: 2.10, min: 1.9, max: 2.3} # 4
-  - {value: 2.45, min: 2.3, max: 2.6} # 5
-  - {value: 3.00, min: 2.6, max: 3.4} # 6
-  - {value: 3.95, min: 3.4, max: 4.5} # 7
-  - {value: 5.50, min: 4.5, max: 6.5} # 8
-  - {value: 7.50, min: 6.5, max: 8.5} # 9
+  - {value: 2.00, min: 1.9, max: 2.1} # 4
+  - {value: 2.20, min: 2.1, max: 2.3} # 5
+  - {value: 2.45, min: 2.3, max: 2.6} # 6
+  - {value: 2.75, min: 2.6, max: 2.9} # 7
+  - {value: 3.15, min: 2.9, max: 3.4} # 8
+  - {value: 3.70, min: 3.4, max: 4.0} # 9
+  - {value: 4.25, min: 4.0, max: 4.5} # 10
+  - {value: 4.75, min: 4.5, max: 5.0} # 11
+  - {value: 5.75, min: 5.0, max: 6.5} # 12
+  - {value: 7.50, min: 6.5, max: 8.5} # 13
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
 - name: lpt
 - name: mpt
@@ -42,8 +46,8 @@ pair_selection_methods:
 #  - {name: 1PID,           pt_bin_min: 4, pt_bin_max: 7}
 #  - {name: EMCalNoPID,     pt_bin_min: 6, pt_bin_max: 8}
 #  - {name: 1TOF1PID,       pt_bin_min: 5, pt_bin_max: 5}
-  - {name: 2PID,           pt_bin_min: 0, pt_bin_max: 6}
-#  - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 4}
+#  - {name: 2PID,           pt_bin_min: 0, pt_bin_max: 6}
+  - {name: TOF2PID,        pt_bin_min: 0, pt_bin_max: 8}
 #  - {name: EMCal2PID,      pt_bin_min: 0, pt_bin_max: 3}
 #  - {name: 1TOFDCPC11PID,  pt_bin_min: 10, pt_bin_max: 10}
 #  - {name: 1EMCal1PID,     pt_bin_min: 10, pt_bin_max: 10}
