@@ -77,7 +77,7 @@ int main(int argc, char **argv)
    numberOfIterations = pTNBins*17;
 
    const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
-   void(system(("mkdir -p " + parametersOutputDir).c_str()));
+   std::filesystem::create_directories(parametersOutputDir);
 
    outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
                              ".root").c_str(), "RECREATE");
@@ -115,7 +115,7 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                                           "was not found in file " + inputFileName);
 
    const std::string outputDir = "output/ResonanceEff/" + runName + "/" + methodName;
-   void(system(("mkdir -p " + outputDir).c_str()));
+   std::filesystem::create_directories(outputDir);
 
    outputFile->mkdir(methodName.c_str());
    outputFile->cd(methodName.c_str());
@@ -455,7 +455,7 @@ void EstimateResonanceEff::SetGaussianBroadeningFunction()
    const std::string inputFileName = "data/Parameters/GaussianBroadening/" + 
                                      runName + "/" + resonanceName + ".root";
 
-   if (!CppTools::FileExists(inputFileName))
+   if (!std::filesystem::exists(inputFileName))
    {
       CppTools::PrintError(inputFileName + " does not exists. "\
                            "Run executable bin/EstimateGassianBroadening first");

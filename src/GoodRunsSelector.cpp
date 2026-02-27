@@ -330,7 +330,7 @@ void GoodRunsSelector()
 	range_hist.SetMinimum(0.);
 	
 	std::string output_dir = "../output/deadmaps/" + Par.run_type + "/";
-	void(system(("mkdir -p " + output_dir).c_str()));
+   std::filesystem::create_directories(output_dir);
 
 	range_hist.SetMaximum(2.);
 

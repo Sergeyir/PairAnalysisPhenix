@@ -430,7 +430,7 @@ bool DeadMapCutter::SetDeadAreas(const std::string& detectorName,
    const std::string inputFileName = "data/Parameters/Deadmaps/" + runName + 
                                      "/" + detectorName + ".txt";
 
-   if (!CppTools::FileExists(inputFileName))
+   if (!std::filesystem::exists(inputFileName))
    {
       CppTools::PrintWarning("DeadMapCutter: File " + inputFileName + " does not exists");
       return false;

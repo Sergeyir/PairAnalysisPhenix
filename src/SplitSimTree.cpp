@@ -640,7 +640,7 @@ int main(int argc, char **argv)
    collisionSystemName = inputYAMLMain["collision_system_name"].as<std::string>();
 
    outputDir = "data/PostSim/" + runName + "/Resonance/";
-   void(system(("mkdir -p " + outputDir).c_str()));
+   std::filesystem::create_directories(outputDir);
 
    pTMin = inputYAMLSimSingleTrack["pt_min"].as<double>();
    pTMax = inputYAMLSimSingleTrack["pt_max"].as<double>();
@@ -658,8 +658,8 @@ int main(int argc, char **argv)
 
    simM2Id.Initialize(runName, useEMCalId);
 
-   if (CppTools::FileExists("data/Parameters/SpectraFit/" + collisionSystemName + 
-                            "/" + inputYAMLResonance["name"].as<std::string>() + ".yaml"))
+   if (std::filesystem::exists("data/Parameters/SpectraFit/" + collisionSystemName + 
+                               "/" + inputYAMLResonance["name"].as<std::string>() + ".yaml"))
    {
       CppTools::PrintInfo("Fit parameters for spectra were found");
       reweightForSpectra = true;

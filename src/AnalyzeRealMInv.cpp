@@ -74,7 +74,7 @@ int main(int argc, char **argv)
    const std::string inputFileRecEffName = "data/Parameters/ResonanceEff/" + runName + 
                                            "/" + resonanceName + ".root";
 
-   if (CppTools::FileExists(inputFileRecEffName))
+   if (std::filesystem::exists(inputFileRecEffName))
    {
       inputFileRecEff = TFile::Open(inputFileRecEffName.c_str(), "READ");
    }
@@ -201,7 +201,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                               std::to_string(taxiNumber) + "/" + methodName + 
                                               "_" + centralityName + ".root";
 
-      const bool isBGFixed = CppTools::FileExists(inputFileFitsBGName);
+      const bool isBGFixed = std::filesystem::exists(inputFileFitsBGName);
 
       // input file with BG fits
       TFile *inputFileFitsBG = nullptr; 
@@ -870,7 +870,7 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
    const std::string inputFileName = "data/Parameters/GaussianBroadening/" + 
                                      runName + "/" + resonanceName + ".root";
 
-   if (!CppTools::FileExists(inputFileName))
+   if (!std::filesystem::exists(inputFileName))
    {
       CppTools::PrintError(inputFileName + " does not exists. "\
                            "Run executable bin/EstimateGassianBroadening first");

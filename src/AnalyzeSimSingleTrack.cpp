@@ -764,7 +764,7 @@ int main(int argc, char **argv)
    boardOffsetDCw = inputYAMLMain["sim_board_offset_dcw"].as<double>();
 
    outputDir = "data/PostSim/" + runName + "/SingleTrack/";
-   void(system(("mkdir -p " + outputDir).c_str()));
+   std::filesystem::create_directories(outputDir);
 
    pTMin = inputYAMLSim["pt_min"].as<double>();
    pTMax = inputYAMLSim["pt_max"].as<double>();
@@ -943,7 +943,7 @@ TH2F *AnalyzeSimSingleTrack::GetHistogramFromFile(TFile& file, const std::string
 void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFileName, 
                                              const std::string& postSimInputFileName)
 {
-   if (CppTools::FileExists(postSimInputFileName)) 
+   if (std::filesystem::exists(postSimInputFileName)) 
    {
       TFile realDataInputFile(realDataInputFileName.c_str());
       TFile postSimInputFile(postSimInputFileName.c_str());
@@ -1146,7 +1146,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
 {
    const std::string alphaReweightOutputFileName = 
       "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
-   if (CppTools::FileExists("data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root"))
+   if (std::filesystem::exists("data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root"))
    {
       CppTools::CheckInputFile(postSimInputFileName);
 

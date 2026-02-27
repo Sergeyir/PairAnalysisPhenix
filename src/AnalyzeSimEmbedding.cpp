@@ -400,7 +400,7 @@ void AnalyzeEmbedding()
       }
    }
    
-   void(system(("mkdir -p " + Par.outputDir + Par.runName + "/Embedding").c_str()));
+   std::filesystem::create_directories(Par.outputDir + Par.runName + "/Embedding");
    
    int queueNum = 1;
    for (std::string part : Par.partQueue)

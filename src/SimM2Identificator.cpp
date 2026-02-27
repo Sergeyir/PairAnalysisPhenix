@@ -22,7 +22,10 @@ void SimM2Identificator::Initialize(const std::string& runName, const bool useEM
    // TOFe
    std::string inputFileName = "data/Parameters/M2Id/" + runName +"/M2ParTOFe.txt";
 
-   if (CppTools::FileExists(inputFileName)) SetParameters(inputFileName, parMeanTOFe, parSigmaTOFe);
+   if (std::filesystem::exists(inputFileName)) 
+   {
+      SetParameters(inputFileName, parMeanTOFe, parSigmaTOFe);
+   }
    else 
    {
       CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
@@ -33,7 +36,10 @@ void SimM2Identificator::Initialize(const std::string& runName, const bool useEM
    // TOFw
    inputFileName = "data/Parameters/M2Id/" + runName +"/M2ParTOFw.txt";
 
-   if (CppTools::FileExists(inputFileName)) SetParameters(inputFileName, parMeanTOFw, parSigmaTOFw);
+   if (std::filesystem::exists(inputFileName)) 
+   {
+      SetParameters(inputFileName, parMeanTOFw, parSigmaTOFw);
+   }
    else 
    {
       CppTools::PrintWarning("File " + inputFileName + " doesn't exist;"\
@@ -51,7 +57,7 @@ void SimM2Identificator::Initialize(const std::string& runName, const bool useEM
          inputFileName = "data/Parameters/M2Id/" + runName + "/M2ParEMCale" + 
                          std::to_string(i + 2) + ".txt";
 
-         if (CppTools::FileExists(inputFileName)) 
+         if (std::filesystem::exists(inputFileName)) 
          {
             SetParameters(inputFileName, parMeanEMCale[i], parSigmaEMCale[i]);
          }
@@ -67,7 +73,8 @@ void SimM2Identificator::Initialize(const std::string& runName, const bool useEM
       {
          inputFileName = "data/Parameters/M2Id/" + runName + "/M2ParEMCalw" + 
                           std::to_string(i) + ".txt";
-         if (CppTools::FileExists(inputFileName)) 
+
+         if (std::filesystem::exists(inputFileName)) 
          {
             SetParameters(inputFileName, parMeanEMCalw[i], parSigmaEMCalw[i]);
          }

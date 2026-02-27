@@ -420,8 +420,7 @@ int main(int argc, char **argv)
    outputDirSys = "output/Systematics/" + runName + "/";
    outputDirParameters = "data/Parameters/Systematics/" + runName + "/";
 
-   void(system(("mkdir -p " + outputDirDM + " " + 
-                outputDirSys + " " + outputDirParameters).c_str()));
+   std::filesystem::create_directories(outputDirDM + " " + outputDirSys + " " + outputDirParameters);
 
    const std::string inputRealDataFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    const std::string inputSimDataFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";

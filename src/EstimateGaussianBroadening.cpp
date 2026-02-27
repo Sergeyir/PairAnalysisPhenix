@@ -40,7 +40,7 @@ int main(int argc, char **argv)
    inputYAMLMain.CheckStatus("main");
 
    outputDir = "output/GaussianBroadening/" + runName;
-   void(system(("mkdir -p " + outputDir).c_str()));
+   std::filesystem::create_directories(outputDir);
 
    resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
@@ -107,7 +107,7 @@ int main(int argc, char **argv)
    ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_sigmas");
 
    const std::string parametersOutputDir = "data/Parameters/GaussianBroadening/" + runName;
-   void(system(("mkdir -p " + parametersOutputDir).c_str()));
+   std::filesystem::create_directories(parametersOutputDir);
 
    TFile parametersOutput((parametersOutputDir + "/" + resonanceName + ".root").c_str(), "RECREATE");
    parametersOutput.cd();
