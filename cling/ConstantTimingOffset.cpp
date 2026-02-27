@@ -8,14 +8,11 @@ void ConstantTimingOffset()
    gStyle->SetOptStat(0);
    gStyle->SetOptFit(0);
 
-   CppTools::PrintInfo("Available run names with real data:");
-   system("ls data/Real");
-   CppTools::Print("Enter the run name");
-   std::string runName;
+   CppTools::PrintInfo("Specify the input file:");
+   std::string inputFileName;
    std::cout << ">> ";
-   std::cin >> runName;
+   std::cin >> inputFileName;
 
-   const std::string inputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    CppTools::CheckInputFile(inputFileName);
    TFile inputFile(inputFileName.c_str());
 
