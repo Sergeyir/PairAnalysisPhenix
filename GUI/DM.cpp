@@ -79,7 +79,7 @@ void DM()
    const std::string outputCutsFileName = "data/Parameters/Deadmaps/" + 
                                           runName + "/" + detectorName + ".txt";
 
-   if (CppTools::FileExists(outputCutsFileName))
+   if (std::filesystem::exists(outputCutsFileName))
    {
       GUIDistrCutter2D::ReadCutAreas(outputCutsFileName);
    }

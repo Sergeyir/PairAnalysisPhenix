@@ -97,8 +97,8 @@ void TimingDM()
    const std::string offsetOutputFileName = "data/Parameters/TimingOffsets/" + 
                                              runName + "/TimingOffset" + detectorName + ".txt";
 
-   bool deadmapOutputFileExists = CppTools::FileExists(deadmapOutputFileName);
-   bool offsetOutputFileExists = CppTools::FileExists(offsetOutputFileName);
+   bool deadmapOutputFileExists = std::filesystem::exists(deadmapOutputFileName);
+   bool offsetOutputFileExists = std::filesystem::exists(offsetOutputFileName);
 
    // bins with low statistics should be considered dead areas thus they need to be cut
    // this file will contain these bins at first; the user will also add fiducial cuts
@@ -280,7 +280,7 @@ void TimingDM()
       detectorName.erase(spacePos, 1);
    }
 
-   if (CppTools::FileExists(deadmapOutputFileName))
+   if (std::filesystem::exists(deadmapOutputFileName))
    {
       GUIDistrCutter2D::ReadCutAreas(deadmapOutputFileName);
    }
