@@ -33,8 +33,8 @@ void TimingDM()
    std::cout << ">> ";
    std::cin >> runName;
 
-   std::filesystem::create_directory("data/Parameters/TimingDeadmaps/" + runName);
-   std::filesystem::create_directory("data/Parameters/TimingOffsets/" + runName);
+   std::filesystem::create_directories("data/Parameters/TimingDeadmaps/" + runName);
+   std::filesystem::create_directories("data/Parameters/TimingOffsets/" + runName);
 
    const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    CppTools::CheckInputFile(realInputFileName);
@@ -83,7 +83,7 @@ void TimingDM()
                              realHist->GetZaxis()->GetBinUpEdge(realHist->GetZaxis()->GetNbins()));
 
    const std::string outputDir = "output/TimingDeadmaps/" + runName + "/" + detectorName;
-   std::filesystem::create_directory(outputDir);
+   std::filesystem::create_directories(outputDir);
 
    ProgressBar pBar("BLOCK", "Preparing heatmaps", PBarColor::BOLD_MAGENTA);
 
