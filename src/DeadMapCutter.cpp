@@ -285,70 +285,42 @@ bool DeadMapCutter::IsDeadPC3(const int dcarm, const double ppc3z, const double 
 bool DeadMapCutter::IsDeadTOFe(const int chamber, const int slat)
 {
    if (!useTOFe) return false;
-   if (chamber <= cutAreasTOFeRange[0] || chamber >= cutAreasTOFeRange[1] ||
-       slat <= cutAreasTOFeRange[2] || slat >= cutAreasTOFeRange[3]) return true;
+   if (chamber < cutAreasTOFeRange[0] || chamber >= cutAreasTOFeRange[1] ||
+       slat < cutAreasTOFeRange[2] || slat >= cutAreasTOFeRange[3]) return true;
 
-   const short yBin = static_cast<short>((slat - cutAreasTOFeRange[2])/
-                                         (cutAreasTOFeRange[3] - cutAreasTOFeRange[2])*
-                                         static_cast<double>(cutAreasTOFe.size()));
-   const short xBin = static_cast<short>((chamber - cutAreasTOFeRange[0])/
-                                         (cutAreasTOFeRange[1] - cutAreasTOFeRange[0])*
-                                         static_cast<double>(cutAreasTOFe[0].size()));
-   return cutAreasTOFe[yBin][xBin];
+   return cutAreasTOFe[slat][chamber];
 }
 
 bool DeadMapCutter::IsDeadTOFw(const int chamber, const int strip)
 {
    if (!useTOFw) return false;
 
-   if (chamber <= cutAreasTOFwRange[0] || chamber >= cutAreasTOFwRange[1] ||
-       strip <= cutAreasTOFwRange[2] || strip >= cutAreasTOFwRange[3]) return true;
+   if (chamber < cutAreasTOFwRange[0] || chamber >= cutAreasTOFwRange[1] ||
+       strip < cutAreasTOFwRange[2] || strip >= cutAreasTOFwRange[3]) return true;
 
-   const short yBin = static_cast<short>((strip - cutAreasTOFwRange[2])/
-                                         (cutAreasTOFwRange[3] - cutAreasTOFwRange[2])*
-                                         static_cast<double>(cutAreasTOFw.size()));
-   const short xBin = static_cast<short>((chamber - cutAreasTOFwRange[0])/
-                                         (cutAreasTOFwRange[1] - cutAreasTOFwRange[0])*
-                                         static_cast<double>(cutAreasTOFw[0].size()));
-   return cutAreasTOFw[yBin][xBin];
+   return cutAreasTOFw[strip][chamber];
 }
 
 bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector, 
-                                const int ytower, const int ztower)
+                                const int yTower, const int zTower)
 {
    if (!useEMCal) return false;
    if (dcarm == 0) // EMCale
    {
-      if (ytower <= cutAreasEMCaleRange[sector][0] || 
-          ytower >= cutAreasEMCaleRange[sector][1] ||
-          ztower <= cutAreasEMCaleRange[sector][2] || 
-          ztower >= cutAreasEMCaleRange[sector][3]) return true;
+      if (yTower < cutAreasEMCaleRange[sector][0] || 
+          yTower >= cutAreasEMCaleRange[sector][1] ||
+          zTower < cutAreasEMCaleRange[sector][2] || 
+          zTower >= cutAreasEMCaleRange[sector][3]) return true;
 
-      const short yBin = static_cast<short>((ztower - cutAreasEMCaleRange[sector][2])/
-                                            (cutAreasEMCaleRange[sector][3] - 
-                                             cutAreasEMCaleRange[sector][2])*
-                                            static_cast<double>(cutAreasEMCale[sector].size()));
-      const short xBin = static_cast<short>((ytower - cutAreasEMCaleRange[sector][0])/
-                                            (cutAreasEMCaleRange[sector][1] - 
-                                             cutAreasEMCaleRange[sector][0])*
-                                            static_cast<double>(cutAreasEMCale[sector][0].size()));
-      return cutAreasEMCale[sector][yBin][xBin];
+      return cutAreasEMCale[sector][zTower][yTower];
    }
    // EMCalw
-   if (ytower <= cutAreasEMCalwRange[sector][0] || 
-       ytower >= cutAreasEMCalwRange[sector][1] ||
-       ztower <= cutAreasEMCalwRange[sector][2] || 
-       ztower >= cutAreasEMCalwRange[sector][3]) return true;
+   if (yTower < cutAreasEMCalwRange[sector][0] || 
+       yTower >= cutAreasEMCalwRange[sector][1] ||
+       zTower < cutAreasEMCalwRange[sector][2] || 
+       zTower >= cutAreasEMCalwRange[sector][3]) return true;
 
-   const short yBin = static_cast<short>((ztower - cutAreasEMCalwRange[sector][2])/
-                                         (cutAreasEMCalwRange[sector][3] - 
-                                          cutAreasEMCalwRange[sector][2])*
-                                         static_cast<double>(cutAreasEMCalw[sector].size()));
-   const short xBin = static_cast<short>((ytower - cutAreasEMCalwRange[sector][0])/
-                                         (cutAreasEMCalwRange[sector][1] - 
-                                          cutAreasEMCalwRange[sector][0])*
-                                         static_cast<double>(cutAreasEMCalw[sector][0].size()));
-   return cutAreasEMCalw[sector][yBin][xBin];
+   return cutAreasEMCalw[sector][zTower][yTower];
 }
 
 bool DeadMapCutter::IsDeadTimingTOFe(const int chamber, const int slat)
@@ -383,45 +355,25 @@ bool DeadMapCutter::IsDeadTimingTOFw(const int chamber, const int strip)
 }
 
 bool DeadMapCutter::IsDeadTimingEMCal(const int dcarm, const int sector, 
-                                      const int ytower, const int ztower)
+                                      const int yTower, const int zTower)
 {
    if (!useEMCal) return false;
    if (dcarm == 0) // EMCale
    {
-      if (ytower <= cutAreasTimingEMCaleRange[sector][0] || 
-          ytower >= cutAreasTimingEMCaleRange[sector][1] ||
-          ztower <= cutAreasTimingEMCaleRange[sector][2] || 
-          ztower >= cutAreasTimingEMCaleRange[sector][3]) return true;
+      if (yTower <= cutAreasTimingEMCaleRange[sector][0] || 
+          yTower >= cutAreasTimingEMCaleRange[sector][1] ||
+          zTower <= cutAreasTimingEMCaleRange[sector][2] || 
+          zTower >= cutAreasTimingEMCaleRange[sector][3]) return true;
 
-      const short yBin = 
-         static_cast<short>((ztower - cutAreasTimingEMCaleRange[sector][2])/
-                            (cutAreasTimingEMCaleRange[sector][3] - 
-                             cutAreasTimingEMCaleRange[sector][2])*
-                            static_cast<double>(cutAreasTimingEMCale[sector].size()));
-      const short xBin = 
-         static_cast<short>((ytower - cutAreasTimingEMCaleRange[sector][0])/
-                            (cutAreasTimingEMCaleRange[sector][1] - 
-                             cutAreasTimingEMCaleRange[sector][0])*
-                            static_cast<double>(cutAreasTimingEMCale[sector][0].size()));
-      return cutAreasTimingEMCale[sector][yBin][xBin];
+      return cutAreasTimingEMCale[sector][zTower][yTower];
    }
    // EMCalw
-   if (ytower <= cutAreasTimingEMCalwRange[sector][0] || 
-       ytower >= cutAreasTimingEMCalwRange[sector][1] ||
-       ztower <= cutAreasTimingEMCalwRange[sector][2] || 
-       ztower >= cutAreasTimingEMCalwRange[sector][3]) return true;
+   if (yTower <= cutAreasTimingEMCalwRange[sector][0] || 
+       yTower >= cutAreasTimingEMCalwRange[sector][1] ||
+       zTower <= cutAreasTimingEMCalwRange[sector][2] || 
+       zTower >= cutAreasTimingEMCalwRange[sector][3]) return true;
 
-   const short yBin = 
-      static_cast<short>((ztower - cutAreasTimingEMCalwRange[sector][2])/
-                         (cutAreasTimingEMCalwRange[sector][3] - 
-                          cutAreasTimingEMCalwRange[sector][2])*
-                         static_cast<double>(cutAreasTimingEMCalw[sector].size()));
-   const short xBin = 
-      static_cast<short>((ytower - cutAreasTimingEMCalwRange[sector][0])/
-                         (cutAreasTimingEMCalwRange[sector][1] - 
-                          cutAreasTimingEMCalwRange[sector][0])*
-                         static_cast<double>(cutAreasTimingEMCalw[sector][0].size()));
-   return cutAreasTimingEMCalw[sector][yBin][xBin];
+   return cutAreasTimingEMCalw[sector][zTower][yTower];
 }
 
 bool DeadMapCutter::SetDeadAreas(const std::string& detectorName,
