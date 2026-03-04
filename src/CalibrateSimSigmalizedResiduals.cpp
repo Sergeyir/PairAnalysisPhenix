@@ -51,8 +51,6 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(0);
    gStyle->SetOptFit(0);
 
-   TDirectory::AddDirectory(kFALSE);
-
    ROOT::EnableImplicitMT(numberOfThreads);
 
    outputDir = "output/CalibrateSimSigmalizedResiduals/" + runName + "/";
