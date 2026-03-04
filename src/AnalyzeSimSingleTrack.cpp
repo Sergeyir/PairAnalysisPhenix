@@ -66,7 +66,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
    eventNormWeight *= (pTMax - pTMin)/(upPTBound - lowPTBound);
 
-   if (doWeightSpectra)
+   if (doUserWeightSpectra)
    {
       InputYAMLReader inputYAMLSpectraFit("data/Parameters/SpectraFit/" + collisionSystemName + 
                                        "/" + particleName + ".yaml");
@@ -769,7 +769,7 @@ int main(int argc, char **argv)
    pTMin = inputYAMLSim["pt_min"].as<double>();
    pTMax = inputYAMLSim["pt_max"].as<double>();
 
-   doWeightSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
+   doUserWeightSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
 
    correctionTOFw = inputYAMLSim["correction_tofw"].as<double>();
    timeShiftTOFe = inputYAMLSim["time_shift_tofe"].as<double>();
@@ -780,7 +780,7 @@ int main(int argc, char **argv)
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simM2Id.Initialize(runName, false);
 
-   if (doWeightSpectra)
+   if (doUserWeightSpectra)
    {
       for (const auto& particle : inputYAMLSim["particles"])
       {
@@ -862,7 +862,8 @@ int main(int argc, char **argv)
    box.AddEntry("pT ranges", pTRangesList);
    box.AddEntry("Charged track minimum pT, GeV", pTMin);
    box.AddEntry("Charged track maximum pT, GeV", pTMax);
-   box.AddEntry("Weight pT spectra", doWeightSpectra);
+   box.AddEntry("Weight pT spectra", 
+                std::string(doUserWeightSpectra ? "user defined" : "default (exp)"));
    box.AddEntry("Reweight DC alpha", doReweightAlpha);
    box.AddEntry("Reweight PC1", doReweightPC1);
    box.AddEntry("Number of threads", numberOfThreads);

@@ -58,8 +58,8 @@ namespace AnalyzeSimSingleTrack
    double pTMin;
    /// maximum pT of a charged track
    double pTMax;
-   /// shows whether the  particles will be weighted to the corresponding spectra
-   bool doWeightSpectra;
+   /// shows whether the  particles will be weighted to the user defined spectra
+   bool doUserWeightSpectra;
    /// Shows whether a reweight is applied for alpha distribution for improving DC and PC1 heatmaps
    bool doReweightAlpha = true;
    /// Shows whether a reweight is applied to rescale pc1phi and pc1z to get better PC2, PC3, TOFe(w), EMCale(w) heatmaps
