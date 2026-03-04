@@ -703,8 +703,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapTOFe->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadTOFe(realHeatmapTOFe->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFe->GetYaxis()->GetBinCenter(j)))
+            if (dmCutter.IsDeadTOFe(i - 1, j - 1))
             {
                realCutHeatmapTOFe->SetBinContent(i, j, 0.);
                simCutHeatmapTOFe->SetBinContent(i, j, 0.);
@@ -739,8 +738,7 @@ int main(int argc, char **argv)
       {
          for (int j = 1; j <= realHeatmapTOFw->GetYaxis()->GetNbins(); j++)
          {
-            if (dmCutter.IsDeadTOFw(realHeatmapTOFw->GetXaxis()->GetBinCenter(i),
-                                    realHeatmapTOFw->GetYaxis()->GetBinCenter(j)))
+            if (dmCutter.IsDeadTOFw(i - 1, j - 1))
             {
                realCutHeatmapTOFw->SetBinContent(i, j, 0.);
                simCutHeatmapTOFw->SetBinContent(i, j, 0.);
@@ -782,8 +780,7 @@ int main(int argc, char **argv)
          {
             for (int k = 1; k <= realHeatmapEMCale->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(0, i, realHeatmapEMCale->GetXaxis()->GetBinCenter(j),
-                                        realHeatmapEMCale->GetYaxis()->GetBinCenter(k)))
+               if (dmCutter.IsDeadEMCal(0, i, j - 1, k - 1))
                {
                   realCutHeatmapEMCale->SetBinContent(j, k, 0.);
                   simCutHeatmapEMCale->SetBinContent(j, k, 0.);
@@ -816,8 +813,7 @@ int main(int argc, char **argv)
          {
             for (int k = 1; k <= realHeatmapEMCalw->GetYaxis()->GetNbins(); k++)
             {
-               if (dmCutter.IsDeadEMCal(1, i, realHeatmapEMCalw->GetXaxis()->GetBinCenter(j),
-                                        realHeatmapEMCalw->GetYaxis()->GetBinCenter(k)))
+               if (dmCutter.IsDeadEMCal(1, i, j - 1, k - 1))
                {
                   realCutHeatmapEMCalw->SetBinContent(j, k, 0.);
                   simCutHeatmapEMCalw->SetBinContent(j, k, 0.);
