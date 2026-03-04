@@ -72,13 +72,13 @@ class DeadMapCutter
    /// Returns true if data in TOFw is in bad/dead area
    bool IsDeadTOFw(const int chamber, const int strip);
    /// Returns true if data in EMCal is in bad/dead area
-   bool IsDeadEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
+   bool IsDeadEMCal(const int dcarm, const int sector, const int yTower, const int zTower);
    /// Returns true if timing distribution in TOFe is bad
    bool IsDeadTimingTOFe(const int chamber, const int slat);
    /// Returns true if timing distribution in TOFw is bad
    bool IsDeadTimingTOFw(const int chamber, const int strip);
    /// Returns true if timing distribution in EMCal is bad
-   bool IsDeadTimingEMCal(const int dcarm, const int sector, const int ytower, const int ztower);
+   bool IsDeadTimingEMCal(const int dcarm, const int sector, const int yTower, const int zTower);
 
    private:
    /// Read 2D arrays from the file into class attributes. Returns true if dead areas were set succesfully
