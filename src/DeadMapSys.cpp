@@ -420,7 +420,9 @@ int main(int argc, char **argv)
    outputDirSys = "output/Systematics/" + runName + "/";
    outputDirParameters = "data/Parameters/Systematics/" + runName + "/";
 
-   std::filesystem::create_directories(outputDirDM + " " + outputDirSys + " " + outputDirParameters);
+   std::filesystem::create_directories(outputDirDM);
+   std::filesystem::create_directories(outputDirSys);
+   std::filesystem::create_directories(outputDirParameters);
 
    const std::string inputRealDataFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
    const std::string inputSimDataFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
