@@ -15,7 +15,7 @@ particles: # particles that will be analyzed when AnalyzeSingleTrack executable 
 #- {name: pbar, id: -2212, geant_id: 15}
 pt_ranges: # pT ranges of particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
 - name: lpt
-#- name: hpt
+- name: hpt
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
 - name: ''
 # time shift correction for MC
