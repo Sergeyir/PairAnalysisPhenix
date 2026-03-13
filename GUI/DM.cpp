@@ -16,6 +16,7 @@
 void DM()
 {
 	gStyle->SetOptStat(0);
+   //gStyle->SetPalette(kWaterMelon);
    TDirectory::AddDirectory(kFALSE);
 
    const std::string heatmapIdentifierName = "Heatmap";
