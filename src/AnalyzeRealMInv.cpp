@@ -189,10 +189,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       parametersOutputFile->mkdir((methodName + "/" + centralityName).c_str());
       parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
 
-      TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
-      TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
-      TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
-      TH1D distrSpectraVsPT("spectra vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrMeansVsPT(("means vs pT, " + centralityName).c_str(), 
+                          "", pTNBins, &pTBinRanges[0]);
+      TH1D distrGammasVsPT(("gammas vs pT, " + centralityName).c_str(), 
+                           "", pTNBins, &pTBinRanges[0]);
+      TH1D distrRawYieldVsPT(("raw yield vs pT, " + centralityName).c_str(), 
+                             "", pTNBins, &pTBinRanges[0]);
+      TH1D distrSpectraVsPT(("spectra vs pT, " + centralityName).c_str(), 
+                            "", pTNBins, &pTBinRanges[0]);
 
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
@@ -862,6 +866,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       distrMeansVsPT.Write();
       distrGammasVsPT.Write();
       distrRawYieldVsPT.Write();
+      distrSpectraVsPT.Write();
    }
 }
 

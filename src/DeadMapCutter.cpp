@@ -69,7 +69,9 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[4] == '1')
    {
       useTOFe = SetDeadAreas("TOFe", cutAreasTOFe, cutAreasTOFeRange);
-      useTOFeTiming = SetDeadAreas("TimingDeadmapTOFe", cutAreasTimingTOFe, cutAreasTimingTOFeRange);
+      useTOFeTiming = SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
+                                   "/TimingDeadmapTOFe.txt", cutAreasTimingTOFe, 
+                                   cutAreasTimingTOFeRange);
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for TOFe were specified to be not initialized");
    if (!useTOFe) CppTools::PrintInfo("DeadMapCutter: No cuts for TOFe will be applied");
@@ -79,7 +81,9 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
    if (options[5] == '1')
    {
       useTOFw = SetDeadAreas("TOFw", cutAreasTOFw, cutAreasTOFwRange);
-      useTOFwTiming = SetDeadAreas("TimingDeadmapTOFw", cutAreasTimingTOFw, cutAreasTimingTOFwRange);
+      useTOFwTiming = SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
+                                   "/TimingDeadmapTOFw.txt", cutAreasTimingTOFw, 
+                                   cutAreasTimingTOFwRange);
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for TOFe were specified to be not initialized");
    if (!useTOFw) CppTools::PrintInfo("DeadMapCutter: No cuts for TOFe will be applied");
@@ -99,9 +103,11 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       useEMCalTiming = true;
       for (int i = 0; i < 4 && useEMCalTiming; i++)
       {
-         useEMCalTiming = (SetDeadAreas("TimingDeadmapEMCale" + std::to_string(i), 
+         useEMCalTiming = (SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName +
+                                        "/TimingDeadmapEMCale" + std::to_string(i) + ".txt", 
                                         cutAreasTimingEMCale[i], cutAreasTimingEMCaleRange[i]) &&
-                           SetDeadAreas("TimingDeadmapEMCalw" + std::to_string(i), 
+                           SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName +
+                                        "/TimingDeadmapEMCalw" + std::to_string(i) + ".txt", 
                                         cutAreasTimingEMCalw[i], cutAreasTimingEMCalwRange[i]));
       }
    }
@@ -376,12 +382,9 @@ bool DeadMapCutter::IsDeadTimingEMCal(const int dcarm, const int sector,
    return cutAreasTimingEMCalw[sector][zTower][yTower];
 }
 
-bool DeadMapCutter::SetDeadAreas(const std::string& detectorName,
+bool DeadMapCutter::SetDeadAreas(const std::string& inputFileName,
                                  std::vector<std::vector<bool>>& cutAreas, double *ranges)
 {
-   const std::string inputFileName = "data/Parameters/Deadmaps/" + runName + 
-                                     "/" + detectorName + ".txt";
-
    if (!std::filesystem::exists(inputFileName))
    {
       CppTools::PrintWarning("DeadMapCutter: File " + inputFileName + " does not exists");

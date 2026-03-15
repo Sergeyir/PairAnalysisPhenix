@@ -82,6 +82,8 @@ int main(int argc, char **argv)
    outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
                              ".root").c_str(), "RECREATE");
 
+   PerformMInvFitsForMethod("TOF2PID");
+   /*
    // performing fits for each pair selection method
    PerformMInvFitsForMethod("DCPC1NoPID");
    PerformMInvFitsForMethod("NoPID");
@@ -100,6 +102,7 @@ int main(int argc, char **argv)
    PerformMInvFitsForMethod("TOF2PID");
    PerformMInvFitsForMethod("EMCal2PID");
    PerformMInvFitsForMethod("1TOF1EMCal2PID");
+   */
 
    outputFile->Close();
    pBar.Finish();
