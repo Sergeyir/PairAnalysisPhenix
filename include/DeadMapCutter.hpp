@@ -84,8 +84,6 @@ class DeadMapCutter
    /// Read 2D arrays from the file into class attributes. Returns true if dead areas were set succesfully
    bool SetDeadAreas(const std::string& inputFileName, std::vector<std::vector<bool>>& cutAreas,
                      double *ranges);
-   /// name of the run
-   std::string runName;
    /// shows whether option for DC was specified
    bool useDC = false;
    /// shows whether option for PC1 was specified

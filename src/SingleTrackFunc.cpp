@@ -55,6 +55,17 @@ bool IsQualityCut(const int qual)
    return false;
 }
 
+bool IsGhostCut(const double thteta0, const double bbcVertex)
+{
+   return !(fabs(thteta0) < 100. && (
+            (bbcVertex >= 0. && (
+             (bbcVertex - 250.*tan(thteta0 - M_PI/2.)) > 2. ||
+             (bbcVertex - 200.*tan(thteta0 - M_PI/2.)) < -2.)) ||
+            (bbcVertex < 0. && (
+             (bbcVertex - 250.*tan(thteta0 - M_PI/2.)) < -2. ||
+             (bbcVertex - 200.*tan(thteta0 - M_PI/2.)) > 2.))));
+}
+
 double TransformProb(double prob)
 {
    if (prob > 1.) prob = 1.;

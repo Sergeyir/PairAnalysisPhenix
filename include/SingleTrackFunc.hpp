@@ -125,6 +125,12 @@ bool IsMatch(const double pT, const double sdphi, const double sdz,
  * @param[in] qual - quality of the charged track
  */
 bool IsQualityCut(const int qual);
+/*! @brief Checks if the single track is a ghost
+ *
+ * @param[in] theta0 same as PHCentralTrack::the0
+ * @param[in] bbcVertex vertex obtained from BBC
+ */
+bool IsGhostCut(const double theta, const double bbcVertex);
 /*! @brief Transforms probability if it bigger than 1
  *
  * Used if the probability is calculated as a ratio of 2 variables in which case probability can be bigger than 1 if the ratio is taken with the wrong denominator.

@@ -28,14 +28,23 @@ namespace MInv
 {
    /*! Merges invariant mass distributions with subtracted background for all centrality (c in CabanaBoy), z_{vtx} (z in CabanaBoy) and r_{vtx} (r in CabanaBoy). Low resolution (LR) histograms are used for background scaling.
     *
+    * @param[in] inputFile file from which distributions will be read
     * @param[in] methodName name of the method that was used to extract pairs of charged tracks
     * @param[in] decayMode decay mode of which all histograms will be merged
-    * @param[in] centralityBin centrality bin which will be used for invariant mass histogram merging
+    * @param[in] cMin minimum centrality bin
+    * @param[in] cMax maximum centrality bin
+    * @param[in] zMin minimum z vertex position bin
+    * @param[in] zMax maximum z vertex position bin
+    * @param[in] rMin minimum reaction plance bin
+    * @param[in] rMax maximum reaction plance bin
+    * @param[in] pTMin minimum pT to extract the distribution from
+    * @param[in] pTMax maximum pT to extract the distribution from
     * @param[in] pTBin pT bin which will be used for invariant mass histogram merging
     * @param[in] distrMInvMergedFG histogram to pass that will be filled with contents of all scaled foreground histograms
     * @param[in] distrMInvMergedBG histogram to pass that will be filled with contents of all scaled background histograms
     * @param[in] distrMInvMergedFGLR histogram to pass that will be filled with contents of all scaled foreground histograms with low resolution (for background scaling)
     * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling)
+    * @param[in] numberOfEvents variable to which number of events from the current z, r, and c range will be added
     * @param[out] merged invariant mass distribution with background extracted
     */
    TH1D *Merge(TFile *inputFile, const std::string& methodName, const std::string& decayMode,

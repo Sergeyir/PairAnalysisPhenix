@@ -126,6 +126,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const double the0 = simCNT.the0(i);
             const double pT = (simCNT.mom(i))*sin(the0);
 
+            if (IsGhostCut(the0, bbcz)) continue;
+
             if (pT < pTMin || pT > pTMax) continue;
             if (IsQualityCut(simCNT.qual(i))) continue;
 
@@ -136,15 +138,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             const double zed = simCNT.zed(i);
             if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
-
-            if (!(fabs(the0) < 100. &&
-               ((bbcz > 0. && ((bbcz - 250.*tan(the0 - 3.1416/2.)) > 2. ||
-               (bbcz - 200.*tan(the0 - 3.1416/2)) < -2.)) ||
-               (bbcz < 0. && ((bbcz - 250.*tan(the0 - 3.1416/2.))< -2. ||
-               (bbcz - 200.*tan(the0 - 3.1416/2)) > 2.))))) continue;
  
-            //end of basic cuts
-
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
             double board;
@@ -248,7 +242,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
-               const double eloss = 0.0005*pow(beta, -2.5);
+               const double eloss = 0.002*pow(beta, -2.3);
 
                // slats are organized in 10 lines of 96 we define as chambers
                const int chamber = simCNT.slat(i)/96;
@@ -293,7 +287,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
                {
-                  weightTOFw = 1.;
+                  weightTOFw = 0.7996;
                   if (!dmCutter.IsDeadTimingTOFw(chamber, strip))
                   {
                      switch (charge)

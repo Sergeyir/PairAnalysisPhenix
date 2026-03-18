@@ -73,8 +73,11 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
+   std::vector<std::string> pairSelectionMethods = {"TOF2PID"};
+   //std::vector<std::string> pairSelectionMethods = {"DCPC1NoPID", "NoPID", "1TOF1PID", "TOF2PID", "TOFe2PID", "TOFw2PID", "EMC2PID", "2PID"};
+
    // 17 different pairs selections methods
-   numberOfIterations = pTNBins*17;
+   numberOfIterations = pTNBins*pairSelectionMethods.size();
 
    const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
@@ -82,9 +85,13 @@ int main(int argc, char **argv)
    outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
                              ".root").c_str(), "RECREATE");
 
-   PerformMInvFitsForMethod("TOF2PID");
-   /*
    // performing fits for each pair selection method
+   for (const std::string& pairSelectionMethod : pairSelectionMethods)
+   {
+      PerformMInvFitsForMethod(pairSelectionMethod);
+   }
+
+   /*
    PerformMInvFitsForMethod("DCPC1NoPID");
    PerformMInvFitsForMethod("NoPID");
    PerformMInvFitsForMethod("PC2NoPID");

@@ -266,6 +266,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                        pTBinRanges[i], pTBinRanges[i + 1],
                                        distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR,
                                        numberOfEvents));
+
+            numberOfEvents /= 2.;
          }
 
          if (!distrMInv)
@@ -749,10 +751,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          numberOfCalls++;
       }
 
-      if (distrRecEffVsPT)
-      {
-         distrSpectraVsPT.Divide(distrRecEffVsPT);
-      }
+      if (distrRecEffVsPT) distrSpectraVsPT.Divide(distrRecEffVsPT);
 
       distrMeansVsPT.SetLineColor(kRed - 2);
       distrMeansVsPT.SetMarkerColor(kRed - 2);

@@ -27,51 +27,51 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
                            " while 7 has been expected");
    }
 
-   this->runName = runName;
+   const std::string deadmapsDir = "data/Parameters/Deadmaps/" + runName + "/";
+   const std::string timingDeadmapsDir = "data/Parameters/TimingDeadmaps/" + runName + "/";
 
    if (options[0] == '1')
    {
-      useDC = (SetDeadAreas("DCeX1,zDC>=0", cutAreasDCe0X1, cutAreasDCe0X1Range) &&
-               SetDeadAreas("DCeX1,zDC<0", cutAreasDCe1X1, cutAreasDCe1X1Range) &&
-               SetDeadAreas("DCwX1,zDC>=0", cutAreasDCw0X1, cutAreasDCw0X1Range) &&
-               SetDeadAreas("DCwX1,zDC<0", cutAreasDCw1X1, cutAreasDCw1X1Range) &&
-               SetDeadAreas("DCeX2,zDC>=0", cutAreasDCe0X2, cutAreasDCe0X2Range) &&
-               SetDeadAreas("DCeX2,zDC<0", cutAreasDCe1X2, cutAreasDCe1X2Range) &&
-               SetDeadAreas("DCwX2,zDC>=0", cutAreasDCw0X2, cutAreasDCw0X2Range) &&
-               SetDeadAreas("DCwX2,zDC<0", cutAreasDCw1X2, cutAreasDCw1X2Range));
+      useDC = (SetDeadAreas(deadmapsDir + "DCeX1,zDC>=0.txt", cutAreasDCe0X1, cutAreasDCe0X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX1,zDC<0.txt", cutAreasDCe1X1, cutAreasDCe1X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX1,zDC>=0.txt", cutAreasDCw0X1, cutAreasDCw0X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX1,zDC<0.txt", cutAreasDCw1X1, cutAreasDCw1X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX2,zDC>=0.txt", cutAreasDCe0X2, cutAreasDCe0X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX2,zDC<0.txt", cutAreasDCe1X2, cutAreasDCe1X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX2,zDC>=0.txt", cutAreasDCw0X2, cutAreasDCw0X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX2,zDC<0.txt", cutAreasDCw1X2, cutAreasDCw1X2Range));
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for DC were specified to be not initialized");
    if (!useDC) CppTools::PrintInfo("DeadMapCutter: No cuts for DC will be applied");
 
    if (options[1] == '1')
    {
-      usePC1 = (SetDeadAreas("PC1e", cutAreasPC1e, cutAreasPC1eRange) &&
-                SetDeadAreas("PC1w", cutAreasPC1w, cutAreasPC1wRange));
+      usePC1 = (SetDeadAreas(deadmapsDir + "PC1e.txt", cutAreasPC1e, cutAreasPC1eRange) &&
+                SetDeadAreas(deadmapsDir + "PC1w.txt", cutAreasPC1w, cutAreasPC1wRange));
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for PC1 were specified to be not initialized");
    if (!usePC1) CppTools::PrintInfo("DeadMapCutter: No cuts for PC1 will be applied");
 
    if (options[2] == '1')
    {
-      usePC2 = SetDeadAreas("PC2", cutAreasPC2, cutAreasPC2Range);
+      usePC2 = SetDeadAreas(deadmapsDir + "PC2.txt", cutAreasPC2, cutAreasPC2Range);
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for PC2 were specified to be not initialized");
    if (!usePC2) CppTools::PrintInfo("DeadMapCutter: No cuts for PC2 will be applied");
 
    if (options[3] == '1')
    {
-      usePC3 = (SetDeadAreas("PC3e", cutAreasPC3e, cutAreasPC3eRange) && 
-                SetDeadAreas("PC3w", cutAreasPC3w, cutAreasPC3wRange));
+      usePC3 = (SetDeadAreas(deadmapsDir + "PC3e.txt", cutAreasPC3e, cutAreasPC3eRange) && 
+                SetDeadAreas(deadmapsDir + "PC3w.txt", cutAreasPC3w, cutAreasPC3wRange));
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for PC3 were specified to be not initialized");
    if (!usePC3) CppTools::PrintInfo("DeadMapCutter: No cuts for PC3 will be applied");
 
    if (options[4] == '1')
    {
-      useTOFe = SetDeadAreas("TOFe", cutAreasTOFe, cutAreasTOFeRange);
-      useTOFeTiming = SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
-                                   "/TimingDeadmapTOFe.txt", cutAreasTimingTOFe, 
-                                   cutAreasTimingTOFeRange);
+      useTOFe = SetDeadAreas(deadmapsDir + "TOFe.txt", cutAreasTOFe, cutAreasTOFeRange);
+      useTOFeTiming = SetDeadAreas(timingDeadmapsDir + "TimingDeadmapTOFe.txt", 
+                                   cutAreasTimingTOFe, cutAreasTimingTOFeRange);
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for TOFe were specified to be not initialized");
    if (!useTOFe) CppTools::PrintInfo("DeadMapCutter: No cuts for TOFe will be applied");
@@ -80,10 +80,9 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
 
    if (options[5] == '1')
    {
-      useTOFw = SetDeadAreas("TOFw", cutAreasTOFw, cutAreasTOFwRange);
-      useTOFwTiming = SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName + 
-                                   "/TimingDeadmapTOFw.txt", cutAreasTimingTOFw, 
-                                   cutAreasTimingTOFwRange);
+      useTOFw = SetDeadAreas(deadmapsDir + "TOFw.txt", cutAreasTOFw, cutAreasTOFwRange);
+      useTOFwTiming = SetDeadAreas(timingDeadmapsDir + "TimingDeadmapTOFw.txt", 
+                                   cutAreasTimingTOFw, cutAreasTimingTOFwRange);
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for TOFe were specified to be not initialized");
    if (!useTOFw) CppTools::PrintInfo("DeadMapCutter: No cuts for TOFe will be applied");
@@ -95,19 +94,19 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
       useEMCal = true;
       for (int i = 0; i < 4 && useEMCal; i++)
       {
-         useEMCal = (SetDeadAreas("EMCale" + std::to_string(i), cutAreasEMCale[i], 
-                                  cutAreasEMCaleRange[i]) &&
-                     SetDeadAreas("EMCalw" + std::to_string(i), cutAreasEMCalw[i], 
-                                  cutAreasEMCalwRange[i]));
+         useEMCal = (SetDeadAreas(deadmapsDir + "EMCale" + std::to_string(i) + ".txt", 
+                                  cutAreasEMCale[i], cutAreasEMCaleRange[i]) &&
+                     SetDeadAreas(deadmapsDir + "EMCalw" + std::to_string(i) + ".txt", 
+                                  cutAreasEMCalw[i], cutAreasEMCalwRange[i]));
       }
       useEMCalTiming = true;
       for (int i = 0; i < 4 && useEMCalTiming; i++)
       {
-         useEMCalTiming = (SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName +
-                                        "/TimingDeadmapEMCale" + std::to_string(i) + ".txt", 
+         useEMCalTiming = (SetDeadAreas(timingDeadmapsDir + "TimingDeadmapEMCale" + 
+                                        std::to_string(i) + ".txt", 
                                         cutAreasTimingEMCale[i], cutAreasTimingEMCaleRange[i]) &&
-                           SetDeadAreas("data/Parameters/TimingDeadmaps/" + runName +
-                                        "/TimingDeadmapEMCalw" + std::to_string(i) + ".txt", 
+                           SetDeadAreas(timingDeadmapsDir + "/TimingDeadmapEMCalw" + 
+                                        std::to_string(i) + ".txt", 
                                         cutAreasTimingEMCalw[i], cutAreasTimingEMCalwRange[i]));
       }
    }
