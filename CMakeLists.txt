@@ -54,6 +54,8 @@ add_library(MInv ${CMAKE_SOURCE_DIR}/src/MInv.cpp)
 
 link_libraries(InputYAMLReader)
 
+add_library(PainterHelper ${CMAKE_SOURCE_DIR}/src/PainterHelper.cpp)
+
 add_executable(AnalyzeSimSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSimSingleTrack.cpp)
 add_executable(AnalyzeSimWidthlessResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeSimWidthlessResonance.cpp)
 add_executable(AnalyzeSimResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeSimResonance.cpp)

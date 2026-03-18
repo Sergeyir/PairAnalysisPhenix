@@ -21,6 +21,7 @@
    gSystem->Load("lib/libDeadMapCutter.so");
    gSystem->Load("lib/libFitFunc.so");
    gSystem->Load("lib/libMInv.so");
+   gSystem->Load("lib/libPainterHelper.so");
 
    //gSystem->Load("yaml-cpp/build/libyaml-cpp.so");
 }
