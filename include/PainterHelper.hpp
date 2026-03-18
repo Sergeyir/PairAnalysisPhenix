@@ -19,6 +19,7 @@
 #include "TH1.h"
 
 #include "ErrorHandler.hpp"
+#include "IOTools.hpp"
 
 #include "InputYAMLReader.hpp"
 
@@ -30,77 +31,121 @@ class PainterHelper
 {
    public:
 
-   ///@brief Default constructor
-   PainterHelper();
+   ///@brief Default constructor (forbidden)
+   PainterHelper() = delete;
    /*! @brief Constructor with parameters
-    * @param[in] sysWidth with of systematic error box of each point. By default it is set to 0.1
+    * @param[in] legend pointer to the legend to which all painted histograms and graphs will be added
+    * @param[in] markerSize size of the marker that will be set for all points of graphs and hisotgrams. By default this value is set to 1.
+    * @param[in] lineWidth line width of error boxes and errr bars. By default this value is set to 1
+    * @param[in] sysWidth width of systematic error box of each point. By default it is set to 0.1
     */
-   PainterHelper(const double sysWidth);
-
-   /*! @brief Adds the histogram to the object list to draw
+   PainterHelper(TLegend *legend, const double markerSize = 1., 
+                 const int lineWidth = 1, const double sysWidth = 0.1);
+   /*! @brief Draws the specified histogram. The histogram will be painted with the option "SAME P E0 X0"
     * @param[in] histogramWithStatErr histogram containing values with statistical uncertainties
     * @param[in] histogramWithSysErr histogram containing values with systematic uncertainties
     * @param[in] color color of markers and error boxes to be set for the current histogram
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current histogram
     * @param[in] legendEntry legend entry for the current histogram
     */
-   void AddHist(TH1D *histogramWithStatErr, TH1D *histogramWithSysErr, 
-                const Color_t color, const Style_t markerStyle, 
-                const std::string& legendEntry);
-   /*! @brief Adds the graph to the object list to draw
+   void DrawHist(TH1D *histogramWithStatErr, TH1D *histogramWithSysErr, 
+                 const Color_t color, const double alpha, 
+                 const Style_t markerStyle, const std::string& legendEntry);
+   /*! @brief Draws the specified graph
     * @param[in] graphWithStatErr graph containing values with statistical uncertainties
     * @param[in] graphWithSysErr graph containing values with systematic uncertainties
     * @param[in] color color of markers and error boxes to be set for the current graph
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph
     */
-   void AddGraph(TGraphErrors *graphWithStatErr, TGraphErrors *graphWithSysErr, 
-                 const Color_t color, const Style_t markerStyle, 
-                 const std::string& legendEntry);
-   /*! @brief Adds the histogram read from the specified .root file to the object list to draw
+   void DrawGraph(TGraphErrors *graphWithStatErr, TGraphErrors *graphWithSysErr, 
+                  const Color_t color, const double alpha, 
+                  const Style_t markerStyle, const std::string& legendEntry);
+   /*! @brief Draws the histogram obtained from the specified .root file
     * @param[in] fileName name of the .root file from which histogram will be read
     * @param[in] histogramName name of the histogram that will be read
     * @param[in] color color of markers and error boxes to be set for the current histogram
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current histogram
     * @param[in] legendEntry legend entry for the current histogram
     */
-   void AddHistFromROOTFile(const std::string& fileName, const std::string histogramName, 
-                            const Color_t color, const Style_t markerStyle, 
-                            const std::string& legendEntry);
-   /*! @brief Adds the graph read from the specified .root file to the object list to draw. The graph contained in ROOT file must be TGraphPainter
+   void DrawHistFromROOTFile(const std::string& fileName, const std::string histogramName, 
+                             const Color_t color, const double alpha, 
+                             const Style_t markerStyle, const std::string& legendEntry);
+   /*! @brief Draws the graph obtained from the specified .root file. The graph contained in ROOT file must be TGraphPainter
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphName name of the graph that will be read. The graph contained in ROOT file must be TGraphPainter
     * @param[in] color color of markers and error boxes to be set for the current graph
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph
     */
-   void AddGraphFromROOTFile(const std::string& fileName, const std::string graphName, 
-                             const Color_t color, const Style_t markerStyle, 
-                             const std::string& legendEntry);
-   /*! @brief Adds the graph using the data specified in .yaml file
+   void DrawGraphFromROOTFile(const std::string& fileName, const std::string graphName, 
+                              const Color_t color, const double alpha, const Style_t markerStyle, 
+                              const std::string& legendEntry);
+   /*! @brief Draws the graph obtained from the data read from the spcified .yaml file
     * @param[in] fileName name of the file from which the data will be read
     * @param[in] qualifier string qualifier to find the needed data. This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
     * @param[in] color color of markers and error boxes to be set for the current graph
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph. If emtpy legendEntry is specified (by default) the legend entry will be read from "[source]" field from the specified .yaml file
     */
-   void AddFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
-                        const Color_t color, const Style_t markerStyle, 
+   void DrawFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
+                        const Color_t color, const double alpha, const Style_t markerStyle, 
                         const std::string& legendEntry = "");
+   /*! @brief Draws the graph obtained from the date read from the specified .txt file
+    * @param[in] fileName name of the .txt file from which data will be read
+    * @param[in] color color of markers and error boxes to be set for the current graph
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
+    * @param[in] markerStyle marker style to be set for the current graph
+    * @param[in] legendEntry legend entry for the current graph
+    */
+   void DrawGraphFromTXTFile(const std::string& fileName, 
+                            const Color_t color, const double alpha, const Style_t markerStyle, 
+                            const std::string& legendEntry);
+   /*! @brief Constructs the graph containing values and statistical uncertainties using the data specified in .yaml file
+    * @param[in] fileName name of the file from which the data will be read
+    * @param[in] qualifier string qualifier to find the needed data. This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
+    * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
+    */
+   TGraphErrors *GetGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
+                                      TGraphErrors*& graphWithSysErrors, bool readSysErrors = true);
+   /*! @brief Draws the graph read from the specified .txt file to the object list to draw
+    * @param[in] fileName name of the .root file from which graph will be read
+    * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
+    */
+   TGraphErrors *GetGraphFromTXTFile(const std::string& fileName, TGraphErrors*& graphWithSysErrors, 
+                                     bool readSysErrors = true);
+   /*! @brief Draws the graph containing type c systematic uncertainty to draw
+    * @param[in] fileName name of the .root file from which graph will be read
+    * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
+    */
+   void DrawTypeCUncertainty(const double value, const double xPos, const double yPos);
+   /*! @brief Draws the legend of already painted graphs
+    * @param[in] fileName name of the .root file from which graph will be read
+    * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
+    */
+   void DrawLegend(const double value, const double xPos, const double yPos);
+   /// Sets the size of the marker that will be set for all points of graphs and hisotgrams. By default this value is set to 1.
+   void SetMarkerSize(const double markerSize);
+   /// Sets the line width of error boxes and errr bars. By default this value is set to 1
+   void SetLineWidth(const int lineWidth);
+   /// sets the width of systematic error box of each point. By default it is set to 0.1
+   void SetSysWidth(const double sysWidth);
+   /// Default destructor
+   ~PainterHelper();
 
    private:
 
+   /// marker size of each point of histograms and graphs, By Default equals to 1.
+   markerSize = 1.;
+   /// line wisth of each point error bars and boxes, By Default equals to 1
+   lineWidth = 1.;
    /// width of a systematic uncertainty box of each point. By default equals to 0.1
    sysWidth = 0.1;
-
-   /// container for storing histograms containing values with statistical uncertainties
-   std::vector histsWithStatErr<TH1D *>;
-   /// container for storing histograms containing values with systematic uncertainties
-   std::vector histsWithSysErr<TH1D *>;
-   /// container for storing graphs containing values with statistical uncertainties
-   std::vector graphsWithStatErr<TH1D *>;
-   /// container for storing graphs containing values with systematic uncertainties
-   std::vector graphsWithSysErr<TH1D *>;
 }
 
 #endif /* PAINTER_HELPER_HPP */
