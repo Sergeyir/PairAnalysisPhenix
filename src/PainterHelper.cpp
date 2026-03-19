@@ -29,7 +29,7 @@ void PainterHelper::DrawHist(TH1D *histogramWithStatErrors, TH1D *histogramWithS
 
    if (!histogramWithStatErrors) CppTools::PrintError("Histogram containing values and "\
                                                    "statistical uncertanities is nullptr");
-   if (!histogramWithSysErrors || 
+   if (histogramWithSysErrors || 
        (histogramWithStatErrors->GetXaxis()->GetNbins() != 
         histogramWithStatErrors->GetXaxis()->GetNbins()))
    {
@@ -71,7 +71,8 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
    bool disableSysErrors = false;
 
    if (!graphWithStatErrors) CppTools::PrintError("Graph containing values and "\
-                                               "statistical uncertanities is nullptr");
+                                                  "statistical uncertanities is nullptr");
+   
    if (!graphWithSysErrors || graphWithStatErrors->GetN() != graphWithSysErrors->GetN()) 
    {
       disableSysErrors = true;
@@ -80,7 +81,8 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
    {
       for (int i = 0; i < graphWithStatErrors->GetN(); i++)
       {
-         if (fabs(graphWithStatErrors->GetPointX(i) - graphWithSysErrors->GetPointX(i)) > 1e-6)
+         if (fabs(graphWithStatErrors->GetPointX(i) - graphWithSysErrors->GetPointX(i)) > 
+             fabs(graphWithStatErrors->GetPointX(i)/1e6))
          {
             disableSysErrors = true;
             break;
@@ -115,7 +117,7 @@ void PainterHelper::DrawFromYAMLFile(const std::string& fileName, const std::str
                                      const Style_t markerStyle, const std::string& legendEntry,
                                      const bool relativeErrors, const bool readSysErrors)
 {
-   TGraphErrors *graphWithSysErrors;
+   TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromYAMLFile(fileName, qualifier, graphWithSysErrors, 
                                                             relativeErrors, readSysErrors);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
@@ -127,7 +129,7 @@ void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName,
                                          const Style_t markerStyle, const std::string& legendEntry,
                                          const bool relativeErrors, const bool readSysErrors)
 {
-   TGraphErrors *graphWithSysErrors;
+   TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromTXTFile(fileName, graphWithSysErrors, 
                                                            relativeErrors, readSysErrors);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
@@ -153,7 +155,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
          }
 
          TGraphErrors *graphWithStatErrors = new TGraphErrors();
-         graphWithSysErrors->Clear();
+         if (!graphWithSysErrors) graphWithSysErrors = new TGraphErrors();
+         else graphWithSysErrors->Clear();
 
          auto x = yamlFileContents["independent_variables"][0]["values"];
          auto y = dependentVariableEntry["values"];
@@ -209,7 +212,8 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, TG
    std::ifstream inputFile(fileName);
 
    TGraphErrors *graphWithStatErrors = new TGraphErrors();
-   graphWithSysErrors->Clear();
+   if (!graphWithSysErrors) graphWithSysErrors = new TGraphErrors();
+   else graphWithSysErrors->Clear();
 
    double x, y, statError;
    int i = 0;
