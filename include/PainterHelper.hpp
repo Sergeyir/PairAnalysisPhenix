@@ -74,10 +74,10 @@ class PainterHelper
     * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
-   void DrawFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
-                         const Color_t color, const double alpha, const Style_t markerStyle, 
-                         const std::string& legendEntry = "", const bool relativeErrors = false,
-                         const bool readSysErrors = true);
+   void DrawGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
+                              const Color_t color, const double alpha, const Style_t markerStyle, 
+                              const std::string& legendEntry, 
+                              const bool relativeErrors = false, const bool readSysErrors = true);
    /*! @brief Draws the graph obtained from the date read from the specified .txt file
     * @param[in] fileName name of the .txt file from which data will be read
     * @param[in] color color of markers and error boxes to be set for the current graph
@@ -121,7 +121,7 @@ class PainterHelper
     */
    void DrawTypeCUncertainty(const double value, const double xPos, const double yPos,
                              const Color_t color, const double alpha);
-   /// Draws the legend containing all previously drawn histograms and graphs. After the legend is drawn entries will be cleared.
+   /// Draws the legend containing all previously drawn histograms and graphs
    void DrawLegend();
    /// Sets the size of the marker that will be set for all points of graphs and hisotgrams. By default this value is set to 1.
    void SetMarkerSize(const double markerSize);

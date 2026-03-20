@@ -112,10 +112,10 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
    legend->AddEntry(graphWithStatErrors->Clone(), legendEntry.c_str(), "P");
 }
 
-void PainterHelper::DrawFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
-                                     const Color_t color, const double alpha, 
-                                     const Style_t markerStyle, const std::string& legendEntry,
-                                     const bool relativeErrors, const bool readSysErrors)
+void PainterHelper::DrawGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
+                                          const Color_t color, const double alpha, 
+                                          const Style_t markerStyle, const std::string& legendEntry,
+                                          const bool relativeErrors, const bool readSysErrors)
 {
    TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromYAMLFile(fileName, qualifier, graphWithSysErrors, 
@@ -198,7 +198,7 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
                }
             }
          }
-         break;
+         return graphWithStatErrors;
       }
    }
    CppTools::PrintError("No field qualifier \"" + qualifier + "\" found in file " + fileName);
@@ -258,8 +258,7 @@ void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos, 
 
 void PainterHelper::DrawLegend()
 {
-   legend->Clone()->Draw();
-   legend->Clear();
+   legend->Draw();
 }
 
 void PainterHelper::SetMarkerSize(const double markerSize)
