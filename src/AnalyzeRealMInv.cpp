@@ -71,19 +71,6 @@ int main(int argc, char **argv)
    CppTools::CheckInputFile(inputFileName);
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
 
-   const std::string inputFileRecEffName = "data/Parameters/ResonanceEff/" + runName + 
-                                           "/" + resonanceName + ".root";
-
-   if (std::filesystem::exists(inputFileRecEffName))
-   {
-      inputFileRecEff = TFile::Open(inputFileRecEffName.c_str(), "READ");
-   }
-   else
-   {
-      CppTools::PrintWarning("File " + inputFileRecEffName + " does not exists; spectra will "\
-                             "not be normalized by the reconstruction efficiency");
-   }
-
    text.SetTextFont(43);
    text.SetTextSize(45);
 
@@ -165,23 +152,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
    parametersOutputFile->mkdir(methodName.c_str());
    parametersOutputFile->cd(methodName.c_str());
 
-   TH1D* distrRecEffVsPT = nullptr;
-
-   if (inputFileRecEff)
-   {
-      const std::string distrRecEffVsPTName = methodName + "/reconstruction efficiency vs pT";
-      distrRecEffVsPT = 
-         static_cast<TH1D *>(inputFileRecEff->Get(distrRecEffVsPTName.c_str()));
-
-      if (!distrRecEffVsPT)
-      {
-         CppTools::PrintWarning("Histogram named \"" +  distrRecEffVsPTName + 
-                                "\" does not exist in file" + 
-                                static_cast<std::string>(inputFileRecEff->GetName()) + 
-                                "; correction on reconstruction efficiency will not be applied");
-      }
-   }
-
    for (const YAML::Node &centrality : inputYAMLResonance["centrality_bins"])
    {
       const std::string centralityName = centrality["name"].as<std::string>();
@@ -195,8 +165,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                            "", pTNBins, &pTBinRanges[0]);
       TH1D distrRawYieldVsPT(("raw yield vs pT, " + centralityName).c_str(), 
                              "", pTNBins, &pTBinRanges[0]);
-      TH1D distrSpectraVsPT(("spectra vs pT, " + centralityName).c_str(), 
-                            "", pTNBins, &pTBinRanges[0]);
 
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
@@ -428,15 +396,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
                         fit.GetParameter(1) + fit.GetParameter(2)*2., rawYieldErr);
 
-            distrRawYieldVsPT.SetBinContent(i + 1, rawYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
-            distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr/rawYield/
-                                          (pTBinRanges[i + 1] - pTBinRanges[i]));
-
-            const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
-                                        (pTBinRanges[i + 1] - pTBinRanges[i])*numberOfEvents;
-
-            distrSpectraVsPT.SetBinContent(i + 1, rawYield/rawYieldNorm);
-            distrSpectraVsPT.SetBinError(i + 1, rawYieldErr/rawYield/rawYieldNorm);
+            distrRawYieldVsPT.SetBinContent(i + 1, rawYield);
+            distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr/rawYield);
 
             fitResonance.SetRange(fit.GetParameter(1) - 
                                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
@@ -751,8 +712,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          numberOfCalls++;
       }
 
-      if (distrRecEffVsPT) distrSpectraVsPT.Divide(distrRecEffVsPT);
-
       distrMeansVsPT.SetLineColor(kRed - 2);
       distrMeansVsPT.SetMarkerColor(kRed - 2);
       distrMeansVsPT.SetLineWidth(4);
@@ -764,10 +723,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       distrRawYieldVsPT.SetLineColor(kRed - 2);
       distrRawYieldVsPT.SetMarkerColor(kRed - 2);
       distrRawYieldVsPT.SetLineWidth(4);
-
-      distrSpectraVsPT.SetLineColor(kRed - 2);
-      distrSpectraVsPT.SetMarkerColor(kRed - 2);
-      distrSpectraVsPT.SetLineWidth(4);
 
       TLine massResonancePDG(pTBinRanges[0], massResonance, pTBinRanges[pTNBins], massResonance);
       massResonancePDG.SetLineColorAlpha(kBlack, 0.5);
@@ -834,38 +789,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
                              "_raw_yield_" + centralityName);
 
-      TCanvas canvSpectraVsPT("canv spectra vs pT", "", 800, 800);
-
-      gPad->SetLogy();
-
-      gPad->SetRightMargin(0.03);
-      gPad->SetTopMargin(0.02);
-      gPad->SetLeftMargin(0.141);
-      gPad->SetBottomMargin(0.112);
-
-      if (distrRecEffVsPT)
-      {
-         ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                              "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{N}/#it{dp}_{T}#it{dy} "\
-                              "[(GeV/#it{c})^{-2})]", 1., 1.35);
-      }
-      else
-      {
-         ROOTTools::DrawFrame(&distrSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                              "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
-                              "[(GeV/#it{c})^{-2})]", 1., 1.35);
-      }
-
-      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
-
-      ROOTTools::PrintCanvas(&canvSpectraVsPT, outputDir + "/" + resonanceName + 
-                             "_spectra_" + centralityName);
-
       parametersOutputFile->cd();
       distrMeansVsPT.Write();
       distrGammasVsPT.Write();
       distrRawYieldVsPT.Write();
-      distrSpectraVsPT.Write();
    }
 }
 
@@ -905,8 +832,7 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG,
          integralBG += funcBG->Eval(m);
       }
    }
-   // due to the spectra scaling statistical uncertainty is not tied to the integral 
-   // but rather to the number of entries of the signal
+
    err = sqrt(distrMInv->GetEntries()*integral/
               distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()));
    // normalizing background integral by the number of integration steps
