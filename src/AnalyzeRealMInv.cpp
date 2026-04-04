@@ -803,12 +803,17 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 
    if (!std::filesystem::exists(inputFileName))
    {
-      CppTools::PrintError(inputFileName + " does not exists. "\
-                           "Run executable bin/EstimateGassianBroadening first");
-   }
+      CppTools::PrintWarning(inputFileName + " does not exists. Using rough estimate sigma = 5 MeV "\
+                             "Run executable bin/EstimateGassianBroadening first to better "\
+                             "estimate the gaussian broadening parameter");
 
-   gaussianBroadeningEstimatorFunc = 
-      static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
+      gaussianBroadeningEstimatorFunc = new TF1("gaussian broadening rough estimate", "5e-3");
+   }
+   else
+   {
+      gaussianBroadeningEstimatorFunc = 
+         static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
+   }
 }
 
 double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, 
