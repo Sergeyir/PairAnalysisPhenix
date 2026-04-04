@@ -65,8 +65,7 @@ int main(int argc, char **argv)
    // this step is needed by progress bar
    for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
    {
-      if (argc == 3 && detector["name"].as<std::string>() != 
-          static_cast<std::string>(argv[2])) continue;
+      if (argc == 3 && detector["name"].as<std::string>() != std::string(argv[2])) continue;
 
       TH3F* m2DistrPos = static_cast<TH3F *>
          (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + ", charge>0").c_str()));
@@ -81,14 +80,21 @@ int main(int argc, char **argv)
    }
    numberOfIterations++;
 
+   if (numberOfIterations == 1) 
+   {
+      CppTools::PrintError("No entry for \"" + std::string(argv[2]) + 
+                           "\" detector found in file " + std::string(argv[1]));
+   }
+
    for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
    {
-      if (argc == 3 && detector["name"].as<std::string>() != 
-          static_cast<std::string>(argv[2])) continue;
+      if (argc == 3 && detector["name"].as<std::string>() != std::string(argv[2])) continue;
       std::filesystem::create_directories(outputDir + "/" + detector["name"].as<std::string>());
       PerformFitsForDetector(detector, inputYAMLMain["centrality_min"].as<double>(), 
                              inputYAMLMain["centrality_max"].as<double>());
-      pBar.HandleOutput(" " + detector["name"].as<std::string>() + " done");
+      pBar.Clear();
+      CppTools::PrintInfo(detector["name"].as<std::string>() + " done");
+      pBar.RePrint();
    }
    pBar.Clear();
    CppTools::PrintInfo("M2IdentFit has finished running succesfully");
@@ -459,7 +465,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1,
-                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [(GeV/c^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -481,7 +487,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
-                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
+                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [(GeV/c^{2})^{2}]");
 
    fitPiPlus.sigmasVsPTFit->Draw("SAME");
    fitKPlus.sigmasVsPTFit->Draw("SAME");
@@ -499,7 +505,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
-                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [GeV/c^{2})^{2}]");
+                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [(GeV/c^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -521,7 +527,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
-                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [GeV/c^{2})^{2}]");
+                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [(GeV/c^{2})^{2}]");
 
    fitPiMinus.sigmasVsPTFit->Draw("SAME");
    fitKMinus.sigmasVsPTFit->Draw("SAME");

@@ -245,15 +245,30 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, TG
    return graphWithStatErrors;
 }
 
-void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos, const double yPos, 
-                                         const Color_t color, const double alpha)
+void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos, 
+                                         const double yPos, const Color_t color, 
+                                         const double alpha, const std::string& text)
 {
    TGraphErrors gr;
-   gr.SetLineColorAlpha(color, alpha);
+   gr.AddPoint(xPos - sysWidth, yPos);
+   gr.SetPointError(0, sysWidth, value);
+
+   gr.SetLineColorAlpha(0, 0.);
    gr.SetFillColorAlpha(color, alpha);
    gr.SetFillStyle(1001);
 
    gr.Clone()->Draw("5");
+
+   if (text != "")
+   {
+      TText ttext;
+
+      ttext.SetTextFont(52);
+      ttext.SetTextSize(0.05);
+      ttext.SetTextAngle(90);
+
+      ttext.DrawText(xPos, yPos + value, text.c_str());
+   }
 }
 
 void PainterHelper::DrawLegend()

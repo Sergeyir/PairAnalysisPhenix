@@ -50,14 +50,14 @@ detectors:
   k-_pt_bounds: [0.3, 3.0]
   pbar_pt_bounds: [0.4, 3.0]
   is_calibrated: true
-  use_m2_mean_par: false
+  use_m2_mean_par: true
 - 
   name: EMCale2
   sigmalized_identification_range: 3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.5
-  sigma_t: 600. 
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 500. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
@@ -73,9 +73,9 @@ detectors:
   name: EMCale3
   sigmalized_identification_range: 3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.5
-  sigma_t: 580. 
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 510. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
@@ -91,9 +91,9 @@ detectors:
   name: EMCalw0
   sigmalized_identification_range: 3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.5
-  sigma_t: 530. 
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 420. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
@@ -109,9 +109,9 @@ detectors:
   name: EMCalw1
   sigmalized_identification_range: 3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.5
-  sigma_t: 530. 
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 420. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
@@ -127,9 +127,9 @@ detectors:
   name: EMCalw2
   sigmalized_identification_range: 3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.2 
-  sigma_t: 540
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 420. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
@@ -145,9 +145,9 @@ detectors:
   sigmalized_identification_range: 3
   name: EMCalw3
   L: 5.22
-  sigma_alpha: 1.0
-  sigma_ms: 1.8
-  sigma_t: 560
+  sigma_alpha: 0.8
+  sigma_ms: 1.0
+  sigma_t: 420. 
   pion_bg_func: "pol2(0)"
   kaon_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"

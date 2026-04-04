@@ -18,6 +18,7 @@
 #include "TGraphErrors.h"
 #include "TH1.h"
 #include "TLegend.h"
+#include "TText.h"
 
 #include "ErrorHandler.hpp"
 #include "IOTools.hpp"
@@ -91,12 +92,6 @@ class PainterHelper
                              const Color_t color, const double alpha, const Style_t markerStyle, 
                              const std::string& legendEntry, const bool relativeErrors = false,
                              const bool readSysErrors = true);
-   /*! @brief Constructs the graph containing values and statistical uncertainties using the data specified in .yaml file
-    * @param[in] fileName name of the file from which the data will be read
-    * @param[in] qualifier string qualifier to find the needed data. This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
-    * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
-    */
-   void DrawTypeCUncertainty(const double value, const double xPos, const double yPos);
    /*! @brief Draws the legend of already painted graphs
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
@@ -118,9 +113,13 @@ class PainterHelper
     * @param[in] value absolute value of the uncertainty
     * @param[in] xPos x position of the center of uncertainty box
     * @param[in] yPos y position of the center of uncertainty box
+    * @param[in] color color of the filled area of the systematic uncertainty box
+    * @param[in] alpha alpha for the color of the filled area of the systematic uncertainty box
+    * @param[in] text text that will be displayed above the uncertainty box (text will be rotated 90 degrees to avoid overlapping)
     */
    void DrawTypeCUncertainty(const double value, const double xPos, const double yPos,
-                             const Color_t color, const double alpha);
+                             const Color_t color, const double alpha, 
+                             const std::string& text = "");
    /// Draws the legend containing all previously drawn histograms and graphs
    void DrawLegend();
    /// Sets the size of the marker that will be set for all points of graphs and hisotgrams. By default this value is set to 1.
