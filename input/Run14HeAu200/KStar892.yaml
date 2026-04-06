@@ -48,7 +48,7 @@ pair_selection_methods:
 #  - {name: 1EMCal1PID,                  pt_bin_min: 10, pt_bin_max: 10}
 #  - {name: 1PID,                        pt_bin_min: 4, pt_bin_max: 7}
 #  - {name: 2PID,                        pt_bin_min: 0, pt_bin_max: 6}
-#  - {name: EMCal2PID,                   pt_bin_min: 0, pt_bin_max: 3}
+  - {name: EMCal2PID,                   pt_bin_min: 0, pt_bin_max: 4}
 #  - {name: TOF2PID,                     pt_bin_min: 0, pt_bin_max: 8}
 #  - {name: TOF2PID-EMCalNoPID,          pt_bin_min: -1, pt_bin_max: -1}
 #  - {name: TOF2PID-EMCalNoPID-PC3NoPID, pt_bin_min: -1, pt_bin_max: -1}
