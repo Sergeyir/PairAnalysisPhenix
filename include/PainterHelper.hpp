@@ -51,9 +51,9 @@ class PainterHelper
     * @param[in] markerStyle marker style to be set for the current histogram
     * @param[in] legendEntry legend entry for the current histogram
     */
-   void DrawHist(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
-                 const Color_t color, const double alpha, 
-                 const Style_t markerStyle, const std::string& legendEntry);
+   void DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
+                      const Color_t color, const double alpha, 
+                      const Style_t markerStyle, const std::string& legendEntry);
    /*! @brief Draws the specified graph
     * @param[in] graphWithStatErrors graph containing values with statistical uncertainties
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties

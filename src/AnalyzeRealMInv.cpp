@@ -159,12 +159,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       parametersOutputFile->mkdir((methodName + "/" + centralityName).c_str());
       parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
 
-      TH1D distrMeansVsPT(("means vs pT, " + centralityName).c_str(), 
-                          "", pTNBins, &pTBinRanges[0]);
-      TH1D distrGammasVsPT(("gammas vs pT, " + centralityName).c_str(), 
-                           "", pTNBins, &pTBinRanges[0]);
-      TH1D distrRawYieldVsPT(("raw yield vs pT, " + centralityName).c_str(), 
-                             "", pTNBins, &pTBinRanges[0]);
+      TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
 
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
@@ -392,12 +389,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             }
 
             double rawYieldErr;
-            const double rawYield = 
+            double rawYield = 
                GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
                         fit.GetParameter(1) + fit.GetParameter(2)*2., rawYieldErr);
 
+            const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
+                                        (pTBinRanges[i + 1] - pTBinRanges[i])*numberOfEvents;
+            rawYield /= rawYieldNorm;
+            rawYieldErr /= rawYieldNorm;
+
             distrRawYieldVsPT.SetBinContent(i + 1, rawYield);
-            distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr/rawYield);
+            distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr);
 
             fitResonance.SetRange(fit.GetParameter(1) - 
                                   (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
@@ -789,7 +791,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
                              "_raw_yield_" + centralityName);
 
-      parametersOutputFile->cd();
+      parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
       distrMeansVsPT.Write();
       distrGammasVsPT.Write();
       distrRawYieldVsPT.Write();

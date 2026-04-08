@@ -42,8 +42,46 @@ void RAB_central()
    rab.SetLineWidth(2);
    rab.SetSysWidth(0.08);
 
-   rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_0-20.txt", kAzure - 3, 0.9, 72,
-                            "K^{*0}(892) ^{3}HeAu@200 0-20\%");
+   const std::string rawYieldFileName = "data/RawYields/Resonance/Run14HeAu200/20289_KStar892.root";
+   CppTools::CheckInputFile(rawYieldFileName);
+
+   const std::string efficiencyFileName = "data/Parameters/ResonanceEff/Run14HeAu200/KStar892.root";
+   CppTools::CheckInputFile(efficiencyFileName);
+
+   const std::string ppFileName = "data/Spectra/HeAu200/KStar892.root";
+   CppTools::CheckInputFile(ppFileName);
+
+   TFile *rawYieldFile = TFile::Open(rawYieldFileName.c_str());
+   TFile *efficiencyFile = TFile::Open(efficiencyFileName.c_str());
+   TFile *ppFile = TFile::Open(ppFileName.c_str());
+
+   TH1D *distrRawYield = 
+      static_cast<TH1D *>(rawYieldFile->Get("TOF2PID/0-20/raw yield vs pT"));
+   TH1D *distrEfficiency = 
+      static_cast<TH1D *>(efficiencyFile->Get("TOF2PID/reconstruction efficiency vs pT"));
+   TH1D *ppSpectra = static_cast<TH1D *>(ppFile->Get("value with stat err"));
+
+   if (!distrRawYield) CppTools::PrintError("No raw yield histogram found in file " + 
+                                            rawYieldFileName);
+   if (!distrEfficiency) CppTools::PrintError("No efficiency histogram found in file " + 
+                                              efficiencyFileName);
+   if (!ppSpectra) CppTools::PrintError("No pp spectra found in file " + ppFileName);
+
+   distrRawYield->Divide(distrEfficiency);
+   distrRawYield->Divide(ppSpectra);
+
+   distrRawYield->Scale(0.95*42.2/22.3/0.667/2./2.);
+
+   for (int i = 1; i <= distrRawYield->GetXaxis()->GetNbins(); i++)
+   {
+      CppTools::Print(i, distrRawYield->GetBinContent(i));
+   }
+
+   rab.DrawHistogram(distrRawYield, distrRawYield, kAzure - 3, 0.9, 72, 
+                     "K^{*0}(892) ^{3}HeAu@200 0-20\%");
+
+   //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_0-20.txt", kAzure - 3, 0.9, 72,
+   //                         "K^{*0}(892) ^{3}HeAu@200 0-20\%");
    rab.DrawGraphFromTXTFile("data/RAB/AuAu200/KStar892_0-20.txt", kRed - 3, 0.9, 71,
                             "K^{*0}(892) AuAu@200 0-20\%");
 

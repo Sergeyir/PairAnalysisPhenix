@@ -1,6 +1,6 @@
 /** 
  *  @file   EstimateResonanceEff.cpp 
- *  @brief  Contains realisations of functions that are used for estimation of resonance reconstruction efficiency witht he use of the data from MC
+ *  @brief  Contains realisations of functions that are used for estimation of resonance reconstruction efficiency with he use of the data from MC
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
  *

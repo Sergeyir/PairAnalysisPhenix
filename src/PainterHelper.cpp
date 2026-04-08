@@ -21,14 +21,14 @@ PainterHelper::PainterHelper(TLegend *legend, const double markerSize, const int
    this->sysWidth = sysWidth;
 }
 
-void PainterHelper::DrawHist(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
-                             const Color_t color, const double alpha, 
-                             const Style_t markerStyle, const std::string& legendEntry)
+void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
+                                  const Color_t color, const double alpha, 
+                                  const Style_t markerStyle, const std::string& legendEntry)
 {
    bool disableSysErrors = false;
 
    if (!histogramWithStatErrors) CppTools::PrintError("Histogram containing values and "\
-                                                   "statistical uncertanities is nullptr");
+                                                      "statistical uncertanities is nullptr");
    if (histogramWithSysErrors || 
        (histogramWithStatErrors->GetXaxis()->GetNbins() != 
         histogramWithStatErrors->GetXaxis()->GetNbins()))
