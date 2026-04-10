@@ -99,7 +99,8 @@ class PainterHelper
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
    TGraphErrors *GetGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
-                                      TGraphErrors*& graphWithSysErrors, const bool relativeErrors = false,
+                                      TGraphErrors *&graphWithSysErrors, 
+                                      const bool relativeErrors = false,
                                       const bool readSysErrors = true);
    /*! @brief Draws the graph read from the specified .txt file to the object list to draw
     * @param[in] fileName name of the .root file from which graph will be read
@@ -107,8 +108,9 @@ class PainterHelper
     * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
-   TGraphErrors *GetGraphFromTXTFile(const std::string& fileName, TGraphErrors*& graphWithSysErrors, 
-                                     const bool relativeErrors = false, const bool readSysErrors = true);
+   TGraphErrors *GetGraphFromTXTFile(const std::string& fileName, TGraphErrors *&graphWithSysErrors, 
+                                     const bool relativeErrors = false, 
+                                     const bool readSysErrors = true);
    /*! @brief Draws the graph containing type c systematic uncertainty box
     * @param[in] value absolute value of the uncertainty
     * @param[in] xPos x position of the center of uncertainty box
