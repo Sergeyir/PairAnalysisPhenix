@@ -13,13 +13,11 @@
 
 #include "TFile.h"
 #include "TH1.h"
-#include "TH2.h"
 #include "TF1.h"
 #include "TROOT.h"
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TLegend.h"
-#include "TMath.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
@@ -32,39 +30,47 @@
 #include "InputYAMLReader.hpp"
 #include "FitFunc.hpp"
 
-/*! @namespace EstimateResonanceEff
- * @brief Contains all functions and variables for EstimateResonanceEff.cpp
+/*! @namespace EstimateSpectra
+ * @brief Contains all functions and variables for EstimateSpectra.cpp
  */
-namespace EstimateResonanceEff
+namespace EstimateSpectra
 {
-   /*! Returns estimated invariant pT spectra for the given method
+   /*! Returns estimated invariant pT spectra for the given method without applying bin shift correction
     *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
+    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
+    * @param[in] centralityBinName name of the centrality bin (i.e. 0-20)
     * @param[in] spectraWithSysErrors histogram that will be filled with spectra values with systematic uncertainties
     *
     * @param[out] spectraWithStatErrors histogram that will be filled with spectra values with statistical uncertainties
     */
-   TH1D *GetSpectraForMethod(const std::string& methodName, TH1D&* spectraWithSysErrors);
+   /*
+   TH1D *GetSpectraForMethod(const std::string& methodName, const YAML::Node& centralityBinName, 
+                             TH1D *&spectraWithSysErrors);
+                             */
    /*! Applies bin shift correction along y axis to the passed histograms
     *
     * @param[in] spectraWithSysErrors histogram containing spectra values with systematic uncertainties
     * @param[in] spectraWithStatErrors histogram containing spectra values with statistical uncertainties
     */
-   void ApplyBinShiftCorrection(TH1D&* spectraWithStatErrors, TH1D&* spectraWithSysErrors);
+   //void ApplyBinShiftCorrection(TH1D *&spectraWithStatErrors, TH1D *&spectraWithSysErrors);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
    InputYAMLReader inputYAMLResonance;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
+   /// Taxi number
+   int taxiNumber;
    /// Name of the input file
    std::string inputFileName;
-   /// Input file
+   /// Input file containing raw yields
    TFile *inputFile;
+   /// Name of the reconstruction efficiency input file
+   std::string inputRecEffFileName;
+   /// Input file containing reconstruction efficiencies
+   TFile *inputRecEffFile;
    /// Output file for writing invariant pT spectra
    TFile *outputFile;
-   /// name of the resonance
-   std::string resonanceName;
    /// number of pT bins
    unsigned int pTNBins;
    /// pT bins ranges [GeV/c]
@@ -73,6 +79,8 @@ namespace EstimateResonanceEff
    TText text;
    /// TLatex object template for quick text insertions
    TLatex texText;
+   /// Number of consequent fits of spectra for better bin shift correction
+   const unsigned int fitNTries = 5;
 };
 
 #endif /* ESTIMATE_SPECTRA_HPP */
