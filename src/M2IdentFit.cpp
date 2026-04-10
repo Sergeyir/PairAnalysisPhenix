@@ -55,7 +55,7 @@ int main(int argc, char **argv)
    parametersDir = "data/Parameters/M2Id/" + runName;
    std::filesystem::create_directories(parametersDir);
 
-   rawYieldsDir = "data/RawYields/SingleTrack/" + runName;
+   rawYieldsDir = "data/RawYields/" + runName + "/SingleTrack";
    std::filesystem::create_directories(rawYieldsDir);
 
    gErrorIgnoreLevel = kWarning;

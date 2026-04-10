@@ -12,7 +12,8 @@
 #include "PainterHelper.hpp"
 
 
-PainterHelper::PainterHelper(TLegend *legend, const double markerSize, const int lineWidth, const double sysWidth)
+PainterHelper::PainterHelper(TLegend *legend, const double markerSize, 
+                             const int lineWidth, const double sysWidth)
 {
    if (!legend) CppTools::PrintError("PainterHelper: legend pointer is nullptr");
    this->legend = legend;
@@ -51,7 +52,8 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
 
       for (int i = 1; i <= histogramWithSysErrors->GetXaxis()->GetNbins(); i++)
       {
-         sysGr.AddPoint(histogramWithSysErrors->GetXaxis()->GetBinCenter(i), histogramWithSysErrors->GetBinContent(i));
+         sysGr.AddPoint(histogramWithSysErrors->GetXaxis()->GetBinCenter(i), 
+                        histogramWithSysErrors->GetBinContent(i));
          sysGr.SetPointError(i - 1, sysWidth, histogramWithSysErrors->GetBinError(i));
       }
       sysGr.SetLineWidth(lineWidth);
@@ -136,9 +138,11 @@ void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName,
              alpha, markerStyle, legendEntry);
 }
 
-TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
-                                                  TGraphErrors*& graphWithSysErrors, 
-                                                  const bool relativeErrors, const bool readSysErrors)
+TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, 
+                                                  const std::string& qualifier, 
+                                                  TGraphErrors *&graphWithSysErrors, 
+                                                  const bool relativeErrors, 
+                                                  const bool readSysErrors)
 {
    InputYAMLReader yamlFileContents(fileName);
 
@@ -161,7 +165,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
          auto x = yamlFileContents["independent_variables"][0]["values"];
          auto y = dependentVariableEntry["values"];
          
-         for (unsigned int i = 0; i < yamlFileContents["independent_variables"][0]["values"].size(); i++)
+         for (unsigned int i = 0; i < yamlFileContents["independent_variables"]
+                                                      [0]["values"].size(); i++)
          {
             double xVal = 0.;
             if (x[i].size() == 1 || x[i].size() == 3)
@@ -172,7 +177,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
             {
                xVal = (x[i]["low"].as<double>() + x[i]["high"].as<double>())/2.;
             }
-            else CppTools::PrintError("Unexpected number of values of independed_variables columns in file " + fileName);
+            else CppTools::PrintError("Unexpected number of values of independed_variables"\
+                                      "columns in file " + fileName);
 
             graphWithStatErrors->AddPoint(xVal, y[i]["value"].as<double>());
             graphWithStatErrors->SetPointError(i, 0., y[i]["errors"][0]["symerror"].as<double>());
@@ -180,7 +186,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
             if (readSysErrors)
             {
                graphWithSysErrors->AddPoint(xVal, y[i]["value"].as<double>());
-               graphWithSysErrors->SetPointError(i, sysWidth, y[i]["errors"][1]["symerror"].as<double>());
+               graphWithSysErrors->SetPointError(i, sysWidth, 
+                                                 y[i]["errors"][1]["symerror"].as<double>());
             }
          }
          
@@ -205,8 +212,10 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, c
    return nullptr;
 }
 
-TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, TGraphErrors*& graphWithSysErrors, 
-                                                 const bool relativeErrors, const bool readSysErrors)
+TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, 
+                                                 TGraphErrors *&graphWithSysErrors, 
+                                                 const bool relativeErrors, 
+                                                 const bool readSysErrors)
 {
    CppTools::CheckInputFile(fileName);
    std::ifstream inputFile(fileName);
