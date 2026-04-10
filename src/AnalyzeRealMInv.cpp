@@ -112,7 +112,7 @@ int main(int argc, char **argv)
       numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
    }
 
-   const std::string parametersOutputDir = "data/RawYields/Resonance/" + runName;
+   const std::string parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
    std::filesystem::create_directories(parametersOutputDir);
 
    parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
@@ -340,8 +340,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             fit.SetParLimits(0, 1., maxBinVal - minBinVal);
             fit.SetParLimits(1, massResonance/1.05, massResonance*1.05);
-            fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
-            fit.FixParameter(3, gaussianBroadeningSigma);
+            fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
+            fit.SetParLimits(3, gaussianBroadeningSigma/1.05, gaussianBroadeningSigma*1.05);
 
             if (isBGFixedForThisPT)
             {
@@ -390,9 +390,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             double rawYieldErr;
             double rawYield = 
-               GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
-                        fit.GetParameter(1) + fit.GetParameter(2)*2., rawYieldErr);
+               GetYield(distrMInv, fitBG, 
+                        fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2., 
+                        fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2., 
+                        rawYieldErr);
 
+            // 2*pi*pT*dpT*N_{evt}
             const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
                                         (pTBinRanges[i + 1] - pTBinRanges[i])*numberOfEvents;
             rawYield /= rawYieldNorm;

@@ -73,11 +73,8 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   std::vector<std::string> pairSelectionMethods = {"TOF2PID"};
-   //std::vector<std::string> pairSelectionMethods = {"DCPC1NoPID", "NoPID", "1TOF1PID", "TOF2PID", "TOFe2PID", "TOFw2PID", "EMC2PID", "2PID"};
-
    // 17 different pairs selections methods
-   numberOfIterations = pTNBins*pairSelectionMethods.size();
+   numberOfIterations = pTNBins*inputYAMLResonance["pair_selection_methods"].size();
 
    const std::string parametersOutputDir = "data/Parameters/ResonanceEff/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
@@ -86,9 +83,9 @@ int main(int argc, char **argv)
                              ".root").c_str(), "RECREATE");
 
    // performing fits for each pair selection method
-   for (const std::string& pairSelectionMethod : pairSelectionMethods)
+   for (const auto& method : inputYAMLResonance["pair_selection_methods"])
    {
-      PerformMInvFitsForMethod(pairSelectionMethod);
+      PerformMInvFitsForMethod(method["name"].as<std::string>());
    }
 
    /*
@@ -208,9 +205,9 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
       fit.SetParLimits(0, maxBinVal/1.2, maxBinVal);
       fit.SetParLimits(1, massResonance/1.1, massResonance*1.1);
-      fit.SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
+      fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
       //fit.FixParameter(2, gammaResonance);
-      fit.FixParameter(3, gaussianBroadeningSigma);
+      fit.SetParLimits(3, gaussianBroadeningSigma/1.05, gaussianBroadeningSigma*1.05);
       fit.SetParLimits(4, 0., maxBinVal/3.);
       fit.SetParLimits(5, 0., massResonance*10.);
       fit.SetParLimits(6, gammaResonance*2., gammaResonance*20.);
@@ -225,8 +222,8 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                           fit.GetParameter(0)*(1. + 0.05/static_cast<double>(j*j)));
          fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
                           fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-         fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.1/static_cast<double>(j*j)),
-                          fit.GetParameter(2)*(1. + 0.2/static_cast<double>(j*j)));
+         fit.SetParLimits(3, fit.GetParameter(3)/(1. + 0.05/static_cast<double>(j*j)),
+                          fit.GetParameter(3)*(1. + 0.05/static_cast<double>(j*j)));
          fit.SetParLimits(5, fit.GetParameter(5)/(1. + 2./static_cast<double>(j*j)),
                           fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j)));
          fit.SetParLimits(6, fit.GetParameter(6)/(1. + 1./static_cast<double>(j*j)),
@@ -257,8 +254,10 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
       double recYieldErr;
       const double recYield = 
-         GetYield(distrMInv, fitBG, fit.GetParameter(1) - fit.GetParameter(2)*2., 
-                  fit.GetParameter(1) + fit.GetParameter(2)*2., recYieldErr);
+         GetYield(distrMInv, fitBG, 
+                  fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2., 
+                  fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2., 
+                  recYieldErr);
 
       distrRawYieldVsPT.SetBinContent(i + 1, recYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
       distrRawYieldVsPT.SetBinError(i + 1, recYieldErr/recYield/
