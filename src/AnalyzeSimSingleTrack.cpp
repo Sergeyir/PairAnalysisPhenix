@@ -311,7 +311,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrSDZVsPTPC2Neg->Fill(sdz, pT, eventWeight);
                }
 
-               if (IsMatch(pT, sdphi, sdz))
+               if (IsMatch(sdphi, sdz))
                {
                   const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
@@ -369,7 +369,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   }
                }
 
-               if (IsMatch(pT, sdphi, sdz))
+               if (IsMatch(sdphi, sdz))
                {
                   double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
 
@@ -476,7 +476,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   }
                }
 
-               if (IsMatch(pT, sdphi, sdz))
+               if (IsMatch(sdphi, sdz))
                {
                   bool isCutByECore;
                   if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
@@ -611,7 +611,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double eloss = 0.0005*pow(beta, -2.5);
                histContainer.distrBetaVsETOFe->Fill(beta, simCNT.etof(i), eventWeight);
 
-               if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz))
+               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz))
                {
                   // slats are organized in 10 lines of 96 we define as chambers
                   const int chamber = simCNT.slat(i)/96;
@@ -688,7 +688,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                // strip number for the current chamber
                const int strip = simCNT.striptofw(i) % 64;
 
-               if (IsMatch(pT, sdphi, sdz))
+               if (IsMatch(sdphi, sdz))
                {
                   histContainer.heatmapTOFw->Fill(static_cast<double>(chamber) + 0.5, 
                                                   static_cast<double>(strip) + 0.5, 

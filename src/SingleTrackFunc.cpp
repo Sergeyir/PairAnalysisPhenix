@@ -43,15 +43,15 @@ bool IsHit(const double dVal)
    return true;
 }
 
-bool IsMatch(const double pT, const double sdphi, const double sdz, const double sDevSquareMax)
+bool IsMatch(const double sdphi, const double sdz, const double sDevMax)
 {
-   if (sdphi*sdphi + sdz*sdz < sDevSquareMax) return true;
+   if (fabs(sdphi) < sDevMax && fabs(sdz) < sDevMax) return true;
    return false;
 }   
 
 bool IsQualityCut(const int qual)
 {
-   if (qual != 63 && qual != 31) return true;
+   if (qual != 63 && qual != 31 && qual != 51) return true;
    return false;
 }
 

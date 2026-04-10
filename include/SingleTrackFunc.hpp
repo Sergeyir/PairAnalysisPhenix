@@ -113,13 +113,11 @@ struct ChargedTrack
 bool IsHit(const double dVal);
 /*! @brief Checks if the charged track deviation is matched within required sigma of charged tracks deviation distribution
  *
- * @param[in] pT transverse momentum [GeV]
  * @param[in] sdphi sigmalized deviation of phi 
  * @param[in] sdz sigmalized deviation of z
- * @param[in] sDevSquareMax maximum allowed deviation of (sdphi*sdphi + sdz*sdz)
+ * @param[in] sDevMax maximum allowed deviation of |sdphi| and |sdz|
  */
-bool IsMatch(const double pT, const double sdphi, const double sdz, 
-             const double sDevSquareMax = 9.);
+bool IsMatch(const double sdphi, const double sdz, const double sDevMax = 3.);
 /*! @brief Checks if the quality cut for the charged track is applied
  *
  * @param[in] qual - quality of the charged track

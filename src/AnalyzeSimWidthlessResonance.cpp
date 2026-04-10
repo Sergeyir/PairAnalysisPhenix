@@ -169,7 +169,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
                {
                   idPC2 = PART_ID::NONE;
                }
@@ -183,7 +183,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
                if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
+               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
                {
                   idPC3 = PART_ID::NONE;
                }
@@ -200,7 +200,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
                else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
 
-               if (IsMatch(pT, sdphi, sdz) && !isCutByECore && 
+               if (IsMatch(sdphi, sdz) && !isCutByECore && 
                    !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
                {
                   idEMCal = PART_ID::NONE;
@@ -220,7 +220,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                // slat number for the current chamber
                const int slat = simCNT.slat(i) % 96;
 
-               if (simCNT.etof(i) > eloss && IsMatch(pT, sdphi, sdz) && 
+               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz) && 
                    !dmCutter.IsDeadTOFe(chamber, slat))
                {
                   idTOFe = PART_ID::NONE;
@@ -236,7 +236,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                // strip number for the current chamber
                const int strip = simCNT.striptofw(i) % 64;
 
-               if (IsMatch(pT, sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
+               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
                {
                   idTOFw = PART_ID::NONE;
                }
