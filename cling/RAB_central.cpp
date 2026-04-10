@@ -22,7 +22,7 @@ void RAB_central()
    const double xMin = 0.8;
    const double xMax = 7.;
    const double yMin = 0.;
-   const double yMax = 2.;
+   const double yMax = 3.;
 
    ROOTTools::DrawFrame(xMin, yMin, xMax, yMax, "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.8);
 
@@ -42,42 +42,32 @@ void RAB_central()
    rab.SetLineWidth(2);
    rab.SetSysWidth(0.08);
 
-   const std::string rawYieldFileName = "data/RawYields/Resonance/Run14HeAu200/20289_KStar892.root";
-   CppTools::CheckInputFile(rawYieldFileName);
-
-   const std::string efficiencyFileName = "data/Parameters/ResonanceEff/Run14HeAu200/KStar892.root";
-   CppTools::CheckInputFile(efficiencyFileName);
+   const std::string spectraFileName = "data/Spectra/Run14HeAu200/20292_KStar892.root";
+   CppTools::CheckInputFile(spectraFileName);
 
    const std::string ppFileName = "data/Spectra/HeAu200/KStar892.root";
    CppTools::CheckInputFile(ppFileName);
 
-   TFile *rawYieldFile = TFile::Open(rawYieldFileName.c_str());
-   TFile *efficiencyFile = TFile::Open(efficiencyFileName.c_str());
+   TFile *spectraFile = TFile::Open(spectraFileName.c_str());
    TFile *ppFile = TFile::Open(ppFileName.c_str());
 
-   TH1D *distrRawYield = 
-      static_cast<TH1D *>(rawYieldFile->Get("TOF2PID/0-20/raw yield vs pT"));
-   TH1D *distrEfficiency = 
-      static_cast<TH1D *>(efficiencyFile->Get("TOF2PID/reconstruction efficiency vs pT"));
+   TH1D *distrSpectra = static_cast<TH1D *>(spectraFile->Get("60-88/spectra vs pT"));
    TH1D *ppSpectra = static_cast<TH1D *>(ppFile->Get("value with stat err"));
 
-   if (!distrRawYield) CppTools::PrintError("No raw yield histogram found in file " + 
-                                            rawYieldFileName);
-   if (!distrEfficiency) CppTools::PrintError("No efficiency histogram found in file " + 
-                                              efficiencyFileName);
+   if (!distrSpectra) CppTools::PrintError("No spectra histogram found in file " + 
+                                           spectraFileName);
    if (!ppSpectra) CppTools::PrintError("No pp spectra found in file " + ppFileName);
 
-   distrRawYield->Divide(distrEfficiency);
-   distrRawYield->Divide(ppSpectra);
+   distrSpectra->Divide(ppSpectra);
 
-   distrRawYield->Scale(0.95*42.2/22.3/0.667/2./2.);
+   distrSpectra->Scale(1.03*42.2/3.4/0.667/2.);
 
-   for (int i = 1; i <= distrRawYield->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= distrSpectra->GetXaxis()->GetNbins(); i++)
    {
-      CppTools::Print(i, distrRawYield->GetBinContent(i));
+      CppTools::Print(i, distrSpectra->GetBinContent(i));
    }
 
-   rab.DrawHistogram(distrRawYield, distrRawYield, kAzure - 3, 0.9, 72, 
+   rab.DrawHistogram(distrSpectra, distrSpectra, kAzure - 3, 0.9, 72, 
                      "K^{*0}(892) ^{3}HeAu@200 0-20\%");
 
    //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_0-20.txt", kAzure - 3, 0.9, 72,
