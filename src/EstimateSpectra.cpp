@@ -22,6 +22,9 @@ int main(int argc, char **argv)
                            "inputYAMLName taxiNumber");
    }
 
+
+   gStyle->SetPalette(kGreenRedViolet);
+
    CppTools::CheckInputFile(argv[1]);
 
    taxiNumber = std::stoi(argv[2]);
@@ -140,6 +143,9 @@ int main(int argc, char **argv)
 
       TH1D resultingSpectraVsPT("spectra vs pT", "", pTNBins, &pTBinRanges[0]);
 
+      resultingSpectraVsPT.SetLineColor(kBlack);
+      resultingSpectraVsPT.SetLineWidth(4);
+
       for (int i = 1; i <= resultingSpectraVsPT.GetXaxis()->GetNbins(); i++)
       {
          double minErr = 1e31;
@@ -161,14 +167,36 @@ int main(int argc, char **argv)
          resultingSpectraVsPT.SetBinError(i, minErr);
       }
 
+      double xMin = pTBinRanges.front();
+      double xMax = pTBinRanges.back();
+
+      for (int i = 1; i <= resultingSpectraVsPT.GetXaxis()->GetNbins(); i++)
+      {
+         if (resultingSpectraVsPT.GetBinContent(i) < 1e-31) xMin = pTBinRanges[i - 1];
+         else break;
+      }
+
+      for (int i = resultingSpectraVsPT.GetXaxis()->GetNbins(); i >= 1; i--)
+      {
+         if (resultingSpectraVsPT.GetBinContent(i) < 1e-31) xMax = pTBinRanges[i - 1];
+         else break;
+      }
+
       TF1 tsallisFit("tsallis", "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                                 "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
-      tsallisFit.SetParameters(1., 1., 1.);
+      tsallisFit.SetParameters(1., 1.1, 10.);
+      tsallisFit.SetParLimits(1, 1.1, 30.);
       tsallisFit.FixParameter(3, resonanceMass);
+
+      tsallisFit.SetRange(xMin + 0.1, xMax - 0.1);
+
+      tsallisFit.SetLineStyle(2);
+      tsallisFit.SetLineWidth(4);
+      tsallisFit.SetLineColor(kRed - 3);
 
       for (unsigned int i = 0; i < fitNTries; i++)
       {
-         resultingSpectraVsPT.Fit(&tsallisFit, "QMBN");
+         resultingSpectraVsPT.Fit(&tsallisFit, "QBN");
 
          for (unsigned int j = 0; j < pTNBins; j++)
          {
@@ -197,13 +225,12 @@ int main(int argc, char **argv)
 
       TCanvas canvSpectra("resulting spectra canv", "", 800, 800);
 
-      gPad->SetRightMargin(0.01); gPad->SetTopMargin(0.01); 
-      gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.112);
 
       gPad->SetLogy();
 
-      ROOTTools::DrawFrame(pTBinRanges.front() - 0.1, yMin/5., 
-                           pTBinRanges.back() + 0.1, yMax*5., "", "p_{T} [GeV/c]", 
+      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "p_{T} [GeV/c]", 
                            "1/(2#pip_{T}) d^{2} N/dp_{T}/dy [(GeV/c)^{-2}]");
 
       canvSpectra.SetFillStyle(4000);
@@ -211,26 +238,57 @@ int main(int argc, char **argv)
       canvSpectra.SetFrameFillStyle(0);
       canvSpectra.SetFrameBorderMode(0);
 
+      tsallisFit.Draw("SAME");
       resultingSpectraVsPT.Draw("SAME");
+
       resultingSpectraVsPT.Clone()->Write();
 
       ROOTTools::PrintCanvas(&canvSpectra, outputDir + "/" + centralityName + "");
 
-      TCanvas canvAll("all spectra canv", "", 800, 800);
+      std::vector<TH1D *> spectraRatiosVsPT;
 
-      gPad->SetRightMargin(0.01); gPad->SetTopMargin(0.01); 
-      gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+      double ratioMin = 1e31;
+      double ratioMax = 1e-31;
 
-      gPad->SetLogy();
+      for (unsigned int i = 0; i < spectrasVsPTWithStatErrors.size(); i++)
+      {
+         spectraRatiosVsPT.
+            emplace_back(static_cast<TH1D *>(spectrasVsPTWithStatErrors[i]->Clone()));
 
-      ROOTTools::DrawFrame(pTBinRanges.front() - 0.1, yMin/5., 
-                           pTBinRanges.back() + 0.1, yMax*5., "", "p_{T} [GeV/c]", 
-                           "1/(2#pip_{T}) d^{2} N/dp_{T}/dy [(GeV/c)^{-2}]");
+         spectraRatiosVsPT[i]->SetLineWidth(4);
+
+         spectraRatiosVsPT[i]->Divide(&tsallisFit);
+
+         for (int j = 1; j < spectraRatiosVsPT[i]->GetXaxis()->GetNbins(); j++)
+         {
+            if (spectraRatiosVsPT[i]->GetBinContent(j) < 1e-15) continue;
+
+            ratioMin = CppTools::Minimum(ratioMin, spectraRatiosVsPT[i]->GetBinContent(j));
+            ratioMax = CppTools::Maximum(ratioMax, spectraRatiosVsPT[i]->GetBinContent(j));
+         }
+      }
+
+      TCanvas canvAll("all spectra canv", "", 800, 1000);
 
       canvAll.SetFillStyle(4000);
       canvAll.SetFrameFillColor(0);
       canvAll.SetFrameFillStyle(0);
       canvAll.SetFrameBorderMode(0);
+
+      canvAll.Divide(1, 2, 0., 0.);
+
+      canvAll.cd(1);
+
+      gPad->SetLogy();
+
+      gPad->SetPad(0., 0.3, 1., 1.);
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.);
+
+      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
+                           "1/(2#pip_{T}) d^{2} N/dp_{T}/dy [(GeV/c)^{-2}]");
+
+      tsallisFit.Draw("SAME");
 
       for (int i = 0; i < static_cast<int>(spectrasVsPTWithStatErrors.size()); i++)
       {
@@ -241,30 +299,42 @@ int main(int argc, char **argv)
 
          legend.AddEntry(spectrasVsPTWithStatErrors[i], methodName.c_str(), "PLC");
 
-         spectrasVsPTWithStatErrors[i]->Write(("spectra vs pT, " + methodName).c_str());
+         //spectrasVsPTWithStatErrors[i]->Write(("spectra vs pT, " + methodName).c_str());
       }
 
       legend.Draw();
+
+      canvAll.cd(2);
+
+      gPad->SetPad(0., 0., 1., 0.3);
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.); 
+      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.25);
+
+      ROOTTools::DrawFrame(xMin - 0.1, ratioMin/1.1, xMax + 0.1, ratioMax*1.1, 
+                           "", "p_{T} [GeV/c]", "Data/Fit", 1., 0.7, 0.11, 0.11);
+
+      if (ratioMin < 1. && ratioMax > 1.)
+      {
+         TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+         line.SetLineColorAlpha(kBlack, 0.5);
+         line.SetLineStyle(2);
+         line.SetLineWidth(4);
+         line.Clone()->Draw();
+      }
+
+      for (int i = 0; i < static_cast<int>(spectraRatiosVsPT.size()); i++)
+      {
+         spectraRatiosVsPT[i]->Draw("SAME PLC");
+      }
 
       ROOTTools::PrintCanvas(&canvAll, outputDir + "/" + centralityName + "_all");
    }
 
    spectraOutputFile->Close();
 
+   CppTools::PrintInfo("Spectra were succesfully evaluated");
+
    return 0;
 }
-
-/*
-TH1D *EstimateSpectra::GetSpectraForMethod(const std::string& methodName, 
-                                           const YAML::Node& centrailtyBin,
-                                           TH1D *&spectraWithSysErrors)
-{
-}
-
-void EstimateSpectra::ApplyBinShiftCorrection(TH1D *&spectraWithStatErrors, 
-                                              TH1D *&spectraWithSysErrors)
-{
-}
-*/
 
 #endif /* ESTIMATE_SPECTRA_CPP */
