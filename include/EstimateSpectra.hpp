@@ -18,6 +18,7 @@
 #include "TStyle.h"
 #include "TLatex.h"
 #include "TLegend.h"
+#include "TLine.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
@@ -35,24 +36,6 @@
  */
 namespace EstimateSpectra
 {
-   /*! Returns estimated invariant pT spectra for the given method without applying bin shift correction
-    *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
-    * @param[in] centralityBinName name of the centrality bin (i.e. 0-20)
-    * @param[in] spectraWithSysErrors histogram that will be filled with spectra values with systematic uncertainties
-    *
-    * @param[out] spectraWithStatErrors histogram that will be filled with spectra values with statistical uncertainties
-    */
-   /*
-   TH1D *GetSpectraForMethod(const std::string& methodName, const YAML::Node& centralityBinName, 
-                             TH1D *&spectraWithSysErrors);
-                             */
-   /*! Applies bin shift correction along y axis to the passed histograms
-    *
-    * @param[in] spectraWithSysErrors histogram containing spectra values with systematic uncertainties
-    * @param[in] spectraWithStatErrors histogram containing spectra values with statistical uncertainties
-    */
-   //void ApplyBinShiftCorrection(TH1D *&spectraWithStatErrors, TH1D *&spectraWithSysErrors);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance
