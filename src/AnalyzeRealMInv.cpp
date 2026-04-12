@@ -391,7 +391,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             const double lowIntegrationRange = 
                fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2.;
             const double upIntegrationRange = 
-               fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2.;
+               fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2.;
 
             double rawYield = GetYield(distrMInv, fitBG, lowIntegrationRange, upIntegrationRange);
 
