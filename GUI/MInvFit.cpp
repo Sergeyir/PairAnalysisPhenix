@@ -58,7 +58,7 @@ void MInvFit()
    CppTools::PrintInfo("List of .root files in " + runName + " taxi directory");
    system(("find data/Real/" + runName + "/Resonance/ -type f -name *.root").c_str());
 
-   CppTools::Print("Choose taxi number (part of .root file, example: 20025) "\
+   CppTools::Print("Choose taxi number (part of .root file, example: 20292) "\
                    "from the above directory list and type it in");
    std::cout << ">> ";
    std::cin >> taxiNumber;
