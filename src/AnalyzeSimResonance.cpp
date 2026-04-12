@@ -124,11 +124,11 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          for(int i = 0; i < simCNT.nch(); i++) // loop over particles in one event
          {
             const double the0 = simCNT.the0(i);
-            const double pT = (simCNT.mom(i))*sin(the0);
-
             if (IsGhostCut(the0, bbcz)) continue;
 
+            const double pT = simCNT.mom(i)*sin(the0);
             if (pT < pTMin || pT > pTMax) continue;
+
             if (IsQualityCut(simCNT.qual(i))) continue;
 
             const int charge = simCNT.charge(i);
@@ -241,6 +241,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
                const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
+               // eloss cut; parameters for MC may differ from real data 
+               // since distributions may differ
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.002*pow(beta, -2.3);
 
@@ -379,8 +381,6 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   continue;
                }
 
-               thrContainer.distrMInvDCPC1NoPID->Fill(pT, mInv, eventWeight);
-
                if (isWithin2Gamma)
                {
                   histContainer.distrPAsymVsPT->Fill(pT, (posTrack.p - negTrack.p)/
@@ -468,6 +468,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                {
                   histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
                }
+
+               thrContainer.distrMInvDCPC1NoPID->Fill(pT, mInv, eventWeight);
 
                if (IsDCPC11PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
