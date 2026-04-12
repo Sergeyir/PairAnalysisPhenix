@@ -184,8 +184,8 @@ int main(int argc, char **argv)
 
       TF1 tsallisFit("tsallis", "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                                 "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
-      tsallisFit.SetParameters(1., 1.1, 10.);
-      tsallisFit.SetParLimits(1, 1.1, 30.);
+      tsallisFit.SetParameters(1., 2., 10.);
+      tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
 
       tsallisFit.SetRange(xMin + 0.1, xMax - 0.1);
