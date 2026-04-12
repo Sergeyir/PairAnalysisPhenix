@@ -62,10 +62,8 @@ namespace AnalyzeRealMInv
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
-    * @param[in] err yield statistical uncertainty
     */
-   double GetYield(TH1D *distr, TF1 *funcBG, 
-                   const double xMin, const double xMax, double &err);
+   double GetYield(TH1D *distr, TF1 *funcBG, const double xMin, const double xMax);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Contents of input .yaml file for the information about resonance

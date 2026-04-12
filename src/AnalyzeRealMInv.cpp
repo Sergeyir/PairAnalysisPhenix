@@ -388,12 +388,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
 
-            double rawYieldErr;
-            double rawYield = 
-               GetYield(distrMInv, fitBG, 
-                        fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2., 
-                        fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2., 
-                        rawYieldErr);
+            const double lowIntegrationRange = 
+               fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2.;
+            const double upIntegrationRange = 
+               fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2.;
+
+            double rawYield = GetYield(distrMInv, fitBG, lowIntegrationRange, upIntegrationRange);
+
+            double rawYieldErr = 
+               sqrt(distrMInvFG->Integral(distrMInvFG->GetXaxis()->FindBin(lowIntegrationRange),
+                                          distrMInvFG->GetXaxis()->FindBin(upIntegrationRange)))/
+               fabs(rawYield);
 
             // 2*pi*pT*dpT*N_{evt}
             const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
@@ -821,8 +826,7 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
    }
 }
 
-double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, 
-                                 const double xMin, const double xMax, double &err)
+double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin, const double xMax)
 {
    // integral over the signal
    double integral = 0.;
@@ -843,8 +847,6 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG,
       }
    }
 
-   err = sqrt(distrMInv->GetEntries()*integral/
-              distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()));
    // normalizing background integral by the number of integration steps
    integral -= integralBG/101.;
 
