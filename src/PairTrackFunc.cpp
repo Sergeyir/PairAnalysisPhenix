@@ -160,7 +160,7 @@ bool IsPC3Ghost(const ChargedTrack& track1, const ChargedTrack& track2)
 bool IsEMCalGhost(const ChargedTrack& track1, const ChargedTrack& track2)
 {
    return (track1.sector == track2.sector && 
-           abs(track1.yTower - track1.yTower) < 2 && abs(track1.zTower - track2.zTower) < 2);
+           abs(track1.yTower - track2.yTower) < 2 && abs(track1.zTower - track2.zTower) < 2);
 }
 
 bool IsTOFeGhost(const ChargedTrack& track1, const ChargedTrack& track2)
