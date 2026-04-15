@@ -68,7 +68,7 @@ add_executable(EstimateGaussianBroadening ${CMAKE_SOURCE_DIR}/src/EstimateGaussi
 add_executable(EstimateSingleTrackEff ${CMAKE_SOURCE_DIR}/src/EstimateSingleTrackEff.cpp)
 add_executable(EstimateResonanceEff ${CMAKE_SOURCE_DIR}/src/EstimateResonanceEff.cpp)
 add_executable(AnalyzeRealMInv ${CMAKE_SOURCE_DIR}/src/AnalyzeRealMInv.cpp)
-add_executable(EstimateSpectra ${CMAKE_SOURCE_DIR}/src/EstimateSpectra.cpp)
+add_executable(EstimateResults ${CMAKE_SOURCE_DIR}/src/EstimateResults.cpp)
 
 target_link_libraries(SingleTrackFunc SimTreeReader)
 target_link_libraries(PairTrackFunc SimTreeReader)
