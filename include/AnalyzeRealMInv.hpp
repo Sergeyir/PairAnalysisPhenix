@@ -76,6 +76,8 @@ namespace AnalyzeRealMInv
    std::string inputFileName;
    /// Input file (for getting invariant mass distributions from the real data)
    TFile *inputFile;
+   /// Directory to which files containing all parameters and yields will be written
+   std::string parametersOutputDir;
    /// File in which all parameters and yields will be written
    TFile *parametersOutputFile;
    /// name of the resonance
