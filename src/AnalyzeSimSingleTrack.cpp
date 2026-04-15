@@ -1226,15 +1226,15 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
             }
          }
 
-         reweightPC1ePos->Scale(1./reweightPC1ePos->Integral());
-         reweightPC1eNeg->Scale(1./reweightPC1eNeg->Integral());
-         reweightPC1wPos->Scale(1./reweightPC1wPos->Integral());
-         reweightPC1wNeg->Scale(1./reweightPC1wNeg->Integral());
+         //reweightPC1ePos->Scale(1./reweightPC1ePos->Integral());
+         //reweightPC1eNeg->Scale(1./reweightPC1eNeg->Integral());
+         //reweightPC1wPos->Scale(1./reweightPC1wPos->Integral());
+         //reweightPC1wNeg->Scale(1./reweightPC1wNeg->Integral());
 
-         simPC1ePos->Scale(1./simPC1ePos->Integral());
-         simPC1eNeg->Scale(1./simPC1eNeg->Integral());
-         simPC1wPos->Scale(1./simPC1wPos->Integral());
-         simPC1wNeg->Scale(1./simPC1wNeg->Integral());
+         //simPC1ePos->Scale(1./simPC1ePos->Integral());
+         //simPC1eNeg->Scale(1./simPC1eNeg->Integral());
+         //simPC1wPos->Scale(1./simPC1wPos->Integral());
+         //simPC1wNeg->Scale(1./simPC1wNeg->Integral());
 
          for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
          {
