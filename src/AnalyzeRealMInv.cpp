@@ -112,11 +112,8 @@ int main(int argc, char **argv)
       numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
    }
 
-   const std::string parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
+   parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
    std::filesystem::create_directories(parametersOutputDir);
-
-   parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
-                                       "_" + resonanceName + ".root").c_str(), "RECREATE");
 
    // performing fits for specified pair selection methods
    if (methodToAnalyze == "all")
@@ -142,6 +139,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 {
    const std::string methodName = method["name"].as<std::string>();
 
+   parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
+                                       "_" + resonanceName + "_" + methodName + 
+                                       ".root").c_str(), "RECREATE");
+
    const std::string outputDir = "output/MInv/" + runName + "/" + 
                                  std::to_string(taxiNumber) + "/" + methodName;
    std::filesystem::create_directories(outputDir);
@@ -149,15 +150,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
    unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
    unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
 
-   parametersOutputFile->mkdir(methodName.c_str());
-   parametersOutputFile->cd(methodName.c_str());
-
    for (const YAML::Node &centrality : inputYAMLResonance["centrality_bins"])
    {
       const std::string centralityName = centrality["name"].as<std::string>();
-
-      parametersOutputFile->mkdir((methodName + "/" + centralityName).c_str());
-      parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
 
       TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
       TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
@@ -799,11 +794,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
                              "_raw_yield_" + centralityName);
 
-      parametersOutputFile->cd((methodName + "/" + centralityName).c_str());
+      parametersOutputFile->mkdir(centralityName.c_str());
+      parametersOutputFile->cd(centralityName.c_str());
+
       distrMeansVsPT.Write();
       distrGammasVsPT.Write();
       distrRawYieldVsPT.Write();
    }
+
+   parametersOutputFile->Close();
 }
 
 void AnalyzeRealMInv::SetGaussianBroadeningFunction()
@@ -833,8 +832,16 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin
    // integral over the background
    double integralBG = 0.;
 
-   for (int i = distrMInv->GetXaxis()->FindBin(xMin); 
-        i <= distrMInv->GetXaxis()->FindBin(xMax); i++)
+   if (distrMInv->GetXaxis()->FindBin(xMin) < 1 || 
+       distrMInv->GetXaxis()->FindBin(xMax) > distrMInv->GetXaxis()->GetNbins())
+   {
+      CppTools::PrintWarning("AnalyzeRealMInv::GetYield: specified integration range is "\
+                             "outside the histogram range; ignoring underflow and overflow bins");
+   }
+
+   for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
+        i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
+                               distrMInv->GetXaxis()->GetNbins()); i++)
    {
       integral += distrMInv->GetBinContent(i);
 

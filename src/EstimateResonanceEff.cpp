@@ -129,8 +129,6 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
    TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
    TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawYieldVsPT("raw yield vs pT", "", pTNBins, &pTBinRanges[0]);
-   TH1D distrRawSpectraVsPT("raw spectra vs pT", "", pTNBins, &pTBinRanges[0]);
    TH1D distrRecEffVsPT("reconstruction efficiency vs pT", "", pTNBins, &pTBinRanges[0]);
 
    text.SetTextAngle(270.);
@@ -259,16 +257,6 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                   fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2., 
                   recYieldErr);
 
-      distrRawYieldVsPT.SetBinContent(i + 1, recYield/(pTBinRanges[i + 1] - pTBinRanges[i]));
-      distrRawYieldVsPT.SetBinError(i + 1, recYieldErr/recYield/
-                                    (pTBinRanges[i + 1] - pTBinRanges[i]));
-
-      const double rawYieldNorm = (2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
-                                   (pTBinRanges[i + 1] - pTBinRanges[i]));
-      distrRawSpectraVsPT.
-         SetBinContent(i + 1, recYield/rawYieldNorm);
-      distrRawSpectraVsPT.SetBinError(i + 1, recYieldErr/recYield/rawYieldNorm);
-
       distrRecEffVsPT.SetBinContent(i + 1, recYield/numberOfGenerated);
       distrRecEffVsPT.SetBinError(i + 1, CppTools::UncertaintyProp(recYieldErr/recYield, 
                                                                    numberOfGeneratedRelativeErr)*
@@ -352,14 +340,6 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
    distrRecEffVsPT.SetMarkerColor(kRed - 2);
    distrRecEffVsPT.SetLineWidth(4);
 
-   distrRawYieldVsPT.SetLineColor(kRed - 2);
-   distrRawYieldVsPT.SetMarkerColor(kRed - 2);
-   distrRawYieldVsPT.SetLineWidth(4);
-
-   distrRawSpectraVsPT.SetLineColor(kRed - 2);
-   distrRawSpectraVsPT.SetMarkerColor(kRed - 2);
-   distrRawSpectraVsPT.SetLineWidth(4);
-
    TLine massResonancePDG(pTBinRanges[0], massResonance, pTBinRanges[pTNBins], massResonance);
    massResonancePDG.SetLineColorAlpha(kBlack, 0.5);
    massResonancePDG.SetLineStyle(2);
@@ -406,39 +386,6 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
 
    ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + "_gammas");
 
-   TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
-
-   gPad->SetLogy();
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.141);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrRawYieldVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
-
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
-
-   ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + "_raw_yield");
-
-   TCanvas canvRawSpectraVsPT("canv raw spectra vs pT", "", 800, 800);
-
-   gPad->SetLogy();
-
-   gPad->SetRightMargin(0.03);
-   gPad->SetTopMargin(0.02);
-   gPad->SetLeftMargin(0.141);
-   gPad->SetBottomMargin(0.112);
-
-   ROOTTools::DrawFrame(&distrRawSpectraVsPT, "", "#it{p}_{T} [GeV/#it{c}]", 
-                        "1/(2 #pi #it{p}_{T}) #it{d}^{2}#it{Y}_{raw}/#it{dp}_{T}#it{dy} "\
-                        "[(GeV/#it{c})^{-2}]", 1., 1.35);
-
-   text.DrawTextNDC(0.38, 0.9, ("MC " + methodName).c_str());
-
-   ROOTTools::PrintCanvas(&canvRawSpectraVsPT, outputDir + "/" + resonanceName + "_raw_spectra");
-
    TCanvas canvRecEffVsPT("canv rec eff vs pT", "", 800, 800);
 
    gPad->SetLogy();
@@ -482,8 +429,16 @@ double EstimateResonanceEff::GetYield(TH1D *distrMInv, const TF1& funcBG,
    // integral over the background
    double integralBG = 0.;
 
-   for (int i = distrMInv->GetXaxis()->FindBin(xMin); 
-        i <= distrMInv->GetXaxis()->FindBin(xMax); i++)
+   if (distrMInv->GetXaxis()->FindBin(xMin) < 1 || 
+       distrMInv->GetXaxis()->FindBin(xMax) > distrMInv->GetXaxis()->GetNbins())
+   {
+      CppTools::PrintWarning("EstimateResonanceEff::GetYield: specified integration range is "\
+                             "outside the histogram range; ignoring underflow and overflow bins");
+   }
+
+   for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
+        i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
+                               distrMInv->GetXaxis()->GetNbins()); i++)
    {
       integral += distrMInv->GetBinContent(i);
 
