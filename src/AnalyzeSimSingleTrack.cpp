@@ -133,7 +133,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             const int dcarm = simCNT.dcarm(i);
 
             const double zed = simCNT.zed(i);
-            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
+            if (fabs(zed) > 75. || fabs(zed) < 3.) continue;
 
             if (!(fabs(the0) < 100. &&
                ((bbcz > 0. && ((bbcz - 250.*tan(the0 - 3.1416/2.)) > 2. ||
@@ -581,31 +581,25 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (IsHit(simCNT.tofdz(i)))
             {
+               const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
+
                if (charge == 1) 
                {
                   histContainer.distrDPhiVsPTTOFePos->Fill(simCNT.tofdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFePos->Fill(simCNT.tofdz(i), pT, eventWeight);
 
-                  histContainer.distrSDPhiVsPTTOFePos->
-                     Fill(simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge),
-                          pT, eventWeight);
-                  histContainer.distrSDZVsPTTOFePos->
-                     Fill(simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge),
-                          pT, eventWeight);
+                  histContainer.distrSDPhiVsPTTOFePos->Fill(sdphi, pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFePos->Fill(sdz, pT, eventWeight);
                }
                else
                {
                   histContainer.distrDPhiVsPTTOFeNeg->Fill(simCNT.tofdphi(i), pT, eventWeight);
                   histContainer.distrDZVsPTTOFeNeg->Fill(simCNT.tofdz(i), pT, eventWeight);
 
-                  histContainer.distrSDPhiVsPTTOFeNeg->
-                     Fill(simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge), pT, eventWeight);
-                  histContainer.distrSDZVsPTTOFeNeg->
-                     Fill(simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge), pT, eventWeight);
+                  histContainer.distrSDPhiVsPTTOFeNeg->Fill(sdphi, pT, eventWeight);
+                  histContainer.distrSDZVsPTTOFeNeg->Fill(sdz, pT, eventWeight);
                }
-
-               const double sdphi = simSigmRes.TOFeSDPhi(simCNT.tofdphi(i), pT, charge);
-               const double sdz = simSigmRes.TOFeSDZ(simCNT.tofdz(i), pT, charge);
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
                const double eloss = 0.0005*pow(beta, -2.5);
@@ -651,6 +645,9 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             }
             else if (IsHit(simCNT.tofwdz(i)))
             {
+               const double sdphi = simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
+               const double sdz = simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
+
                if (charge == 1) 
                {
                   histContainer.distrDPhiVsPTTOFwPos->
@@ -658,12 +655,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrDZVsPTTOFwPos->
                      Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
-                  histContainer.distrSDPhiVsPTTOFwPos->
-                     Fill(simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge), 
-                          pT, eventWeight*correctionTOFw);
-                  histContainer.distrSDZVsPTTOFwPos->
-                     Fill(simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge), 
-                          pT, eventWeight*correctionTOFw);
+                  histContainer.distrSDPhiVsPTTOFwPos->Fill(sdphi, pT, eventWeight*correctionTOFw);
+                  histContainer.distrSDZVsPTTOFwPos->Fill(sdz, pT, eventWeight*correctionTOFw);
                }
                else
                {
@@ -672,16 +665,9 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.distrDZVsPTTOFwNeg->
                      Fill(simCNT.tofwdz(i), pT, eventWeight*correctionTOFw);
 
-                  histContainer.distrSDPhiVsPTTOFwNeg->
-                     Fill(simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge),
-                          pT, eventWeight*correctionTOFw);
-                  histContainer.distrSDZVsPTTOFwNeg->
-                     Fill(simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge),
-                          pT, eventWeight*correctionTOFw);
+                  histContainer.distrSDPhiVsPTTOFwNeg->Fill(sdphi, pT, eventWeight*correctionTOFw);
+                  histContainer.distrSDZVsPTTOFwNeg->Fill(sdz, pT, eventWeight*correctionTOFw);
                }
-
-               const double sdphi = simSigmRes.TOFwSDPhi(simCNT.tofwdphi(i), pT, charge);
-               const double sdz = simSigmRes.TOFwSDZ(simCNT.tofwdz(i), pT, charge);
 
                // strips are organized in 8 lines of 64 we define as chambers
                const int chamber = simCNT.striptofw(i)/64;
