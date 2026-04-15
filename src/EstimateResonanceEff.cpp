@@ -88,26 +88,6 @@ int main(int argc, char **argv)
       PerformMInvFitsForMethod(method["name"].as<std::string>());
    }
 
-   /*
-   PerformMInvFitsForMethod("DCPC1NoPID");
-   PerformMInvFitsForMethod("NoPID");
-   PerformMInvFitsForMethod("PC2NoPID");
-   PerformMInvFitsForMethod("PC3NoPID");
-   PerformMInvFitsForMethod("TOFeNoPID");
-   PerformMInvFitsForMethod("TOFwNoPID");
-   PerformMInvFitsForMethod("EMCalNoPID");
-   PerformMInvFitsForMethod("DCPC11PID");
-   PerformMInvFitsForMethod("1TOFDCPC11PID");
-   PerformMInvFitsForMethod("1EMCalDCPC11PID");
-   PerformMInvFitsForMethod("1PID");
-   PerformMInvFitsForMethod("1TOF1PID");
-   PerformMInvFitsForMethod("1EMCal1PID");
-   PerformMInvFitsForMethod("2PID");
-   PerformMInvFitsForMethod("TOF2PID");
-   PerformMInvFitsForMethod("EMCal2PID");
-   PerformMInvFitsForMethod("1TOF1EMCal2PID");
-   */
-
    outputFile->Close();
    pBar.Finish();
 
@@ -231,8 +211,9 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
                       fit.GetParameter(1) + (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
 
          distrMInv->Fit(&fit, "RQMNBLC");
-         if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
       }
+
+      //distrMInv->Fit(&fit, "RQMNBLE");
 
       distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
       distrMeansVsPT.SetBinError(i + 1, fit.GetParError(1));

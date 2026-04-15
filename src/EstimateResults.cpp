@@ -69,10 +69,6 @@ int main(int argc, char **argv)
    std::filesystem::create_directories(outputDir);
 
    double spectraNorm = inputYAMLResonance["branching_ratio"].as<double>();
-   /*
-   double relativeSpectraNormErr = inputYAMLResonance["branching_ratio_uncertainty"].as<double>()/
-                                   spectraNorm;
-                                   */
 
    if (inputYAMLResonance["has_antiparticle"] && 
        inputYAMLResonance["separate_antiparticle"]) spectraNorm *= 2.;
@@ -406,6 +402,15 @@ int main(int argc, char **argv)
          ROOTTools::DrawFrame(xMin - 0.1, minRAB/1.2, xMax + 0.1, maxRAB*1.2, 
                               "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
 
+         if (minRAB/1.2 < 1. && maxRAB*1.2 > 1.)
+         {
+            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            line.SetLineColorAlpha(kBlack, 0.5);
+            line.SetLineStyle(2);
+            line.SetLineWidth(4);
+            line.Clone()->Draw();
+         }
+
          for (unsigned int i = 0; i < distrRABsVsPTWithStatErr.size(); i++)
          {
             distrRABsVsPTWithStatErr[i]->Draw("SAME PLC");
@@ -414,15 +419,6 @@ int main(int argc, char **argv)
                inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>();
 
             legend.AddEntry(distrRABsVsPTWithStatErr[i], methodName.c_str(), "PLC");
-         }
-
-         if (minRAB/1.2 < 1. && maxRAB*1.2 > 1.)
-         {
-            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
-            line.SetLineColorAlpha(kBlack, 0.5);
-            line.SetLineStyle(2);
-            line.SetLineWidth(4);
-            line.Clone()->Draw();
          }
 
          legend.Draw();
