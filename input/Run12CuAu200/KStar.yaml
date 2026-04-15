@@ -57,8 +57,8 @@ centrality_bins:
   cb_c_max: 1 # CabanaBoy maximum c value
   color: "#7a21dd"
   marker_style: 53
-  n_colls: 22.3
-  n_colls_uncertainty: 1.7
+  N_coll: 22.3
+  N_coll_uncertainty: 1.7
   bias_factor: 0.95
   bias_factor_uncertainty: 0.01
   is_mb: false
@@ -71,8 +71,8 @@ centrality_bins:
   cb_c_max: 3
   color: "#964a8b"
   marker_style: 54
-  n_colls: 14.8
-  n_colls_uncertainty: 1.1
+  N_coll: 14.8
+  N_coll_uncertainty: 1.1
   bias_factor: 1.01
   bias_factor_uncertainty: 0.01
   is_mb: false
@@ -85,8 +85,8 @@ centrality_bins:
   cb_c_max: 5
   color: "#e42536" 
   marker_style: 55
-  n_colls: 8.4
-  n_colls_uncertainty: 0.6
+  N_coll: 8.4
+  N_coll_uncertainty: 0.6
   bias_factor: 1.02
   bias_factor_uncertainty: 0.01
   is_mb: false
@@ -99,8 +99,8 @@ centrality_bins:
   cb_c_max: 8
   color: "#f89c20" 
   marker_style: 59
-  n_colls: 3.4
-  n_colls_uncertainty: 0.3
+  N_coll: 3.4
+  N_coll_uncertainty: 0.3
   bias_factor: 1.03
   bias_factor_uncertainty: 0.05
   is_mb: false
@@ -113,8 +113,8 @@ centrality_bins:
   cb_c_max: 8
   color: "#5790fc" 
   marker_style: 47
-  n_colls: 10.4
-  n_colls_uncertainty: 0.7
+  N_coll: 10.4
+  N_coll_uncertainty: 0.7
   bias_factor: 0.89
   bias_factor_uncertainty: 0.01
   is_mb: true
