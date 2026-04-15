@@ -361,8 +361,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                                    gaussianBroadeningSigma)*3.);
 
                distrMInv->Fit(&fit, "RQMNBLC");
-               //if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
             }
+            //distrMInv->Fit(&fit, "RQMNBLE");
 
             distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
             distrMeansVsPT.SetBinError(i + 1, fit.GetParError(1));
@@ -812,9 +812,11 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 
    if (!std::filesystem::exists(inputFileName))
    {
+      pBar.Clear();
       CppTools::PrintWarning(inputFileName + " does not exists. Using rough estimate sigma = 5 MeV "\
                              "Run executable bin/EstimateGassianBroadening first to better "\
                              "estimate the gaussian broadening parameter");
+      pBar.RePrint();
 
       gaussianBroadeningEstimatorFunc = new TF1("gaussian broadening rough estimate", "5e-3");
    }
