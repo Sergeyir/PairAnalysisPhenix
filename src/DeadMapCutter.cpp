@@ -32,14 +32,14 @@ void DeadMapCutter::Initialize(const std::string& runName, const std::string& op
 
    if (options[0] == '1')
    {
-      useDC = (SetDeadAreas(deadmapsDir + "DCeX1,zDC>=0.txt", cutAreasDCe0X1, cutAreasDCe0X1Range) &&
-               SetDeadAreas(deadmapsDir + "DCeX1,zDC<0.txt", cutAreasDCe1X1, cutAreasDCe1X1Range) &&
-               SetDeadAreas(deadmapsDir + "DCwX1,zDC>=0.txt", cutAreasDCw0X1, cutAreasDCw0X1Range) &&
-               SetDeadAreas(deadmapsDir + "DCwX1,zDC<0.txt", cutAreasDCw1X1, cutAreasDCw1X1Range) &&
-               SetDeadAreas(deadmapsDir + "DCeX2,zDC>=0.txt", cutAreasDCe0X2, cutAreasDCe0X2Range) &&
-               SetDeadAreas(deadmapsDir + "DCeX2,zDC<0.txt", cutAreasDCe1X2, cutAreasDCe1X2Range) &&
-               SetDeadAreas(deadmapsDir + "DCwX2,zDC>=0.txt", cutAreasDCw0X2, cutAreasDCw0X2Range) &&
-               SetDeadAreas(deadmapsDir + "DCwX2,zDC<0.txt", cutAreasDCw1X2, cutAreasDCw1X2Range));
+      useDC = (SetDeadAreas(deadmapsDir + "DCeX1_0.txt", cutAreasDCe0X1, cutAreasDCe0X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX1_1.txt", cutAreasDCe1X1, cutAreasDCe1X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX1_0.txt", cutAreasDCw0X1, cutAreasDCw0X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX1_1.txt", cutAreasDCw1X1, cutAreasDCw1X1Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX2_0.txt", cutAreasDCe0X2, cutAreasDCe0X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCeX2_1.txt", cutAreasDCe1X2, cutAreasDCe1X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX2_0.txt", cutAreasDCw0X2, cutAreasDCw0X2Range) &&
+               SetDeadAreas(deadmapsDir + "DCwX2_1.txt", cutAreasDCw1X2, cutAreasDCw1X2Range));
    }
    else CppTools::PrintInfo("DeadMapCutter: Cuts for DC were specified to be not initialized");
    if (!useDC) CppTools::PrintInfo("DeadMapCutter: No cuts for DC will be applied");

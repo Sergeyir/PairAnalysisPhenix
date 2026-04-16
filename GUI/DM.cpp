@@ -67,10 +67,10 @@ void DM()
    else if (detectorName == "DCeX2, zDC<0") detectorName = "DCeX2_1"; 
    else if (detectorName == "DCeX1, zDC>=0") detectorName = "DCeX1_0"; 
    else if (detectorName == "DCeX2, zDC>=0") detectorName = "DCeX2_0"; 
-   else if (detectorName == "DCeX1, zDC<0") detectorName = "DCeX1_1"; 
-   else if (detectorName == "DCeX2, zDC<0") detectorName = "DCeX2_1"; 
-   else if (detectorName == "DCeX1, zDC>=0") detectorName = "DCeX1_0"; 
-   else if (detectorName == "DCeX2, zDC>=0") detectorName = "DCeX2_0"; 
+   else if (detectorName == "DCwX1, zDC<0") detectorName = "DCwX1_1"; 
+   else if (detectorName == "DCwX2, zDC<0") detectorName = "DCwX2_1"; 
+   else if (detectorName == "DCwX1, zDC>=0") detectorName = "DCwX1_0"; 
+   else if (detectorName == "DCwX2, zDC>=0") detectorName = "DCwX2_0"; 
 
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
