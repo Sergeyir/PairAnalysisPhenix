@@ -63,7 +63,14 @@ void DM()
                            detectorName + " in file " + simInputFileName);
    }
 
-   //simHist->Scale(realHist->Integral()/simHist->Integral());
+   if (detectorName == "DCeX1, zDC<0") detectorName = "DCeX1_1"; 
+   else if (detectorName == "DCeX2, zDC<0") detectorName = "DCeX2_1"; 
+   else if (detectorName == "DCeX1, zDC>=0") detectorName = "DCeX1_0"; 
+   else if (detectorName == "DCeX2, zDC>=0") detectorName = "DCeX2_0"; 
+   else if (detectorName == "DCeX1, zDC<0") detectorName = "DCeX1_1"; 
+   else if (detectorName == "DCeX2, zDC<0") detectorName = "DCeX2_1"; 
+   else if (detectorName == "DCeX1, zDC>=0") detectorName = "DCeX1_0"; 
+   else if (detectorName == "DCeX2, zDC>=0") detectorName = "DCeX2_0"; 
 
 	TCanvas *canv = new TCanvas("", "", 900, 900);
    
@@ -71,11 +78,13 @@ void DM()
    GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
    std::filesystem::create_directory("data/Parameters/Deadmaps/" + runName);
 
+   /*
    while (detectorName.find(" ") < detectorName.size())
    {
       const unsigned int spacePos = detectorName.find(" ");
       detectorName.erase(spacePos, 1);
    }
+   */
 
    const std::string outputCutsFileName = "data/Parameters/Deadmaps/" + 
                                           runName + "/" + detectorName + ".txt";
