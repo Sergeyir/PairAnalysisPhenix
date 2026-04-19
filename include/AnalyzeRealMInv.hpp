@@ -50,9 +50,9 @@ namespace AnalyzeRealMInv
    /*! Performs approximations of invariant mass distributions for all pT ranges for the given method and centrality. This function is implemented and used in GUI/MInvFit.cpp
     *
     * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
-    * @param[in] centrality centrality class that will be processed
+    * @param[in] centralityBin centrality class bin that will be processed
     */
-   void PerformMInvFits(const YAML::Node& method, const YAML::Node& centrality);
+   void PerformMInvFits(const YAML::Node& method, const unsigned int centralityBin);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();

@@ -171,13 +171,19 @@ void MInvFit()
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   numberOfIterations = pTNBins;
+   const YAML::Node method = inputYAMLResonance["pair_selection_methods"][methodBinIndex];
+
+   const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBinIndex]
+                                          ["pt_bin_min"].as<int>();
+   const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBinIndex]
+                                          ["pt_bin_max"].as<int>();
+
+   numberOfIterations = pTBinFitMax - pTBinFitMin + 1;
 
    const std::string parametersOutputDir = "data/Parameters/ResonanceBGFit/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
 
-   PerformMInvFits(inputYAMLResonance["pair_selection_methods"][methodBinIndex], 
-                   inputYAMLResonance["centrality_bins"][centralityBinIndex]);
+   PerformMInvFits(method, centralityBinIndex);
 
    gROOT->SetBatch(false);
 
@@ -209,14 +215,15 @@ void MInvFit()
 	gPad->AddExec("exec", "GUIFit::Exec()");
 }
 
-void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node& centrality)
+void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned int centralityBinIndex)
 {
    const std::string methodName = method["name"].as<std::string>();
 
-   unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
-   unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
+   const YAML::Node centrality = inputYAMLResonance["centrality_bins"][centralityBinIndex];
 
    const std::string centralityName = centrality["name"].as<std::string>();
+
+   const double sigmalizedFitRange = method["sigmalized_fit_range"].as<double>();
 
    pBar.SetText("Preparing M_{inv}");
 
@@ -233,7 +240,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    {
       pBar.Clear();
       CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
-                          " for centrailty " + centralityName);
+                          " for centrality " + centralityName);
       pBar.RePrint();
       inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
    }
@@ -241,16 +248,18 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
    {
       pBar.Clear();
       CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
-                             " for centrailty " + centralityName + "; using free BG fit");
+                             " for centrality " + centralityName + "; using free BG fit");
       pBar.RePrint();
    }
 
-   for (unsigned int i = 0; i < pTNBins; i++)
+   const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBinIndex]
+                                          ["pt_bin_min"].as<int>();
+   const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBinIndex]
+                                          ["pt_bin_max"].as<int>();
+
+   for (unsigned int i = pTBinFitMin; i <= pTBinFitMax; i++)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
-
-      // only bins for which approximation is done are needed
-      if (i < pTBinFitMin || i > pTBinFitMax) continue;
 
       TH1D *distrMInvFG = nullptr;
       TH1D *distrMInvBG = nullptr;
@@ -345,22 +354,35 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       const double gaussianBroadeningSigma = 
          gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
-      // fit for resonance+bg approximation
-      fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
-                             &FitFunc::RBWConvGausBGPol3, 
-                             massResonance - gammaResonance*3., 
-                             massResonance + gammaResonance*3., 8));
-      // fit for resonance approximation
       fitsSignal.push_back(new TF1(("signal fit" + std::to_string(i)).c_str(), 
                                    &FitFunc::RBWConvGaus, 
                                    massResonance - gammaResonance*3., 
                                    massResonance + gammaResonance*3., 4));
 
-      // fit for bg approximation
-      fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
-                               &FitFunc::Pol3, 
-                               massResonance - gammaResonance*3., 
-                               massResonance + gammaResonance*3., 4));
+      const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
+      if (bgFitFunc == "pol2")
+      {
+         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+                                &FitFunc::RBWConvGausBGPol2, 
+                                massResonance - gammaResonance*3., 
+                                massResonance + gammaResonance*3., 7));
+         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+                                  &FitFunc::Pol2, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 3));
+      }
+      else if (bgFitFunc == "pol3")
+      {
+         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+                                &FitFunc::RBWConvGausBGPol3, 
+                                massResonance - gammaResonance*3., 
+                                massResonance + gammaResonance*3., 8));
+         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+                                  &FitFunc::Pol3, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 4));
+      }
+      else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
       bool isBGFixedForThisPT = false;
 
@@ -374,9 +396,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
          if (!fitBGTmp)
          {
+            pBar.Clear();
             CppTools::PrintWarning("Could not obtain BG approximation for + " + 
                                    pTBinRangeName + " from file " + inputFileFitsBGName + 
                                    "; fixed BG will be disable for this pT bin");
+            pBar.RePrint();
          }
          else
          {
@@ -395,8 +419,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
 
       fits.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
       fits.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
-      fits.back()->SetParLimits(2, gammaResonance/1.02, gammaResonance*1.05);
-      fits.back()->FixParameter(3, gaussianBroadeningSigma);
+      fits.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
+      fits.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, gaussianBroadeningSigma*1.10);
 
       if (isBGFixedForThisPT)
       {
@@ -417,9 +441,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
                           fit.GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
 
          fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
-                                             gaussianBroadeningSigma)*3., 
+                                             gaussianBroadeningSigma)*sigmalizedFitRange, 
                       fit.GetParameter(1) + (fit.GetParameter(2) + 
-                                             gaussianBroadeningSigma)*3.);
+                                             gaussianBroadeningSigma)*sigmalizedFitRange);
 
          distrMInv->Fit(&fit, "RQMNBLC");
          //if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
@@ -441,19 +465,25 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const YAML::Node
       }
 
       fits.back()->SetRange(fits.back()->GetParameter(1) - 
-                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                            sigmalizedFitRange, 
                             fits.back()->GetParameter(1) + 
-                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
+                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                            sigmalizedFitRange);
 
       fitsSignal.back()->SetRange(fits.back()->GetParameter(1) - 
-                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                                  sigmalizedFitRange, 
                                   fits.back()->GetParameter(1) + 
-                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
+                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                                  sigmalizedFitRange);
 
       fitsBG.back()->SetRange(fits.back()->GetParameter(1) - 
-                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3., 
+                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                              sigmalizedFitRange, 
                               fits.back()->GetParameter(1) + 
-                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*3.);
+                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                              sigmalizedFitRange);
 
       fits.back()->SetLineWidth(4);
       fitsBG.back()->SetLineWidth(4);

@@ -147,11 +147,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                  std::to_string(taxiNumber) + "/" + methodName;
    std::filesystem::create_directories(outputDir);
 
-   unsigned int pTBinFitMin = method["pt_bin_min"].as<int>();
-   unsigned int pTBinFitMax = method["pt_bin_max"].as<int>();
+   const double sigmalizedFitRange = method["sigmalized_fit_range"].as<double>();
 
-   for (const YAML::Node &centrality : inputYAMLResonance["centrality_bins"])
+   for (unsigned int centralityBin = 0; 
+        centralityBin < inputYAMLResonance["centrality_bins"].size(); centralityBin++)
    {
+      const YAML::Node centrality = inputYAMLResonance["centrality_bins"][centralityBin];
+
       const std::string centralityName = centrality["name"].as<std::string>();
 
       TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
@@ -174,7 +176,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       {
          pBar.Clear();
          CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
-                             " for centrailty " + centralityName);
+                             " for centrality " + centralityName);
          pBar.RePrint();
          inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
       }
@@ -182,9 +184,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       {
          pBar.Clear();
          CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
-                                " for centrailty " + centralityName + "; using free BG fit");
+                                " for centrality " + centralityName + "; using free BG fit");
          pBar.RePrint();
       }
+
+      const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBin]
+                                             ["pt_bin_min"].as<int>();
+      const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBin]
+                                             ["pt_bin_max"].as<int>();
 
       for (unsigned int i = 0; i < pTNBins; i++)
       {
@@ -287,8 +294,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          }
 
          // fit for resonance+bg approximation
-         TF1 fit("resonance + bg fit", &FitFunc::RBWConvGausBGPol3, 
-                 massResonance - gammaResonance*3., massResonance + gammaResonance*3., 8);
+         TF1 *fit = nullptr;
          // fit for resonance approximation
          TF1 fitResonance("resonance fit", &FitFunc::RBWConvGaus, 
                           massResonance - gammaResonance*3., 
@@ -312,9 +318,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                if (!fitBGTmp)
                {
+                  pBar.Clear();
                   CppTools::PrintWarning("Could not obtain BG approximation for + " + 
                                          pTBinRangeName + " from file " + inputFileFitsBGName + 
-                                         "; fixed BG will be disable for this pT bin");
+                                         "; fixed BG will be disabled for this pT bin");
+                  pBar.RePrint();
                }
                else fitBG = static_cast<TF1 *>(fitBGTmp);
             }
@@ -323,70 +331,95 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             if (!fitBG)
             {
-               fitBG = new TF1("bg fit", &FitFunc::Pol3, massResonance - gammaResonance*3., 
-                               massResonance + gammaResonance*3., 4);
                isBGFixedForThisPT = false;
             }
+
+            const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
+            if (bgFitFunc == "pol2")
+            {
+               fit = new TF1("resonance + bg fit", &FitFunc::RBWConvGausBGPol2, 
+                             massResonance - gammaResonance*3., 
+                             massResonance + gammaResonance*3., 7);
+               if (!fitBG)
+               {
+                  fitBG = new TF1("bg fit", &FitFunc::Pol2, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 3);
+               }
+            }
+            else if (bgFitFunc == "pol3")
+            {
+               fit = new TF1("resonance + bg fit", &FitFunc::RBWConvGausBGPol3, 
+                             massResonance - gammaResonance*3., 
+                             massResonance + gammaResonance*3., 8);
+               if (!fitBG)
+               {
+                  fitBG = new TF1("bg fit", &FitFunc::Pol3, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 4);
+               }
+            }
+            else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
             const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
             const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
 
-            fit.SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
+            fit->SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
 
-            fit.SetParLimits(0, 1., maxBinVal - minBinVal);
-            fit.SetParLimits(1, massResonance/1.05, massResonance*1.05);
-            fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
-            fit.SetParLimits(3, gaussianBroadeningSigma/1.05, gaussianBroadeningSigma*1.05);
+            fit->SetParLimits(0, 1., maxBinVal - minBinVal);
+            fit->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+            fit->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
+            fit->SetParLimits(3, gaussianBroadeningSigma/1.10, gaussianBroadeningSigma*1.10);
 
             if (isBGFixedForThisPT)
             {
-               for (int i = 4; i < fit.GetNpar(); i++)
+               for (int i = 4; i < fit->GetNpar(); i++)
                {
-                  fit.FixParameter(i, fitBG->GetParameter(i - 4));
+                  fit->FixParameter(i, fitBG->GetParameter(i - 4));
                }
             }
 
-            distrMInv->Fit(&fit, "RQMNBLC");
+            distrMInv->Fit(fit, "RQMNBLC");
 
             for (unsigned int j = 1; j <= fitNTries; j++)
             {
-               fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
-                                fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-               fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.05/static_cast<double>(j*j)),
-                                fit.GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
+               fit->SetParLimits(1, fit->GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
+                                 fit->GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
+               fit->SetParLimits(2, fit->GetParameter(2)/(1. + 0.05/static_cast<double>(j*j)),
+                                 fit->GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
 
-               fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
-                                                   gaussianBroadeningSigma)*3., 
-                            fit.GetParameter(1) + (fit.GetParameter(2) + 
-                                                   gaussianBroadeningSigma)*3.);
+               fit->SetRange(fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                     gaussianBroadeningSigma)*sigmalizedFitRange, 
+                             fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                     gaussianBroadeningSigma)*sigmalizedFitRange);
 
-               distrMInv->Fit(&fit, "RQMNBLC");
+               distrMInv->Fit(fit, "RQMNBLC");
             }
             //distrMInv->Fit(&fit, "RQMNBLE");
 
-            distrMeansVsPT.SetBinContent(i + 1, fit.GetParameter(1));
-            distrMeansVsPT.SetBinError(i + 1, fit.GetParError(1));
+            distrMeansVsPT.SetBinContent(i + 1, fit->GetParameter(1));
+            distrMeansVsPT.SetBinError(i + 1, fit->GetParError(1));
 
-            distrGammasVsPT.SetBinContent(i + 1, fit.GetParameter(2));
-            distrGammasVsPT.SetBinError(i + 1, fit.GetParError(2));
+            distrGammasVsPT.SetBinContent(i + 1, fit->GetParameter(2));
+            distrGammasVsPT.SetBinError(i + 1, fit->GetParError(2));
 
             for (int j = 0; j < fitResonance.GetNpar(); j++)
             {
-               fitResonance.SetParameter(j, fit.GetParameter(j));
+               fitResonance.SetParameter(j, fit->GetParameter(j));
             }
 
             if (!isBGFixedForThisPT)
             {
                for (int j = 0; j < fitBG->GetNpar(); j++)
                {
-                  fitBG->SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
+                  fitBG->SetParameter(j, fit->GetParameter(j + fitResonance.GetNpar()));
                }
             }
 
             const double lowIntegrationRange = 
-               fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2.;
+               fit->GetParameter(1) - fit->GetParameter(2)*2. - fit->GetParameter(3)*2.;
             const double upIntegrationRange = 
-               fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2.;
+               fit->GetParameter(1) + fit->GetParameter(2)*2. + fit->GetParameter(3)*2.;
 
             double rawYield = GetYield(distrMInv, fitBG, lowIntegrationRange, upIntegrationRange);
 
@@ -404,20 +437,22 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             distrRawYieldVsPT.SetBinContent(i + 1, rawYield);
             distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr);
 
-            fitResonance.SetRange(fit.GetParameter(1) - 
-                                  (fit.GetParameter(2) + gaussianBroadeningSigma)*3., 
-                                  fit.GetParameter(1) + 
-                                  (fit.GetParameter(2) + gaussianBroadeningSigma)*3.);
+            fitResonance.SetRange(fit->GetParameter(1) - 
+                                  (fit->GetParameter(2) + gaussianBroadeningSigma)*
+                                  sigmalizedFitRange, 
+                                  fit->GetParameter(1) + 
+                                  (fit->GetParameter(2) + gaussianBroadeningSigma)*
+                                  sigmalizedFitRange);
 
-            fitBG->SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
-                                                   gaussianBroadeningSigma)*3., 
-                           fit.GetParameter(1) + (fit.GetParameter(2) + 
-                                                  gaussianBroadeningSigma)*3.);
+            fitBG->SetRange(fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                    gaussianBroadeningSigma)*sigmalizedFitRange, 
+                            fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                    gaussianBroadeningSigma)*sigmalizedFitRange);
 
-            fit.SetLineWidth(4);
+            fit->SetLineWidth(4);
             fitBG->SetLineWidth(4);
 
-            fit.SetLineColorAlpha(kRed - 3, 0.8);
+            fit->SetLineColorAlpha(kRed - 3, 0.8);
             fitBG->SetLineColorAlpha(kGray + 2, 0.8);
 
             fitBG->SetLineStyle(7);
@@ -476,10 +511,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                /*
                texText.DrawLatexNDC(0.2, 0.81, 
                                     ("#it{#chi}^{2}/NDF=" + 
-                                     CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+                                     CppTools::DtoStr(fit->GetChisquare()/
+                                                      fit->GetNDF(), 1)).c_str());
                                      */
                fitBG->Draw("SAME");
-               fit.Draw("SAME");
+               fit->Draw("SAME");
             }
 
             ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
@@ -519,19 +555,21 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                /*
                texText.DrawLatexNDC(0.2, 0.74, 
                                     ("#it{#chi}^{2}/NDF = " + 
-                                     CppTools::DtoStr(fit.GetChisquare()/fit.GetNDF(), 1)).c_str());
+                                     CppTools::DtoStr(fit->GetChisquare()/
+                                                      fit->GetNDF(), 1)).c_str());
                                      */
                /*
 
-               texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit.GetParameter(1)*1000., 1) + 
+               texText.DrawLatexNDC(0.6, 0.9, ("#it{#mu}=" + CppTools::DtoStr(fit->GetParameter(1)*
+                                                                              1000., 1) + 
                                                " [MeV/c^{2}]").c_str());
                texText.DrawLatexNDC(0.6, 0.85, ("#it{#Gamma}=" + 
-                                                CppTools::DtoStr(fit.GetParameter(2)*1000., 1) + 
+                                                CppTools::DtoStr(fit->GetParameter(2)*1000., 1) + 
                                                 " [MeV/c^{2}]").c_str());
                                                 */
 
                fitBG->Draw("SAME");
-               fit.Draw("SAME");
+               fit->Draw("SAME");
             }
 
             canvMInvSummary.cd(4);
@@ -837,8 +875,10 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin
    if (distrMInv->GetXaxis()->FindBin(xMin) < 1 || 
        distrMInv->GetXaxis()->FindBin(xMax) > distrMInv->GetXaxis()->GetNbins())
    {
+      pBar.Clear();
       CppTools::PrintWarning("AnalyzeRealMInv::GetYield: specified integration range is "\
                              "outside the histogram range; ignoring underflow and overflow bins");
+      pBar.RePrint();
    }
 
    for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
