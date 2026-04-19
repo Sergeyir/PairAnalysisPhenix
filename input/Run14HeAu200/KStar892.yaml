@@ -19,7 +19,7 @@ cb_r_bins: 1 # number of reaction plane bins
 m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
-- name: ''
+  - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 1.00, min: 0.9, max: 1.1} # 0
   - {value: 1.25, min: 1.1, max: 1.4} # 1
@@ -36,22 +36,40 @@ pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 5.75, min: 5.0, max: 6.5} # 12
   - {value: 7.50, min: 6.5, max: 8.5} # 13
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
-- name: lpt
-- name: mpt
-- name: hpt
+  - name: lpt
+  - name: mpt
+  - name: hpt
 pair_selection_methods:
-  - {name: DCPC1NoPID,                  pt_bin_min: 5, pt_bin_max: 9}
-  - {name: NoPID,                       pt_bin_min: 6, pt_bin_max: 12}
-  - {name: 1TOFDCPC11PID,               pt_bin_min: 6, pt_bin_max: 8}
-  - {name: 1TOF1PID,                    pt_bin_min: 4, pt_bin_max: 9}
-  - {name: TOF2PID,                     pt_bin_min: 0, pt_bin_max: 8}
-#  - {name: EMCalNoPID,                  pt_bin_min: 8, pt_bin_max: 9}
-#  - {name: EMCalNoPID-PC3NoPID,         pt_bin_min: -1, pt_bin_max: -1}
-#  - {name: 1PID,                        pt_bin_min: 4, pt_bin_max: 7}
-#  - {name: 2PID,                        pt_bin_min: 0, pt_bin_max: 6}
-#  - {name: EMCal2PID,                   pt_bin_min: 0, pt_bin_max: 4}
-#  - {name: TOF2PID-EMCalNoPID,          pt_bin_min: -1, pt_bin_max: -1}
-#  - {name: TOF2PID-EMCalNoPID-PC3NoPID, pt_bin_min: -1, pt_bin_max: -1}
+- 
+  name: NoPID
+  bg_fit_func: pol3
+  sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
+  centrality_bin_parameters:
+    - {pt_bin_min: 4, pt_bin_max: 13} # 0-88
+    - {pt_bin_min: 5, pt_bin_max: 13} # 0-20
+    - {pt_bin_min: 5, pt_bin_max: 12} # 20-40
+    - {pt_bin_min: 6, pt_bin_max: 12} # 40-60
+    - {pt_bin_min: 6, pt_bin_max: 12} # 60-88
+- 
+  name: 1TOF1PID
+  bg_fit_func: pol3
+  sigmalized_fit_range: 2.5
+  centrality_bin_parameters:
+    - {pt_bin_min: 4, pt_bin_max: 10} # 0-88
+    - {pt_bin_min: 4, pt_bin_max: 10} # 0-20
+    - {pt_bin_min: 4, pt_bin_max: 9} # 20-40
+    - {pt_bin_min: 4, pt_bin_max: 9} # 40-60
+    - {pt_bin_min: 4, pt_bin_max: 9} # 60-88
+- 
+  name: TOF2PID
+  bg_fit_func: pol2
+  sigmalized_fit_range: 3.
+  centrality_bin_parameters:
+    - {pt_bin_min: 0, pt_bin_max: 10} # 0-88
+    - {pt_bin_min: 0, pt_bin_max: 9} # 0-20
+    - {pt_bin_min: 0, pt_bin_max: 9} # 20-40
+    - {pt_bin_min: 0, pt_bin_max: 9} # 40-60
+    - {pt_bin_min: 0, pt_bin_max: 4} # 60-88
 centrality_bins:
 - 
   name: "0-88"
