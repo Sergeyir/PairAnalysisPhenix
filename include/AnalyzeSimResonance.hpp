@@ -102,6 +102,8 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH1D> distrOrigUnscaledPT;
       /// distribution of original generated pT
       std::shared_ptr<TH1D> distrOrigPT;
+      /// distribution of original generated pT vs reconstructed pT of daughters
+      std::shared_ptr<TH2F> distrOrigPTVsRecDaughtersPT;
       /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
       /// distribution of original resonance pT vs pT of all particles in events (decay products and secondary particles)
@@ -193,6 +195,10 @@ namespace AnalyzeSimResonance
       /// distribution of original generated pT
       std::unique_ptr<ROOT::TThreadedObject<TH1D>> distrOrigPT = 
          std::make_unique<ROOT::TThreadedObject<TH1D>>("orig pT", "p_{T}", 100., 0., 10.);
+      // distribution of original generated pT vs reconstructed pT of daughters in the simulation
+      ROOT::TThreadedObject<TH2F> 
+         distrOrigPTVsRecDaughtersPT{"orig pT vs rec daughters pT", "p_{T}^{orig} vs p_{T}^{rec}", 
+                            100, 0., 10., 100, 0., 10.};
       // distribution of original generated pT vs reconstructed pT in the simulation
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 

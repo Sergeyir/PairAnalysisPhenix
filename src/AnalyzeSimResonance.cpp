@@ -108,9 +108,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          numberOfCalls++;
          const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + pow(simCNT.mom_orig(1), 2));
 
-         double eventWeight;
- 
-         eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
+         double eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
          histContainer.distrOrigUnscaledPT->Fill(origPT);
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
@@ -151,6 +149,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             double ppc1phi = atan2(simCNT.ppc1y(i), simCNT.ppc1x(i));
             if (dcarm == 0 && ppc1phi < 0) ppc1phi += 2.*M_PI;
             if (dmCutter.IsDeadPC1(dcarm, simCNT.ppc1z(i), ppc1phi)) continue;
+
+            histContainer.distrOrigPTVsRecDaughtersPT->Fill(origPT, pT, eventWeight);
 
             int idPC2 = PART_ID::JUNK;
             int idPC3 = PART_ID::JUNK;
@@ -829,6 +829,7 @@ ThrContainerCopy AnalyzeSimResonance::ThrContainer::GetCopy()
 
    copy.distrOrigUnscaledPT = distrOrigUnscaledPT->Get();
    copy.distrOrigPT = distrOrigPT->Get();
+   copy.distrOrigPTVsRecDaughtersPT = distrOrigPTVsRecDaughtersPT.Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
    copy.distrOrigPTVsDecayRecPT = distrOrigPTVsDecayRecPT.Get();
    copy.distrMInvDCPC1NoPID = distrMInvDCPC1NoPID.Get();
@@ -875,6 +876,7 @@ void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
 
    static_cast<std::shared_ptr<TH1D>>(distrOrigUnscaledPT->Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrOrigPT->Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecDaughtersPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrOrigPTVsDecayRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvDCPC1NoPID.Merge())->Write();
