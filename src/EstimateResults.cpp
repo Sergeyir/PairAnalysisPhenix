@@ -23,7 +23,7 @@ int main(int argc, char **argv)
    }
 
 
-   gStyle->SetPalette(kGreenRedViolet);
+   gStyle->SetPalette(kSouthWest);
 
    CppTools::CheckInputFile(argv[1]);
 
@@ -366,7 +366,6 @@ int main(int argc, char **argv)
          const double scaleRAB = centralityBin["bias_factor"].as<double>()/
                                  centralityBin["N_coll"].as<double>()*42.2;
 
-         double minRAB = 1e31;
          double maxRAB = 1e-31;
 
          for (unsigned int i = 0; i < spectrasVsPTWithStatErr.size(); i++)
@@ -381,13 +380,11 @@ int main(int argc, char **argv)
             {
                if (distrRABsVsPTWithStatErr.back()->GetBinContent(j) < 1e-15) continue;
 
-               minRAB = CppTools::Minimum(minRAB, distrRABsVsPTWithStatErr.back()->GetBinContent(j));
                maxRAB = CppTools::Maximum(maxRAB, distrRABsVsPTWithStatErr.back()->GetBinContent(j));
             }
          }
 
-         minRAB = CppTools::Minimum(minRAB, 0.);
-         maxRAB = CppTools::Maximum(maxRAB, 2.);
+         maxRAB = CppTools::Maximum(maxRAB, 1.99);
 
          TCanvas canvAllRAB("all spectra canv", "", 800, 800);
 
@@ -399,10 +396,10 @@ int main(int argc, char **argv)
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
          gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, minRAB/1.2, xMax + 0.1, maxRAB*1.2, 
+         ROOTTools::DrawFrame(xMin - 0.1, 0., xMax + 0.1, maxRAB, 
                               "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
 
-         if (minRAB/1.2 < 1. && maxRAB*1.2 > 1.)
+         if (maxRAB > 1.)
          {
             TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
             line.SetLineColorAlpha(kBlack, 0.5);
