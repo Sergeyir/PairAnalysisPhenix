@@ -62,8 +62,8 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   const std::string spectraOutputDir = "data/Spectra/" + runName;
-   std::filesystem::create_directories(spectraOutputDir);
+   const std::string resultsOutputDir = "data/Results/" + runName;
+   std::filesystem::create_directories(resultsOutputDir);
 
    const std::string outputDir = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDir);
@@ -73,10 +73,10 @@ int main(int argc, char **argv)
    if (inputYAMLResonance["has_antiparticle"] && 
        inputYAMLResonance["separate_antiparticle"]) spectraNorm *= 2.;
 
-   const std::string spectraOutputFileName = spectraOutputDir + "/" + std::to_string(taxiNumber) + 
+   const std::string resultsOutputFileName = resultsOutputDir + "/" + std::to_string(taxiNumber) + 
                                              "_" + resonanceName + ".root";
 
-   TFile *spectraOutputFile = TFile::Open(spectraOutputFileName.c_str(), "RECREATE");
+   TFile *resultsOutputFile = TFile::Open(resultsOutputFileName.c_str(), "RECREATE");
 
    estimateFactors = !(inputYAMLMain["is_pp"].as<bool>());
 
@@ -163,8 +163,8 @@ int main(int argc, char **argv)
          }
       }
 
-      spectraOutputFile->mkdir(centralityName.c_str());
-      spectraOutputFile->cd(centralityName.c_str());
+      resultsOutputFile->mkdir(centralityName.c_str());
+      resultsOutputFile->cd(centralityName.c_str());
 
       TH1D resultingSpectraVsPT("spectra vs pT with stat errors", "", pTNBins, &pTBinRanges[0]);
 
@@ -420,14 +420,20 @@ int main(int argc, char **argv)
 
          legend.Draw();
 
-         ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/RAB_" + centralityName + "_all");
+         ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/RAB_all_methods_" + centralityName);
+
+         TH1D *distrResultingRABVsPTStatErr = static_cast<TH1D *>(resultingSpectraVsPT.Clone());
+         distrResultingRABVsPTStatErr->Divide(distrSpectraPPVsPTWithStatErr);
+         distrResultingRABVsPTStatErr->Scale(scaleRAB);
+
+         distrResultingRABVsPTStatErr->Write("RAB vs pT with stat errors");
       }
    }
 
-   spectraOutputFile->Close();
+   resultsOutputFile->Close();
 
-   CppTools::PrintInfo("Results were succesfully evaluated");
-   CppTools::PrintInfo("Spectra histograms were written in " + spectraOutputFileName);
+   CppTools::PrintInfo("Results (spectra and RAB) were succesfully evaluated");
+   CppTools::PrintInfo("Results were written in " + resultsOutputFileName);
    CppTools::PrintInfo("Pictures were written in " + outputDir + " directory");
 
    return 0;
