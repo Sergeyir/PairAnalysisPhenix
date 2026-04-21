@@ -150,8 +150,8 @@ dependent_variables:
     - {symerror: 0.319537, label: 'sys.'}
 - header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
   qualifiers:
-  - {name: '#varphi(1020)', value: '80-100'}
-  - {name: '$p_T$', value: '$^3He+Au$ $0\%-100\%$'}
+  - {name: '#varphi(1020)', value: '0-88'}
+  - {name: '$p_T$', value: '$^3He+Au$ $0\%-88\%$'}
   values:
   - value: 0.96997
     errors:

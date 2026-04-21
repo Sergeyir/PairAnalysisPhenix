@@ -1,4 +1,4 @@
-source: "PRC105 064902"
+source: "PRC105, 064902"
 independent_variables:
 - header: {name: '$p_T$'}
   values:
