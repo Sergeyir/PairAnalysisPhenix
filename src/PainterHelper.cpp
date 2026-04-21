@@ -16,6 +16,7 @@ PainterHelper::PainterHelper(TLegend *legend, const double markerSize,
                              const int lineWidth, const double sysWidth)
 {
    if (!legend) CppTools::PrintError("PainterHelper: legend pointer is nullptr");
+
    this->legend = legend;
    this->markerSize = markerSize;
    this->lineWidth = lineWidth;
@@ -28,8 +29,14 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
 {
    bool disableSysErrors = false;
 
-   if (!histogramWithStatErrors) CppTools::PrintError("Histogram containing values and "\
-                                                      "statistical uncertanities is nullptr");
+   if (!histogramWithStatErrors) 
+   {
+      CppTools::PrintWarning("Histogram with legend entry " + legendEntry + " containing values "\
+                             "and statistical uncertanities is nullptr; "\
+                             "No data will be drawn for this histogram");
+      return;
+   }
+
    if (histogramWithSysErrors || 
        (histogramWithStatErrors->GetXaxis()->GetNbins() != 
         histogramWithStatErrors->GetXaxis()->GetNbins()))
@@ -72,8 +79,13 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
 {
    bool disableSysErrors = false;
 
-   if (!graphWithStatErrors) CppTools::PrintError("Graph containing values and "\
-                                                  "statistical uncertanities is nullptr");
+   if (!graphWithStatErrors) 
+   {
+      CppTools::PrintWarning("Graph with legend entry " + legendEntry + " containing values "\
+                             "and statistical uncertanities is nullptr; "\
+                             "No data will be drawn for this graph");
+      return;
+   }
    
    if (!graphWithSysErrors || graphWithStatErrors->GetN() != graphWithSysErrors->GetN()) 
    {
@@ -208,7 +220,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
          return graphWithStatErrors;
       }
    }
-   CppTools::PrintError("No field qualifier \"" + qualifier + "\" found in file " + fileName);
+   CppTools::PrintWarning("No field qualifier \"" + qualifier + "\" found in file " + fileName + 
+                          "; no graph will not be created");
    return nullptr;
 }
 
