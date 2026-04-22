@@ -308,32 +308,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
          if (performFit)
          {
-            if (isBGFixed)
-            {
-               const std::string pTBinRangeName =  
-                  CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
-                  CppTools::DtoStr(pTBinRanges[i + 1], 2);
-
-               TObject *fitBGTmp = inputFileFitsBG->Get(pTBinRangeName.c_str());
-
-               if (!fitBGTmp)
-               {
-                  pBar.Clear();
-                  CppTools::PrintWarning("Could not obtain BG approximation for + " + 
-                                         pTBinRangeName + " from file " + inputFileFitsBGName + 
-                                         "; fixed BG will be disabled for this pT bin");
-                  pBar.RePrint();
-               }
-               else fitBG = static_cast<TF1 *>(fitBGTmp);
-            }
-
-            bool isBGFixedForThisPT = true;
-
-            if (!fitBG)
-            {
-               isBGFixedForThisPT = false;
-            }
-
             const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
             if (bgFitFunc == "pol2")
             {
@@ -360,6 +334,40 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
             else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
+
+            bool isBGFixedForThisPT = false;
+
+            if (isBGFixed)
+            {
+               const std::string pTBinRangeName =  
+                  CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+                  CppTools::DtoStr(pTBinRanges[i + 1], 2);
+
+               TF1 *fitBGTmp = static_cast<TF1 *>(inputFileFitsBG->Get(pTBinRangeName.c_str()));
+
+               if (!fitBGTmp)
+               {
+                  pBar.Clear();
+                  CppTools::PrintWarning("Could not obtain BG approximation for + " + 
+                                         pTBinRangeName + " from file " + inputFileFitsBGName + 
+                                         "; fixed BG will be disabled for this pT bin");
+                  pBar.RePrint();
+               }
+               else if (fitBGTmp->GetNpar() != fitBG->GetNpar())
+               {
+                  CppTools::PrintWarning("Number of parameters for BG fit mismatch in " + 
+                                         pTBinRangeName + "; fixed BG fit will be "\
+                                         "disabled for this pT bin");
+               }
+               else 
+               {
+                  for (int i = 0; i < fitBGTmp->GetNpar(); i++)
+                  {
+                     fitBG->SetParameter(i, fitBGTmp->GetParameter(i));
+                  }
+                  isBGFixedForThisPT = true;
+               }
+            }
 
             const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
             const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
@@ -389,9 +397,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                  fit->GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
 
                fit->SetRange(fit->GetParameter(1) - (fit->GetParameter(2) + 
-                                                     gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                                     fit->GetParameter(3))*sigmalizedFitRange, 
                              fit->GetParameter(1) + (fit->GetParameter(2) + 
-                                                     gaussianBroadeningSigma)*sigmalizedFitRange);
+                                                     fit->GetParameter(3))*sigmalizedFitRange);
 
                distrMInv->Fit(fit, "RQMNBLC");
             }
@@ -416,6 +424,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
 
+            fitResonance.SetRange(fit->GetParameter(1) - 
+                                  (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange, 
+                                  fit->GetParameter(1) + 
+                                  (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange);
+
+            fitBG->SetRange(fit->GetParameter(1) - 
+                            (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange, 
+                            fit->GetParameter(1) + 
+                            (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange);
+
             const double lowIntegrationRange = 
                fit->GetParameter(1) - fit->GetParameter(2)*2. - fit->GetParameter(3)*2.;
             const double upIntegrationRange = 
@@ -436,18 +454,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             distrRawYieldVsPT.SetBinContent(i + 1, rawYield);
             distrRawYieldVsPT.SetBinError(i + 1, rawYieldErr);
-
-            fitResonance.SetRange(fit->GetParameter(1) - 
-                                  (fit->GetParameter(2) + gaussianBroadeningSigma)*
-                                  sigmalizedFitRange, 
-                                  fit->GetParameter(1) + 
-                                  (fit->GetParameter(2) + gaussianBroadeningSigma)*
-                                  sigmalizedFitRange);
-
-            fitBG->SetRange(fit->GetParameter(1) - (fit->GetParameter(2) + 
-                                                    gaussianBroadeningSigma)*sigmalizedFitRange, 
-                            fit->GetParameter(1) + (fit->GetParameter(2) + 
-                                                    gaussianBroadeningSigma)*sigmalizedFitRange);
 
             fit->SetLineWidth(4);
             fitBG->SetLineWidth(4);
