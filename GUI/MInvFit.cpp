@@ -402,6 +402,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                    "; fixed BG will be disable for this pT bin");
             pBar.RePrint();
          }
+         else if (fitBGTmp->GetNpar() != fitsBG.back()->GetNpar())
+         {
+            CppTools::PrintWarning("Number of parameters for BG fit mismatch in " + 
+                                   pTBinRangeName + "; fixed BG fit will be "\
+                                   "disabled for this pT bin");
+         }
          else
          {
             for (int i = 0; i < fitBGTmp->GetNpar(); i++)
