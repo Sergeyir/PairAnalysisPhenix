@@ -108,6 +108,7 @@ int main(int argc, char **argv)
    for (const YAML::Node& centralityBin : inputYAMLResonance["centrality_bins"])
    {
       const std::string centralityName = centralityBin["name"].as<std::string>();
+      const std::string centralityNameTex = centralityBin["name_tex"].as<std::string>();
 
       std::vector<TH1D *> spectrasVsPTWithStatErr;
       //std::vector<TH1D *> spectrasVsPTWithSysErrors;
@@ -166,30 +167,47 @@ int main(int argc, char **argv)
       resultsOutputFile->mkdir(centralityName.c_str());
       resultsOutputFile->cd(centralityName.c_str());
 
-      TH1D resultingSpectraVsPT("spectra vs pT with stat errors", "", pTNBins, &pTBinRanges[0]);
+      TH1D distrResultingSpectraVsPTStatErr("spectra vs pT with stat errors", "", 
+                                            pTNBins, &pTBinRanges[0]);
 
-      resultingSpectraVsPT.SetLineColor(kBlack);
-      resultingSpectraVsPT.SetLineWidth(4);
+      distrResultingSpectraVsPTStatErr.SetLineColor(kBlack);
+      distrResultingSpectraVsPTStatErr.SetLineWidth(4);
+
+      // graph containing all points across different methods for better Tsallis fit
+      TGraphErrors graphSpectraVsPTForTsallisFit;
 
       for (unsigned int i = 1; i <= pTNBins; i++)
       {
          double minErr = 1e31;
+         double minStatErr = 1e31;
+         //double minSysErr = 1e31;
+
          double valueOfMinErrHist = -1.;
          for (unsigned int j = 0; j < spectrasVsPTWithStatErr.size(); j++)
          {
             if (spectrasVsPTWithStatErr[j]->GetBinContent(i) < 1e-31) continue;
 
-            if (spectrasVsPTWithStatErr[j]->GetBinError(i) < minErr)
+            const double value = spectrasVsPTWithStatErr[j]->GetBinContent(i);
+            const double statErr = spectrasVsPTWithStatErr[j]->GetBinError(i);
+            const double fullErr = statErr;
+
+            if (fullErr < minErr)
             {
-               valueOfMinErrHist = spectrasVsPTWithStatErr[j]->GetBinContent(i);
-               minErr = spectrasVsPTWithStatErr[j]->GetBinError(i);
+               valueOfMinErrHist = value;
+               minStatErr = statErr;
+               minErr = fullErr;
             }
+
+            graphSpectraVsPTForTsallisFit.
+               AddPoint((pTBinRanges[i - 1] + pTBinRanges[i])/2., value);
+            graphSpectraVsPTForTsallisFit.
+               SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0., fullErr);
          }
 
          if (valueOfMinErrHist < 0.) continue;
 
-         resultingSpectraVsPT.SetBinContent(i, valueOfMinErrHist);
-         resultingSpectraVsPT.SetBinError(i, minErr);
+         distrResultingSpectraVsPTStatErr.SetBinContent(i, valueOfMinErrHist);
+         distrResultingSpectraVsPTStatErr.SetBinError(i, minStatErr);
       }
 
       double xMin = pTBinRanges.front();
@@ -197,19 +215,19 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 1; i <= pTNBins; i++)
       {
-         if (resultingSpectraVsPT.GetBinContent(i) < 1e-31) xMin = pTBinRanges[i - 1];
+         if (distrResultingSpectraVsPTStatErr.GetBinContent(i) < 1e-31) xMin = pTBinRanges[i - 1];
          else break;
       }
 
       for (unsigned int i = pTNBins; i >= 1; i--)
       {
-         if (resultingSpectraVsPT.GetBinContent(i) < 1e-31) xMax = pTBinRanges[i - 1];
+         if (distrResultingSpectraVsPTStatErr.GetBinContent(i) < 1e-31) xMax = pTBinRanges[i - 1];
          else break;
       }
 
       TF1 tsallisFit("tsallis", "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                                 "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
-      tsallisFit.SetParameters(1., 2., 10.);
+      tsallisFit.SetParameters(1., 2.5, 10.);
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
 
@@ -221,20 +239,26 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 0; i < fitNTries; i++)
       {
-         resultingSpectraVsPT.Fit(&tsallisFit, "QBN");
+         graphSpectraVsPTForTsallisFit.Fit(&tsallisFit, "RQMBN EX0");
+
+         // clearing previos points so that corrected ones can be written
+         for (int j = graphSpectraVsPTForTsallisFit.GetN() - 1; j >= 0; j--)
+         {
+            graphSpectraVsPTForTsallisFit.RemovePoint(j);
+         }
 
          for (unsigned int j = 0; j < pTNBins; j++)
          {
-            if (resultingSpectraVsPT.GetBinContent(j + 1) < 1e-31) continue;
+            if (distrResultingSpectraVsPTStatErr.GetBinContent(j + 1) < 1e-31) continue;
 
             const double norm = tsallisFit.Integral(pTBinRanges[j], pTBinRanges[j + 1])/
                                 tsallisFit.Eval((pTBinRanges[j] + pTBinRanges[j + 1])/2.)/
                                 (pTBinRanges[j + 1] - pTBinRanges[j]);
 
-            resultingSpectraVsPT.
-               SetBinContent(j + 1, resultingSpectraVsPT.GetBinContent(j + 1)/norm);
-            resultingSpectraVsPT.
-               SetBinError(j + 1, resultingSpectraVsPT.GetBinError(j + 1)/norm);
+            distrResultingSpectraVsPTStatErr.
+               SetBinContent(j + 1, distrResultingSpectraVsPTStatErr.GetBinContent(j + 1)/norm);
+            distrResultingSpectraVsPTStatErr.
+               SetBinError(j + 1, distrResultingSpectraVsPTStatErr.GetBinError(j + 1)/norm);
 
             for (unsigned int k = 0; k < spectrasVsPTWithStatErr.size(); k++)
             {
@@ -244,6 +268,13 @@ int main(int argc, char **argv)
                   SetBinContent(j + 1, spectrasVsPTWithStatErr[k]->GetBinContent(j + 1)/norm);
                spectrasVsPTWithStatErr[k]->
                   SetBinError(j + 1, spectrasVsPTWithStatErr[k]->GetBinError(j + 1)/norm);
+
+               graphSpectraVsPTForTsallisFit.
+                  AddPoint((pTBinRanges[j] + pTBinRanges[j + 1])/2., 
+                           spectrasVsPTWithStatErr[k]->GetBinContent(j + 1));
+               graphSpectraVsPTForTsallisFit.
+                  SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0.,
+                                spectrasVsPTWithStatErr[k]->GetBinError(j + 1));
             }
          }
       }
@@ -264,9 +295,9 @@ int main(int argc, char **argv)
       canvSpectra.SetFrameBorderMode(0);
 
       tsallisFit.Draw("SAME");
-      resultingSpectraVsPT.Draw("SAME");
+      distrResultingSpectraVsPTStatErr.Draw("SAME");
 
-      resultingSpectraVsPT.Clone()->Write();
+      distrResultingSpectraVsPTStatErr.Clone()->Write();
 
       ROOTTools::PrintCanvas(&canvSpectra, outputDir + "/spectra_" + centralityName);
 
@@ -420,9 +451,18 @@ int main(int argc, char **argv)
 
          legend.Draw();
 
+         TLatex tlText;
+
+         tlText.SetTextFont(52);
+         tlText.SetTextSize(0.05);
+
+         tlText.DrawLatexNDC(0.15, 0.15, centralityNameTex.c_str());
+
          ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/RAB_all_methods_" + centralityName);
 
-         TH1D *distrResultingRABVsPTStatErr = static_cast<TH1D *>(resultingSpectraVsPT.Clone());
+         TH1D *distrResultingRABVsPTStatErr = 
+            static_cast<TH1D *>(distrResultingSpectraVsPTStatErr.Clone());
+
          distrResultingRABVsPTStatErr->Divide(distrSpectraPPVsPTWithStatErr);
          distrResultingRABVsPTStatErr->Scale(scaleRAB);
 

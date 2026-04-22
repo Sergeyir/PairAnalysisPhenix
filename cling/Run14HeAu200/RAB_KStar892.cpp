@@ -28,6 +28,9 @@ void RAB_KStar892()
    InputYAMLReader inputYAMLResonance("input/" + runName + "/" + resonanceName + ".yaml");
    inputYAMLResonance.CheckStatus("resonance");
 
+   InputYAMLReader inputYAMLMain("input/" + runName + "/main.yaml");
+   inputYAMLMain.CheckStatus("main");
+
    const std::string resultsInputFileName = "data/Results/" + runName + "/" + 
                                             std::to_string(taxiNumber) + "_" + 
                                             resonanceName + ".root";
@@ -85,7 +88,7 @@ void RAB_KStar892()
                                               resultsInputFileName);
 
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
-                               kGray + 1, 0.9, 75, "K_{Vlad}^{*0}(892) ^{3}HeAu@200");
+                               kGray + 1, 0.9, 75, "K_{Vlad}^{*0}(892)");
 
       //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
       //                         kBlack, 0.4, 75, "(p+#bar{p})/2 PRC109, 054910");
@@ -97,7 +100,7 @@ void RAB_KStar892()
                                 kGreen - 3, 0.9, 77, "#pi^{0} PRC105 064902");
 
       rab.DrawHistogram(distrRABVsPT, distrRABVsPT, kRed - 3, 
-                        0.9, 72, "K^{*0}(892) ^{3}HeAu@200");
+                        0.9, 72, "K^{*0}(892)");
 
       rab.DrawLegend();
 
@@ -108,8 +111,9 @@ void RAB_KStar892()
       tlText.SetTextFont(52);
       tlText.SetTextSize(0.05);
 
-      tlText.DrawLatexNDC(0.75, 0.15, "#cbar#eta#cbar < 0.5");
-
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
+      tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() + "  " + centralityNameTex).c_str());
+ 
       ROOTTools::PrintCanvas(&canv, outputDir + "/RAB_comp_" + centralityName);
    }
 }
