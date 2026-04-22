@@ -19,6 +19,7 @@
 #include "TLatex.h"
 #include "TLegend.h"
 #include "TLine.h"
+#include "TGraphErrors.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
