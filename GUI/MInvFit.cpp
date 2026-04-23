@@ -540,5 +540,3 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
    gaussianBroadeningEstimatorFunc = 
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
 }
-
-// copied from AnalyzeRealMInv.cpp
