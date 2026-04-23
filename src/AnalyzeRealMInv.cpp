@@ -306,6 +306,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          const double gaussianBroadeningSigma = 
             gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
+         double fitRangeMin = -1.;
+         double fitRangeMax = -1.;
+
          if (performFit)
          {
             const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
@@ -348,7 +351,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                if (!fitBGTmp)
                {
                   pBar.Clear();
-                  CppTools::PrintWarning("Could not obtain BG approximation for + " + 
+                  CppTools::PrintWarning("Could not obtain BG approximation for " + 
                                          pTBinRangeName + " from file " + inputFileFitsBGName + 
                                          "; fixed BG will be disabled for this pT bin");
                   pBar.RePrint();
@@ -389,6 +392,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             distrMInv->Fit(fit, "RQMNBLC");
 
+            fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                  fit->GetParameter(3))*sigmalizedFitRange;
+            fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                  fit->GetParameter(3))*sigmalizedFitRange;
+
             for (unsigned int j = 1; j <= fitNTries; j++)
             {
                fit->SetParLimits(1, fit->GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
@@ -396,14 +404,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                fit->SetParLimits(2, fit->GetParameter(2)/(1. + 0.05/static_cast<double>(j*j)),
                                  fit->GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
 
-               fit->SetRange(fit->GetParameter(1) - (fit->GetParameter(2) + 
-                                                     fit->GetParameter(3))*sigmalizedFitRange, 
-                             fit->GetParameter(1) + (fit->GetParameter(2) + 
-                                                     fit->GetParameter(3))*sigmalizedFitRange);
+               fit->SetRange(fitRangeMin, fitRangeMax);
 
                distrMInv->Fit(fit, "RQMNBLC");
             }
             //distrMInv->Fit(&fit, "RQMNBLE");
+
+
+            fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                  fit->GetParameter(3))*sigmalizedFitRange;
+            fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                  fit->GetParameter(3))*sigmalizedFitRange;
 
             distrMeansVsPT.SetBinContent(i + 1, fit->GetParameter(1));
             distrMeansVsPT.SetBinError(i + 1, fit->GetParError(1));
@@ -424,15 +435,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
 
-            fitResonance.SetRange(fit->GetParameter(1) - 
-                                  (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange, 
-                                  fit->GetParameter(1) + 
-                                  (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange);
-
-            fitBG->SetRange(fit->GetParameter(1) - 
-                            (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange, 
-                            fit->GetParameter(1) + 
-                            (fit->GetParameter(2) + fit->GetParameter(3))*sigmalizedFitRange);
+            fitResonance.SetRange(fitRangeMin, fitRangeMax);
+            fitBG->SetRange(fitRangeMin, fitRangeMax);
 
             const double lowIntegrationRange = 
                fit->GetParameter(1) - fit->GetParameter(2)*2. - fit->GetParameter(3)*2.;
@@ -480,11 +484,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          distrMInvBGLR->SetLineWidth(2);
 
          distrMInv->SetLineColor(kGray + 3);
-         distrMInv->SetMarkerColor(kGray + 3);
-
-         distrMInv->SetMarkerStyle(20);
-         distrMInv->SetMarkerSize(0.7);
-         distrMInv->SetMarkerColor(kGray + 3);
 
          int lastNonZeroBinLR = 1;
          for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
@@ -505,7 +504,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
             gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.9);
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 
+                                 1., 1.9, 0.05, 0.05, true, false);
 
             text.DrawTextNDC(0.9, 0.93, (methodName).c_str());
             texText.DrawLatexNDC(0.2, 0.88, (CppTools::DtoStr(pTBinRanges[i], 1) + 
@@ -523,6 +523,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                fitBG->Draw("SAME");
                fit->Draw("SAME");
             }
+
+            distrMInv->Draw("SAME");
 
             ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
                                    centrality["name"].as<std::string>() + "_" +
@@ -547,8 +549,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
             gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
 
-            ROOTTools::DrawFrame(static_cast<TH1D *>(distrMInv->Clone()), 
-                                 "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 1., 1.7);
+            ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Counts", 
+                                 1., 1.7, 0.05, 0.05, true, false);
 
             texText.DrawLatexNDC(0.2, 0.85, (CppTools::DtoStr(pTBinRanges[i], 1) + 
                                  " < #it{p}_{T} < " + 
@@ -578,6 +580,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                fit->Draw("SAME");
             }
 
+            distrMInv->Clone()->Draw("SAME");
+
             canvMInvSummary.cd(4);
 
             gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
@@ -598,10 +602,44 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                ratioFGBG->SetLineWidth(2);
                ratioFGBG->SetLineColor(kBlack);
-               ratioFGBG->SetMarkerColor(kBlack);
 
+               // draws frame with histogram ratioFGBG points
                ROOTTools::DrawFrame(ratioFGBG, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
-                                    "FG/BG", 1., 1.7);
+                                    "FG/BG", 1., 1.7, 0.05, 0.05, true, false);
+
+               if (performFit)
+               {
+                  // graph that contains fit to correlated BG ratio
+                  TGraph fitToBGRatio;
+                  // graph that contains background fit to correlated BG ratio
+                  TGraph fitBGToBGRatio;
+
+                  for (int i = CppTools::Maximum(ratioFGBG->GetXaxis()->FindBin(fitRangeMin), 1);
+                       i <= CppTools::Minimum(ratioFGBG->GetXaxis()->FindBin(fitRangeMax), 
+                                              ratioFGBG->GetXaxis()->GetNbins()); i++)
+                  {
+                     const double xVal = ratioFGBG->GetXaxis()->GetBinCenter(i);
+                     fitToBGRatio.
+                        AddPoint(xVal, (fit->Eval(xVal) + distrMInvBG->GetBinContent(i))/
+                                       distrMInvBG->GetBinContent(i));
+                     fitBGToBGRatio.
+                        AddPoint(xVal, (fitBG->Eval(xVal) + distrMInvBG->GetBinContent(i))/
+                                       distrMInvBG->GetBinContent(i));
+                  }
+
+                  fitBGToBGRatio.SetLineStyle(2);
+
+                  fitToBGRatio.SetLineColorAlpha(kRed - 3, 0.8);
+                  fitBGToBGRatio.SetLineColorAlpha(kGray + 2, 0.8);
+
+                  fitToBGRatio.SetLineWidth(4);
+                  fitBGToBGRatio.SetLineWidth(4);
+
+                  fitToBGRatio.Clone()->Draw("L");
+                  fitBGToBGRatio.Clone()->Draw("L");
+               }
+
+               ratioFGBG->Draw("SAME");
             }
             else
             {
@@ -620,7 +658,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                ratioFGBGLR->SetLineWidth(2);
                ratioFGBGLR->SetLineColor(kBlack);
-               ratioFGBGLR->SetMarkerColor(kBlack);
 
                ROOTTools::DrawFrame(ratioFGBGLR, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
                                     "FG/BG", 1., 1.7);

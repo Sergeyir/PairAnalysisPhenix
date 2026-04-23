@@ -22,6 +22,7 @@
 #include "TLine.h"
 #include "TLegend.h"
 #include "TMath.h"
+#include "TGraph.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
