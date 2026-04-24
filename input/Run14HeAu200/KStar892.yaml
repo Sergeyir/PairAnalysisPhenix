@@ -18,6 +18,7 @@ cb_z_bins: 3 # number of z_{vtx} bins specified in CabanaBoy
 cb_r_bins: 1 # number of reaction plane bins
 m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
+sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + sigma)*sigmalized_yield_extraction_range from mean
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
   - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
