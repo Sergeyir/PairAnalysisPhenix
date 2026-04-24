@@ -99,6 +99,8 @@ namespace AnalyzeRealMInv
    unsigned int pTNBins;
    /// Rebin value for M_{inv} i.e. x axis 
    int rebinX = 1;
+   /// yield extraction range in +-(Gamma + sigma)*sigmalizedYieldExtractionRange from mean
+   double sigmalizedYieldExtractionRange;
    /// pT bins ranges [GeV/c]
    std::vector<double> pTBinRanges;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner

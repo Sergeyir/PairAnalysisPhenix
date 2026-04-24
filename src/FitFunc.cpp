@@ -55,6 +55,11 @@ double FitFunc::Pol3(double *x, double *par)
    return par[0] + par[1]*x[0] + par[2]*x[0]*x[0] + par[3]*x[0]*x[0]*x[0];
 }
 
+double FitFunc::Pol4(double *x, double *par)
+{
+   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0] + par[3]*x[0]*x[0]*x[0] + par[4]*x[0]*x[0]*x[0]*x[0];
+}
+
 double FitFunc::Gaus(double *x, double *par)
 {
    return par[0]*TMath::Gaus(x[0], par[1], par[2]);
@@ -68,6 +73,11 @@ double FitFunc::RBWConvGausBGPol2(double *x, double *par)
 double FitFunc::RBWConvGausBGPol3(double *x, double *par)
 {
    return RBWConvGaus(x, par) + Pol3(x, &par[4]);
+}
+
+double FitFunc::RBWConvGausBGPol4(double *x, double *par)
+{
+   return RBWConvGaus(x, par) + Pol4(x, &par[4]);
 }
 
 double FitFunc::RBWConvGausBGGaus(double *x, double *par)

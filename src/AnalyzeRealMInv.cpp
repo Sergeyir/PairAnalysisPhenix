@@ -43,6 +43,8 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
 
+   gStyle->SetPalette(kRainbow);
+
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
 
@@ -87,7 +89,8 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   gStyle->SetPalette(kRainbow);
+   sigmalizedYieldExtractionRange = 
+      inputYAMLResonance["sigmalized_yield_extraction_range"].as<double>();
 
    int methodIndex = -1;
    if (methodToAnalyze == "all")
@@ -309,6 +312,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          double fitRangeMin = -1.;
          double fitRangeMax = -1.;
 
+         double lowIntegrationRange = -1.;
+         double upIntegrationRange = -1.;
+
          if (performFit)
          {
             const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
@@ -334,6 +340,18 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                   fitBG = new TF1("bg fit", &FitFunc::Pol3, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 4);
+               }
+            }
+            else if (bgFitFunc == "pol4")
+            {
+               fit = new TF1("resonance + bg fit", &FitFunc::RBWConvGausBGPol4, 
+                             massResonance - gammaResonance*3., 
+                             massResonance + gammaResonance*3., 9);
+               if (!fitBG)
+               {
+                  fitBG = new TF1("bg fit", &FitFunc::Pol4, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 5);
                }
             }
             else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
@@ -438,10 +456,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             fitResonance.SetRange(fitRangeMin, fitRangeMax);
             fitBG->SetRange(fitRangeMin, fitRangeMax);
 
-            const double lowIntegrationRange = 
-               fit->GetParameter(1) - fit->GetParameter(2)*2. - fit->GetParameter(3)*2.;
-            const double upIntegrationRange = 
-               fit->GetParameter(1) + fit->GetParameter(2)*2. + fit->GetParameter(3)*2.;
+            lowIntegrationRange = 
+               fit->GetParameter(1) - (fit->GetParameter(2) + fit->GetParameter(3))*
+                                      sigmalizedYieldExtractionRange;
+            upIntegrationRange = 
+               fit->GetParameter(1) + (fit->GetParameter(2) + fit->GetParameter(3))*
+                                      sigmalizedYieldExtractionRange;
 
             double rawYield = GetYield(distrMInv, fitBG, lowIntegrationRange, upIntegrationRange);
 
@@ -578,6 +598,27 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                fitBG->Draw("SAME");
                fit->Draw("SAME");
+
+               TLine lowYieldExtrRangeLine(lowIntegrationRange, 
+                                           distrMInv->GetBinContent(distrMInv->GetMinimumBin()), 
+                                           lowIntegrationRange, 
+                                           distrMInv->GetBinContent(distrMInv->GetMaximumBin()));
+
+               TLine upYieldExtrRangeLine(upIntegrationRange, 
+                                          distrMInv->GetBinContent(distrMInv->GetMinimumBin()), 
+                                          upIntegrationRange, 
+                                          distrMInv->GetBinContent(distrMInv->GetMaximumBin()));
+
+               lowYieldExtrRangeLine.SetLineColorAlpha(kGray + 1, 0.5);
+               lowYieldExtrRangeLine.SetLineStyle(3);
+               lowYieldExtrRangeLine.SetLineWidth(3);
+
+               upYieldExtrRangeLine.SetLineColorAlpha(kGray + 1, 0.5);
+               upYieldExtrRangeLine.SetLineStyle(3);
+               upYieldExtrRangeLine.SetLineWidth(3);
+
+               lowYieldExtrRangeLine.Clone()->Draw();
+               upYieldExtrRangeLine.Clone()->Draw();
             }
 
             distrMInv->Clone()->Draw("SAME");
@@ -609,6 +650,27 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                if (performFit)
                {
+                  TLine lowYieldExtrRangeLine(lowIntegrationRange, 
+                                              ratioFGBG->GetBinContent(ratioFGBG->GetMinimumBin()), 
+                                              lowIntegrationRange, 
+                                              ratioFGBG->GetBinContent(ratioFGBG->GetMaximumBin()));
+
+                  TLine upYieldExtrRangeLine(upIntegrationRange, 
+                                             ratioFGBG->GetBinContent(ratioFGBG->GetMinimumBin()), 
+                                             upIntegrationRange, 
+                                             ratioFGBG->GetBinContent(ratioFGBG->GetMaximumBin()));
+
+                  lowYieldExtrRangeLine.SetLineColorAlpha(kGray + 1, 0.5);
+                  lowYieldExtrRangeLine.SetLineStyle(3);
+                  lowYieldExtrRangeLine.SetLineWidth(3);
+
+                  upYieldExtrRangeLine.SetLineColorAlpha(kGray + 1, 0.5);
+                  upYieldExtrRangeLine.SetLineStyle(3);
+                  upYieldExtrRangeLine.SetLineWidth(3);
+
+                  lowYieldExtrRangeLine.Clone()->Draw();
+                  upYieldExtrRangeLine.Clone()->Draw();
+
                   // graph that contains fit to correlated BG ratio
                   TGraph fitToBGRatio;
                   // graph that contains background fit to correlated BG ratio

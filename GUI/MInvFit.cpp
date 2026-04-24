@@ -382,6 +382,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 4));
       }
+      else if (bgFitFunc == "pol4")
+      {
+         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+                                &FitFunc::RBWConvGausBGPol4, 
+                                massResonance - gammaResonance*3., 
+                                massResonance + gammaResonance*3., 9));
+         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+                                  &FitFunc::Pol4, 
+                                  massResonance - gammaResonance*3., 
+                                  massResonance + gammaResonance*3., 5));
+      }
       else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
       bool isBGFixedForThisPT = false;

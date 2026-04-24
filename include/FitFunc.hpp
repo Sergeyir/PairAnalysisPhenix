@@ -56,6 +56,15 @@ namespace FitFunc
     * This function is defined in a special way so that it can be passed in a constructor of TF1 (https://root.cern.ch/doc/master/classTF1.html#aa8905d28455ed7be02019f20b9cc5827)
     */
    double Pol3(double *x, double *par);
+   /* @brief 4th order polynomial (a + b*x + c*x^2 + d*x^3 + e*x^4)
+    * @param[in] par[0] a
+    * @param[in] par[1] b
+    * @param[in] par[2] c 
+    * @param[in] par[3] d
+    * @param[in] par[4] e
+    * This function is defined in a special way so that it can be passed in a constructor of TF1 (https://root.cern.ch/doc/master/classTF1.html#aa8905d28455ed7be02019f20b9cc5827)
+    */
+   double Pol4(double *x, double *par);
    /* @brief Calculates value of gaus at x[0]. The maximum of this distribution is equal to scale parameter at the mean.
     * @param[in] scale parameter
     * @param[in] par[1] mean
@@ -88,6 +97,20 @@ namespace FitFunc
     * This function is defined in a special way so that it can be passed in a constructor of TF1 (https://root.cern.ch/doc/master/classTF1.html#aa8905d28455ed7be02019f20b9cc5827)
     */
    double RBWConvGausBGPol3(double *x, double *par);
+   /* @brief Relativistic Breit-Wigner distribution convoluted with gaus + 4th order polynomial background (a + b*x + c*x^2 + d*x^3 + e*x^4). Used for approximation of real data signals.
+    * @param[in] x[0] transverse momentum [GeV/c]
+    * @param[in] par[0] scale parameter for signal
+    * @param[in] par[1] median of RBW [GeV/c^2]
+    * @param[in] par[2] gamma of RBW [GeV/c^2]
+    * @param[in] par[3] sigma of gaus for convolution [GeV/c^2]
+    * @param[in] par[4] a
+    * @param[in] par[5] b
+    * @param[in] par[6] c 
+    * @param[in] par[7] d
+    * @param[in] par[8] e
+    * This function is defined in a special way so that it can be passed in a constructor of TF1 (https://root.cern.ch/doc/master/classTF1.html#aa8905d28455ed7be02019f20b9cc5827)
+    */
+   double RBWConvGausBGPol4(double *x, double *par);
    /* @brief Relativistic Breit-Wigner distribution convoluted with gaus + gaus background. Used for approximation of simulated data signals.
     * @param[in] x[0] transverse momentum [GeV/c]
     * @param[in] par[0] scale parameter for signal
