@@ -78,6 +78,8 @@ namespace EstimateResonanceEff
    double massResonance;
    /// gamma of the resonance [GeV/c^2]
    double gammaResonance;
+   /// yield extraction range in +-(Gamma + sigma)*sigmalizedYieldExtractionRange from mean
+   double sigmalizedYieldExtractionRange;
    /// number of pT bins
    unsigned int pTNBins;
    /// pT bins ranges [GeV/c]
