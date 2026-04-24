@@ -146,6 +146,8 @@ namespace AnalyzeSimSingleTrack
       std::shared_ptr<TH1D> distrOrigPT;
       /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts
       std::shared_ptr<TH1D> distrRecPT;
+      /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts scale additional reweight
+      std::shared_ptr<TH1D> distrRecPTNoScaleReweight;
       /// distribution of original generated pT vs reconstructed pT in the simulation
       std::shared_ptr<TH2D> distrOrigPTVsRecPT;
       /// unscaled by alpha heatmap of DCe, zDC>=0
@@ -396,6 +398,9 @@ namespace AnalyzeSimSingleTrack
       ROOT::TThreadedObject<TH1D> distrOrigPT{"orig pT", "p_{T}", 100., 0., 10.};
       /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts
       ROOT::TThreadedObject<TH1D> distrRecPT{"rec pT: DC-PC1", "p_{T}", 100., 0., 10.};
+      /// reconstructed pT distribution of registered tracks passed DC-PC1 cuts without scale reweight
+      ROOT::TThreadedObject<TH1D> distrRecPTNoScaleReweight{"rec pT: DC-PC1, no scale reweight", 
+                                                            "p_{T}", 100., 0., 10.};
       // distribution of original generated pT vs pT of reconstructed tracks in the simulation
       ROOT::TThreadedObject<TH2D> 
          distrOrigPTVsRecPT{"orig pT vs rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 

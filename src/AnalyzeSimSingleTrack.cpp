@@ -53,8 +53,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    const double upPTBound = 
       origPTHist->GetXaxis()->GetBinUpEdge(origPTHist->FindLastBinAbove(origPTThreshold));
 
-   TH1D *centrHist = static_cast<TH1D *>(realDataFile.Get("centrality"));
-   if (!centrHist) 
+   TH1D *distrRealCentr = static_cast<TH1D *>(realDataFile.Get("centrality"));
+   if (!distrRealCentr) 
    {
       CppTools::PrintError("Histogram \"centrality\" does not exist in file" + 
                            static_cast<std::string>(realDataFile.GetName()));
@@ -62,9 +62,43 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
    eventNormWeight = origPTHist->Integral(origPTHist->GetXaxis()->FindBin(pTMin), 
                                           origPTHist->GetXaxis()->FindBin(pTMax))/
-                     centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
+                     distrRealCentr->Integral(1, distrRealCentr->GetXaxis()->GetNbins());
 
    eventNormWeight *= (pTMax - pTMin)/(upPTBound - lowPTBound);
+   /*
+   double scaleReweight = 1.;
+
+   if (doReweightAlpha)
+   {
+      TH1D *realDistrPT = static_cast<TH1D *>(realDataFile.Get("pT"));
+      if (!std::filesystem::exists("data/PostSim/" + runName + "/SingleTrack/all.root"))
+      {
+         CppTools::PrintWarning("Cannot apply scale reweight to match the scale of "\
+                                "real data pT distribution");
+      }
+      else
+      {
+         TH1D *simDistrPT = 
+            static_cast<TH1D *>(TFile::Open(("data/PostSim/" + runName + 
+                                             "/SingleTrack/all.root").c_str())->
+                                Get("rec pT: DC-PC1, no scale reweight"));
+
+         if (!realDistrPT || !simDistrPT) 
+         {
+            CppTools::PrintWarning("Cannot apply scale reweight to match the scale of "\
+                                   "real data pT distribution");
+         }
+         else
+         {
+            scaleReweight = realDistrPT->Integral(realDistrPT->GetXaxis()->FindBin(pTMin), 
+                                                  realDistrPT->GetXaxis()->FindBin(pTMax))/
+                            simDistrPT->Integral(simDistrPT->GetXaxis()->FindBin(pTMin), 
+                                                 simDistrPT->GetXaxis()->FindBin(pTMax));
+            eventNormWeight *= scaleReweight;
+         }
+      }
+   }
+   */
 
    if (doUserWeightSpectra)
    {
@@ -287,7 +321,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
 
-            if (isParticleOrig) histContainer.distrRecPT->Fill(pT, eventWeight);
+            histContainer.distrRecPT->Fill(pT, eventWeight);
+            //histContainer.distrRecPTNoScaleReweight->Fill(pT, eventWeight/scaleReweight);
 
             if (IsHit(simCNT.pc2dphi(i)))
             {
@@ -1122,7 +1157,7 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
    {
       CppTools::PrintWarning("File " + postSimInputFileName + " does not exist."\
                              "Alpha reweight is now disabled. The missing file will be created "\
-                             "after the current process is finished. Try again after the"\
+                             "after the current process is finished. Try again after the "\
                              "missing file is written.");
       doReweightAlpha = false;
    }
@@ -1167,66 +1202,12 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                            CheckHistsAxis(reweightPC1wPos, simPC1wPos) &&
                            CheckHistsAxis(reweightPC1wNeg, simPC1wNeg))
       {
+         // No need to cut dead areas since those will be cut in analysis
          for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
          {
             for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
             {
-               if (dmCutter.IsDeadPC1(0, reweightPC1ePos->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1ePos->GetYaxis()->GetBinCenter(j)))
-               {
-                  reweightPC1ePos->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-         for (int i = 1; i <= reweightPC1eNeg->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
-            {
-               if (dmCutter.IsDeadPC1(0, reweightPC1eNeg->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1eNeg->GetYaxis()->GetBinCenter(j)))
-               {
-                  reweightPC1eNeg->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-         for (int i = 1; i <= reweightPC1wPos->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
-            {
-               if (dmCutter.IsDeadPC1(1, reweightPC1wPos->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1wPos->GetYaxis()->GetBinCenter(j)))
-               {
-                  reweightPC1wPos->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-         for (int i = 1; i <= reweightPC1wNeg->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
-            {
-               if (dmCutter.IsDeadPC1(1, reweightPC1wNeg->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1wNeg->GetYaxis()->GetBinCenter(j)))
-               {
-                  reweightPC1wNeg->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-
-         //reweightPC1ePos->Scale(1./reweightPC1ePos->Integral());
-         //reweightPC1eNeg->Scale(1./reweightPC1eNeg->Integral());
-         //reweightPC1wPos->Scale(1./reweightPC1wPos->Integral());
-         //reweightPC1wNeg->Scale(1./reweightPC1wNeg->Integral());
-
-         //simPC1ePos->Scale(1./simPC1ePos->Integral());
-         //simPC1eNeg->Scale(1./simPC1eNeg->Integral());
-         //simPC1wPos->Scale(1./simPC1wPos->Integral());
-         //simPC1wNeg->Scale(1./simPC1wNeg->Integral());
-
-         for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
-            {
-               if (simPC1ePos->GetBinContent(i, j) > 1e-6)
+               if (simPC1ePos->GetBinContent(i, j) > 1e-15)
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
@@ -1241,7 +1222,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
          {
             for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
             {
-               if (simPC1eNeg->GetBinContent(i, j) > 1e-6)
+               if (simPC1eNeg->GetBinContent(i, j) > 1e-15)
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
@@ -1256,7 +1237,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
          {
             for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
             {
-               if (simPC1wPos->GetBinContent(i, j) > 1e-6)
+               if (simPC1wPos->GetBinContent(i, j) > 1e-15)
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
@@ -1271,7 +1252,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
          {
             for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
             {
-               if (simPC1wNeg->GetBinContent(i, j) > 1e-6)
+               if (simPC1wNeg->GetBinContent(i, j) > 1e-15)
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
@@ -1320,7 +1301,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
    }
    else
    {
-      CppTools::PrintWarning("File " + alphaReweightOutputFileName + " does not exis. "\
+      CppTools::PrintWarning("File " + alphaReweightOutputFileName + " does not exist. "\
                              "PC1 reweight is now disabled. The missing file will be "\
                              "created after the current process is finished. "\
                              "Try again after the missing file is written.");
@@ -1374,6 +1355,7 @@ ThrContainerCopy AnalyzeSimSingleTrack::ThrContainer::GetCopy()
 
    copy.distrOrigPT = distrOrigPT.Get();
    copy.distrRecPT = distrRecPT.Get();
+   copy.distrRecPTNoScaleReweight = distrRecPTNoScaleReweight.Get();
    copy.distrOrigPTVsRecPT = distrOrigPTVsRecPT.Get();
    copy.heatmapUnscaledDCe0 = heatmapUnscaledDCe0.Get();
    copy.heatmapUnscaledDCe1 = heatmapUnscaledDCe1.Get();
@@ -1512,6 +1494,7 @@ void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileNam
 
    static_cast<std::shared_ptr<TH1D>>(distrOrigPT.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecPT.Merge())->Write();
+   static_cast<std::shared_ptr<TH1D>>(distrRecPTNoScaleReweight.Merge())->Write();
    static_cast<std::shared_ptr<TH2D>>(distrOrigPTVsRecPT.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe0.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapUnscaledDCe1.Merge())->Write();
