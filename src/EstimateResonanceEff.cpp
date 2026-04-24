@@ -48,6 +48,9 @@ int main(int argc, char **argv)
 
    SetGaussianBroadeningFunction();
 
+   sigmalizedYieldExtractionRange = 
+      inputYAMLResonance["sigmalized_yield_extraction_range"].as<double>();
+
    inputFileName = "data/PostSim/" + runName + "/Resonance/" + resonanceName + ".root";
 
    CppTools::CheckInputFile(inputFileName);
@@ -231,12 +234,16 @@ void EstimateResonanceEff::PerformMInvFitsForMethod(const std::string& methodNam
          fitBG.SetParameter(j, fit.GetParameter(j + fitResonance.GetNpar()));
       }
 
+      const double lowIntegrationRange = 
+         fit.GetParameter(1) - (fit.GetParameter(2) + fit.GetParameter(3))*
+                                sigmalizedYieldExtractionRange;
+      const double upIntegrationRange = 
+         fit.GetParameter(1) + (fit.GetParameter(2) + fit.GetParameter(3))*
+                                sigmalizedYieldExtractionRange;
+
       double recYieldErr;
-      const double recYield = 
-         GetYield(distrMInv, fitBG, 
-                  fit.GetParameter(1) - fit.GetParameter(2)*2. - fit.GetParameter(3)*2., 
-                  fit.GetParameter(1) + fit.GetParameter(2)*2. + fit.GetParameter(3)*2., 
-                  recYieldErr);
+      double recYield = GetYield(distrMInv, fitBG, lowIntegrationRange, 
+                                 upIntegrationRange, recYieldErr);
 
       distrRecEffVsPT.SetBinContent(i + 1, recYield/numberOfGenerated);
       distrRecEffVsPT.SetBinError(i + 1, CppTools::UncertaintyProp(recYieldErr/recYield, 
