@@ -29,7 +29,6 @@ void RunByRunTimingOffset()
       const std::string fileName = static_cast<std::string>(file.path());
       std::cout << fileName << " ";
 
-      CppTools::CheckInputFile(fileName);
       TFile inputFile(fileName.c_str());
 
       for (const std::string& detectorName : detectorNames)
