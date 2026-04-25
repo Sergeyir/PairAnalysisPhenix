@@ -1093,7 +1093,6 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
          double sumWAlphaDCw0 = 0.;
          double sumWAlphaDCw1 = 0.;
 
-
          // weighted average the old reliable way
          for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
          {
