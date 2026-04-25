@@ -1053,19 +1053,19 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             static_cast<TH1D *>(realDataDCe0->ProjectionY("Alpha reweight: DCe, zDC>=0",
                                 1, realDataDCe0->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCe1 = 
-            static_cast<TH1D *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCe1->ProjectionY("Alpha reweight: DCe, zDC<0",
                                 1, realDataDCe1->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCw0 = 
-            static_cast<TH1D *>(realDataDCw0->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCw0->ProjectionY("Alpha reweight: DCw, zDC>=0",
                                 1, realDataDCw0->GetXaxis()->GetNbins())->Clone());
          alphaReweightDCw1 = 
-            static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCe, zDC>=0",
+            static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCw, zDC<0",
                                 1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
 
-         alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
-         alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
-         alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
-         alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
+         //alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
+         //alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
+         //alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
+         //alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
 
          alphaReweightDCe0->Divide(simUnscaledDCe0->ProjectionY("DCe0 proj",
                                    1, simUnscaledDCe0->GetXaxis()->GetNbins()));
@@ -1076,54 +1076,133 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
          alphaReweightDCw1->Divide(simUnscaledDCw1->ProjectionY("DCw1 proj",
                                    1, simUnscaledDCw1->GetXaxis()->GetNbins()));
 
-         // capping alpha reweight since experiments extends to higher pT than simulation
-         // capped values do not affect the simulation since they are statistically insufficient
-         // capping is only needed to exclude very big weights in some points in the DC map
-         // that are not used for better visibility
-         // also setting 0 bins into 1 since some of the areas might have been cut 
-         // when they are assumed to be bad/dead
+         /*
+         const double averageAlphaDCe0 = alphaReweightDCe0->GetMean(2);
+         const double averageAlphaDCe1 = alphaReweightDCe1->GetMean(2);
+         const double averageAlphaDCw0 = alphaReweightDCw0->GetMean(2);
+         const double averageAlphaDCw1 = alphaReweightDCw1->GetMean(2);
+         */
+
+         double averageAlphaDCe0 = 0.;
+         double averageAlphaDCe1 = 0.;
+         double averageAlphaDCw0 = 0.;
+         double averageAlphaDCw1 = 0.;
+
+         double sumWAlphaDCe0 = 0.;
+         double sumWAlphaDCe1 = 0.;
+         double sumWAlphaDCw0 = 0.;
+         double sumWAlphaDCw1 = 0.;
+
+
+         // weighted average the old reliable way
          for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
          {
-            if (alphaReweightDCe0->GetBinContent(i) > 100.)
+            if (alphaReweightDCe0->GetBinContent(i) < 1e-15) continue;
+            averageAlphaDCe0 += alphaReweightDCe0->GetBinContent(i)/
+                                pow(alphaReweightDCe0->GetBinError(i), 2);
+            sumWAlphaDCe0 += 1./pow(alphaReweightDCe0->GetBinError(i), 2);
+         }
+         for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCe1->GetBinContent(i) < 1e-15) continue;
+            averageAlphaDCe1 += alphaReweightDCe1->GetBinContent(i)/
+                                pow(alphaReweightDCe1->GetBinError(i), 2);
+            sumWAlphaDCe1 += 1./pow(alphaReweightDCe1->GetBinError(i), 2);
+         }
+         for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCw0->GetBinContent(i) < 1e-15) continue;
+            averageAlphaDCw0 += alphaReweightDCw0->GetBinContent(i)/
+                                pow(alphaReweightDCw0->GetBinError(i), 2);
+            sumWAlphaDCw0 += 1./pow(alphaReweightDCw0->GetBinError(i), 2);
+         }
+         for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCw1->GetBinContent(i) < 1e-15) continue;
+            averageAlphaDCw1 += alphaReweightDCw1->GetBinContent(i)/
+                                pow(alphaReweightDCw1->GetBinError(i), 2);
+            sumWAlphaDCw1 += 1./pow(alphaReweightDCw1->GetBinError(i), 2);
+         }
+
+         averageAlphaDCe0 /= sumWAlphaDCe0;
+         averageAlphaDCe1 /= sumWAlphaDCe1;
+         averageAlphaDCw0 /= sumWAlphaDCw0;
+         averageAlphaDCw1 /= sumWAlphaDCw1;
+
+         /*
+         averageAlphaDCe0 /= alphaReweightDCe0->GetSumOfWeights();
+         averageAlphaDCe1 /= alphaReweightDCe1->GetSumOfWeights();
+         averageAlphaDCw0 /= alphaReweightDCw0->GetSumOfWeights();
+         averageAlphaDCw1 /= alphaReweightDCw1->GetSumOfWeights();
+         */
+
+         CppTools::Print(averageAlphaDCe0, alphaReweightDCe0->GetSumOfWeights(), sumWAlphaDCe0);
+
+         // setting maximum (minimum) scaling to 20 (1/20) of average value since DC in 
+         // real data and simulation might not align perfectly. This disaligment mostly 
+         // affects the lowest and/or highest pT systematic uncertainty, 
+         // which can be measured later by varying deadmap cuts.
+         // This scaling limitation is introduced to improve the 
+         // later comparison between simultaed and real heatmaps and to 
+         // avoid overestimation of registration efficiency
+         for (int i = 0; i < alphaReweightDCe0->GetXaxis()->GetNbins(); i++)
+         {
+            if (alphaReweightDCe0->GetBinError(i) > alphaReweightDCe0->GetBinContent(i)*20.)
             {
-               alphaReweightDCe0->SetBinContent(i, 100.);
+               alphaReweightDCe0->SetBinContent(i, averageAlphaDCe0);
             }
-            if (alphaReweightDCe0->GetBinContent(i) < 1e-15)
+            else if (alphaReweightDCe0->GetBinContent(i) > averageAlphaDCe0*20.)
             {
-               alphaReweightDCe0->SetBinContent(i, 1.);
+               alphaReweightDCe0->SetBinContent(i, averageAlphaDCe0*20.);
+            }
+            else if (alphaReweightDCe0->GetBinContent(i) < averageAlphaDCe0/20.)
+            {
+               alphaReweightDCe0->SetBinContent(i, averageAlphaDCe0/20.);
             }
          }
          for (int i = 0; i < alphaReweightDCe1->GetXaxis()->GetNbins(); i++)
          {
-            if (alphaReweightDCe1->GetBinContent(i) > 100.)
+            if (alphaReweightDCe1->GetBinError(i) > alphaReweightDCe1->GetBinContent(i)*20.)
             {
-               alphaReweightDCe1->SetBinContent(i, 100.);
+               alphaReweightDCe1->SetBinContent(i, averageAlphaDCe1);
             }
-            if (alphaReweightDCe1->GetBinContent(i) < 1e-15)
+            else if (alphaReweightDCe1->GetBinContent(i) > averageAlphaDCe1*20.)
             {
-               alphaReweightDCe1->SetBinContent(i, 1.);
+               alphaReweightDCe1->SetBinContent(i, averageAlphaDCe1*20.);
+            }
+            else if (alphaReweightDCe1->GetBinContent(i) < averageAlphaDCe1/20.)
+            {
+               alphaReweightDCe1->SetBinContent(i, averageAlphaDCe1/20.);
             }
          }
          for (int i = 0; i < alphaReweightDCw0->GetXaxis()->GetNbins(); i++)
          {
-            if (alphaReweightDCw0->GetBinContent(i) > 100.)
+            if (alphaReweightDCw0->GetBinError(i) > alphaReweightDCw0->GetBinContent(i)*20.)
             {
-               alphaReweightDCw0->SetBinContent(i, 100.);
+               alphaReweightDCw0->SetBinContent(i, averageAlphaDCw0);
             }
-            if (alphaReweightDCw0->GetBinContent(i) < 1e-15)
+            else if (alphaReweightDCw0->GetBinContent(i) > averageAlphaDCw0*20.)
             {
-               alphaReweightDCw0->SetBinContent(i, 1.);
+               alphaReweightDCw0->SetBinContent(i, averageAlphaDCw0*20.);
+            }
+            else if (alphaReweightDCw0->GetBinContent(i) < averageAlphaDCw0/20.)
+            {
+               alphaReweightDCw0->SetBinContent(i, averageAlphaDCw0/20.);
             }
          }
          for (int i = 0; i < alphaReweightDCw1->GetXaxis()->GetNbins(); i++)
          {
-            if (alphaReweightDCw1->GetBinContent(i) > 100.)
+            if (alphaReweightDCw1->GetBinError(i) > alphaReweightDCw1->GetBinContent(i)*20.)
             {
-               alphaReweightDCw1->SetBinContent(i, 100.);
+               alphaReweightDCw1->SetBinContent(i, averageAlphaDCw1);
             }
-            if (alphaReweightDCw1->GetBinContent(i) < 1e-15)
+            else if (alphaReweightDCw1->GetBinContent(i) > averageAlphaDCw1*20.)
             {
-               alphaReweightDCw1->SetBinContent(i, 1.);
+               alphaReweightDCw1->SetBinContent(i, averageAlphaDCw1*20.);
+            }
+            else if (alphaReweightDCw1->GetBinContent(i) < averageAlphaDCw1/20.)
+            {
+               alphaReweightDCw1->SetBinContent(i, averageAlphaDCw1/20.);
             }
          }
 
