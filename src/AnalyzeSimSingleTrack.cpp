@@ -1129,13 +1129,6 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
          averageAlphaDCw0 /= sumWAlphaDCw0;
          averageAlphaDCw1 /= sumWAlphaDCw1;
 
-         /*
-         averageAlphaDCe0 /= alphaReweightDCe0->GetSumOfWeights();
-         averageAlphaDCe1 /= alphaReweightDCe1->GetSumOfWeights();
-         averageAlphaDCw0 /= alphaReweightDCw0->GetSumOfWeights();
-         averageAlphaDCw1 /= alphaReweightDCw1->GetSumOfWeights();
-         */
-
          CppTools::Print(averageAlphaDCe0, alphaReweightDCe0->GetSumOfWeights(), sumWAlphaDCe0);
 
          // setting maximum (minimum) scaling to 20 (1/20) of average value since DC in 
