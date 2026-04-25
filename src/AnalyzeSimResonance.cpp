@@ -17,11 +17,11 @@
 using namespace AnalyzeSimResonance;
 
 void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer, 
-                                            const std::string& particleName, 
-                                            const int daughter1Id,
-                                            const int daughter2Id,
-                                            const std::string& magneticFieldName, 
-                                            const std::string &pTRangeName)
+                                               const std::string& particleName, 
+                                               const int daughter1Id,
+                                               const int daughter2Id,
+                                               const std::string& magneticFieldName, 
+                                               const std::string &pTRangeName)
 { 
    std::string simInputFileName = "data/SimTrees/" + runName + "/Resonance/" + 
                                   particleName + "_" + ParticleMap::name[daughter1Id] + 
@@ -106,7 +106,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
       while (reader.Next())
       { 
          numberOfCalls++;
-         const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + pow(simCNT.mom_orig(1), 2));
+         const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + 
+                                        pow(simCNT.mom_orig(1), 2))*pTScale;
 
          double eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
@@ -124,7 +125,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const double the0 = simCNT.the0(i);
             if (IsGhostCut(the0, bbcz)) continue;
 
-            const double pT = simCNT.mom(i)*sin(the0);
+            const double pT = simCNT.mom(i)*sin(the0)*pTScale;
             if (pT < pTMin || pT > pTMax) continue;
 
             if (IsQualityCut(simCNT.qual(i))) continue;
@@ -611,17 +612,6 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                      Fill(pT, mInv, eventWeight*(posTrack.weightIdTOFe*negTrack.weightIdTOFe + 
                                                  posTrack.weightIdTOFw*negTrack.weightIdTOFw));
                }
-
-               if (Is1TOF1EMCal2PID(posTrack, negTrack, daughter1Id, daughter2Id))
-               {
-                  thrContainer.distrMInv1TOF1EMCal2PID->
-                     Fill(pT, mInv, eventWeight*CppTools::AtLeast1Prob(posTrack.weightIdTOFe,
-                                                                       posTrack.weightIdTOFw)* 
-                                                                       posTrack.weightIdEMCal*
-                                                CppTools::AtLeast1Prob(negTrack.weightIdTOFe,
-                                                                       negTrack.weightIdTOFw)* 
-                                                                       negTrack.weightIdEMCal);
-               }
             }
          }
       }
@@ -632,18 +622,22 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
+   if (argc < 2 || argc > 4) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
+      errMsg += "inputYAMLName pTScale=1. numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
- 
-   if (argc == 2) numberOfThreads = std::thread::hardware_concurrency();
-   else numberOfThreads = std::stoi(argv[2]);
+
+   if (argc > 2) pTScale = std::atof(argv[2]);
+
+   CppTools::Print(argc, pTScale);
+
+   if (argc == 4) numberOfThreads = std::stoi(argv[3]);
+   else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
 
@@ -768,6 +762,7 @@ int main(int argc, char **argv)
    box.AddEntry("Charged track minimum pT [GeV/c]", pTMin);
    box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
    box.AddEntry("Reweight for pT spectra", reweightForSpectra);
+   box.AddEntry("pT scale", pTScale);
    box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
@@ -817,7 +812,11 @@ int main(int argc, char **argv)
 
    // writing the result
    std::string outputFileName = "data/PostSim/" + runName + "/Resonance/" + 
-                                inputYAMLResonance["name"].as<std::string>() + ".root";
+                                inputYAMLResonance["name"].as<std::string>();
+
+   if (fabs(pTScale - 1.) < 1e-15) outputFileName += ".root";
+   else outputFileName += "_pTScale_" + CppTools::DtoStr(pTScale, 3) + ".root";
+
    thrContainer.Write(outputFileName);
 
    return 0;
@@ -854,7 +853,6 @@ ThrContainerCopy AnalyzeSimResonance::ThrContainer::GetCopy()
    copy.distrMInvTOFe2PID = distrMInvTOFe2PID.Get();
    copy.distrMInvTOFw2PID = distrMInvTOFw2PID.Get();
    copy.distrMInvEMCal2PID = distrMInvEMCal2PID.Get();
-   copy.distrMInv1TOF1EMCal2PID = distrMInv1TOF1EMCal2PID.Get();
    copy.distrPAsymVsPT = distrPAsymVsPT.Get();
    copy.distrDPhiVsPT = distrDPhiVsPT.Get();
    copy.distrDAlphaVsPT = distrDAlphaVsPT.Get();
@@ -901,7 +899,6 @@ void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH2F>>(distrMInvTOFe2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvTOFw2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(distrMInvEMCal2PID.Merge())->Write();
-   static_cast<std::shared_ptr<TH2F>>(distrMInv1TOF1EMCal2PID.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrPAsymVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrDPhiVsPT.Merge())->Write();
    static_cast<std::shared_ptr<TH3F>>(distrDAlphaVsPT.Merge())->Write();

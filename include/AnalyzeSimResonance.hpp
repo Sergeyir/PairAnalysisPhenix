@@ -64,6 +64,8 @@ namespace AnalyzeSimResonance
    /// file reader for all required parameters for the simulation processing 
    /// of widthless resonance decay products
    InputYAMLReader inputYAMLSimSingleTrack;
+   /// pT scale (original pT as well as all single tracks) for systematics evaluation
+   double pTScale = 1.;
    /// number of threads
    int numberOfThreads;
    /// number of events across all trees
@@ -108,8 +110,6 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrOrigPTVsRecPT;
       /// distribution of original resonance pT vs pT of all particles in events (decay products and secondary particles)
       std::shared_ptr<TH2F> distrOrigPTVsDecayRecPT;
-      /// DCPC1NoPID invariant mass distribution
-      std::shared_ptr<TH2F> distrMInvDCPC1NoPID;
       /// invariant mass distribution with the cut opposite to one arm cut
       std::shared_ptr<TH2F> distrMInvOneArmAntiCut;
       /// TOFeNoPID invariant mass distribution with ghost anti cut
@@ -118,6 +118,8 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrMInvTOFwGhostNoPID;
       /// EMCalNoPID invariant mass distribution with ghost anti cut
       std::shared_ptr<TH2F> distrMInvEMCalGhostNoPID;
+      /// DCPC1NoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvDCPC1NoPID;
       /// NoPID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvNoPID;
       /// PC2NoPID invariant mass distribution
@@ -152,8 +154,6 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrMInvTOFw2PID;
       /// EMCal2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvEMCal2PID;
-      /// 1TOF1EMCal2PID invariant mass distribution
-      std::shared_ptr<TH2F> distrMInv1TOF1EMCal2PID;
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrPAsymVsPT;
       /// phi1 - phi2 vs pT vs Minv for pairs of tracks
@@ -207,9 +207,6 @@ namespace AnalyzeSimResonance
       ROOT::TThreadedObject<TH2F> 
          distrOrigPTVsDecayRecPT{"orig pT vs decay rec pT", "p_{T}^{orig} vs p_{T}^{rec}", 
                                  100, 0., 10., 100, 0., 10.};
-      /// DCPC1NoPID invariant mass distribution
-      ROOT::TThreadedObject<TH2F> distrMInvDCPC1NoPID{"M_inv: DCPC1NoPID", "M_{inv} vs p_{T}", 
-                                                      200, 0., 20., 1000, 0., 5.};
       /// invariant mass distribution with the cut opposite to one arm cut
       ROOT::TThreadedObject<TH2F> distrMInvOneArmAntiCut{"M_inv: DCPC1NoPID, one arm anti cut", 
                                                          "M_{inv} vs p_{T}", 
@@ -226,6 +223,9 @@ namespace AnalyzeSimResonance
       ROOT::TThreadedObject<TH2F> distrMInvEMCalGhostNoPID{"M_inv: EMCalNoPID, ghost anticut", 
                                                            "M_{inv} vs p_{T}", 
                                                            200, 0., 20., 1000, 0., 5.};
+      /// DCPC1NoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvDCPC1NoPID{"M_inv: DCPC1NoPID", "M_{inv} vs p_{T}", 
+                                                      200, 0., 20., 1000, 0., 5.};
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
                                                  200, 0., 20., 1000, 0., 5.};
@@ -278,10 +278,6 @@ namespace AnalyzeSimResonance
       /// EMCal2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvEMCal2PID{"M_inv: EMCal2PID", "M_{inv} vs p_{T}", 
                                                      200, 0., 20., 1000, 0., 5.};
-      /// 1TOF1EMCal2PID invariant mass distribution
-      ROOT::TThreadedObject<TH2F> distrMInv1TOF1EMCal2PID{"M_inv: 1TOF1EMCal2PID", 
-                                                          "M_{inv} vs p_{T}", 
-                                                          200, 0., 20., 1000, 0., 5.};
       /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
       ROOT::TThreadedObject<TH3F> 
          distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T} vs M_{inv}", 

@@ -10,6 +10,7 @@
 #define ESTIMATE_RESONANCE_EFF_HPP
 
 #include <thread>
+#include <regex>
 
 #include "TFile.h"
 #include "TH1.h"
@@ -40,9 +41,22 @@ namespace EstimateResonanceEff
 {
    /*! Performs approximations of invariant mass distributions for all pT ranges for the given method
     *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracsk
+    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
     */
    void PerformMInvFitsForMethod(const std::string& methodName);
+   /*! Performs approximations of invariant mass distributions for the given histogram
+    *
+    * @param[in] pTBin pT bin index
+    * @param[in] methodName name of the method
+    * @param[in] file file from which needed distributions will be read
+    * @param[in] distrRecEffVsPT histogram containing information about reconstruction efficiency vs pT; for the current pTBin the information will be updated after fit is performed
+    * @param[in] distrMeansVsPT histogram containing information about means vs pT; for the current pTBin the information will be updated after fit is performed
+    * @param[in] distrGammasVsPT histogram containing information about gammas vs pT; for the current pTBin the information will be updated after fit is performed
+    * @param[in] outputFileNameWithoutExt file name without extention in which pictures will be written (.png and .pdf). If empty string is specified (as is by default) no pictures will be saved.
+    */
+   void PerformMInvFit(const unsigned int pTBin, const std::string& methodName, TFile* file,
+                       TH1D& distrRecEffVsPT, TH1D& distrMeansVsPT, TH1D& distrGammasVsPT,
+                       const std::string& outputFileNameWithoutExt = "");
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -66,12 +80,12 @@ namespace EstimateResonanceEff
    std::string inputFileName;
    /// Input file
    TFile *inputFile;
+   /// Names of alternative pTScale simulation input files for systematic uncertainty evaluation
+   std::vector<std::string> altPTScaleSimInputFileNames;
+   /// Alernative pTScale simulation input files for systematic uncertainty evaluation
+   std::vector<TFile *> altPTScaleSimInputFiles;
    /// Output file (for writing means, gammas, efficiency reconstruction, etc. vs pT)
    TFile *outputFile;
-   /// unscaled pT distribution of original generated particles
-   TH1F *distrOrigUnscaledPT;
-   /// pT distribution of original generated particles
-   TH1F *distrOrigPT;
    /// name of the resonance
    std::string resonanceName;
    /// mass of the resonance [GeV/c^2]
