@@ -23,14 +23,41 @@ std::vector<double> pTsDistrMInv;
 /// Contains names of invariant mass distributions to be displayed on canvas
 std::vector<std::string> distrMInvNames;
 /// Contains fits of type signal+background obtained from invariant mass distributions 
-/// in different pT ranges in one centrality class
+/// in different pT ranges in one centrality class. These fits are default and are 
+/// the ones from which results are obtained. Therefore fits must represent an 
+/// approximation that is good while chi^2/NDF value is as small as possible. 
+/// Mean and Gamma are limited within 10% of PDG value but not fixed.
 std::vector<TF1 *> fits;
-/// Contains signal fits obtained from invariant mass distributions in different pT 
-/// ranges in one centrality class
-std::vector<TF1 *> fitsSignal;
 /// Contains background fits obtained from invariant mass distributions in different pT 
 /// ranges in one centrality class
 std::vector<TF1 *> fitsBG;
+/// Contains alternative fits of type signal+background obtained from invariant mass distributions 
+/// in different pT ranges in one centrality class. These fits are same as the ones in "fits" vector
+/// but have a different background approximation.
+std::vector<TF1 *> altFitsAB;
+/// Contains background fits obtained from invariant mass distributions in different pT 
+/// ranges in one centrality class
+std::vector<TF1 *> altFitsBGAB;
+/// Contains background fits obtained from invariant mass distributions in different pT 
+/// ranges in one centrality class
+/// Contains alternative fits with Mean and Gamma as free parameters of type signal+background 
+/// obtained from invariant mass distributions in different pT ranges in one centrality class
+std::vector<TF1 *> altFitsFreeG;
+/// Contains background fits for altFitsFreeG obtained from invariant 
+/// mass distributions in different pT ranges in one centrality class
+std::vector<TF1 *> altFitsBGFreeG;
+/// Contains alternative fits with Mean and Gamma as fixed parameters of type signal+background 
+/// obtained from invariant mass distributions in different pT ranges in one centrality class.
+/// Mean and Gamma for these fits are equal to PDG values and are fixed.
+std::vector<TF1 *> altFitsFixedG;
+/// Contains background fits for altFitsFixedG obtained from invariant 
+/// mass distributions in different pT ranges in one centrality class
+std::vector<TF1 *> altFitsBGFixedG;
+
+// shows whether the alternative fits will be performed and written
+// this value needs to be true if you want to later use different fits in this run
+// for systematic uncertainty evaluation
+bool doAltFits = true;
 
 using namespace AnalyzeRealMInv;
 
@@ -132,20 +159,14 @@ void MInvFit()
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
 
-   /* temporarily disabled since rebin is not needed at the moment
-   while (true) // ininite loop until exit or valid input is specified
+   /*
+   CppTools::Print("Choose whether you want to perform and save alternative fits "\
+                   "(any number if yes, 0 if no);\n (typing in any text will exit the program)");
+   std::cout << ">> ";
+   if (!(std::cin >> doAltFits))
    {
-      CppTools::Print("Choose the rebin value along X axis "\
-                      "(typing in any text will exit the program)");
-      std::cout << ">> ";
-      if (!(std::cin >> rebinX))
-      {
-         CppTools::PrintInfo("Exiting the program");
-         exit(1);
-      }
-
-      if (rebinX > 0) break;
-      else CppTools::PrintWarning("Rebin value cannot be 0 or negative");
+      CppTools::PrintInfo("Exiting the program");
+      exit(1);
    }
    */
 
@@ -180,7 +201,7 @@ void MInvFit()
 
    numberOfIterations = pTBinFitMax - pTBinFitMin + 1;
 
-   const std::string parametersOutputDir = "data/Parameters/ResonanceBGFit/" + runName;
+   const std::string parametersOutputDir = "data/Parameters/BGFitResonance/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
 
    PerformMInvFits(method, centralityBinIndex);
@@ -194,25 +215,68 @@ void MInvFit()
    const std::string centralityName = 
       inputYAMLResonance["centrality_bins"][centralityBinIndex]["name"].as<std::string>();
    
-   const std::string fitOutputDir = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
+   const std::string fitOutputDir = "data/Parameters/BGFitResonance/" + runName + "/" + 
                                     std::to_string(taxiNumber) + "/";
 
    std::filesystem::create_directories(fitOutputDir);
-   const std::string defaultFitOutputFileName = 
-      fitOutputDir + methodName + "_" + centralityName + ".root";
 
-   GUIFit::AddFitType(defaultFitOutputFileName, "default"); // 0
+   // comments show indices of fit types
+   // 0
+   GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
+                      centralityName + ".root", "Default");
+   if (doAltFits)
+   {
+      // 1
+      if (altFitsAB.size() != 0)
+      {
+         GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
+                            centralityName + "_AB.root", "alt BG");
+      }
+      // 2
+      if (altFitsFreeG.size() != 0)
+      {
+         GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
+                            centralityName + "_FreeG.root", "Free G");
+         }
+      if (altFitsFixedG.size() != 0)
+      {
+         // 3
+         GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
+                            centralityName + "_FixedG.root", "Fixed G");
+      }
+   }
 
-   for (int i = 0; i < fits.size(); i++)
+   for (unsigned int i = 0; i < fits.size(); i++)
    {
       GUIFit::AddHistogram(distrsMInv[i], CppTools::DtoStr(pTsDistrMInv[i], 2), distrMInvNames[i]);
-      GUIFit::AddFit(fits[i], fitsBG[i], 0, fitsSignal[i]->GetNpar());
+      GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
+   }
+
+   if (doAltFits)
+   {
+      for (unsigned int i = 0; i < altFitsAB.size(); i++)
+      {
+         GUIFit::AddFit(altFitsAB[i], altFitsBGAB[i], 1, 
+                        altFitsAB[i]->GetNpar() - altFitsBGAB[i]->GetNpar());
+      }
+      /*
+      for (unsigned int i = 0; i < altFitsFreeG.size(); i++)
+      {
+         GUIFit::AddFit(altFitsFreeG[i], altFitsBGFreeG[i], 2, 
+                        altFitsFreeG[i]->GetNpar() - altFitsBGFreeG[i]->GetNpar());
+      }
+      for (unsigned int i = 0; i < altFitsFixedG.size(); i++)
+      {
+         GUIFit::AddFit(altFitsFixedG[i], altFitsBGFixedG[i], 3, 
+                        altFitsFixedG[i]->GetNpar() - altFitsBGFixedG[i]->GetNpar());
+      }
+      */
    }
 
    gPad->SetTopMargin(0.05);
    gPad->SetRightMargin(0.05);
    gPad->SetBottomMargin(0.05);
-	gPad->AddExec("exec", "GUIFit::Exec()");
+   gPad->AddExec("exec", "GUIFit::Exec()");
 }
 
 void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned int centralityBinIndex)
@@ -227,29 +291,29 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
    pBar.SetText("Preparing M_{inv}");
 
-   const std::string inputFileFitsBGName = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
-                                           std::to_string(taxiNumber) + "/" + methodName + 
-                                           "_" + centralityName + ".root";
+   // input files with fixed BG fits
+   TFile *inputFileFitsBG = 
+      SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
+                     std::to_string(taxiNumber) + "/" + methodName + "_" + 
+                     centralityName + ".root", "default"); // for default fit
+   TFile *inputFileFitsBGAB = nullptr;
+   TFile *inputFileFitsBGFreeG = nullptr;
+   TFile *inputFileFitsBGFixedG = nullptr;
 
-   const bool isBGFixed = std::filesystem::exists(inputFileFitsBGName);
-
-   // input file with BG fits
-   TFile *inputFileFitsBG = nullptr; 
-
-   if (isBGFixed)
+   if (doAltFits)
    {
-      pBar.Clear();
-      CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
-                          " for centrality " + centralityName);
-      pBar.RePrint();
-      inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
-   }
-   else
-   {
-      pBar.Clear();
-      CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
-                             " for centrality " + centralityName + "; using free BG fit");
-      pBar.RePrint();
+      inputFileFitsBGAB = 
+         SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
+                        std::to_string(taxiNumber) + "/" + methodName + "_" + 
+                        centralityName + "_AB.root", "alternative BG"); 
+      inputFileFitsBGFreeG = 
+         SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
+                        std::to_string(taxiNumber) + "/" + methodName + "_" + 
+                        centralityName + "_FreeG.root", "free G"); 
+      inputFileFitsBGFixedG = 
+         SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
+                        std::to_string(taxiNumber) + "/" + methodName + "_" + 
+                        centralityName + "_FixedG.root", "fixed BG"); 
    }
 
    const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBinIndex]
@@ -354,130 +418,274 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       const double gaussianBroadeningSigma = 
          gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
-      fitsSignal.push_back(new TF1(("signal fit" + std::to_string(i)).c_str(), 
-                                   &FitFunc::RBWConvGaus, 
-                                   massResonance - gammaResonance*3., 
-                                   massResonance + gammaResonance*3., 4));
-
       const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
       if (bgFitFunc == "pol2")
       {
-         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+         fits.push_back(new TF1(("Default" + std::to_string(i)).c_str(), 
                                 &FitFunc::RBWConvGausBGPol2, 
                                 massResonance - gammaResonance*3., 
                                 massResonance + gammaResonance*3., 7));
-         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+         fitsBG.push_back(new TF1(("Default BG" + std::to_string(i)).c_str(), 
                                   &FitFunc::Pol2, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 3));
+
+         if (doAltFits)
+         {
+            altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
+                                        &FitFunc::RBWConvGausBGPol3, 
+                                        massResonance - gammaResonance*3., 
+                                        massResonance + gammaResonance*3., 8));
+            altFitsBGAB.push_back(new TF1(("BGAB" + std::to_string(i)).c_str(), 
+                                          &FitFunc::Pol3,
+                                          massResonance - gammaResonance*3., 
+                                          massResonance + gammaResonance*3., 4));
+
+            altFitsFreeG.push_back(new TF1(("Free G" + std::to_string(i)).c_str(), 
+                                            &FitFunc::RBWConvGausBGPol2, 
+                                            massResonance - gammaResonance*3., 
+                                            massResonance + gammaResonance*3., 7));
+            altFitsBGFreeG.push_back(new TF1(("Free G BG" + std::to_string(i)).c_str(), 
+                                              &FitFunc::Pol2, 
+                                              massResonance - gammaResonance*3., 
+                                              massResonance + gammaResonance*3., 3));
+
+            altFitsFixedG.push_back(new TF1(("Fixed G" + std::to_string(i)).c_str(), 
+                                             &FitFunc::RBWConvGausBGPol2, 
+                                             massResonance - gammaResonance*3., 
+                                             massResonance + gammaResonance*3., 7));
+            altFitsBGFixedG.push_back(new TF1(("Fixed G BG" + std::to_string(i)).c_str(), 
+                                               &FitFunc::Pol2, 
+                                               massResonance - gammaResonance*3., 
+                                               massResonance + gammaResonance*3., 3));
+         }
       }
       else if (bgFitFunc == "pol3")
       {
-         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+         fits.push_back(new TF1(("Default" + std::to_string(i)).c_str(), 
                                 &FitFunc::RBWConvGausBGPol3, 
                                 massResonance - gammaResonance*3., 
                                 massResonance + gammaResonance*3., 8));
-         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+         fitsBG.push_back(new TF1(("Default BG" + std::to_string(i)).c_str(), 
                                   &FitFunc::Pol3, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 4));
+         if (doAltFits)
+         {
+            altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
+                                        &FitFunc::RBWConvGausBGPol2, 
+                                        massResonance - gammaResonance*3., 
+                                        massResonance + gammaResonance*3., 7));
+            altFitsBGAB.push_back(new TF1(("BGAB" + std::to_string(i)).c_str(), 
+                                          &FitFunc::Pol2,
+                                          massResonance - gammaResonance*3., 
+                                          massResonance + gammaResonance*3., 3));
+
+            altFitsFreeG.push_back(new TF1(("Free G" + std::to_string(i)).c_str(), 
+                                            &FitFunc::RBWConvGausBGPol3, 
+                                            massResonance - gammaResonance*3., 
+                                            massResonance + gammaResonance*3., 8));
+            altFitsBGFreeG.push_back(new TF1(("Free G BG" + std::to_string(i)).c_str(), 
+                                              &FitFunc::Pol3, 
+                                              massResonance - gammaResonance*3., 
+                                              massResonance + gammaResonance*3., 4));
+
+            altFitsFixedG.push_back(new TF1(("Fixed G" + std::to_string(i)).c_str(), 
+                                             &FitFunc::RBWConvGausBGPol3, 
+                                             massResonance - gammaResonance*3., 
+                                             massResonance + gammaResonance*3., 8));
+            altFitsBGFixedG.push_back(new TF1(("Fixed G BG" + std::to_string(i)).c_str(), 
+                                               &FitFunc::Pol3, 
+                                               massResonance - gammaResonance*3., 
+                                               massResonance + gammaResonance*3., 4));
+         }
       }
       else if (bgFitFunc == "pol4")
       {
-         fits.push_back(new TF1(("signal + bg fit" + std::to_string(i)).c_str(), 
+         fits.push_back(new TF1(("Default" + std::to_string(i)).c_str(), 
                                 &FitFunc::RBWConvGausBGPol4, 
                                 massResonance - gammaResonance*3., 
                                 massResonance + gammaResonance*3., 9));
-         fitsBG.push_back(new TF1(("bg fit" + std::to_string(i)).c_str(), 
+         fitsBG.push_back(new TF1(("Default BG" + std::to_string(i)).c_str(), 
                                   &FitFunc::Pol4, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 5));
+         if (doAltFits)
+         {
+            altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
+                                        &FitFunc::RBWConvGausBGPol3, 
+                                        massResonance - gammaResonance*3., 
+                                        massResonance + gammaResonance*3., 8));
+            altFitsBGAB.push_back(new TF1(("BGAB" + std::to_string(i)).c_str(), 
+                                          &FitFunc::Pol3,
+                                          massResonance - gammaResonance*3., 
+                                          massResonance + gammaResonance*3., 4));
+
+            altFitsFreeG.push_back(new TF1(("Free G" + std::to_string(i)).c_str(), 
+                                            &FitFunc::RBWConvGausBGPol4, 
+                                            massResonance - gammaResonance*3., 
+                                            massResonance + gammaResonance*3., 9));
+            altFitsBGFreeG.push_back(new TF1(("Free G BG" + std::to_string(i)).c_str(), 
+                                              &FitFunc::Pol4, 
+                                              massResonance - gammaResonance*3., 
+                                              massResonance + gammaResonance*3., 5));
+
+            altFitsFixedG.push_back(new TF1(("Fixed G" + std::to_string(i)).c_str(), 
+                                             &FitFunc::RBWConvGausBGPol4, 
+                                             massResonance - gammaResonance*3., 
+                                             massResonance + gammaResonance*3., 9));
+            altFitsBGFixedG.push_back(new TF1(("Fixed G BG" + std::to_string(i)).c_str(), 
+                                               &FitFunc::Pol4, 
+                                               massResonance - gammaResonance*3., 
+                                               massResonance + gammaResonance*3., 5));
+         }
       }
       else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
-      bool isBGFixedForThisPT = false;
+      const std::string pTBinRangeName =  
+         CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+         CppTools::DtoStr(pTBinRanges[i + 1], 2);
 
-      if (isBGFixed)
+      const bool isBGFixedForThisPT = SetBGFit(inputFileFitsBG, fitsBG.back(), pTBinRangeName);
+      bool isBGFixedForThisPTAltFitAB = false;
+      bool isBGFixedForThisPTAltFitFreeG = false;
+      bool isBGFixedForThisPTAltFitFixedG = false;
+
+      if (doAltFits)
       {
-         const std::string pTBinRangeName =  
-            CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
-            CppTools::DtoStr(pTBinRanges[i + 1], 2);
-
-         TF1 *fitBGTmp = static_cast<TF1 *>(inputFileFitsBG->Get(pTBinRangeName.c_str()));
-
-         if (!fitBGTmp)
-         {
-            pBar.Clear();
-            CppTools::PrintWarning("Could not obtain BG approximation for + " + 
-                                   pTBinRangeName + " from file " + inputFileFitsBGName + 
-                                   "; fixed BG will be disable for this pT bin");
-            pBar.RePrint();
-         }
-         else if (fitBGTmp->GetNpar() != fitsBG.back()->GetNpar())
-         {
-            CppTools::PrintWarning("Number of parameters for BG fit mismatch in " + 
-                                   pTBinRangeName + "; fixed BG fit will be "\
-                                   "disabled for this pT bin");
-         }
-         else
-         {
-            for (int i = 0; i < fitBGTmp->GetNpar(); i++)
-            {
-               fitsBG.back()->SetParameter(i, fitBGTmp->GetParameter(i));
-            }
-            isBGFixedForThisPT = true;
-         }
+         isBGFixedForThisPTAltFitAB = 
+            SetBGFit(inputFileFitsBGAB, altFitsBGAB.back(), pTBinRangeName);
+         isBGFixedForThisPTAltFitFreeG = 
+            SetBGFit(inputFileFitsBGFreeG, altFitsBGFreeG.back(), pTBinRangeName);
+         isBGFixedForThisPTAltFitFixedG = 
+            SetBGFit(inputFileFitsBGFixedG, altFitsBGFixedG.back(), pTBinRangeName);
       }
 
       const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
       const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
 
-      fits.back()->SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma);
+      fits.back()->SetParameters(maxBinVal, massResonance, 
+                                 gammaResonance, gaussianBroadeningSigma);
 
       fits.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
       fits.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
       fits.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
-      fits.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, gaussianBroadeningSigma*1.10);
+      fits.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
+                                   gaussianBroadeningSigma*1.10);
+      if (doAltFits)
+      {
+         altFitsBGAB.back()->SetParameters(maxBinVal, massResonance, 
+                                           gammaResonance, gaussianBroadeningSigma);
+         altFitsFreeG.back()->SetParameters(maxBinVal, massResonance, 
+                                             gammaResonance, gaussianBroadeningSigma);
+         altFitsFixedG.back()->SetParameters(maxBinVal, massResonance, 
+                                              gammaResonance, gaussianBroadeningSigma);
+
+         altFitsBGAB.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
+         altFitsBGAB.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+         altFitsBGAB.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
+         altFitsBGAB.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
+                                             gaussianBroadeningSigma*1.10);
+
+         altFitsFreeG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
+         altFitsFreeG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+         altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
+                                            gaussianBroadeningSigma*1.10);
+
+         altFitsFixedG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
+         altFitsFixedG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+         altFitsFixedG.back()->FixParameter(2, gammaResonance);
+         altFitsFixedG.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
+                                             gaussianBroadeningSigma*1.10);
+      }
 
       if (isBGFixedForThisPT)
       {
-         for (int i = 4; i < fits.back()->GetNpar(); i++)
+         for (int i = fitsBG.back()->GetNpar(); i < fits.back()->GetNpar(); i++)
          {
-            fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - 4));
+            fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - fitsBG.back()->GetNpar()));
+         }
+      }
+
+      if (isBGFixedForThisPTAltFitAB)
+      {
+         for (int i = altFitsBGAB.back()->GetNpar(); i < altFitsAB.back()->GetNpar(); i++)
+         {
+            altFitsAB.back()->FixParameter(i, altFitsBGAB.back()->
+                                           GetParameter(i - altFitsBGAB.back()->GetNpar()));
+         }
+      }
+
+      if (isBGFixedForThisPTAltFitFreeG)
+      {
+         for (int i = altFitsBGFreeG.back()->GetNpar(); i < altFitsFreeG.back()->GetNpar(); i++)
+         {
+            altFitsFreeG.back()->FixParameter(i, altFitsBGFreeG.back()->
+                                              GetParameter(i - altFitsBGFreeG.back()->GetNpar()));
+         }
+      }
+
+      if (isBGFixedForThisPTAltFitFixedG)
+      {
+         for (int i = altFitsBGFixedG.back()->GetNpar(); i < altFitsFixedG.back()->GetNpar(); i++)
+         {
+            altFitsFixedG.back()->FixParameter(i, altFitsBGFixedG.back()->
+                                               GetParameter(i - altFitsBGFixedG.back()->GetNpar()));
          }
       }
 
       distrMInv->Fit(fits.back(), "RQMNBLC");
 
-      /*
-      for (unsigned int j = 1; j <= fitNTries; j++)
+      if (doAltFits)
       {
-         fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
-                          fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
-         fit.SetParLimits(2, fit.GetParameter(2)/(1. + 0.05/static_cast<double>(j*j)),
-                          fit.GetParameter(2)*(1. + 0.1/static_cast<double>(j*j)));
-
-         fit.SetRange(fit.GetParameter(1) - (fit.GetParameter(2) + 
-                                             gaussianBroadeningSigma)*sigmalizedFitRange, 
-                      fit.GetParameter(1) + (fit.GetParameter(2) + 
-                                             gaussianBroadeningSigma)*sigmalizedFitRange);
-
-         distrMInv->Fit(&fit, "RQMNBLC");
-         //if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
-      }
-      */
-
-      for (int j = 0; j < fitsSignal.back()->GetNpar(); j++)
-      {
-         fitsSignal.back()->SetParameter(j, fits.back()->GetParameter(j));
+         distrMInv->Fit(altFitsAB.back(), "RQMBLC");
+         distrMInv->Fit(altFitsFreeG.back(), "RQMBLC");
+         distrMInv->Fit(altFitsFixedG.back(), "RQMBLC");
       }
 
       if (!isBGFixedForThisPT)
       {
          for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
          {
-            fitsBG.back()->
-               SetParameter(j, fits.back()->GetParameter(fitsSignal.back()->GetNpar() + j));
+            fitsBG.back()->SetParameter(j, fits.back()->
+                                        GetParameter(fits.back()->GetNpar() - 
+                                                     fitsBG.back()->GetNpar() + j));
+         }
+      }
+
+      if (doAltFits)
+      {
+         if (!isBGFixedForThisPTAltFitAB)
+         {
+            for (int j = 0; j < altFitsBGAB.back()->GetNpar(); j++)
+            {
+               altFitsBGAB.back()->
+                  SetParameter(j, altFitsAB.back()->
+                               GetParameter(altFitsAB.back()->GetNpar() - 
+                                            altFitsBGAB.back()->GetNpar() + j));
+            }
+         }
+
+         if (!isBGFixedForThisPTAltFitFreeG)
+         {
+            for (int j = 0; j < altFitsBGFreeG.back()->GetNpar(); j++)
+            {
+               altFitsBGFreeG.back()->
+                  SetParameter(j, altFitsFreeG.back()->
+                               GetParameter(altFitsFreeG.back()->GetNpar() - 
+                                            altFitsBGFreeG.back()->GetNpar() + j));
+            }
+         }
+
+         if (!isBGFixedForThisPTAltFitFixedG)
+         {
+            for (int j = 0; j < altFitsBGFreeG.back()->GetNpar(); j++)
+            {
+               altFitsBGFixedG.back()->
+                  SetParameter(j, altFitsFixedG.back()->
+                               GetParameter(altFitsFixedG.back()->GetNpar() - 
+                                            altFitsBGFixedG.back()->GetNpar() + j));
+            }
          }
       }
 
@@ -488,13 +696,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                             (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
                             sigmalizedFitRange);
 
-      fitsSignal.back()->SetRange(fits.back()->GetParameter(1) - 
-                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
-                                  sigmalizedFitRange, 
-                                  fits.back()->GetParameter(1) + 
-                                  (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
-                                  sigmalizedFitRange);
-
       fitsBG.back()->SetRange(fits.back()->GetParameter(1) - 
                               (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
                               sigmalizedFitRange, 
@@ -503,9 +704,66 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                               sigmalizedFitRange);
 
       fits.back()->SetLineWidth(4);
-      fitsBG.back()->SetLineWidth(4);
 
+      fitsBG.back()->SetLineWidth(4);
       fitsBG.back()->SetLineStyle(7);
+
+      if (doAltFits)
+      {
+         altFitsAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
+                                    (altFitsAB.back()->GetParameter(2) + 
+                                     gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                    altFitsAB.back()->GetParameter(1) + 
+                                    (altFitsAB.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                                    sigmalizedFitRange);
+
+         altFitsBGAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
+                                      (altFitsAB.back()->GetParameter(2) + 
+                                       gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                      altFitsAB.back()->GetParameter(1) + 
+                                      (altFitsAB.back()->GetParameter(2) + 
+                                       gaussianBroadeningSigma)*sigmalizedFitRange);
+
+         altFitsFreeG.back()->SetRange(altFitsFreeG.back()->GetParameter(1) - 
+                                       (altFitsFreeG.back()->GetParameter(2) + 
+                                        gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                       altFitsFreeG.back()->GetParameter(1) + 
+                                       (altFitsFreeG.back()->GetParameter(2) + 
+                                        gaussianBroadeningSigma)*sigmalizedFitRange);
+
+         altFitsBGFreeG.back()->SetRange(altFitsFreeG.back()->GetParameter(1) - 
+                                         (altFitsFreeG.back()->GetParameter(2) + 
+                                          gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                         altFitsFreeG.back()->GetParameter(1) + 
+                                         (altFitsFreeG.back()->GetParameter(2) + 
+                                          gaussianBroadeningSigma)*sigmalizedFitRange);
+
+         altFitsFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
+                                        (altFitsFixedG.back()->GetParameter(2) + 
+                                         gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                        altFitsFixedG.back()->GetParameter(1) + 
+                                        (altFitsFixedG.back()->GetParameter(2) + 
+                                         gaussianBroadeningSigma)*sigmalizedFitRange);
+
+         altFitsBGFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
+                                          (altFitsFixedG.back()->GetParameter(2) + 
+                                           gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                          altFitsFixedG.back()->GetParameter(1) + 
+                                          (altFitsFixedG.back()->GetParameter(2) + 
+                                           gaussianBroadeningSigma)*sigmalizedFitRange);
+
+         altFitsAB.back()->SetLineWidth(4);
+         altFitsFreeG.back()->SetLineWidth(4);
+         altFitsFixedG.back()->SetLineWidth(4);
+
+         altFitsBGAB.back()->SetLineWidth(4);
+         altFitsBGFreeG.back()->SetLineWidth(4);
+         altFitsBGFixedG.back()->SetLineWidth(4);
+
+         altFitsBGAB.back()->SetLineStyle(7);
+         altFitsBGFreeG.back()->SetLineStyle(7);
+         altFitsBGFixedG.back()->SetLineStyle(7);
+      }
 
       distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
 
@@ -550,4 +808,59 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 
    gaussianBroadeningEstimatorFunc = 
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
+}
+
+TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
+                                       const std::string& fitTypeName)
+{
+   if (std::filesystem::exists(inputFileName))
+   {
+      pBar.Clear();
+      CppTools::PrintInfo("Fixed BG fits file for " + fitTypeName + " fits was found");
+      pBar.RePrint();
+      return TFile::Open(inputFileName.c_str());
+   }
+   else
+   {
+      pBar.Clear();
+      CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits was not found; "\
+                             "using free BG fit for these fits");
+      pBar.RePrint();
+      return nullptr;
+   }
+}
+
+bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier)
+{
+   if (inputFile)
+   {
+      TF1 *fitBGTmp = static_cast<TF1 *>(inputFile->Get(identifier.c_str()));
+
+      if (!fitBGTmp)
+      {
+         pBar.Clear();
+         CppTools::PrintWarning("Could not obtain BG approximation for + " + 
+                                identifier + " from file " + std::string(inputFile->GetName()) + 
+                                "; fixed BG will be disabled for this fit type and pT bin");
+         pBar.RePrint();
+      }
+      else if (fitBGTmp->GetNpar() != fitBG->GetNpar())
+      {
+         pBar.Clear();
+         CppTools::PrintWarning("Number of parameters for BG fit mismatch for " +
+                                identifier + " from file " + std::string(inputFile->GetName()) + 
+                                "; fixed BG will be disabled for this fit type and pT bin");
+         pBar.RePrint();
+      }
+      else
+      {
+         for (int i = 0; i < fitBGTmp->GetNpar(); i++)
+         {
+            fitBG->SetParameter(i, fitBGTmp->GetParameter(i));
+         }
+         return true;
+      }
+   }
+
+   return false;
 }
