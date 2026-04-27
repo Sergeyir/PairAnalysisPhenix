@@ -12,12 +12,13 @@
 
 #include "../include/SingleTrackFunc.hpp"
 
-ChargedTrack::ChargedTrack(const double m, const SimTreeReader& simCNT, const int i)
+ChargedTrack::ChargedTrack(const double m, const SimTreeReader& simCNT, 
+                           const int i, const double pTScale)
 {
    this->m = m;
    index = i;
-   pX = simCNT.mom(i)*sin(simCNT.the0(i))*cos(simCNT.phi0(i));
-   pY = simCNT.mom(i)*sin(simCNT.the0(i))*sin(simCNT.phi0(i));
+   pX = simCNT.mom(i)*sin(simCNT.the0(i))*cos(simCNT.phi0(i))*pTScale;
+   pY = simCNT.mom(i)*sin(simCNT.the0(i))*sin(simCNT.phi0(i))*pTScale;
    pZ = simCNT.mom(i)*cos(simCNT.the0(i));
    phi = simCNT.phi(i);
    alpha = simCNT.alpha(i);

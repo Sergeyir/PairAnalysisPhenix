@@ -140,9 +140,9 @@ int main(int argc, char **argv)
                                  " for " + methodName + " in centrality " + centralityName);
          }
 
-         TH1D *recEffVsPT = 
-            static_cast<TH1D *>(inputRecEffFile->Get((methodName + 
-                                                     "/reconstruction efficiency vs pT").c_str()));
+         TH1D *recEffVsPT = static_cast<TH1D *>
+            (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                   "vs pT with stat errros").c_str()));
 
          if (!recEffVsPT)
          {

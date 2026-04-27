@@ -35,11 +35,11 @@ struct ChargedTrack
    ChargedTrack() = delete;
    /*! @brief Constructor
     * @param[in] m mass of a particle [GeV/c^2]
-    * @param[in] pX X component of momentum [GeV/c]
-    * @param[in] pY Y component of momentum [GeV/c]
-    * @param[in] pz Z component of momentum [GeV/c]
+    * @param[in] simCNT SimTreeReader object for the current event of a tree from which particle was read
+    * @param[in] i partilce index in simCNT
+    * @param[in] pTScale pT scale that will be applied to the current track
     */
-   ChargedTrack(const double m, const SimTreeReader& simCNT, const int i);
+   ChargedTrack(const double m, const SimTreeReader& simCNT, const int i, const double pTScale = 1.);
    /// mass of a particle [GeV/c^2]
    double m;
    /// index of SimTreeReader in the current event

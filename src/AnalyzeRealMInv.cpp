@@ -166,7 +166,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       std::vector<std::vector<double>> vecParBG;
       std::vector<double> vecPT;
 
-      const std::string inputFileFitsBGName = "data/Parameters/ResonanceBGFit/" + runName + "/" + 
+      const std::string inputFileFitsBGName = "data/Parameters/BGFitResonance/" + runName + "/" + 
                                               std::to_string(taxiNumber) + "/" + methodName + 
                                               "_" + centralityName + ".root";
 
@@ -178,7 +178,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       if (isBGFixed)
       {
          pBar.Clear();
-         CppTools::PrintInfo("Fixed BG fits found for " + methodName + 
+         CppTools::PrintInfo("Fixed BG fits file was found for " + methodName + 
                              " for centrality " + centralityName);
          pBar.RePrint();
          inputFileFitsBG = TFile::Open(inputFileFitsBGName.c_str());
@@ -186,7 +186,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       else
       {
          pBar.Clear();
-         CppTools::PrintWarning("Fixed BG fits were not found for " + methodName + 
+         CppTools::PrintWarning("Fixed BG fits file was not found for " + methodName + 
                                 " for centrality " + centralityName + "; using free BG fit");
          pBar.RePrint();
       }

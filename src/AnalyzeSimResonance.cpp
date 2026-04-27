@@ -324,7 +324,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             switch (charge)
             {
                case 1:
-                  positiveTracks.emplace_back(daughter1Mass, simCNT, i);
+                  positiveTracks.emplace_back(daughter1Mass, simCNT, i, pTScale);
                   positiveTracks.back().idPC2 = idPC2;
                   positiveTracks.back().idPC3 = idPC3;
                   positiveTracks.back().idEMCal = idEMCal;
@@ -340,7 +340,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   positiveTracks.back().weightIdTOFw = weightIdTOFw;
                   break;
                case -1:
-                  negativeTracks.emplace_back(daughter2Mass, simCNT, i);
+                  negativeTracks.emplace_back(daughter2Mass, simCNT, i, pTScale);
                   negativeTracks.back().idPC2 = idPC2;
                   negativeTracks.back().idPC3 = idPC3;
                   negativeTracks.back().idEMCal = idEMCal;
@@ -634,8 +634,6 @@ int main(int argc, char **argv)
 
    if (argc > 2) pTScale = std::atof(argv[2]);
 
-   CppTools::Print(argc, pTScale);
-
    if (argc == 4) numberOfThreads = std::stoi(argv[3]);
    else numberOfThreads = std::thread::hardware_concurrency();
 
@@ -762,7 +760,7 @@ int main(int argc, char **argv)
    box.AddEntry("Charged track minimum pT [GeV/c]", pTMin);
    box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
    box.AddEntry("Reweight for pT spectra", reweightForSpectra);
-   box.AddEntry("pT scale", pTScale);
+   box.AddEntry("pT scale", pTScale, 3);
    box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
