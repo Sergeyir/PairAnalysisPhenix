@@ -54,6 +54,23 @@ namespace AnalyzeRealMInv
     * @param[in] centralityBin centrality class bin that will be processed
     */
    void PerformMInvFits(const YAML::Node& method, const unsigned int centralityBin);
+   /*! Returns TFile pointer if file exits and handles warning and info outputs
+    *
+    * @param[in] inputFileName .root file containing fixed BG fits. Whether fits are in this file this function does not check
+    * @param[in] fitTypeName name of the fit type. This variable is needed to make the warning and info output clear
+    *
+    * @param[out] TFile pointer. Returns nullptr if file doesn't exist
+    */
+   TFile *SetFixedBGFile(const std::string& inputFileName, const std::string& fitTypeName);
+   /*! Set the parameters of BG fit
+    *
+    * @param[in] inputFile file from which approximation parameters will be written
+    * @param[in] fitBG background fit to which BG approximation parameters will be applied
+    * @param[in] identifier string containing all important information about the fit type and pT range. This value is not required to be absolutely correct and is only used to print warning if something goes wrong to help pinpoint the problem if there is one.
+    *
+    * @param[out] readStatus value that shows whether assigning fit parameters values from inputFile was succesfull (true if everything was fine, otherwise false)
+    */
+   bool SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
