@@ -279,7 +279,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
             pBar.RePrint();
          }
-         else if (performFit && distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins()) < 1e-7)
+         else if (performFit && 
+                  distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins()) < 1e-7)
          {
             pBar.Clear();
             CppTools::PrintWarning("Resulting background histogram is empty in " + 
