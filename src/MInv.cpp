@@ -117,7 +117,6 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
                                              std::to_string(c) + std::to_string(z) + 
                                              std::to_string(r)).c_str(), xAxisMin, xAxisMax);
 
-
             TH1D *distrMInvFGLR = 
                distrMInvVsPTFGLR->ProjectionY((distrMInvVsPTFGLR->GetName() + 
                                                std::to_string(c) + std::to_string(z) + 
@@ -129,9 +128,6 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
 
             if (distrMInvFG->GetEntries() < 1e-3) continue;
 
-            distrMInvFG->Sumw2();
-            distrMInvBG->Sumw2();
-
             if (!distrMInvMerged) 
             {
                if (distrMInvBG->GetEntries() < 1e-3) 
@@ -140,7 +136,6 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
                }
                else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG, 
                                                  distrMInvFGLR, distrMInvBGLR);
-
             }
             else 
             {
