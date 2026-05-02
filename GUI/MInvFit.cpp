@@ -249,28 +249,18 @@ void MInvFit()
    for (unsigned int i = 0; i < fits.size(); i++)
    {
       GUIFit::AddHistogram(distrsMInv[i], CppTools::DtoStr(pTsDistrMInv[i], 2), distrMInvNames[i]);
-      GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
-   }
 
-   if (doAltFits)
-   {
-      for (unsigned int i = 0; i < altFitsAB.size(); i++)
+      GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
+
+      if (doAltFits)
       {
          GUIFit::AddFit(altFitsAB[i], altFitsBGAB[i], 1, 
                         altFitsAB[i]->GetNpar() - altFitsBGAB[i]->GetNpar());
-      }
-      /*
-      for (unsigned int i = 0; i < altFitsFreeG.size(); i++)
-      {
          GUIFit::AddFit(altFitsFreeG[i], altFitsBGFreeG[i], 2, 
                         altFitsFreeG[i]->GetNpar() - altFitsBGFreeG[i]->GetNpar());
-      }
-      for (unsigned int i = 0; i < altFitsFixedG.size(); i++)
-      {
          GUIFit::AddFit(altFitsFixedG[i], altFitsBGFixedG[i], 3, 
                         altFitsFixedG[i]->GetNpar() - altFitsBGFixedG[i]->GetNpar());
       }
-      */
    }
 
    gPad->SetTopMargin(0.05);
@@ -785,7 +775,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       distrMInv->SetMarkerSize(0.7);
       distrMInv->SetMarkerColor(kGray + 3);
 
-      distrsMInv.emplace_back(distrMInv);
+      distrsMInv.emplace_back(static_cast<TH1D *>(distrMInv->Clone()));
       distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2)));
       pTsDistrMInv.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
