@@ -17,7 +17,7 @@ int main(int argc, char **argv)
 {
    if (argc < 3 || argc > 6) 
    {
-      CppTools::PrintError("Expected 2-3 parameters while " + std::to_string(argc - 1) + " "\
+      CppTools::PrintError("Expected 2-5 parameters while " + std::to_string(argc - 1) + " "\
                            "parameter(s) were provided \n Usage: bin/AnalyzeRealMInv "\
                            "inputYAMLName taxiNumber methodName=all rebinX=1 "\
                            "numberOfThreads=std::thread::hardware_concurrency()");
