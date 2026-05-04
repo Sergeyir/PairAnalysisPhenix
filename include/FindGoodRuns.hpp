@@ -15,6 +15,8 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TFile.h"
+#include "TGraph.h"
+#include "TLine.h"
 
 #include "InputYAMLReader.hpp"
 
@@ -36,10 +38,14 @@
  */
 namespace FindGoodRuns
 {
+   /// file reader for all required parameters for the current run
+   InputYAMLReader inputYAMLMain;
    /// run name (e.g. Run14HeAu200)
    std::string runName;
    /// directory containing the run files
    std::string inputDir;
+   /// directory for writing pictures and .root files
+   std::string outputDir;
    /// Reference run number (e.g. the run with the highest mult/event ratio)
    int referenceRun;
    /// Contains all runs 
@@ -48,13 +54,21 @@ namespace FindGoodRuns
    std::vector<int> goodRuns;
    /// Contains bad runs
    std::vector<int> badRuns;
+   /// cutter for deadmaps
+   DeadMapCutter dmCutter;
    /// Threshold for the absolute multiplicity/event and charge+/charge- deviation from the average
-   double multThreshold = 2.;
-   /// Chi2/NDF threshold for linear fit of the deviation heatmap from the reference run distributions 
-   double chi2NDFThreshold = 3.;
+   double multThreshold = 1.5;
+   /// Chi2/NDF threshold for linear fit of the deviation heatmap from the reference run distributions
+   double chi2NDFThreshold = 1.;
    /// Checks all run files from goodRunNames by multiplicities and finds the reference run file.
    /// goodRunNames and badRunNames will be updated accordingly after the check
    void CheckRunsByMultiplicityAndFindReferenceRun();
+   /// Checks all run files from goodRunNames by DC projection on board.
+   /// goodRunNames and badRunNames will be updated accordingly after the check
+   void CheckRunsByDCBoard();
+   /// Checks all run files from goodRunNames by DC projection on board.
+   /// goodRunNames and badRunNames will be updated accordingly after the check
+   void CheckRunsByDCBoard();
 }
 
 #endif /* FIND_GOOD_RUNS_HPP */
