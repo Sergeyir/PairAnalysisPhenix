@@ -236,13 +236,13 @@ void MInvFit()
       if (altFitsFreeG.size() != 0)
       {
          GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
-                            centralityName + "_FreeG.root", "Free G");
+                            centralityName + "_FreeG.root", "Free #Gamma");
          }
       if (altFitsFixedG.size() != 0)
       {
          // 3
          GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
-                            centralityName + "_FixedG.root", "Fixed G");
+                            centralityName + "_FixedG.root", "Fixed #Gamma");
       }
    }
 
@@ -564,21 +564,22 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                    gaussianBroadeningSigma*1.10);
       if (doAltFits)
       {
-         altFitsBGAB.back()->SetParameters(maxBinVal, massResonance, 
-                                           gammaResonance, gaussianBroadeningSigma);
+         altFitsAB.back()->SetParameters(maxBinVal, massResonance, 
+                                         gammaResonance, gaussianBroadeningSigma);
          altFitsFreeG.back()->SetParameters(maxBinVal, massResonance, 
                                              gammaResonance, gaussianBroadeningSigma);
          altFitsFixedG.back()->SetParameters(maxBinVal, massResonance, 
                                               gammaResonance, gaussianBroadeningSigma);
 
-         altFitsBGAB.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
-         altFitsBGAB.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
-         altFitsBGAB.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
-         altFitsBGAB.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
-                                             gaussianBroadeningSigma*1.10);
+         altFitsAB.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
+         altFitsAB.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+         altFitsAB.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
+         altFitsAB.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
+                                           gaussianBroadeningSigma*1.10);
 
          altFitsFreeG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFreeG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
+         altFitsFreeG.back()->SetParLimits(2, gammaResonance/2., gammaResonance*2.);
          altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
                                             gaussianBroadeningSigma*1.10);
 
@@ -591,36 +592,44 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
       if (isBGFixedForThisPT)
       {
-         for (int i = fitsBG.back()->GetNpar(); i < fits.back()->GetNpar(); i++)
+         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+              i < fits.back()->GetNpar(); i++)
          {
-            fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - fitsBG.back()->GetNpar()));
+            fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - fits.back()->GetNpar() + 
+                                                                     fitsBG.back()->GetNpar()));
          }
       }
 
       if (isBGFixedForThisPTAltFitAB)
       {
-         for (int i = altFitsBGAB.back()->GetNpar(); i < altFitsAB.back()->GetNpar(); i++)
+         for (int i = altFitsAB.back()->GetNpar() - altFitsBGAB.back()->GetNpar(); 
+              i < altFitsAB.back()->GetNpar(); i++)
          {
             altFitsAB.back()->FixParameter(i, altFitsBGAB.back()->
-                                           GetParameter(i - altFitsBGAB.back()->GetNpar()));
+                                           GetParameter(i - altFitsAB.back()->GetNpar() + 
+                                                        altFitsBGAB.back()->GetNpar()));
          }
       }
 
       if (isBGFixedForThisPTAltFitFreeG)
       {
-         for (int i = altFitsBGFreeG.back()->GetNpar(); i < altFitsFreeG.back()->GetNpar(); i++)
+         for (int i = altFitsFreeG.back()->GetNpar() - altFitsBGFreeG.back()->GetNpar(); 
+              i < altFitsFreeG.back()->GetNpar(); i++)
          {
             altFitsFreeG.back()->FixParameter(i, altFitsBGFreeG.back()->
-                                              GetParameter(i - altFitsBGFreeG.back()->GetNpar()));
+                                              GetParameter(i - altFitsFreeG.back()->GetNpar() + 
+                                                           altFitsBGFreeG.back()->GetNpar()));
          }
       }
 
       if (isBGFixedForThisPTAltFitFixedG)
       {
-         for (int i = altFitsBGFixedG.back()->GetNpar(); i < altFitsFixedG.back()->GetNpar(); i++)
+         for (int i = altFitsFixedG.back()->GetNpar() - altFitsBGFixedG.back()->GetNpar(); 
+              i < altFitsFixedG.back()->GetNpar(); i++)
          {
             altFitsFixedG.back()->FixParameter(i, altFitsBGFixedG.back()->
-                                               GetParameter(i - altFitsBGFixedG.back()->GetNpar()));
+                                               GetParameter(i - altFitsFixedG.back()->GetNpar() + 
+                                                            altFitsBGFixedG.back()->GetNpar()));
          }
       }
 
@@ -628,9 +637,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
       if (doAltFits)
       {
-         distrMInv->Fit(altFitsAB.back(), "RQMBLC");
-         distrMInv->Fit(altFitsFreeG.back(), "RQMBLC");
-         distrMInv->Fit(altFitsFixedG.back(), "RQMBLC");
+         distrMInv->Fit(altFitsAB.back(), "RQNMBLC");
+         distrMInv->Fit(altFitsFreeG.back(), "RQNMBLC");
+         distrMInv->Fit(altFitsFixedG.back(), "RQNMBLC");
       }
 
       if (!isBGFixedForThisPT)
@@ -694,7 +703,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                               sigmalizedFitRange);
 
       fits.back()->SetLineWidth(4);
-
       fitsBG.back()->SetLineWidth(4);
       fitsBG.back()->SetLineStyle(7);
 
