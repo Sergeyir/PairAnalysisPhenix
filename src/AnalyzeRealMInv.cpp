@@ -403,9 +403,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             if (isBGFixedForThisPT)
             {
-               for (int i = 4; i < fit->GetNpar(); i++)
+               for (int i = fit->GetNpar() - fitBG->GetNpar(); i < fit->GetNpar(); i++)
                {
-                  fit->FixParameter(i, fitBG->GetParameter(i - 4));
+                  fit->FixParameter(i, fitBG->GetParameter(i - fit->GetNpar() + fitBG->GetNpar()));
                }
             }
 
