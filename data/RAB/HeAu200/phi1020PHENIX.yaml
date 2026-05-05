@@ -1,7 +1,9 @@
 source: 'PRC106, 014908'
+comments: 'in the HepMC publication d+Au and ^3He+Au values seemed to be mistakenly switched between each other'
 independent_variables:
 - header: {name: '$p_T$'}
   values:
+  - {low: 0.8, high: 1.0}
   - {low: 1.0, high: 1.275}
   - {low: 1.275, high: 1.7}
   - {low: 1.7, high: 2.2}
@@ -16,180 +18,190 @@ dependent_variables:
 - header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
   qualifiers:
   - {name: '#varphi(1020)', value: '0-20'}
-  - {name: '$p_T$', value: '$^3He+Au$ $0\%-20\%$'}
+  - {name: '$p_T$', value: '$d+Au$ $0\%-20\%$'}
   values:
-  - value: 0.884367
+  - value: 0.83046
     errors:
-    - {symerror: 0.174283, label: 'stat.'}
-    - {symerror: 0.0986773, label: 'sys.'}
-  - value: 1.12855
+    - {symerror: 0.211393, label: 'stat.'}
+    - {symerror: 0.0446012, label: 'sys.'}
+  - value: 0.866253
     errors:
-    - {symerror: 0.090731, label: 'stat.'}
-    - {symerror: 0.109044, label: 'sys.'}
-  - value: 1.18055
+    - {symerror: 0.12495, label: 'stat.'}
+    - {symerror: 0.107254, label: 'sys.'}
+  - value: 0.915477
     errors:
-    - {symerror: 0.0641051, label: 'stat.'}
-    - {symerror: 0.114586, label: 'sys.'}
-  - value: 1.11231
+    - {symerror: 0.0758563, label: 'stat.'}
+    - {symerror: 0.101659, label: 'sys.'}
+  - value: 0.963113
     errors:
-    - {symerror: 0.0594938, label: 'stat.'}
-    - {symerror: 0.100256, label: 'sys.'}
-  - value: 1.21851
+    - {symerror: 0.0469846, label: 'stat.'}
+    - {symerror: 0.108398, label: 'sys.'}
+  - value: 0.975053
     errors:
-    - {symerror: 0.0709609, label: 'stat.'}
-    - {symerror: 0.111519, label: 'sys.'}
-  - value: 1.16942
+    - {symerror: 0.0450413, label: 'stat.'}
+    - {symerror: 0.10543, label: 'sys.'}
+  - value: 0.995452
     errors:
-    - {symerror: 0.0873047, label: 'stat.'}
-    - {symerror: 0.109076, label: 'sys.'}
-  - value: 1.31181
+    - {symerror: 0.056095, label: 'stat.'}
+    - {symerror: 0.111341, label: 'sys.'}
+  - value: 0.987815
     errors:
-    - {symerror: 0.129017, label: 'stat.'}
-    - {symerror: 0.125111, label: 'sys.'}
-  - value: 1.09848
+    - {symerror: 0.0738426, label: 'stat.'}
+    - {symerror: 0.115782, label: 'sys.'}
+  - value: 1.00142
     errors:
-    - {symerror: 0.183079, label: 'stat.'}
-    - {symerror: 0.114685, label: 'sys.'}
-  - value: 1.02097
+    - {symerror: 0.104236, label: 'stat.'}
+    - {symerror: 0.124092, label: 'sys.'}
+  - value: 1.18747
     errors:
-    - {symerror: 0.242352, label: 'stat.'}
-    - {symerror: 0.216843, label: 'sys.'}
-  - value: 0.880191
+    - {symerror: 0.192703, label: 'stat.'}
+    - {symerror: 0.165534, label: 'sys.'}
+  - value: 1.07124
     errors:
-    - {symerror: 0.335542, label: 'stat.'}
-    - {symerror: 0.229357, label: 'sys.'}
+    - {symerror: 0.228837, label: 'stat.'}
+    - {symerror: 0.263564, label: 'sys.'}
+  - value: 0.721049
+    errors:
+    - {symerror: 0.241338, label: 'stat.'}
+    - {symerror: 0.227442, label: 'sys.'}
 - header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
   qualifiers:
   - {name: '#varphi(1020)', value: '20-40'}
-  - {name: '$p_T$', value: '$^3He+Au$ $20\%-40\%$'}
+  - {name: '$p_T$', value: '$d+Au$ $20\%-40\%$'}
   values:
-  - value: 0.933421
+  - value: --
+  - value: 0.876761
     errors:
-    - {symerror: 0.176047, label: 'stat.'}
-    - {symerror: 0.104151, label: 'sys.'}
-  - value: 1.08091
+    - {symerror: 0.138524, label: 'stat.'}
+    - {symerror: 0.108555, label: 'sys.'}
+  - value: 0.997396
     errors:
-    - {symerror: 0.0888807, label: 'stat.'}
-    - {symerror: 0.104441, label: 'sys.'}
-  - value: 1.04092
+    - {symerror: 0.0700331, label: 'stat.'}
+    - {symerror: 0.110756, label: 'sys.'}
+  - value: 1.04664
     errors:
-    - {symerror: 0.0505538, label: 'stat.'}
-    - {symerror: 0.101034, label: 'sys.'}
-  - value: 1.06995
+    - {symerror: 0.0530438, label: 'stat.'}
+    - {symerror: 0.1178, label: 'sys.'}
+  - value: 0.987243
     errors:
-    - {symerror: 0.0607742, label: 'stat.'}
-    - {symerror: 0.0964381, label: 'sys.'}
-  - value: 1.0175
+    - {symerror: 0.04839, label: 'stat.'}
+    - {symerror: 0.106748, label: 'sys.'}
+  - value: 1.10547
     errors:
-    - {symerror: 0.0652291, label: 'stat.'}
-    - {symerror: 0.0931221, label: 'sys.'}
-  - value: 1.03723
+    - {symerror: 0.0631423, label: 'stat.'}
+    - {symerror: 0.123647, label: 'sys.'}
+  - value: 1.04169
     errors:
-    - {symerror: 0.0861152, label: 'stat.'}
-    - {symerror: 0.0967464, label: 'sys.'}
-  - value: 1.09952
+    - {symerror: 0.0812336, label: 'stat.'}
+    - {symerror: 0.122097, label: 'sys.'}
+  - value: 1.03249
     errors:
-    - {symerror: 0.122758, label: 'stat.'}
-    - {symerror: 0.104864, label: 'sys.'}
-  - value: 1.24975
+    - {symerror: 0.115082, label: 'stat.'}
+    - {symerror: 0.127942, label: 'sys.'}
+  - value: 1.10611
     errors:
-    - {symerror: 0.206477, label: 'stat.'}
-    - {symerror: 0.130478, label: 'sys.'}
-  - value: 1.15839
+    - {symerror: 0.19743, label: 'stat.'}
+    - {symerror: 0.154192, label: 'sys.'}
+  - value: 1.22889
     errors:
-    - {symerror: 0.267128, label: 'stat.'}
-    - {symerror: 0.246029, label: 'sys.'}
-  - value: 0.772128
+    - {symerror: 0.267868, label: 'stat.'}
+    - {symerror: 0.302351, label: 'sys.'}
+  - value: 1.13449
     errors:
-    - {symerror: 0.322476, label: 'stat.'}
-    - {symerror: 0.201198, label: 'sys.'}
+    - {symerror: 0.345723, label: 'stat.'}
+    - {symerror: 0.357854, label: 'sys.'}
 - header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
   qualifiers:
   - {name: '#varphi(1020)', value: '60-88'}
-  - {name: '$p_T$', value: '$^3He+Au$ $60\%-88\%$'}
+  - {name: '$p_T$', value: '$d+Au$ $60\%-88\%$'}
   values:
-  - value: 1.19881
+  - value: --
+  - value: 0.809819
     errors:
-    - {symerror: 0.231835, label: 'stat.'}
-    - {symerror: 0.133763, label: 'sys.'}
-  - value: 1.11324
+    - {symerror: 0.162257, label: 'stat.'}
+    - {symerror: 0.100266, label: 'sys.'}
+  - value: 0.83317
     errors:
-    - {symerror: 0.0949593, label: 'stat.'}
-    - {symerror: 0.107565, label: 'sys.'}
-  - value: 0.982743
+    - {symerror: 0.0772057, label: 'stat.'}
+    - {symerror: 0.0925193, label: 'sys.'}
+  - value: 0.889987
     errors:
-    - {symerror: 0.0669534, label: 'stat.'}
-    - {symerror: 0.0953868, label: 'sys.'}
-  - value: 0.974842
+    - {symerror: 0.0591506, label: 'stat.'}
+    - {symerror: 0.100168, label: 'sys.'}
+  - value: 0.898451
     errors:
-    - {symerror: 0.0611806, label: 'stat.'}
-    - {symerror: 0.0878657, label: 'sys.'}
-  - value: 0.897402
+    - {symerror: 0.0531449, label: 'stat.'}
+    - {symerror: 0.0971473, label: 'sys.'}
+  - value: 0.892333
     errors:
-    - {symerror: 0.0722336, label: 'stat.'}
-    - {symerror: 0.0821307, label: 'sys.'}
-  - value: 0.888151
+    - {symerror: 0.0660908, label: 'stat.'}
+    - {symerror: 0.0998075, label: 'sys.'}
+  - value: 0.959541
     errors:
-    - {symerror: 0.0928579, label: 'stat.'}
-    - {symerror: 0.0828412, label: 'sys.'}
-  - value: 0.977347
+    - {symerror: 0.0923406, label: 'stat.'}
+    - {symerror: 0.112468, label: 'sys.'}
+  - value: 1.03662
     errors:
-    - {symerror: 0.136845, label: 'stat.'}
-    - {symerror: 0.0932125, label: 'sys.'}
-  - value: 0.853954
+    - {symerror: 0.138927, label: 'stat.'}
+    - {symerror: 0.128453, label: 'sys.'}
+  - value: 1.15683
     errors:
-    - {symerror: 0.231556, label: 'stat.'}
-    - {symerror: 0.0891554, label: 'sys.'}
-  - value: 0.987317
+    - {symerror: 0.237915, label: 'stat.'}
+    - {symerror: 0.161263, label: 'sys.'}
+  - value: 1.27496
     errors:
-    - {symerror: 0.310898, label: 'stat.'}
-    - {symerror: 0.209695, label: 'sys.'}
-  - value: 1.22627
+    - {symerror: 0.317059, label: 'stat.'}
+    - {symerror: 0.313685, label: 'sys.'}
+  - value: 1.51889
     errors:
-    - {symerror: 0.594013, label: 'stat.'}
-    - {symerror: 0.319537, label: 'sys.'}
+    - {symerror: 0.506051, label: 'stat.'}
+    - {symerror: 0.479107, label: 'sys.'}
 - header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
   qualifiers:
   - {name: '#varphi(1020)', value: '0-88'}
-  - {name: '$p_T$', value: '$^3He+Au$ $0\%-88\%$'}
+  - {name: '$p_T$', value: '$d+Au$ $0\%-100\%$'}
   values:
-  - value: 0.96997
+  - value: 0.76028
     errors:
-    - {symerror: 0.120985, label: 'stat.'}
-    - {symerror: 0.10822, label: 'sys.'}
-  - value: 1.09495
+    - {symerror: 0.162341, label: 'stat.'}
+    - {symerror: 0.040832, label: 'sys.'}
+  - value: 0.803652
     errors:
-    - {symerror: 0.0653947, label: 'stat.'}
-    - {symerror: 0.10579, label: 'sys.'}
-  - value: 1.10135
+    - {symerror: 0.0908104, label: 'stat.'}
+    - {symerror: 0.0995028, label: 'sys.'}
+  - value: 0.875832
     errors:
-    - {symerror: 0.0433578, label: 'stat.'}
-    - {symerror: 0.106899, label: 'sys.'}
-  - value: 1.09265
+    - {symerror: 0.0485753, label: 'stat.'}
+    - {symerror: 0.0972567, label: 'sys.'}
+  - value: 0.872173
     errors:
-    - {symerror: 0.0461014, label: 'stat.'}
-    - {symerror: 0.0984841, label: 'sys.'}
-  - value: 1.08699
+    - {symerror: 0.0349809, label: 'stat.'}
+    - {symerror: 0.0981629, label: 'sys.'}
+  - value: 0.894753
     errors:
-    - {symerror: 0.0526667, label: 'stat.'}
-    - {symerror: 0.0994819, label: 'sys.'}
-  - value: 1.07104
+    - {symerror: 0.0352644, label: 'stat.'}
+    - {symerror: 0.0967474, label: 'sys.'}
+  - value: 0.920046
     errors:
-    - {symerror: 0.0688048, label: 'stat.'}
-    - {symerror: 0.0999, label: 'sys.'}
-  - value: 1.23385
+    - {symerror: 0.0445625, label: 'stat.'}
+    - {symerror: 0.102907, label: 'sys.'}
+  - value: 0.930887
     errors:
-    - {symerror: 0.105533, label: 'stat.'}
-    - {symerror: 0.117676, label: 'sys.'}
-  - value: 1.14591
+    - {symerror: 0.0595889, label: 'stat.'}
+    - {symerror: 0.10911, label: 'sys.'}
+  - value: 0.945478
     errors:
-    - {symerror: 0.167682, label: 'stat.'}
-    - {symerror: 0.11963, label: 'sys.'}
-  - value: 1.20022
+    - {symerror: 0.0838135, label: 'stat.'}
+    - {symerror: 0.11716, label: 'sys.'}
+  - value: 1.01212
     errors:
-    - {symerror: 0.234115, label: 'stat.'}
-    - {symerror: 0.254913, label: 'sys.'}
-  - value: 1.03811
+    - {symerror: 0.151973, label: 'stat.'}
+    - {symerror: 0.141089, label: 'sys.'}
+  - value: 1.10227
     errors:
-    - {symerror: 0.316653, label: 'stat.'}
-    - {symerror: 0.270507, label: 'sys.'}
+    - {symerror: 0.211484, label: 'stat.'}
+    - {symerror: 0.271197, label: 'sys.'}
+  - value: 0.985504
+    errors:
+    - {symerror: 0.266968, label: 'stat.'}
+    - {symerror: 0.31086, label: 'sys.'}
