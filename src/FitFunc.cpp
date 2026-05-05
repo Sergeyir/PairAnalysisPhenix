@@ -52,12 +52,12 @@ double FitFunc::Pol2(double *x, double *par)
 
 double FitFunc::Pol3(double *x, double *par)
 {
-   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0] + par[3]*x[0]*x[0]*x[0];
+   return Pol2(x, par) + par[3]*x[0]*x[0]*x[0];
 }
 
 double FitFunc::Pol4(double *x, double *par)
 {
-   return par[0] + par[1]*x[0] + par[2]*x[0]*x[0] + par[3]*x[0]*x[0]*x[0] + par[4]*x[0]*x[0]*x[0]*x[0];
+   return Pol3(x, par) + par[4]*x[0]*x[0]*x[0]*x[0];
 }
 
 double FitFunc::Gaus(double *x, double *par)
