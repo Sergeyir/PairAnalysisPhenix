@@ -50,7 +50,7 @@ int main(int argc, char **argv)
    const std::string resonanceName = inputYAMLResonance["name"].as<std::string>();
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
 
-   inputRecEffFileName = "data/Parameters/ResonanceEff/" + runName + "/" + resonanceName + ".root";
+   inputRecEffFileName = "data/Parameters/RecEffResonance/" + runName + "/" + resonanceName + ".root";
    CppTools::CheckInputFile(inputRecEffFileName);
    inputRecEffFile = TFile::Open(inputRecEffFileName.c_str());
 
@@ -142,7 +142,7 @@ int main(int argc, char **argv)
 
          TH1D *recEffVsPT = static_cast<TH1D *>
             (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
-                                   "vs pT with stat errros").c_str()));
+                                   "vs pT with stat errors").c_str()));
 
          if (!recEffVsPT)
          {
