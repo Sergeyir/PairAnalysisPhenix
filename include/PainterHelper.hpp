@@ -72,44 +72,45 @@ class PainterHelper
     * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph. If emtpy legendEntry is specified (by default) the legend entry will be read from "[source]" field from the specified .yaml file
-    * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
    void DrawGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
                               const Color_t color, const double alpha, const Style_t markerStyle, 
                               const std::string& legendEntry, 
-                              const bool relativeErrors = false, const bool readSysErrors = true);
+                              const bool relativeUncertainties = false, 
+                              const bool readSysErrors = true);
    /*! @brief Draws the graph obtained from the date read from the specified .txt file
     * @param[in] fileName name of the .txt file from which data will be read
     * @param[in] color color of markers and error boxes to be set for the current graph
     * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph
-    * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
    void DrawGraphFromTXTFile(const std::string& fileName, 
                              const Color_t color, const double alpha, const Style_t markerStyle, 
-                             const std::string& legendEntry, const bool relativeErrors = false,
+                             const std::string& legendEntry, const bool relativeUncertainties = false,
                              const bool readSysErrors = true);
    /*! @brief Draws the legend of already painted graphs
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
-    * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
    TGraphErrors *GetGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
                                       TGraphErrors *&graphWithSysErrors, 
-                                      const bool relativeErrors = false,
+                                      const bool relativeUncertainties = false,
                                       const bool readSysErrors = true);
    /*! @brief Draws the graph read from the specified .txt file to the object list to draw
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
-    * @param[in] relativeErrors shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
     * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
     */
    TGraphErrors *GetGraphFromTXTFile(const std::string& fileName, TGraphErrors *&graphWithSysErrors, 
-                                     const bool relativeErrors = false, 
+                                     const bool relativeUncertainties = false, 
                                      const bool readSysErrors = true);
    /*! @brief Draws the graph containing type c systematic uncertainty box
     * @param[in] value absolute value of the uncertainty

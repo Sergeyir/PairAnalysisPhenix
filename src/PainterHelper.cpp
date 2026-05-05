@@ -129,11 +129,11 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
 void PainterHelper::DrawGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
                                           const Color_t color, const double alpha, 
                                           const Style_t markerStyle, const std::string& legendEntry,
-                                          const bool relativeErrors, const bool readSysErrors)
+                                          const bool relativeUncertainties, const bool readSysErrors)
 {
    TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromYAMLFile(fileName, qualifier, graphWithSysErrors, 
-                                                            relativeErrors, readSysErrors);
+                                                            relativeUncertainties, readSysErrors);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
              alpha, markerStyle, legendEntry);
 }
@@ -141,11 +141,11 @@ void PainterHelper::DrawGraphFromYAMLFile(const std::string& fileName, const std
 void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName, 
                                          const Color_t color, const double alpha,
                                          const Style_t markerStyle, const std::string& legendEntry,
-                                         const bool relativeErrors, const bool readSysErrors)
+                                         const bool relativeUncertainties, const bool readSysErrors)
 {
    TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromTXTFile(fileName, graphWithSysErrors, 
-                                                           relativeErrors, readSysErrors);
+                                                           relativeUncertainties, readSysErrors);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
              alpha, markerStyle, legendEntry);
 }
@@ -153,7 +153,7 @@ void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName,
 TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, 
                                                   const std::string& qualifier, 
                                                   TGraphErrors *&graphWithSysErrors, 
-                                                  const bool relativeErrors, 
+                                                  const bool relativeUncertainties, 
                                                   const bool readSysErrors)
 {
    InputYAMLReader yamlFileContents(fileName);
@@ -180,6 +180,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
          for (unsigned int i = 0; i < yamlFileContents["independent_variables"]
                                                       [0]["values"].size(); i++)
          {
+            if (y[i]["value"].as<std::string>() == "--") continue;
+
             double xVal = 0.;
             if (x[i].size() == 1 || x[i].size() == 3)
             {
@@ -193,27 +195,30 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
                                       "columns in file " + fileName);
 
             graphWithStatErrors->AddPoint(xVal, y[i]["value"].as<double>());
-            graphWithStatErrors->SetPointError(i, 0., y[i]["errors"][0]["symerror"].as<double>());
 
-            if (readSysErrors)
+            if (relativeUncertainties)
             {
-               graphWithSysErrors->AddPoint(xVal, y[i]["value"].as<double>());
-               graphWithSysErrors->SetPointError(i, sysWidth, 
-                                                 y[i]["errors"][1]["symerror"].as<double>());
-            }
-         }
-         
-         if (relativeErrors)
-         {
-            for (int i = 0; i < graphWithStatErrors->GetN(); i++)
-            {
-               graphWithStatErrors->SetPointError(i, 0., graphWithStatErrors->GetErrorY(i)*
+               graphWithStatErrors->SetPointError(graphWithStatErrors->GetN() - 1, 
+                                                  0., graphWithStatErrors->GetErrorY(i)*
                                                   graphWithStatErrors->GetPointY(i));
 
                if (readSysErrors)
                {
-                  graphWithSysErrors->SetPointError(i, sysWidth, graphWithSysErrors->GetErrorY(i)*
+                  graphWithSysErrors->AddPoint(xVal, y[i]["value"].as<double>());
+                  graphWithSysErrors->SetPointError(graphWithSysErrors->GetN() - 1, 
+                                                    sysWidth, graphWithSysErrors->GetErrorY(i)*
                                                     graphWithSysErrors->GetPointY(i));
+               }
+            }
+            else
+            {
+               graphWithStatErrors->SetPointError(graphWithStatErrors->GetN() - 1, 
+                                                  0., y[i]["errors"][0]["symerror"].as<double>());
+               if (readSysErrors)
+               {
+                  graphWithSysErrors->AddPoint(xVal, y[i]["value"].as<double>());
+                  graphWithSysErrors->SetPointError(graphWithSysErrors->GetN() - 1, sysWidth, 
+                                                    y[i]["errors"][1]["symerror"].as<double>());
                }
             }
          }
@@ -227,7 +232,7 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
 
 TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, 
                                                  TGraphErrors *&graphWithSysErrors, 
-                                                 const bool relativeErrors, 
+                                                 const bool relativeUncertainties, 
                                                  const bool readSysErrors)
 {
    CppTools::CheckInputFile(fileName);
@@ -241,7 +246,7 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName,
    int i = 0;
    while (inputFile >> x >> y >> statError)
    {
-      if (relativeErrors) statError *= y;
+      if (relativeUncertainties) statError *= y;
 
       graphWithStatErrors->AddPoint(x, y);
       graphWithStatErrors->SetPointError(i, 0., statError);
@@ -255,7 +260,7 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName,
                                  ": expected systematic uncertainty value instead");
          }
 
-         if (relativeErrors) sysError *= y;
+         if (relativeUncertainties) sysError *= y;
 
          graphWithSysErrors->AddPoint(x, y);
          graphWithSysErrors->SetPointError(i, sysWidth, sysError);
