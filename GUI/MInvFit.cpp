@@ -57,7 +57,7 @@ std::vector<TF1 *> altFitsBGFixedG;
 // shows whether the alternative fits will be performed and written
 // this value needs to be true if you want to later use different fits in this run
 // for systematic uncertainty evaluation
-bool doAltFits = true;
+bool performAltFits = true;
 
 using namespace AnalyzeRealMInv;
 
@@ -163,7 +163,7 @@ void MInvFit()
    CppTools::Print("Choose whether you want to perform and save alternative fits "\
                    "(any number if yes, 0 if no);\n (typing in any text will exit the program)");
    std::cout << ">> ";
-   if (!(std::cin >> doAltFits))
+   if (!(std::cin >> performAltFits))
    {
       CppTools::PrintInfo("Exiting the program");
       exit(1);
@@ -224,7 +224,7 @@ void MInvFit()
    // 0
    GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
                       centralityName + ".root", "Default");
-   if (doAltFits)
+   if (performAltFits)
    {
       // 1
       if (altFitsAB.size() != 0)
@@ -252,7 +252,7 @@ void MInvFit()
 
       GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
 
-      if (doAltFits)
+      if (performAltFits)
       {
          GUIFit::AddFit(altFitsAB[i], altFitsBGAB[i], 1, 
                         altFitsAB[i]->GetNpar() - altFitsBGAB[i]->GetNpar());
@@ -290,7 +290,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
    TFile *inputFileFitsBGFreeG = nullptr;
    TFile *inputFileFitsBGFixedG = nullptr;
 
-   if (doAltFits)
+   if (performAltFits)
    {
       inputFileFitsBGAB = 
          SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
@@ -420,7 +420,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 3));
 
-         if (doAltFits)
+         if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
                                         &FitFunc::RBWConvGausBGPol3, 
@@ -460,7 +460,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   &FitFunc::Pol3, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 4));
-         if (doAltFits)
+         if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
                                         &FitFunc::RBWConvGausBGPol2, 
@@ -500,7 +500,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   &FitFunc::Pol4, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 5));
-         if (doAltFits)
+         if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
                                         &FitFunc::RBWConvGausBGPol3, 
@@ -541,7 +541,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       bool isBGFixedForThisPTAltFitFreeG = false;
       bool isBGFixedForThisPTAltFitFixedG = false;
 
-      if (doAltFits)
+      if (performAltFits)
       {
          isBGFixedForThisPTAltFitAB = 
             SetBGFit(inputFileFitsBGAB, altFitsBGAB.back(), pTBinRangeName);
@@ -562,7 +562,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       fits.back()->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
       fits.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
                                    gaussianBroadeningSigma*1.10);
-      if (doAltFits)
+      if (performAltFits)
       {
          altFitsAB.back()->SetParameters(maxBinVal, massResonance, 
                                          gammaResonance, gaussianBroadeningSigma);
@@ -635,7 +635,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
       distrMInv->Fit(fits.back(), "RQMNBLC");
 
-      if (doAltFits)
+      if (performAltFits)
       {
          distrMInv->Fit(altFitsAB.back(), "RQNMBLC");
          distrMInv->Fit(altFitsFreeG.back(), "RQNMBLC");
@@ -652,7 +652,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          }
       }
 
-      if (doAltFits)
+      if (performAltFits)
       {
          if (!isBGFixedForThisPTAltFitAB)
          {
@@ -706,7 +706,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       fitsBG.back()->SetLineWidth(4);
       fitsBG.back()->SetLineStyle(7);
 
-      if (doAltFits)
+      if (performAltFits)
       {
          altFitsAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
                                     (altFitsAB.back()->GetParameter(2) + 
@@ -809,7 +809,8 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
-                                       const std::string& fitTypeName)
+                                       const std::string& fitTypeName,
+                                       const bool printFreeFitWarning)
 {
    if (std::filesystem::exists(inputFileName))
    {
@@ -818,7 +819,7 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
       pBar.RePrint();
       return TFile::Open(inputFileName.c_str());
    }
-   else
+   else if (printFreeFitWarning)
    {
       pBar.Clear();
       CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits was not found; "\
@@ -826,6 +827,11 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
       pBar.RePrint();
       return nullptr;
    }
+   pBar.Clear();
+   CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits was not found; "\
+                          "no fits will be performed for this fit type");
+   pBar.RePrint();
+   return nullptr;
 }
 
 bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier)
