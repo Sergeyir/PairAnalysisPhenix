@@ -58,10 +58,12 @@ namespace AnalyzeRealMInv
     *
     * @param[in] inputFileName .root file containing fixed BG fits. Whether fits are in this file this function does not check
     * @param[in] fitTypeName name of the fit type. This variable is needed to make the warning and info output clear
+    * @param[in] printFreeFitWarning prints warning that free BG fits will be used instead of fixed ones. This parameter doesn't change the behaviour of the program to perform free or fixed fit and is only needed for clarity when running the executable. The behaviour is needed to be implemented by the user.
     *
     * @param[out] TFile pointer. Returns nullptr if file doesn't exist
     */
-   TFile *SetFixedBGFile(const std::string& inputFileName, const std::string& fitTypeName);
+   TFile *SetFixedBGFile(const std::string& inputFileName, const std::string& fitTypeName, 
+                         const bool printFreeFitWarning = true);
    /*! Set the parameters of BG fit
     *
     * @param[in] inputFile file from which approximation parameters will be written
