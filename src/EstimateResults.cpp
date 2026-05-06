@@ -131,11 +131,11 @@ int main(int argc, char **argv)
          inputFile = TFile::Open(inputFileName.c_str());
 
          TH1D *rawYieldVsPTWithStatErr = 
-            static_cast<TH1D *>(inputFile->Get((centralityName + "/raw yield vs pT").c_str()));
+            static_cast<TH1D *>(inputFile->Get((centralityName + 
+                                                "/raw yield vs pT with stat errors").c_str()));
 
          if (!rawYieldVsPTWithStatErr) 
          {
-            CppTools::Print(methodName + "/" + centralityName + "/raw yield vs pT");
             CppTools::PrintError("No raw yield distribution was found in file " + inputFileName + 
                                  " for " + methodName + " in centrality " + centralityName);
          }
