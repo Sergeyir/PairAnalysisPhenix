@@ -138,9 +138,9 @@ class PainterHelper
 
    /// legend containing entries of all histograms and graphs drawn
    TLegend *legend;
-   /// marker size of each point of histograms and graphs, By Default equals to 1.
+   /// marker size of each point of histograms and graphs. By Default equals to 1.
    double markerSize;
-   /// line wisth of each point error bars and boxes, By Default equals to 1
+   /// line wisth of each point error bars and boxes. By Default equals to 1
    double lineWidth;
    /// width of a systematic uncertainty box of each point. By default equals to 0.1
    double sysWidth;
