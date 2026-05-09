@@ -586,8 +586,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          altFitsFixedG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFixedG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
          altFitsFixedG.back()->FixParameter(2, gammaResonance);
-         altFitsFixedG.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
-                                             gaussianBroadeningSigma*1.10);
+         altFitsFixedG.back()->FixParameter(3, gaussianBroadeningSigma);
       }
 
       if (isBGFixedForThisPT)
@@ -689,17 +688,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       }
 
       fits.back()->SetRange(fits.back()->GetParameter(1) - 
-                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                            (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
                             sigmalizedFitRange, 
                             fits.back()->GetParameter(1) + 
-                            (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                            (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
                             sigmalizedFitRange);
 
       fitsBG.back()->SetRange(fits.back()->GetParameter(1) - 
-                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                              (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
                               sigmalizedFitRange, 
                               fits.back()->GetParameter(1) + 
-                              (fits.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                              (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
                               sigmalizedFitRange);
 
       fits.back()->SetLineWidth(4);
@@ -710,45 +709,57 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       {
          altFitsAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
                                     (altFitsAB.back()->GetParameter(2) + 
-                                     gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                     altFitsAB.back()->GetParameter(3))*sigmalizedFitRange, 
                                     altFitsAB.back()->GetParameter(1) + 
-                                    (altFitsAB.back()->GetParameter(2) + gaussianBroadeningSigma)*
+                                    (altFitsAB.back()->GetParameter(2) + 
+                                     altFitsAB.back()->GetParameter(3))*
                                     sigmalizedFitRange);
 
          altFitsBGAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
                                       (altFitsAB.back()->GetParameter(2) + 
-                                       gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                       altFitsAB.back()->GetParameter(3))*sigmalizedFitRange, 
                                       altFitsAB.back()->GetParameter(1) + 
                                       (altFitsAB.back()->GetParameter(2) + 
-                                       gaussianBroadeningSigma)*sigmalizedFitRange);
+                                       altFitsAB.back()->GetParameter(3))*sigmalizedFitRange);
 
-         altFitsFreeG.back()->SetRange(altFitsFreeG.back()->GetParameter(1) - 
+         altFitsFreeG.back()->
+            SetRange(CppTools::Minimum(massResonance - (gammaResonance + gaussianBroadeningSigma)*
+                                       sigmalizedFitRange,
+                                       altFitsFreeG.back()->GetParameter(1) - 
                                        (altFitsFreeG.back()->GetParameter(2) + 
-                                        gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange),
+                     CppTools::Maximum(massResonance + (gammaResonance + gaussianBroadeningSigma)*
+                                       sigmalizedFitRange,
                                        altFitsFreeG.back()->GetParameter(1) + 
                                        (altFitsFreeG.back()->GetParameter(2) + 
-                                        gaussianBroadeningSigma)*sigmalizedFitRange);
-
-         altFitsBGFreeG.back()->SetRange(altFitsFreeG.back()->GetParameter(1) - 
-                                         (altFitsFreeG.back()->GetParameter(2) + 
-                                          gaussianBroadeningSigma)*sigmalizedFitRange, 
-                                         altFitsFreeG.back()->GetParameter(1) + 
-                                         (altFitsFreeG.back()->GetParameter(2) + 
-                                          gaussianBroadeningSigma)*sigmalizedFitRange);
+                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange));
+         altFitsBGFreeG.back()->
+            SetRange(CppTools::Minimum(massResonance - (gammaResonance + gaussianBroadeningSigma)*
+                                       sigmalizedFitRange,
+                                       altFitsFreeG.back()->GetParameter(1) - 
+                                       (altFitsFreeG.back()->GetParameter(2) + 
+                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange),
+                     CppTools::Maximum(massResonance + (gammaResonance + gaussianBroadeningSigma)*
+                                       sigmalizedFitRange,
+                                       altFitsFreeG.back()->GetParameter(1) + 
+                                       (altFitsFreeG.back()->GetParameter(2) + 
+                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange));
 
          altFitsFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
                                         (altFitsFixedG.back()->GetParameter(2) + 
-                                         gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                         altFitsFixedG.back()->GetParameter(3))*sigmalizedFitRange, 
                                         altFitsFixedG.back()->GetParameter(1) + 
                                         (altFitsFixedG.back()->GetParameter(2) + 
-                                         gaussianBroadeningSigma)*sigmalizedFitRange);
+                                         altFitsFixedG.back()->GetParameter(3))*sigmalizedFitRange);
 
          altFitsBGFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
                                           (altFitsFixedG.back()->GetParameter(2) + 
-                                           gaussianBroadeningSigma)*sigmalizedFitRange, 
+                                           altFitsFixedG.back()->GetParameter(3))*
+                                          sigmalizedFitRange, 
                                           altFitsFixedG.back()->GetParameter(1) + 
                                           (altFitsFixedG.back()->GetParameter(2) + 
-                                           gaussianBroadeningSigma)*sigmalizedFitRange);
+                                           altFitsFixedG.back()->GetParameter(3))*
+                                          sigmalizedFitRange);
 
          altFitsAB.back()->SetLineWidth(4);
          altFitsFreeG.back()->SetLineWidth(4);
