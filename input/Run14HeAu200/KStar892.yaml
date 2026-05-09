@@ -51,6 +51,7 @@ pair_selection_methods:
     - {pt_bin_min: 5, pt_bin_max: 12} # 20-40
     - {pt_bin_min: 6, pt_bin_max: 12} # 40-60
     - {pt_bin_min: 6, pt_bin_max: 12} # 60-88
+  color: "#7a21dd"
 - 
   name: 1TOF1PID
   bg_fit_func: pol3
@@ -61,6 +62,7 @@ pair_selection_methods:
     - {pt_bin_min: 4, pt_bin_max: 9} # 20-40
     - {pt_bin_min: 4, pt_bin_max: 9} # 40-60
     - {pt_bin_min: 4, pt_bin_max: 9} # 60-88
+  color: "#e42536"
 - 
   name: TOF2PID
   bg_fit_func: pol2
@@ -71,6 +73,7 @@ pair_selection_methods:
     - {pt_bin_min: 0, pt_bin_max: 9} # 20-40
     - {pt_bin_min: 0, pt_bin_max: 9} # 40-60
     - {pt_bin_min: 0, pt_bin_max: 4} # 60-88
+  color: "#5790fc"
 centrality_bins:
 - 
   name: "0-88"
@@ -79,7 +82,7 @@ centrality_bins:
   value_max: 88
   cb_c_min: 0 # CabanaBoy minimum c value
   cb_c_max: 8 # CabanaBoy maximum c value
-  color: "#5790fc" 
+  color: "#5790fc"
   marker_style: 47
   N_coll: 10.4
   N_coll_uncertainty: 0.7
@@ -121,7 +124,7 @@ centrality_bins:
   value_max: 60
   cb_c_min: 4
   cb_c_max: 5
-  color: "#e42536" 
+  color: "#e42536"
   marker_style: 55
   N_coll: 8.4
   N_coll_uncertainty: 0.6
@@ -135,7 +138,7 @@ centrality_bins:
   value_max: 88
   cb_c_min: 6
   cb_c_max: 8
-  color: "#f89c20" 
+  color: "#f89c20"
   marker_style: 59
   N_coll: 3.4
   N_coll_uncertainty: 0.3
