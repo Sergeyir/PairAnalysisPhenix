@@ -485,8 +485,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                altFitFixedG->SetParLimits(0, 1., maxBinVal - minBinVal);
                altFitFixedG->SetParLimits(1, massResonance/1.05, massResonance*1.05);
                altFitFixedG->FixParameter(2, gammaResonance);
-               altFitFixedG->SetParLimits(3, gaussianBroadeningSigma/1.10, 
-                                          gaussianBroadeningSigma*1.10);
+               altFitFixedG->FixParameter(3, gaussianBroadeningSigma);
             }
 
             if (isBGFixedForThisPT)
@@ -733,8 +732,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             double rawYieldStatErr = 
                sqrt(distrMInvFG->Integral(distrMInvFG->GetXaxis()->FindBin(lowIntegrationRange),
-                                          distrMInvFG->GetXaxis()->FindBin(upIntegrationRange)))/
-               fabs(rawYield);
+                                          distrMInvFG->GetXaxis()->FindBin(upIntegrationRange)));
 
             // 2*pi*pT*dpT*N_{evt}
             const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
