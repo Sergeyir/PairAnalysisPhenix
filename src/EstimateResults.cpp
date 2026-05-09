@@ -50,7 +50,8 @@ int main(int argc, char **argv)
    const std::string resonanceName = inputYAMLResonance["name"].as<std::string>();
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
 
-   inputRecEffFileName = "data/Parameters/RecEffResonance/" + runName + "/" + resonanceName + ".root";
+   inputRecEffFileName = "data/Parameters/RecEffResonance/" + 
+                         runName + "/" + resonanceName + ".root";
    CppTools::CheckInputFile(inputRecEffFileName);
    inputRecEffFile = TFile::Open(inputRecEffFileName.c_str());
 
@@ -80,7 +81,8 @@ int main(int argc, char **argv)
 
    estimateFactors = !(inputYAMLMain["is_pp"].as<bool>());
 
-   TH1D *distrSpectraPPVsPTWithStatErr = nullptr;
+   TH1D *distrSpectraPPVsPTStatErr = nullptr;
+   TH1D *distrSpectraPPVsPTSysErr = nullptr;
    const std::string spectraPPFileName = "data/Spectra/pp200/" + resonanceName + ".root";
 
    if (estimateFactors)
@@ -94,13 +96,19 @@ int main(int argc, char **argv)
       else
       {
          TFile *spectraPPFile = TFile::Open(spectraPPFileName.c_str());
-         distrSpectraPPVsPTWithStatErr = 
+         distrSpectraPPVsPTStatErr = 
             static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with stat err"));
-         //spectraPPVsPTWithSysErr = 
-         //   static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with sys err"));
-         if (!distrSpectraPPVsPTWithStatErr)
+         distrSpectraPPVsPTSysErr = 
+            static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with sys err"));
+         if (!distrSpectraPPVsPTStatErr)
          {
-            CppTools::PrintError("No p+p spectra was found in file " + spectraPPFileName);
+            CppTools::PrintError("No p+p spectra with statistical uncertainty was "\
+                                 "found in file " + spectraPPFileName);
+         }
+         if (!distrSpectraPPVsPTSysErr)
+         {
+            CppTools::PrintError("No p+p spectra with systematic uncertainty was "\
+                                 "found in file " + spectraPPFileName);
          }
       }
    }
@@ -110,8 +118,8 @@ int main(int argc, char **argv)
       const std::string centralityName = centralityBin["name"].as<std::string>();
       const std::string centralityNameTex = centralityBin["name_tex"].as<std::string>();
 
-      std::vector<TH1D *> spectrasVsPTWithStatErr;
-      //std::vector<TH1D *> spectrasVsPTWithSysErrors;
+      std::vector<TH1D *> spectrasVsPTStatErr;
+      std::vector<TH1D *> spectrasVsPTSysErr;
 
       double yMin = 1e31;
       double yMax = 1e-31;
@@ -120,9 +128,12 @@ int main(int argc, char **argv)
       legend.SetLineColorAlpha(0, 0.);
       legend.SetFillColorAlpha(0, 0.);
 
+      std::vector<int> methodColors;
+
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
       {
          const std::string methodName = method["name"].as<std::string>();
+         methodColors.emplace_back(TColor::GetColor(method["color"].as<std::string>().c_str()));
 
          inputFileName = "data/RawYields/" + runName + "/Resonance/" + 
                          std::to_string(taxiNumber) + "_" + resonanceName + 
@@ -130,37 +141,59 @@ int main(int argc, char **argv)
          CppTools::CheckInputFile(inputFileName);
          inputFile = TFile::Open(inputFileName.c_str());
 
-         TH1D *rawYieldVsPTWithStatErr = 
+         TH1D *rawYieldVsPTStatErr = 
             static_cast<TH1D *>(inputFile->Get((centralityName + 
                                                 "/raw yield vs pT with stat errors").c_str()));
+         TH1D *rawYieldVsPTSysErr = 
+            static_cast<TH1D *>(inputFile->Get((centralityName + 
+                                                "/raw yield vs pT with sys errors").c_str()));
 
-         if (!rawYieldVsPTWithStatErr) 
+         if (!rawYieldVsPTStatErr) 
          {
-            CppTools::PrintError("No raw yield distribution was found in file " + inputFileName + 
-                                 " for " + methodName + " in centrality " + centralityName);
+            CppTools::PrintError("No raw yield distribution with statistical errors was "\
+                                 "found in file " + inputFileName + " for " + methodName + 
+                                 " in centrality " + centralityName);
+         }
+         if (!rawYieldVsPTSysErr) 
+         {
+            CppTools::PrintError("No raw yield distribution with systematic errors "\
+                                 "was found in file " + inputFileName + " for " + methodName + 
+                                 " in centrality " + centralityName);
          }
 
-         TH1D *recEffVsPT = static_cast<TH1D *>
+         TH1D *recEffVsPTStatErr = static_cast<TH1D *>
+            (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                   "vs pT with stat errors").c_str()));
+         TH1D *recEffVsPTSysErr = static_cast<TH1D *>
             (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
                                    "vs pT with stat errors").c_str()));
 
-         if (!recEffVsPT)
+         if (!recEffVsPTStatErr)
          {
-            CppTools::PrintError("No reconstruction efficiency was found in file " + 
-                                 inputRecEffFileName + " for " + methodName);
+            CppTools::PrintError("No reconstruction efficiency with statistical errors was "\
+                                 "found in file " + inputRecEffFileName + " for " + methodName);
+         }
+         if (!recEffVsPTSysErr)
+         {
+            CppTools::PrintError("No reconstruction efficiency with systematic errors was "\
+                                 "found in file " + inputRecEffFileName + " for " + methodName);
          }
 
-         rawYieldVsPTWithStatErr->Divide(recEffVsPT);
-         rawYieldVsPTWithStatErr->Scale(1./spectraNorm);
+         rawYieldVsPTStatErr->Divide(recEffVsPTStatErr);
+         rawYieldVsPTSysErr->Divide(recEffVsPTSysErr);
 
-         spectrasVsPTWithStatErr.emplace_back(rawYieldVsPTWithStatErr);
+         rawYieldVsPTStatErr->Scale(1./spectraNorm);
+         rawYieldVsPTSysErr->Scale(1./spectraNorm);
+
+         spectrasVsPTStatErr.emplace_back(rawYieldVsPTStatErr);
+         spectrasVsPTSysErr.emplace_back(rawYieldVsPTSysErr);
 
          for (unsigned int i = 1; i <= pTNBins; i++)
          {
-            if (rawYieldVsPTWithStatErr->GetBinContent(i) < 1e-31) continue;
+            if (rawYieldVsPTStatErr->GetBinContent(i) < 1e-31) continue;
 
-            yMin = CppTools::Minimum(yMin, rawYieldVsPTWithStatErr->GetBinContent(i));
-            yMax = CppTools::Maximum(yMax, rawYieldVsPTWithStatErr->GetBinContent(i));
+            yMin = CppTools::Minimum(yMin, rawYieldVsPTStatErr->GetBinContent(i));
+            yMax = CppTools::Maximum(yMax, rawYieldVsPTStatErr->GetBinContent(i));
          }
       }
 
@@ -169,9 +202,14 @@ int main(int argc, char **argv)
 
       TH1D distrResultingSpectraVsPTStatErr("spectra vs pT with stat errors", "", 
                                             pTNBins, &pTBinRanges[0]);
+      TH1D distrResultingSpectraVsPTSysErr("spectra vs pT with sys errors", "", 
+                                           pTNBins, &pTBinRanges[0]);
 
       distrResultingSpectraVsPTStatErr.SetLineColor(kBlack);
       distrResultingSpectraVsPTStatErr.SetLineWidth(4);
+
+      distrResultingSpectraVsPTSysErr.SetFillColorAlpha(kBlack, 0.3);
+      distrResultingSpectraVsPTSysErr.SetFillStyle(1001);
 
       // graph containing all points across different methods for better Tsallis fit
       TGraphErrors graphSpectraVsPTForTsallisFit;
@@ -180,21 +218,23 @@ int main(int argc, char **argv)
       {
          double minErr = 1e31;
          double minStatErr = 1e31;
-         //double minSysErr = 1e31;
+         double minSysErr = 1e31;
 
          double valueOfMinErrHist = -1.;
-         for (unsigned int j = 0; j < spectrasVsPTWithStatErr.size(); j++)
+         for (unsigned int j = 0; j < spectrasVsPTStatErr.size(); j++)
          {
-            if (spectrasVsPTWithStatErr[j]->GetBinContent(i) < 1e-31) continue;
+            if (spectrasVsPTStatErr[j]->GetBinContent(i) < 1e-31) continue;
 
-            const double value = spectrasVsPTWithStatErr[j]->GetBinContent(i);
-            const double statErr = spectrasVsPTWithStatErr[j]->GetBinError(i);
-            const double fullErr = statErr;
+            const double value = spectrasVsPTStatErr[j]->GetBinContent(i);
+            const double statErr = spectrasVsPTStatErr[j]->GetBinError(i);
+            const double sysErr = spectrasVsPTSysErr[j]->GetBinError(i);
+            const double fullErr = sqrt(statErr*statErr + sysErr*sysErr);
 
             if (fullErr < minErr)
             {
                valueOfMinErrHist = value;
                minStatErr = statErr;
+               minSysErr = sysErr;
                minErr = fullErr;
             }
 
@@ -207,7 +247,10 @@ int main(int argc, char **argv)
          if (valueOfMinErrHist < 0.) continue;
 
          distrResultingSpectraVsPTStatErr.SetBinContent(i, valueOfMinErrHist);
+         distrResultingSpectraVsPTSysErr.SetBinContent(i, valueOfMinErrHist);
+
          distrResultingSpectraVsPTStatErr.SetBinError(i, minStatErr);
+         distrResultingSpectraVsPTSysErr.SetBinError(i, minSysErr);
       }
 
       double xMin = pTBinRanges.front();
@@ -241,7 +284,7 @@ int main(int argc, char **argv)
       {
          graphSpectraVsPTForTsallisFit.Fit(&tsallisFit, "RQMBN EX0");
 
-         // clearing previos points so that corrected ones can be written
+         // clearing previous points so that corrected ones can be written
          for (int j = graphSpectraVsPTForTsallisFit.GetN() - 1; j >= 0; j--)
          {
             graphSpectraVsPTForTsallisFit.RemovePoint(j);
@@ -257,24 +300,36 @@ int main(int argc, char **argv)
 
             distrResultingSpectraVsPTStatErr.
                SetBinContent(j + 1, distrResultingSpectraVsPTStatErr.GetBinContent(j + 1)/norm);
+            distrResultingSpectraVsPTSysErr.
+               SetBinContent(j + 1, distrResultingSpectraVsPTSysErr.GetBinContent(j + 1)/norm);
+
             distrResultingSpectraVsPTStatErr.
                SetBinError(j + 1, distrResultingSpectraVsPTStatErr.GetBinError(j + 1)/norm);
+            distrResultingSpectraVsPTSysErr.
+               SetBinError(j + 1, distrResultingSpectraVsPTSysErr.GetBinError(j + 1)/norm);
 
-            for (unsigned int k = 0; k < spectrasVsPTWithStatErr.size(); k++)
+            for (unsigned int k = 0; k < spectrasVsPTStatErr.size(); k++)
             {
-               if (spectrasVsPTWithStatErr[k]->GetBinContent(j + 1) < 1e-31) continue;
+               if (spectrasVsPTStatErr[k]->GetBinContent(j + 1) < 1e-31) continue;
 
-               spectrasVsPTWithStatErr[k]->
-                  SetBinContent(j + 1, spectrasVsPTWithStatErr[k]->GetBinContent(j + 1)/norm);
-               spectrasVsPTWithStatErr[k]->
-                  SetBinError(j + 1, spectrasVsPTWithStatErr[k]->GetBinError(j + 1)/norm);
+               spectrasVsPTStatErr[k]->
+                  SetBinContent(j + 1, spectrasVsPTStatErr[k]->GetBinContent(j + 1)/norm);
+               spectrasVsPTSysErr[k]->
+                  SetBinContent(j + 1, spectrasVsPTSysErr[k]->GetBinContent(j + 1)/norm);
+
+               spectrasVsPTStatErr[k]->
+                  SetBinError(j + 1, spectrasVsPTStatErr[k]->GetBinError(j + 1)/norm);
+               spectrasVsPTSysErr[k]->
+                  SetBinError(j + 1, spectrasVsPTSysErr[k]->GetBinError(j + 1)/norm);
 
                graphSpectraVsPTForTsallisFit.
                   AddPoint((pTBinRanges[j] + pTBinRanges[j + 1])/2., 
-                           spectrasVsPTWithStatErr[k]->GetBinContent(j + 1));
+                           spectrasVsPTStatErr[k]->GetBinContent(j + 1));
+
+               const double fullErr = sqrt(pow(spectrasVsPTSysErr[k]->GetBinError(j + 1), 2) +
+                                           pow(spectrasVsPTStatErr[k]->GetBinError(j + 1), 2));
                graphSpectraVsPTForTsallisFit.
-                  SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0.,
-                                spectrasVsPTWithStatErr[k]->GetBinError(j + 1));
+                  SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0., fullErr);
             }
          }
       }
@@ -296,31 +351,39 @@ int main(int argc, char **argv)
 
       tsallisFit.Draw("SAME");
       distrResultingSpectraVsPTStatErr.Draw("SAME");
+      distrResultingSpectraVsPTSysErr.Draw("SAME E2");
 
       distrResultingSpectraVsPTStatErr.Clone()->Write();
+      distrResultingSpectraVsPTSysErr.Clone()->Write();
 
-      ROOTTools::PrintCanvas(&canvSpectra, outputDir + "/spectra_" + centralityName);
+      ROOTTools::PrintCanvas(&canvSpectra, outputDir + "/" + resonanceName + 
+                             "_spectra_" + centralityName);
 
-      std::vector<TH1D *> spectraRatiosVsPT;
+      std::vector<TH1D *> spectraRatiosVsPTStatErr;
+      std::vector<TH1D *> spectraRatiosVsPTSysErr;
 
       double ratioMin = 1e31;
       double ratioMax = 1e-31;
 
-      for (unsigned int i = 0; i < spectrasVsPTWithStatErr.size(); i++)
+      for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
-         spectraRatiosVsPT.
-            emplace_back(static_cast<TH1D *>(spectrasVsPTWithStatErr[i]->Clone()));
+         spectraRatiosVsPTStatErr.
+            emplace_back(static_cast<TH1D *>(spectrasVsPTStatErr[i]->Clone()));
+         spectraRatiosVsPTSysErr.
+            emplace_back(static_cast<TH1D *>(spectrasVsPTSysErr[i]->Clone()));
 
-         spectraRatiosVsPT[i]->SetLineWidth(4);
+         spectraRatiosVsPTStatErr[i]->SetLineWidth(4);
+         spectraRatiosVsPTSysErr[i]->SetLineWidth(4);
 
-         spectraRatiosVsPT[i]->Divide(&tsallisFit);
+         spectraRatiosVsPTStatErr[i]->Divide(&tsallisFit);
+         spectraRatiosVsPTSysErr[i]->Divide(&tsallisFit);
 
          for (unsigned int j = 1; j < pTNBins; j++)
          {
-            if (spectraRatiosVsPT[i]->GetBinContent(j) < 1e-15) continue;
+            if (spectraRatiosVsPTStatErr[i]->GetBinContent(j) < 1e-15) continue;
 
-            ratioMin = CppTools::Minimum(ratioMin, spectraRatiosVsPT[i]->GetBinContent(j));
-            ratioMax = CppTools::Maximum(ratioMax, spectraRatiosVsPT[i]->GetBinContent(j));
+            ratioMin = CppTools::Minimum(ratioMin, spectraRatiosVsPTStatErr[i]->GetBinContent(j));
+            ratioMax = CppTools::Maximum(ratioMax, spectraRatiosVsPTStatErr[i]->GetBinContent(j));
          }
       }
 
@@ -346,17 +409,19 @@ int main(int argc, char **argv)
 
       tsallisFit.Draw("SAME");
 
-      for (unsigned int i = 0; i < spectrasVsPTWithStatErr.size(); i++)
+      for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
-         spectrasVsPTWithStatErr[i]->Draw("SAME PLC");
+         spectrasVsPTStatErr[i]->SetLineColor(methodColors[i]);
+         spectrasVsPTStatErr[i]->Draw("SAME");
+
+         spectrasVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+         spectrasVsPTSysErr[i]->SetFillStyle(1001);
+         spectrasVsPTSysErr[i]->Draw("SAME E2");
 
          const std::string methodName = 
             inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>();
 
-         legend.AddEntry(spectrasVsPTWithStatErr[i], methodName.c_str(), "PLC");
-
-         //spectrasVsPTWithStatErr[i]->Write(("spectra vs pT with stat errors, " + 
-         //                                      methodName).c_str());
+         legend.AddEntry(spectrasVsPTStatErr[i], methodName.c_str(), "L");
       }
 
       legend.Draw();
@@ -379,19 +444,25 @@ int main(int argc, char **argv)
          line.Clone()->Draw();
       }
 
-      for (unsigned int i = 0; i < spectraRatiosVsPT.size(); i++)
+      for (unsigned int i = 0; i < spectraRatiosVsPTStatErr.size(); i++)
       {
-         spectraRatiosVsPT[i]->Draw("SAME PLC");
+         spectraRatiosVsPTStatErr[i]->SetLineColor(methodColors[i]);
+         spectraRatiosVsPTStatErr[i]->Draw("SAME");
+
+         spectraRatiosVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+         spectraRatiosVsPTSysErr[i]->SetFillStyle(1001);
+         spectraRatiosVsPTSysErr[i]->Draw("SAME E2");
       }
 
-      ROOTTools::PrintCanvas(&canvAllSpectra, outputDir + "/spectra_" + centralityName + "_all");
+      ROOTTools::PrintCanvas(&canvAllSpectra, outputDir + "/" + resonanceName + 
+                             "_spectra_" + centralityName + "_all");
 
       legend.Clear();
 
       if (estimateFactors)
       {
-         std::vector<TH1D *>distrRABsVsPTWithStatErr;
-         //std::vector<TH1D *>distrRABsVsPTWithSysErr;
+         std::vector<TH1D *> distrRABsVsPTStatErr;
+         std::vector<TH1D *> distrRABsVsPTSysErr;
 
          // scale for R_{AB} = c_{bias}/N_{coll}
          const double scaleRAB = centralityBin["bias_factor"].as<double>()/
@@ -399,19 +470,24 @@ int main(int argc, char **argv)
 
          double maxRAB = 1e-31;
 
-         for (unsigned int i = 0; i < spectrasVsPTWithStatErr.size(); i++)
+         for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
          {
-            distrRABsVsPTWithStatErr.
-               emplace_back(static_cast<TH1D *>(spectrasVsPTWithStatErr[i]->Clone()));
+            distrRABsVsPTStatErr.
+               emplace_back(static_cast<TH1D *>(spectrasVsPTStatErr[i]->Clone()));
+            distrRABsVsPTSysErr.
+               emplace_back(static_cast<TH1D *>(spectrasVsPTSysErr[i]->Clone()));
 
-            distrRABsVsPTWithStatErr.back()->Divide(distrSpectraPPVsPTWithStatErr);
-            distrRABsVsPTWithStatErr.back()->Scale(scaleRAB);
+            distrRABsVsPTStatErr.back()->Divide(distrSpectraPPVsPTStatErr);
+            distrRABsVsPTSysErr.back()->Divide(distrSpectraPPVsPTSysErr);
+
+            distrRABsVsPTStatErr.back()->Scale(scaleRAB);
+            distrRABsVsPTSysErr.back()->Scale(scaleRAB);
 
             for (unsigned int j = 1; j < pTNBins; j++)
             {
-               if (distrRABsVsPTWithStatErr.back()->GetBinContent(j) < 1e-15) continue;
+               if (distrRABsVsPTStatErr.back()->GetBinContent(j) < 1e-15) continue;
 
-               maxRAB = CppTools::Maximum(maxRAB, distrRABsVsPTWithStatErr.back()->GetBinContent(j));
+               maxRAB = CppTools::Maximum(maxRAB, distrRABsVsPTStatErr.back()->GetBinContent(j));
             }
          }
 
@@ -439,14 +515,19 @@ int main(int argc, char **argv)
             line.Clone()->Draw();
          }
 
-         for (unsigned int i = 0; i < distrRABsVsPTWithStatErr.size(); i++)
+         for (unsigned int i = 0; i < distrRABsVsPTStatErr.size(); i++)
          {
-            distrRABsVsPTWithStatErr[i]->Draw("SAME PLC");
+            distrRABsVsPTStatErr[i]->SetLineColor(methodColors[i]);
+            distrRABsVsPTStatErr[i]->Draw("SAME");
+
+            distrRABsVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+            distrRABsVsPTSysErr[i]->SetFillStyle(1001);
+            distrRABsVsPTSysErr[i]->Draw("SAME E2");
 
             const std::string methodName = 
                inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>();
 
-            legend.AddEntry(distrRABsVsPTWithStatErr[i], methodName.c_str(), "PLC");
+            legend.AddEntry(distrRABsVsPTStatErr[i], methodName.c_str(), "PLC");
          }
 
          legend.Draw();
@@ -458,15 +539,31 @@ int main(int argc, char **argv)
 
          tlText.DrawLatexNDC(0.15, 0.15, centralityNameTex.c_str());
 
-         ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/RAB_all_methods_" + centralityName);
+         ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/" + resonanceName + 
+                                "_RAB_all_methods_" + centralityName);
 
          TH1D *distrResultingRABVsPTStatErr = 
             static_cast<TH1D *>(distrResultingSpectraVsPTStatErr.Clone());
+         TH1D *distrResultingRABVsPTSysErr = 
+            static_cast<TH1D *>(distrResultingSpectraVsPTSysErr.Clone());
 
-         distrResultingRABVsPTStatErr->Divide(distrSpectraPPVsPTWithStatErr);
+         distrResultingRABVsPTStatErr->Divide(distrSpectraPPVsPTStatErr);
+         distrResultingRABVsPTSysErr->Divide(distrSpectraPPVsPTSysErr);
+
          distrResultingRABVsPTStatErr->Scale(scaleRAB);
+         distrResultingRABVsPTSysErr->Scale(scaleRAB);
+
+         for (int i = 1; i <= distrResultingRABVsPTStatErr->GetXaxis()->GetNbins(); i++)
+         {
+            if (distrResultingRABVsPTStatErr->GetBinContent(i) < 1e-7)
+            {
+               distrResultingRABVsPTStatErr->SetBinContent(i, -1e-7);
+               distrResultingRABVsPTSysErr->SetBinContent(i, -1e-7);
+            }
+         }
 
          distrResultingRABVsPTStatErr->Write("RAB vs pT with stat errors");
+         distrResultingRABVsPTSysErr->Write("RAB vs pT with sys errors");
       }
    }
 
