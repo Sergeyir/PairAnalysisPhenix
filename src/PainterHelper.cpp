@@ -37,10 +37,24 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
       return;
    }
 
-   if (histogramWithSysErrors || 
-       (histogramWithStatErrors->GetXaxis()->GetNbins() != 
-        histogramWithStatErrors->GetXaxis()->GetNbins()))
+   if (!histogramWithSysErrors) 
    {
+      CppTools::PrintWarning("Histogram with legend entry " + legendEntry + " containing values "\
+                             "and systematic uncertanities is nullptr; "\
+                             "No systematic uncertainties will be drawn for this histogram");
+      disableSysErrors = true;
+   }
+
+   if (!disableSysErrors &&
+       (histogramWithStatErrors->GetXaxis()->GetNbins() != 
+        histogramWithSysErrors->GetXaxis()->GetNbins()))
+   {
+      CppTools::PrintWarning("Histogram with legend entry " + legendEntry + " containing values "\
+                             "and systematic uncertanities axis is different from the histogram "\
+                             "containing statistical uncertainties; "\
+                             "No systematic uncertainties will be drawn for this histogram");
+      CppTools::Print(histogramWithStatErrors->GetXaxis()->GetNbins(),
+        histogramWithSysErrors->GetXaxis()->GetNbins());
       disableSysErrors = true;
    }
 
