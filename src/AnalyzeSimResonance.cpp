@@ -175,7 +175,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
+                   !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
                {
                   idPC2 = PART_ID::NONE;
                   weightPC2 = 1.;
@@ -190,7 +191,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
                if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
+                   !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
                {
                   idPC3 = PART_ID::NONE;
                   weightPC3 = 1.;
@@ -208,7 +210,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
                else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
 
-               if (IsMatch(sdphi, sdz) && !isCutByECore && 
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && !isCutByECore && 
                    !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
                {
                   weightEMCal = 1.;
@@ -226,7 +228,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            break;
                      }
                      weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
-                                                            idEMCal, pT, 1., 2.)*weightEMCal;
+                                                            idEMCal, pT, 1. + cutsSigmOffset, 
+                                                            2. - cutsSigmOffset)*weightEMCal;
                      if (weightIdEMCal <= 0.)
                      {
                         idEMCal = PART_ID::NONE;
@@ -252,7 +255,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // slat number for the current chamber
                const int slat = simCNT.slat(i) % 96;
 
-               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz) && 
+               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
                    !dmCutter.IsDeadTOFe(chamber, slat))
                {
                   weightTOFe = 1.;
@@ -267,7 +270,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            idTOFe = daughter2Id;
                            break;
                      }
-                     weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2., 2.)*weightTOFe;
+                     weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2. + cutsSigmOffset, 
+                                                          2. - cutsSigmOffset)*weightTOFe;
 
                      if (weightIdTOFe <= 0.)
                      {
@@ -288,7 +292,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // strip number for the current chamber
                const int strip = simCNT.striptofw(i) % 64;
 
-               if (IsMatch(sdphi, sdz) && !dmCutter.IsDeadTOFw(chamber, strip))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && !dmCutter.IsDeadTOFw(chamber, strip))
                {
                   weightTOFw = 0.7996;
                   if (!dmCutter.IsDeadTimingTOFw(chamber, strip))
@@ -302,7 +306,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                            idTOFw = daughter2Id;
                            break;
                      }
-                     weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2., 2.)*weightTOFw;
+                     weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2. + cutsSigmOffset, 
+                                                          2. - cutsSigmOffset)*weightTOFw;
 
                      if (weightIdTOFw <= 0.)
                      {
@@ -622,19 +627,21 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 4) 
+   if (argc < 2 || argc > 5) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance ";
-      errMsg += "inputYAMLName pTScale=1. numberOfThreads=std::thread::hardware_concurrency()";
+      errMsg += "inputYAMLName pTScale=1. cutsSigmOffset=0. "\
+                "numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
 
    if (argc > 2) pTScale = std::atof(argv[2]);
+   if (argc > 3) cutsSigmOffset = std::atof(argv[3]);
 
-   if (argc == 4) numberOfThreads = std::stoi(argv[3]);
+   if (argc == 5) numberOfThreads = std::stoi(argv[4]);
    else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
@@ -761,6 +768,7 @@ int main(int argc, char **argv)
    box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
    box.AddEntry("Reweight for pT spectra", reweightForSpectra);
    box.AddEntry("pT scale", pTScale, 3);
+   box.AddEntry("Cuts sigmalized offset", cutsSigmOffset, 2);
    box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
@@ -812,8 +820,16 @@ int main(int argc, char **argv)
    std::string outputFileName = "data/PostSim/" + runName + "/Resonance/" + 
                                 inputYAMLResonance["name"].as<std::string>();
 
-   if (fabs(pTScale - 1.) < 1e-15) outputFileName += ".root";
-   else outputFileName += "_pTScale_" + CppTools::DtoStr(pTScale, 3) + ".root";
+   if (fabs(pTScale - 1.) > 1e-15) 
+   {
+      outputFileName += "_pTScale_" + CppTools::DtoStr(pTScale, 3);
+   }
+   if (fabs(cutsSigmOffset) > 1e-15) 
+   {
+      outputFileName += "_cut_sigm_offset_" + CppTools::DtoStr(cutsSigmOffset, 2);
+   }
+
+   outputFileName += ".root";
 
    thrContainer.Write(outputFileName);
 

@@ -66,6 +66,13 @@ namespace AnalyzeSimResonance
    InputYAMLReader inputYAMLSimSingleTrack;
    /// pT scale (original pT as well as all single tracks) for systematics evaluation
    double pTScale = 1.;
+   double cutsSigmOffset = 0.;
+   /// offset for all cuts (deadmaps, matching, m2 identification)
+   /// can have any value, but only 3 interpretations by the program:
+   /// 1. 0 (by default) - no cuts variation will be applied
+   /// 2. negative - cuts will be loosened
+   /// 2. positive - cuts will be tightened
+   int cutsOffset = 0;
    /// number of threads
    int numberOfThreads;
    /// number of events across all trees

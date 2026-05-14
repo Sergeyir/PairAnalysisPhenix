@@ -15,18 +15,20 @@ using namespace EstimateRecEffOfResonance;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
+   if (argc < 2 || argc > 4) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/EstimateRecEffOfResonance ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
+      errMsg += "inputYAMLName cutsSigmOffset numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
  
-   if (argc == 2) ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-   else ROOT::EnableImplicitMT(std::stoi(argv[2]));
+   if (argc > 2) cutsSigmOffset = std::atof(argv[2]);
+
+   if (argc == 4) ROOT::EnableImplicitMT(std::stoi(argv[3]));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
@@ -53,7 +55,13 @@ int main(int argc, char **argv)
 
    const std::string inputDir = "data/PostSim/" + runName + "/Resonance/";
 
-   inputFileName = inputDir + resonanceName + ".root";
+   if (fabs(cutsSigmOffset) > 1e-15) 
+   {
+      cutsSigmOffsetName = "_cut_sigm_offset_" + CppTools::DtoStr(cutsSigmOffset, 2);
+   }
+
+   inputFileName = inputDir + resonanceName + cutsSigmOffsetName + ".root";
+
    CppTools::CheckInputFile(inputFileName);
 
    inputFile = TFile::Open(inputFileName.c_str(), "READ");
@@ -64,7 +72,7 @@ int main(int argc, char **argv)
 
       if (fileName == inputFileName) continue;
 
-      if (std::regex_match(fileName, std::regex("(.*)" + resonanceName + 
+      if (std::regex_match(fileName, std::regex("(.*)" + resonanceName + cutsSigmOffsetName + 
                                                 "_pTScale_([0-9\\.]*)\\.root")))
       {
          CppTools::PrintInfo("Found alternative simulation file " + fileName +   
@@ -73,6 +81,12 @@ int main(int argc, char **argv)
          altPTScaleSimInputFileNames.emplace_back(fileName);
          altPTScaleSimInputFiles.emplace_back(TFile::Open(fileName.c_str()));
       }
+   }
+   if (altPTScaleSimInputFileNames.size() == 0)
+   {
+      CppTools::PrintInfo("No alternative simulation files for pT scale systematic uncertainty "\
+                          "evaluation was found for cutsSigmOffset=" + 
+                          CppTools::DtoStr(cutsSigmOffset, 2));
    }
 
    text.SetTextFont(43);
@@ -93,7 +107,7 @@ int main(int argc, char **argv)
 
    const std::string parametersOutputDir = "data/Parameters/RecEffResonance/" + runName;
    outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
-                             ".root").c_str(), "RECREATE");
+                             cutsSigmOffsetName + ".root").c_str(), "RECREATE");
 
    // performing fits for each pair selection method
    for (const auto& method : inputYAMLResonance["pair_selection_methods"])
@@ -111,7 +125,8 @@ int main(int argc, char **argv)
 
 void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& methodName)
 {
-   const std::string outputDir = "output/RecEffResonance/" + runName + "/" + methodName;
+   const std::string outputDir = "output/RecEffResonance/" + runName + "/" + 
+                                 methodName + "/" + cutsSigmOffsetName;
    std::filesystem::create_directories(outputDir);
 
    outputFile->mkdir(methodName.c_str());
@@ -266,10 +281,11 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
    pBar.RePrint();
 }
 
-void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin, const std::string& methodName,
-                                          TFile *file, TH1D& distrRecEffVsPT,
-                                          TH1D& distrMeansVsPT, TH1D& distrGammasVsPT,
-                                          const std::string& outputFileNameWithoutExt)
+void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin, 
+                                               const std::string& methodName,
+                                               TFile *file, TH1D& distrRecEffVsPT,
+                                               TH1D& distrMeansVsPT, TH1D& distrGammasVsPT,
+                                               const std::string& outputFileNameWithoutExt)
 {
    TH1D *distrOrigUnscaledPT = static_cast<TH1D *>(file->Get("orig unscaled pT"));
    if (!distrOrigUnscaledPT) CppTools::PrintError("Original unscaled pT distribution was not found "\
@@ -458,7 +474,7 @@ void EstimateRecEffOfResonance::SetGaussianBroadeningFunction()
 }
 
 double EstimateRecEffOfResonance::GetYield(TH1D *distrMInv, const TF1& funcBG, 
-                                      const double xMin, const double xMax, double &err)
+                                           const double xMin, const double xMax, double &err)
 {
    // integral over the signal
    double integral = 0.;

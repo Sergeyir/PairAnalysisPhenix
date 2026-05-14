@@ -78,6 +78,12 @@ namespace EstimateRecEffOfResonance
    std::string runName;
    /// Name of the input file
    std::string inputFileName;
+   /// sigmalized offset for matching and m2 identification cuts; 
+   /// used for estimation of systematic uncertainties of said cuts
+   double cutsSigmOffset = 0.;
+   /// sigmalized offset for matching and m2 identification cuts; 
+   /// used for estimation of systematic uncertainties of said cuts
+   std::string cutsSigmOffsetName = "";
    /// Input file
    TFile *inputFile;
    /// Names of alternative pTScale simulation input files for systematic uncertainty evaluation
