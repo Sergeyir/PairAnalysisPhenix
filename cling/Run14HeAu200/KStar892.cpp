@@ -238,7 +238,8 @@ void KStar892()
       tlText.SetTextSize(0.05);
 
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
-      tlText.DrawLatexNDC(0.12, 0.15, (centralityNameTex + "  " + centralityNameTex).c_str());
+      tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+                                       + "  " + centralityNameTex).c_str());
  
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_comp_" + centralityName);
 
