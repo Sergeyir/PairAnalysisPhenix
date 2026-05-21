@@ -73,6 +73,12 @@ namespace AnalyzeSimResonance
    /// 2. negative - cuts will be loosened
    /// 2. positive - cuts will be tightened
    int cutsOffset = 0;
+   /// shows whether no cut variations will be applied
+   bool cutsNoOffset;
+   /// shows whether cut variations are loosened
+   bool cutsOffsetLoose;
+   /// shows whether cut variations are tightened
+   bool cutsOffsetTight;
    /// number of threads
    int numberOfThreads;
    /// number of events across all trees

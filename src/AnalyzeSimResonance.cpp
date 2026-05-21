@@ -123,7 +123,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          for(int i = 0; i < simCNT.nch(); i++) // loop over particles in one event
          {
             const double the0 = simCNT.the0(i);
-            if (IsGhostCut(the0, bbcz)) continue;
+            if (cutsNoOffset && IsGhostCut(the0, bbcz)) continue;
 
             const double pT = simCNT.mom(i)*sin(the0)*pTScale;
             if (pT < pTMin || pT > pTMax) continue;
@@ -136,7 +136,9 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const int dcarm = simCNT.dcarm(i);
 
             const double zed = simCNT.zed(i);
-            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
+            if (cutsNoOffset && fabs(zed) > 75. && fabs(zed) < 3.) continue;
+            if (cutsOffsetLoose && fabs(zed) > 78.) continue;
+            if (cutsOffsetTight && fabs(zed) > 72. && fabs(zed) < 6.) continue;
  
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
