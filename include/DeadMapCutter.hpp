@@ -60,7 +60,8 @@ class DeadMapCutter
    void Initialize(const std::string& runName, const std::string& options = "1111111");
 
    /// Returns true if data in DC is in bad/dead area
-   bool IsDeadDC(const int dcarm, const double zDC, const double board, const double alpha);
+   bool IsDeadDC(const int dcarm, const double zDC, 
+                 const double board, const double alpha);
    /// Returns true if data in PC1 is in bad/dead area
    bool IsDeadPC1(const int dcarm, const double ppc1z, const double ppc1phi);
    /// Returns true if data in PC2 is in bad/dead area
@@ -72,13 +73,49 @@ class DeadMapCutter
    /// Returns true if data in TOFw is in bad/dead area
    bool IsDeadTOFw(const int chamber, const int strip);
    /// Returns true if data in EMCal is in bad/dead area
-   bool IsDeadEMCal(const int dcarm, const int sector, const int yTower, const int zTower);
+   bool IsDeadEMCal(const int dcarm, const int sector, 
+                    const int yTower, const int zTower);
    /// Returns true if timing distribution in TOFe is bad
    bool IsDeadTimingTOFe(const int chamber, const int slat);
    /// Returns true if timing distribution in TOFw is bad
    bool IsDeadTimingTOFw(const int chamber, const int strip);
    /// Returns true if timing distribution in EMCal is bad
-   bool IsDeadTimingEMCal(const int dcarm, const int sector, const int yTower, const int zTower);
+   bool IsDeadTimingEMCal(const int dcarm, const int sector, 
+                          const int yTower, const int zTower);
+
+   /// Returns true if all data within variation in DC is in bad/dead area
+   bool IsDeadDCLoose(const int dcarm, const double zDC, 
+                      const double board, const double alpha,
+                      const double boardVar, const double alphaVar);
+   /// Returns true if all data within variation in PC1 is in bad/dead area
+   bool IsDeadPC1Loose(const int dcarm, const double ppc1z, const double ppc1phi,
+                       const double ppc1zVar, const double ppc1phiVar);
+   /// Returns true if all data within variation in PC2 is in bad/dead area
+   bool IsDeadPC2Loose(const double ppc2z, const double ppc2phi,
+                       const double ppc2zVar, const double ppc2phiVar);
+   /// Returns true if all data within variation in PC3 is in bad/dead area
+   bool IsDeadPC3Loose(const int dcarm, const double ppc3z, const double ppc3phi,
+                       const double ppc3zVar, const double ppc3phiVar);
+   /// Returns true if all data within variation in TOFe is in bad/dead area
+   bool IsDeadTOFeLoose(const int chamber, const int slat,
+                        const int chamberVar, const int slatVar);
+   /// Returns true if all data within variation in TOFw is in bad/dead area
+   bool IsDeadTOFwLoose(const int chamber, const int strip,
+                        const int chamberVar, const int stripVar);
+   /// Returns true if all data within variation in EMCal is in bad/dead area
+   bool IsDeadEMCalLoose(const int dcarm, const int sector, 
+                         const int yTower, const int zTower,
+                         const int yTowerVar, const int zTowerVar);
+   /// Returns true if all timing distribution within variation in TOFe is bad
+   bool IsDeadTimingTOFeLoose(const int chamber, const int slat, 
+                              const int chamberVar, const int slatVar);
+   /// Returns true if all timing distribution within variation in TOFw is bad
+   bool IsDeadTimingTOFwLoose(const int chamber, const int strip,
+                              const int chamberVar, const int stripVar);
+   /// Returns true if all timing distribution within variation in EMCal is bad
+   bool IsDeadTimingEMCalLoose(const int dcarm, const int sector, 
+                               const int yTower, const int zTower,
+                               const int yTowerVar, const int zTowerVar);
 
    private:
    /// Read 2D arrays from the file into class attributes. Returns true if dead areas were set succesfully
