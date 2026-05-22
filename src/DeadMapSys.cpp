@@ -69,328 +69,225 @@ double DeadMapSys::GetNormRatio(const double ratio)
    return 1./ratio;
 }
 
-double DeadMapSys::CalculateUncertaintyFromProj(TH1D *dataCutDistr, TH1D *simCutDistr)
-{
-   // this uncertainty is calculated by the uncertainty propagation of each bin uncertainty
-   /*
-   double uncertainty = 0.;
-
-   int numberOfNonZeroBins = 0;
-   for (int i = 1; i <= dataCutDistr->GetXaxis()->GetNbins(); i++)
-   {
-      if (simCutDistr->GetBinContent(i) < 1e-15 && dataCutDistr->GetBinContent(i) < 1e-15) 
-      {
-         continue;
-      }
-      const double average = (dataCutDistr->GetBinContent(i)*dataCutDistr->GetBinContent(i) + 
-                              simCutDistr->GetBinContent(i)*simCutDistr->GetBinContent(i))/
-                             (dataCutDistr->GetBinContent(i) + simCutDistr->GetBinContent(i));
-      // standard deviation squared for the current bin is calculated as 
-      // sum(w_i * (x_av - x_i)^2) / sum(w_i)
-      // x_i - bin content of data/sim histogram
-      // w_i - weight = data/sim bin content bin content (equals x_i)
-      // x_av - average bin content between simulated and real data histogram = sum(x_i*w_i)/sum(w_i)
-      const double sigma2 = 
-         (dataCutDistr->GetBinContent(i)*pow(average - dataCutDistr->GetBinContent(i), 2) + 
-          simCutDistr->GetBinContent(i)*pow(average - simCutDistr->GetBinContent(i), 2))/
-         (dataCutDistr->GetBinContent(i) + simCutDistr->GetBinContent(i));
-
-      // uncertainty is propagated as sum ( sigma_i^2 / x_av^2 )
-      // w_i - weight (equals x_av)
-      // sigma_i - standard deviation of the current bin (equals sqrt(sigma2))
-      // x_av - average bin content between simulated and real histograms for the current bin
-      uncertainty += sigma2/average/average;
-      numberOfNonZeroBins++;
-   }
-
-   uncertainty = sqrt(uncertainty/static_cast<double>(numberOfNonZeroBins));
-   return uncertainty;
-   */
-	std::vector<double> dataNormIntegrals;
-	std::vector<double> simNormIntegrals;
-	std::vector<double> ratios;
-
-	for (int i = 0; i < numberOfProjectionDivisions; i++)
-	{
-		dataNormIntegrals.push_back(0.);
-		simNormIntegrals.push_back(0.);
-		for (int j = 1; j <= dataCutDistr->GetXaxis()->GetNbins(); j++)
-		{
-			if (j % 10 != i) continue;
-			dataNormIntegrals.back() += dataCutDistr->GetBinContent(j);
-			simNormIntegrals.back() += simCutDistr->GetBinContent(j);
-		}
-		
-		simCutDistr->Scale(dataNormIntegrals[i]/simNormIntegrals[i]);
-		ratios.push_back(GetNormRatio(dataCutDistr->Integral()/simCutDistr->Integral()));	
-	}
-	
-	for (int i = 0; i < numberOfProjectionDivisions; i++)
-	{
-		const double dataIntegral = dataCutDistr->Integral(
-			static_cast<int>(dataCutDistr->GetXaxis()->GetNbins()*i/numberOfProjectionDivisions), 
-			 static_cast<int>(dataCutDistr->GetXaxis()->GetNbins()*(i+1)/numberOfProjectionDivisions));
-		
-		const double simIntegral = simCutDistr->Integral(
-			static_cast<int>(dataCutDistr->GetXaxis()->GetNbins()*i/numberOfProjectionDivisions), 
-			 static_cast<int>(dataCutDistr->GetXaxis()->GetNbins()*(i+1)/numberOfProjectionDivisions));
-		if (simIntegral > 0 && dataIntegral > 0)
-		{
-			simCutDistr->Scale(dataIntegral/simIntegral);
-			ratios.push_back(GetNormRatio(dataCutDistr->Integral()/simCutDistr->Integral()));	
-		}
-	}
-	return CppTools::RMSFromCArray(&ratios[0], ratios.size()) - 1.;
-}
-
-double DeadMapSys::GetUncertaintyFromXProj(TH2F *realDistr, TH2F *simDistr, 
-                                           TH2F *realCutDistr, TH2F* simCutDistr, 
-                                           const std::string& detectorName, 
-                                           const std::string& title, 
-                                           const std::string& xTitle, const std::string& yTitle,
-                                           const int rebinX)
-{
-	SetHistStyle(realDistr, title, xTitle, yTitle);
-	SetHistStyle(simDistr, "MC " + title, xTitle, yTitle);
-	SetHistStyle(realCutDistr, "Cut " + title, xTitle, yTitle);
-	SetHistStyle(simCutDistr, "Cut MC " + title, xTitle, yTitle);
-	
-	TH1D *realCutDistrProj = realCutDistr->
-      ProjectionX(((std::string) realCutDistr->GetName() + "_projX").c_str(), 
-                  1, realCutDistr->GetYaxis()->GetNbins());
-	TH1D *simCutDistrProj = simCutDistr->
-      ProjectionX(((std::string) simCutDistr->GetName() + "_projX").c_str(), 
-                  1, simCutDistr->GetYaxis()->GetNbins());
-
-   realCutDistrProj->RebinX(rebinX);
-   simCutDistrProj->RebinX(rebinX);
-
-	realCutDistrProj->
-      Scale(1./realCutDistrProj->Integral(1, realCutDistrProj->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistrProj->
-      Scale(1./simCutDistrProj->Integral(1, simCutDistrProj->GetXaxis()->GetNbins()), "nosw2");
-
-	realCutDistrProj->SetFillColorAlpha(kOrange - 4, 0.5);
-	
-	TLegend projLegend = TLegend(0.4, 0.78, 0.9, 0.88);
-	projLegend.SetNColumns(2);
-	
-	projLegend.SetLineColorAlpha(0, 0);
-	projLegend.SetFillColorAlpha(0, 0);
-	
-	realCutDistrProj->SetLineColor(kRed - 3);
-	simCutDistrProj->SetLineColor(kAzure - 3);
-
-	projLegend.AddEntry(realCutDistrProj, "data");
-	projLegend.AddEntry(simCutDistrProj, "MC");
-	
-	realCutDistrProj->SetTitle((title + " projections data vs MC").c_str());
-	realCutDistrProj->GetXaxis()->SetTitle(xTitle.c_str());
-
-	//realCutDistrProj->SetMaximum(realCutDistrProj->GetMaximum()*1.3);
-	
-	realCutDistrProj->GetXaxis()->SetLabelSize(0.05);
-	realCutDistrProj->GetYaxis()->SetLabelSize(0.05);
-
-   realDistr->SetMinimum(1.);
-   realCutDistr->SetMinimum(1.);
-   simDistr->SetMinimum(1.);
-   simCutDistr->SetMinimum(1.);
-	
-	TCanvas canv("canv", "canv", 900, 450);
-	canv.Divide(2);
-	
-	canv.cd(1);
-	
-	gPad->cd(1);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	realDistr->Clone()->Draw("colz");
-
-	canv.cd(2);
-	
-	gPad->cd(1);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	realCutDistr->Clone()->Draw("colz");
-
-   ROOTTools::PrintCanvas(&canv, outputDirDM + detectorName);
-
-	TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 600);
-
-	projCanv.Divide(3, 1);
-
-	projCanv.cd(1);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	realCutDistr->Clone()->Draw("colz");
-
-	projCanv.cd(2);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	simCutDistr->Clone()->Draw("colz");
-
-	projCanv.cd(3);
-	gPad->SetLeftMargin(0.13);
-	//realCutDistrProj->GetCumulative()->Draw();
-	//simCutDistrProj->GetCumulative()->Draw("SAME HIST");
-	realCutDistrProj->Draw();
-	simCutDistrProj->Draw("SAME HIST");
-
-	projLegend.Draw();
-
-   ROOTTools::PrintCanvas(&projCanv, outputDirSys + detectorName);
-	
-	const double uncertainty = CalculateUncertaintyFromProj(realCutDistrProj, simCutDistrProj);
-	
-	const double realLost = (1. - realCutDistr->Integral()/realDistr->Integral())*100.;
-	const double simLost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
-	
-	table.PrintRow(detectorName, 
-		            CppTools::DtoStr(uncertainty*100., 3), 
-		            "-", "-", 
-		            CppTools::DtoStr(realLost, 3) + "%",
-		            CppTools::DtoStr(simLost, 3) + "%");
-	
-	return uncertainty;
-}
-
-double DeadMapSys::GetUncertaintyFromXYProj(TH2F *realDistr, TH2F *simDistr, 
-                                            TH2F *realCutDistr, TH2F* simCutDistr, 
-                                            const std::string& detectorName, 
-                                            const std::string& title, 
-                                            const std::string& xTitle, const std::string& yTitle,
-                                            const int rebinX, const int rebinY)
-{
-	SetHistStyle(realDistr, title, xTitle, yTitle);
-	SetHistStyle(simDistr, "MC " + title, xTitle, yTitle);
-	SetHistStyle(realCutDistr, "Cut " + title, xTitle, yTitle);
-	SetHistStyle(simCutDistr, "Cut MC " + title, xTitle, yTitle);
-	
+double DeadMapSys::GetUncertainty(TH2F *&realDistr, TH2F *&simDistr, 
+                                  TH2F *&realCutDistr, TH2F *&simCutDistr, 
+                                  const int numberOfHeatmapDivisions,
+                                  const std::string& detectorName, const std::string& title, 
+                                  const std::string& xTitle, const std::string& yTitle,
+                                  const int rebinX, const int rebinY, const bool drawYProj)
+{	
 	TH1D *realCutDistrProjX = realCutDistr->
       ProjectionX((title + "_real_x").c_str(), 1, realCutDistr->GetYaxis()->GetNbins());
-	TH1D *realCutDistrProjY = realCutDistr->
-      ProjectionY((title + "_real_y").c_str(), 1, realCutDistr->GetXaxis()->GetNbins());
 	TH1D *simCutDistrProjX = simCutDistr->
       ProjectionX((title + "_sim_x").c_str(), 1, simCutDistr->GetYaxis()->GetNbins());
-	TH1D *simCutDistrProjY = simCutDistr->
-      ProjectionY((title + "_sim_y").c_str(), 1, simCutDistr->GetXaxis()->GetNbins());
+
+   realCutDistr->SetMinimum(0.5);
+   simCutDistr->SetMinimum(1e-15);
 
    realCutDistrProjX->RebinX(rebinX);
    simCutDistrProjX->RebinX(rebinX);
-   realCutDistrProjY->RebinX(rebinY);
-   simCutDistrProjY->RebinX(rebinY);
 
-	realCutDistrProjX->SetFillColorAlpha(kOrange-4, 0.5);
-	realCutDistrProjY->SetFillColorAlpha(kOrange-4, 0.5);
+	realCutDistrProjX->SetFillColorAlpha(kOrange - 4, 0.5);
 	
-	realCutDistrProjX->Scale(1./realCutDistrProjX->Integral(1, realCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistrProjX->Scale(1./simCutDistrProjX->Integral(1, simCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
-	
-	realCutDistrProjY->Scale(1./realCutDistrProjY->Integral(1, realCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
-	simCutDistrProjY->Scale(1./simCutDistrProjY->Integral(1, simCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
+	realCutDistrProjX->Scale(1./realCutDistrProjX->Integral(1, 
+                            realCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
+	simCutDistrProjX->Scale(1./simCutDistrProjX->Integral(1, 
+                           simCutDistrProjX->GetXaxis()->GetNbins()), "nosw2");
 
 	TLegend projXLegend = TLegend(0.4, 0.78, 0.9, 0.88);
-	TLegend projYLegend = TLegend(0.4, 0.78, 0.9, 0.88);
 	
 	projXLegend.SetNColumns(2);
-	projYLegend.SetNColumns(2);
 	
 	projXLegend.SetLineColorAlpha(0, 0);
 	projXLegend.SetFillColorAlpha(0, 0);
-	projYLegend.SetLineColorAlpha(0, 0);
-	projYLegend.SetFillColorAlpha(0, 0);
 	
-	realCutDistrProjX->SetLineColor(kRed-3);
-	realCutDistrProjY->SetLineColor(kRed-3);
-	simCutDistrProjX->SetLineColor(kAzure-3);
-	simCutDistrProjY->SetLineColor(kAzure-3);
+	realCutDistrProjX->SetLineColor(kRed - 3);
+	simCutDistrProjX->SetLineColor(kAzure - 3);
 
-	projXLegend.AddEntry(realCutDistrProjX, "data");
+	projXLegend.AddEntry(realCutDistrProjX, "Data");
 	projXLegend.AddEntry(simCutDistrProjX, "MC");
-
-	projYLegend.AddEntry(realCutDistrProjY, "data");
-	projYLegend.AddEntry(simCutDistrProjY, "MC");
 	
 	realCutDistrProjX->SetTitle((title + " X projections data vs MC").c_str());
 	realCutDistrProjX->GetXaxis()->SetTitle(xTitle.c_str());
 
-	realCutDistrProjY->SetTitle((title + " Y projections data vs MC").c_str());
-	realCutDistrProjY->GetXaxis()->SetTitle(yTitle.c_str());
+	realCutDistrProjX->SetMaximum(CppTools::Maximum(realCutDistrProjX->GetMaximum()*1.3, 
+                                                   simCutDistrProjX->GetMaximum()*1.3));
 
-	realCutDistrProjX->SetMaximum(realCutDistrProjX->GetMaximum()*1.3);
-	realCutDistrProjY->SetMaximum(realCutDistrProjY->GetMaximum()*1.3);
-
-	realCutDistrProjX->GetXaxis()->SetLabelSize(0.05);
-	realCutDistrProjX->GetYaxis()->SetLabelSize(0.05);
-
-	realCutDistrProjY->GetXaxis()->SetLabelSize(0.05);
-	realCutDistrProjY->GetYaxis()->SetLabelSize(0.05);
-
-   realDistr->SetMinimum(1.);
-   realCutDistr->SetMinimum(1.);
-   simDistr->SetMinimum(1.);
-   simCutDistr->SetMinimum(1.);
-	
 	TCanvas canv = TCanvas("canv", "canv", 900, 450);
+
 	canv.Divide(2);
 
 	canv.cd(1);
-	gPad->SetLeftMargin(0.125);
-	gPad->SetRightMargin(0.12);
-	realDistr->Clone()->Draw("colz");
+   gPad->SetRightMargin(0.14); gPad->SetTopMargin(0.07); 
+   gPad->SetLeftMargin(0.125); gPad->SetBottomMargin(0.105);
+
+   ROOTTools::DrawFrame(realDistr, title, xTitle, yTitle, 
+                        1., 1.2, 0.05, 0.05, true, true, "COLZ");
 	
 	canv.cd(2);
-	gPad->SetLeftMargin(0.125);
-	gPad->SetRightMargin(0.12);
-	realCutDistr->Clone()->Draw("colz");
+   gPad->SetRightMargin(0.14); gPad->SetTopMargin(0.07); 
+   gPad->SetLeftMargin(0.125); gPad->SetBottomMargin(0.105);
+
+   ROOTTools::DrawFrame(realCutDistr, "Cut " + title, xTitle, yTitle, 
+                        1., 1.2, 0.05, 0.05, true, true, "COLZ");
 
    ROOTTools::PrintCanvas(&canv, "output/Deadmaps/" + runName + "/" + detectorName);
 
-	TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 900);
-	
-	projCanv.cd();
-	gPad->Divide(2, 2);
-	
-	projCanv.cd(1);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	realCutDistr->Draw("colz");
-	
-	projCanv.cd(3);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetRightMargin(0.12);
-	simCutDistr->Draw("colz");
-	
-	projCanv.cd(2);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetBottomMargin(0.11);
-	realCutDistrProjX->Draw();
-	simCutDistrProjX->Draw("SAME HIST");
-	projXLegend.Draw();
+   if (drawYProj)
+   {
+      TH1D *realCutDistrProjY = realCutDistr->
+         ProjectionY((title + "_real_y").c_str(), 1, realCutDistr->GetXaxis()->GetNbins());
+      TH1D *simCutDistrProjY = simCutDistr->
+         ProjectionY((title + "_sim_y").c_str(), 1, simCutDistr->GetXaxis()->GetNbins());
 
-	projCanv.cd(4);
-	gPad->SetLeftMargin(0.12);
-	gPad->SetBottomMargin(0.11);
-	realCutDistrProjY->Draw();
-	simCutDistrProjY->Draw("SAME HIST");
-	projYLegend.Draw();
+      realCutDistrProjY->RebinX(rebinY);
+      simCutDistrProjY->RebinX(rebinY);
 
-   ROOTTools::PrintCanvas(&projCanv, "output/Systematics/" + runName + "/" + detectorName);
+      realCutDistrProjY->SetFillColorAlpha(kOrange - 4, 0.5);
+      
+      realCutDistrProjY->Scale(1./realCutDistrProjY->Integral(1, 
+                               realCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
+      simCutDistrProjY->Scale(1./simCutDistrProjY->Integral(1, 
+                              simCutDistrProjY->GetXaxis()->GetNbins()), "nosw2");
 
-	const double uncertaintyX = CalculateUncertaintyFromProj(realCutDistrProjX, simCutDistrProjX);
-	const double uncertaintyY = CalculateUncertaintyFromProj(realCutDistrProjY, simCutDistrProjY);
-	const double uncertainty = CppTools::RMS(uncertaintyX, uncertaintyY);
+      TLegend projYLegend = TLegend(0.4, 0.78, 0.9, 0.88);
 
-	const double realLost = (1. - realCutDistr->Integral()/realDistr->Integral())*100.;
-	const double simLost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
+      projYLegend.SetNColumns(2);
 
-	table.PrintRow(detectorName, 
-		CppTools::DtoStr(uncertainty*100., 3), 
-		CppTools::DtoStr(uncertaintyX*100., 3), 
-		CppTools::DtoStr(uncertaintyY*100., 3), 
-		CppTools::DtoStr(realLost, 3) + "%",
-		CppTools::DtoStr(simLost, 3) + "%");
+      projYLegend.SetLineColorAlpha(0, 0);
+      projYLegend.SetFillColorAlpha(0, 0);
+
+      projYLegend.AddEntry(realCutDistrProjY, "data");
+      projYLegend.AddEntry(simCutDistrProjY, "MC");
+
+      realCutDistrProjY->SetTitle((title + " Y projections data vs MC").c_str());
+      realCutDistrProjY->GetXaxis()->SetTitle(yTitle.c_str());
+
+      realCutDistrProjY->SetMaximum(CppTools::Maximum(realCutDistrProjY->GetMaximum()*1.3, 
+                                                      simCutDistrProjY->GetMaximum()*1.3));
+
+      realCutDistrProjY->GetXaxis()->SetLabelSize(0.05);
+      realCutDistrProjY->GetYaxis()->SetLabelSize(0.05);
+
+      realCutDistrProjY->SetLineColor(kRed-3);
+      simCutDistrProjY->SetLineColor(kAzure-3);
+
+      TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 900);
+      
+      projCanv.cd();
+      gPad->Divide(2, 2);
+      
+      projCanv.cd(1);
+      gPad->SetRightMargin(0.1); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.07); gPad->SetBottomMargin(0.1);
+
+      ROOTTools::DrawFrame(realCutDistr, "Cut " + title, xTitle, yTitle, 
+                           0.9, 0.7, 0.05, 0.05, true, true, "COLZ");
+      
+      projCanv.cd(3);
+      gPad->SetRightMargin(0.1); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.07); gPad->SetBottomMargin(0.1);
+
+      ROOTTools::DrawFrame(simCutDistr, "MC cut " + title, xTitle, yTitle, 
+                           0.9, 0.7, 0.05, 0.05, true, true, "COLZ");
+  
+      projCanv.cd(2);
+      gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.1);
+
+      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, yTitle, 
+                           0.9, 1.0, 0.05, 0.05, true, true);
+
+      simCutDistrProjX->Draw("SAME HIST");
+      projXLegend.Draw();
+
+      projCanv.cd(4);
+      gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.1);
+
+      ROOTTools::DrawFrame(realCutDistrProjY, "Y projections of cut " + title, xTitle, yTitle, 
+                           0.9, 1.0, 0.05, 0.05, true, true);
+      simCutDistrProjY->Draw("SAME HIST");
+      projYLegend.Draw();
+
+      ROOTTools::PrintCanvas(&projCanv, "output/Systematics/" + runName + "/" + detectorName);
+   }
+   else
+   {
+      TCanvas projCanv = TCanvas("projCanv", "canv", 1800, 600);
+      
+      projCanv.cd();
+      gPad->Divide(3, 1);
+      
+      projCanv.cd(1);
+      gPad->SetRightMargin(0.145); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.09); gPad->SetBottomMargin(0.09);
+
+      ROOTTools::DrawFrame(realCutDistr, "Cut " + title, xTitle, yTitle, 
+                           0.8, 1.0, 0.05, 0.05, true, true, "COLZ");
+      
+      projCanv.cd(2);
+      gPad->SetRightMargin(0.145); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.09); gPad->SetBottomMargin(0.09);
+      simCutDistr->Draw("colz");
+
+      ROOTTools::DrawFrame(simCutDistr, "Cut MC " + title, xTitle, yTitle, 
+                           0.8, 1.0, 0.05, 0.05, true, true, "COLZ");
+      
+      projCanv.cd(3);
+      gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.07); 
+      gPad->SetLeftMargin(0.145); gPad->SetBottomMargin(0.09);
+
+      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, yTitle, 
+                           0.8, 1.65, 0.05, 0.05, true, true);
+      simCutDistrProjX->Draw("SAME HIST");
+      projXLegend.Draw();
+
+      ROOTTools::PrintCanvas(&projCanv, "output/Systematics/" + runName + "/" + detectorName);
+   }
+
+   const double realDataLost = (1. - realCutDistr->Integral()/realDistr->Integral())*100.;
+   const double simDataLost = (1. - simCutDistr->Integral()/simDistr->Integral())*100.;
+
+   realCutDistr->Scale(1./realCutDistr->Integral(1, realCutDistr->GetXaxis()->GetNbins(),
+                                                 1, realCutDistr->GetYaxis()->GetNbins()));
+   simCutDistr->Scale(1./simCutDistr->Integral(1, simCutDistr->GetXaxis()->GetNbins(),
+                                               1, simCutDistr->GetYaxis()->GetNbins()));
+
+   std::vector<double> divisionRealIntegral;
+   std::vector<double> divisionSimIntegral;
+
+   divisionRealIntegral.resize(numberOfHeatmapDivisions);
+   divisionSimIntegral.resize(numberOfHeatmapDivisions);
+
+   // bins for each division are chosen uniformly
+   for (int i = 1; i <= realCutDistr->GetXaxis()->GetNbins(); i++)
+   {
+      for (int j = 1; j <= realCutDistr->GetYaxis()->GetNbins(); j++)
+      {
+         divisionRealIntegral[realCutDistr->GetBin(i, j) % numberOfHeatmapDivisions] += 
+            realCutDistr->GetBinContent(i, j);
+         divisionSimIntegral[realCutDistr->GetBin(i, j) % numberOfHeatmapDivisions] += 
+            simCutDistr->GetBinContent(i, j);
+      }
+   }
+
+   // relative uncertainty
+   double uncertainty = 0.;
+
+   for (int i = 0; i < numberOfHeatmapDivisions; i++)
+   {
+      if (divisionRealIntegral[i] < 1e-3 || divisionSimIntegral[i] < 1e-3) continue;
+
+      const double ratio = divisionRealIntegral[i]/divisionSimIntegral[i];
+      uncertainty += (1. - ratio)*(1. - ratio);
+   }
+
+   uncertainty = sqrt(uncertainty/static_cast<double>(numberOfHeatmapDivisions));
+
+   table.PrintRow(detectorName, CppTools::DtoStr(uncertainty*100.) + " %", 
+                  CppTools::DtoStr(realDataLost, 3) + "%", 
+                  CppTools::DtoStr(simDataLost, 3) + "%");
 
 	return uncertainty;
 }
@@ -438,8 +335,8 @@ int main(int argc, char **argv)
 
    dmCutter.Initialize(runName, detectorsConfiguration);
 
-	table.Begin("Acceptance uncertainty");
-	table.PrintHeader("detector", "sys", "sys x", "sys y", "data lost", "MC lost");
+	table.Begin("Heatmap acceptance info");
+	table.PrintHeader("detector", "uncertainty", "data lost", "MC lost");
 
    if (detectorsConfiguration[0] == '1') // DC
    {
@@ -519,18 +416,18 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 
-         GetUncertaintyFromXProj(realHeatmapDCe0, simHeatmapDCe0, 
-                                 realCutHeatmapDCe0, simCutHeatmapDCe0, 
-                                 "DCe0", "DC east, zDC>=0", "board", "#alpha", 3) << " " <<
-         GetUncertaintyFromXProj(realHeatmapDCe1, simHeatmapDCe1, 
-                                 realCutHeatmapDCe1, simCutHeatmapDCe1, 
-                                 "DCe1", "DC east, zDC<0", "board", "#alpha", 3) << " " <<
-         GetUncertaintyFromXProj(realHeatmapDCw0, simHeatmapDCw0, 
-                                 realCutHeatmapDCw0, simCutHeatmapDCw0, 
-                                 "DCw0", "DC west, zDC>=0", "board", "#alpha", 3) << " " <<
-         GetUncertaintyFromXProj(realHeatmapDCw1, simHeatmapDCw1, 
-                                 realCutHeatmapDCw1, simCutHeatmapDCw1, 
-                                 "DCw1", "DC west, zDC<0", "board", "#alpha", 3);
+         GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, 
+                        realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
+                        "DCe0", "DC east, zDC>=0", "board", "#alpha", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCe1, simHeatmapDCe1,
+                        realCutHeatmapDCe1, simCutHeatmapDCe1, 10,
+                        "DCe1", "DC east, zDC<0", "board", "#alpha", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCw0, simHeatmapDCw0,
+                        realCutHeatmapDCw0, simCutHeatmapDCw0, 10,
+                        "DCw0", "DC west, zDC>=0", "board", "#alpha", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCw1, simHeatmapDCw1,
+                        realCutHeatmapDCw1, simCutHeatmapDCw1, 10,
+                        "DCw1", "DC west, zDC<0", "board", "#alpha", 3, 1, false);
    }
    else
    {
@@ -582,12 +479,12 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "PC1.txt");
       systematicsOutputFile << 
-         GetUncertaintyFromXYProj(realHeatmapPC1e, simHeatmapPC1e, 
-                                  realCutHeatmapPC1e, simCutHeatmapPC1e, 
-                                  "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}", 2) << " " <<
-         GetUncertaintyFromXYProj(realHeatmapPC1w, simHeatmapPC1w, 
-                                  realCutHeatmapPC1w, simCutHeatmapPC1w, 
-                                  "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2);
+         GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, 
+                        realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
+                        "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}", 2) << " " <<
+         GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, 
+                        realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
+                        "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2);
    }
    else
    {
@@ -622,9 +519,9 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "PC2.txt");
       systematicsOutputFile << 
-         GetUncertaintyFromXYProj(realHeatmapPC2, simHeatmapPC2, 
-                                  realCutHeatmapPC2, simCutHeatmapPC2, 
-                                  "PC2", "PC2", "z_{PC2}", "y_{PC2}");
+         GetUncertainty(realHeatmapPC2, simHeatmapPC2, 
+                        realCutHeatmapPC2, simCutHeatmapPC2, 10,
+                        "PC2", "PC2", "z_{PC2}", "y_{PC2}");
    }
    else
    {
@@ -676,12 +573,12 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "PC3.txt");
       systematicsOutputFile << 
-         GetUncertaintyFromXYProj(realHeatmapPC3e, simHeatmapPC3e, 
-                                  realCutHeatmapPC3e, simCutHeatmapPC3e, 
-                                  "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}", 2) << " " <<
-         GetUncertaintyFromXYProj(realHeatmapPC3w, simHeatmapPC3w, 
-                                  realCutHeatmapPC3w, simCutHeatmapPC3w, 
-                                  "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2);
+         GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
+                        realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
+                        "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}", 2) << " " <<
+         GetUncertainty(realHeatmapPC3w, simHeatmapPC3w, 
+                        realCutHeatmapPC3w, simCutHeatmapPC3w, 10,
+                        "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2);
    }
    else
    {
@@ -715,9 +612,9 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "TOFe.txt");
       systematicsOutputFile << 
-         GetUncertaintyFromXYProj(realHeatmapTOFe, simHeatmapTOFe, 
-                                  realCutHeatmapTOFe, simCutHeatmapTOFe, 
-                                  "TOFe", "TOFe", "chamber", "slat");
+         GetUncertainty(realHeatmapTOFe, simHeatmapTOFe, 
+                        realCutHeatmapTOFe, simCutHeatmapTOFe, 5,
+                        "TOFe", "TOFe", "chamber", "slat");
    }
    else
    {
@@ -750,9 +647,9 @@ int main(int argc, char **argv)
 
       std::ofstream systematicsOutputFile(outputDirParameters + "TOFw.txt");
       systematicsOutputFile << 
-         CppTools::RMS(GetUncertaintyFromXYProj(realHeatmapTOFw, simHeatmapTOFw, 
-                                                realCutHeatmapTOFw, simCutHeatmapTOFw, 
-                                                "TOFw", "TOFw", "chamber", "strip"));
+         CppTools::RMS(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+                                      realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
+                                      "TOFw", "TOFw", "chamber", "strip"));
    }
    else
    {
@@ -791,10 +688,10 @@ int main(int argc, char **argv)
          }
 
          systematicsOutputFile << 
-            GetUncertaintyFromXYProj(realHeatmapEMCale, simHeatmapEMCale, 
-                                     realCutHeatmapEMCale, simCutHeatmapEMCale, 
-                                     "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
-                                     "y_{tower}", "z_{tower}");
+            GetUncertainty(realHeatmapEMCale, simHeatmapEMCale, 
+                           realCutHeatmapEMCale, simCutHeatmapEMCale, 8,
+                           "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
+                           "y_{tower}", "z_{tower}");
       }
       systematicsOutputFile << std::endl;
       for (int i = 0; i < 4; i++)
@@ -824,10 +721,10 @@ int main(int argc, char **argv)
          }
 
          systematicsOutputFile << 
-            GetUncertaintyFromXYProj(realHeatmapEMCalw, simHeatmapEMCalw, 
-                                     realCutHeatmapEMCalw, simCutHeatmapEMCalw, 
-                                     "EMCalw" + std::to_string(i), "EMCalw" + std::to_string(i), 
-                                     "y_{tower}", "z_{tower}");
+            GetUncertainty(realHeatmapEMCalw, simHeatmapEMCalw, 
+                           realCutHeatmapEMCalw, simCutHeatmapEMCalw, 8,
+                           "EMCalw" + std::to_string(i), "EMCalw" + std::to_string(i), 
+                           "y_{tower}", "z_{tower}");
          if (i < 3) systematicsOutputFile << " ";
       }
    }
