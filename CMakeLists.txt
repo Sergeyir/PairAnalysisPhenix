@@ -38,7 +38,7 @@ add_subdirectory(ROOTTools)
 add_subdirectory(ProgressBar EXCLUDE_FROM_ALL)
 
 link_libraries(ErrorHandler StrTools Time IOTools Box Table)
-link_libraries(TCanvasTools ThrObj)
+link_libraries(TCanvasTools)
 link_libraries(PBar)
 link_libraries(yaml-cpp)
 
