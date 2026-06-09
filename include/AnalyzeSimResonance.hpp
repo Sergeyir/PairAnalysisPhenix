@@ -66,19 +66,20 @@ namespace AnalyzeSimResonance
    InputYAMLReader inputYAMLSimSingleTrack;
    /// pT scale (original pT as well as all single tracks) for systematics evaluation
    double pTScale = 1.;
-   double cutsSigmOffset = 0.;
-   /// offset for all cuts (deadmaps, matching, m2 identification)
+   /// acceptance variation by the value of acceptance systematic uncertainty
    /// can have any value, but only 3 interpretations by the program:
-   /// 1. 0 (by default) - no cuts variation will be applied
-   /// 2. negative - cuts will be loosened
-   /// 2. positive - cuts will be tightened
-   int cutsOffset = 0;
-   /// shows whether no cut variations will be applied
-   bool cutsNoOffset;
-   /// shows whether cut variations are loosened
-   bool cutsOffsetLoose;
-   /// shows whether cut variations are tightened
-   bool cutsOffsetTight;
+   /// 1. 0 (by default) - no variation
+   /// 2. negative - acceptance is decreased by its systematic uncertainty
+   /// 2. positive - acceptance is increased by its systematic uncertainty
+   int acceptanceVar = 0;
+   /// cuts variation by the value of detectors resolution systematic uncertainty, by the width of sigmalized variables (sdphi, sdz), and by other fiducialy chosen variations
+   /// can have any value, but only 3 interpretations by the program:
+   /// 1. 0 (by default) - no variation
+   /// 2. negative - cuts are tightened
+   /// 2. positive - cuts are loosened
+   int cutsVar = 0;
+   /// sigmalized variation to the cuts
+   const double cutsSigmOffset = 0.;
    /// number of threads
    int numberOfThreads;
    /// number of events across all trees
@@ -349,7 +350,59 @@ namespace AnalyzeSimResonance
     */
    void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
                              const int daughter1Id, const int daugther2Id,
-                             const std::string& magneticFieldName, const std::string& pTRangeName); 
+                             const std::string& magneticFieldName, const std::string& pTRangeName);
+   /* @struct AcceptanceVar
+    * @brief Container for storing acceptance variations for different detectors
+    */
+   struct AcceptanceVar
+   {
+      /// @brief sets acceptance variation values from the specified file
+      void Set(const std::string& fileName);
+      /// value of acceptance variation for DCe0
+      double DCe0 = 0.;
+      /// value of acceptance variation for DCe1
+      double DCe1 = 0.;
+      /// value of acceptance variation for DCw0
+      double DCw0 = 0.;
+      /// value of acceptance variation for DCw1
+      double DCw1 = 0.;
+      /// values of acceptance variation for PC1e and PC1w
+      std::array<double, 2> PC1 = {0., 0.};
+      /// value of acceptance variation for PC2
+      double PC2 = 0.;
+      /// values of acceptance variation for PC3e and PC3w
+      std::array<double, 2> PC3 = {0., 0.};
+      /// value of acceptance variation for TOFe
+      double TOFe = 0.;
+      /// value of acceptance variation for TOFw
+      double TOFw = 0.;
+      /// values of acceptance variation for EMCale(0-3) and EMCalw(0-3)
+      std::array<std::array<double, 4>, 2> EMCal{{{{0., 0., 0., 0.}}, {{0., 0., 0., 0.}}}};
+   };
+   /* @struct CutsVar
+    * @brief Container for storing cuts variations for different detectors
+    */
+   struct CutsVar
+   {
+      /// @brief sets acceptance variation values from the specified file
+      void Set();
+      /// value of bbcz cut variation
+      double bbcz = 0.;
+      /// value of zed cut variation
+      double zed = 0.;
+      /// value of sdphi variation for matching cut (for all detectors)
+      double sdphi = 0.;
+      /// value of sdz variation for matching cut (for all detectors)
+      double sdz = 0.;
+      /// value of sigmalized m^2 variation for m^2_{id} identification region cut (for all detectors)
+      double m2Id = 0.;
+      /// value of sigmalized m^2 variation for m^2_{id} identification veto cut (for all detectors)
+      double m2Veto = 0.;
+      /// value of ecore variation for E_{core} energy cut in EMCal
+      double ecore = 0.;
+      /// value of etof variation for E_{loss} energy cut in TOFe
+      double etof = 0.;
+   };
 }
 
 #endif /* ANALYZE_SIM_RESONANCE_HPP */
