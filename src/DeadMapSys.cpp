@@ -330,6 +330,8 @@ int main(int argc, char **argv)
    inputRealDataFile = TFile::Open(inputRealDataFileName.c_str());
    inputSimDataFile = TFile::Open(inputSimDataFileName.c_str());
 
+   std::ofstream systematicsOutputFile(outputDirParameters + "Acceptance.txt");
+
    const std::string detectorsConfiguration = 
       inputYAMLMain["detectors_configuration"].as<std::string>();
 
@@ -414,7 +416,6 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
       systematicsOutputFile << 
          GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, 
                         realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
@@ -427,12 +428,11 @@ int main(int argc, char **argv)
                         "DCw0", "DC west, zDC>=0", "board", "#alpha", 3, 1, false) << " " <<
          GetUncertainty(realHeatmapDCw1, simHeatmapDCw1,
                         realCutHeatmapDCw1, simCutHeatmapDCw1, 10,
-                        "DCw1", "DC west, zDC<0", "board", "#alpha", 3, 1, false);
+                        "DCw1", "DC west, zDC<0", "board", "#alpha", 3, 1, false) << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "DC.txt");
-      systematicsOutputFile << 0 << " " << 0 << " " << 0 << " " << 0;
+      systematicsOutputFile << 0 << " " << 0 << " " << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[1] == '1') // PC1
@@ -477,19 +477,17 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC1.txt");
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, 
                         realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
                         "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}", 2) << " " <<
          GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, 
                         realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
-                        "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2);
+                        "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2) << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC1.txt");
-      systematicsOutputFile << 0 << " " << 0;
+      systematicsOutputFile << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[2] == '1') // PC2
@@ -517,16 +515,14 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC2.txt");
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC2, simHeatmapPC2, 
                         realCutHeatmapPC2, simCutHeatmapPC2, 10,
-                        "PC2", "PC2", "z_{PC2}", "y_{PC2}");
+                        "PC2", "PC2", "z_{PC2}", "y_{PC2}") << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC2.txt");
-      systematicsOutputFile << 0;
+      systematicsOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[3] == '1') // PC3
@@ -571,19 +567,17 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC3.txt");
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
                         realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
                         "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}", 2) << " " <<
          GetUncertainty(realHeatmapPC3w, simHeatmapPC3w, 
                         realCutHeatmapPC3w, simCutHeatmapPC3w, 10,
-                        "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2);
+                        "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2) << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "PC3.txt");
-      systematicsOutputFile << 0 << " " << 0;
+      systematicsOutputFile << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[4] == '1') // TOFe
@@ -610,16 +604,14 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "TOFe.txt");
       systematicsOutputFile << 
          GetUncertainty(realHeatmapTOFe, simHeatmapTOFe, 
                         realCutHeatmapTOFe, simCutHeatmapTOFe, 5,
-                        "TOFe", "TOFe", "chamber", "slat");
+                        "TOFe", "TOFe", "chamber", "slat") << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "TOFe.txt");
-      systematicsOutputFile << 0;
+      systematicsOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[5] == '1') // TOFw
@@ -645,22 +637,18 @@ int main(int argc, char **argv)
          }
       }
 
-      std::ofstream systematicsOutputFile(outputDirParameters + "TOFw.txt");
       systematicsOutputFile << 
          CppTools::RMS(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
                                       realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                                      "TOFw", "TOFw", "chamber", "strip"));
+                                      "TOFw", "TOFw", "chamber", "strip")) << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "TOFw.txt");
-      systematicsOutputFile << 0;
+      systematicsOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[6] == '1') // EMCal
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "EMCal.txt");
-
       for (int i = 0; i < 4; i++)
       {
          TH2F *realHeatmapEMCale = static_cast<TH2F *>
@@ -727,6 +715,7 @@ int main(int argc, char **argv)
                            "y_{tower}", "z_{tower}");
          if (i < 3) systematicsOutputFile << " ";
       }
+      systematicsOutputFile << std::endl;
    }
    else
    {
@@ -741,6 +730,7 @@ int main(int argc, char **argv)
          systematicsOutputFile << 0;
          if (i < 3) systematicsOutputFile << " ";
       }
+      systematicsOutputFile << std::endl;
    }
 
 	table.End();
