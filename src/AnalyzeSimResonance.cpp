@@ -89,6 +89,13 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
       weightFunc = std::make_unique<TF1>("weightFunc", "exp(-x)");
    }
 
+   AcceptanceVar accVar;
+
+   if (acceptanceVar != 0)
+   {
+      accVar.Set("data/Parameters/" + runName + "/Acceptance.txt");
+   }
+
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
    const double resonanceGamma = inputYAMLResonance["gamma"].as<double>();
 
@@ -123,7 +130,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          for(int i = 0; i < simCNT.nch(); i++) // loop over particles in one event
          {
             const double the0 = simCNT.the0(i);
-            if (cutsNoOffset && IsGhostCut(the0, bbcz)) continue;
+            if (IsGhostCut(the0, bbcz)) continue;
 
             const double pT = simCNT.mom(i)*sin(the0)*pTScale;
             if (pT < pTMin || pT > pTMax) continue;
@@ -136,9 +143,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const int dcarm = simCNT.dcarm(i);
 
             const double zed = simCNT.zed(i);
-            if (cutsNoOffset && fabs(zed) > 75. && fabs(zed) < 3.) continue;
-            if (cutsOffsetLoose && fabs(zed) > 78.) continue;
-            if (cutsOffsetTight && fabs(zed) > 72. && fabs(zed) < 6.) continue;
+            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
  
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
@@ -177,11 +182,18 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
-                   !dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset))
                {
-                  idPC2 = PART_ID::NONE;
-                  weightPC2 = 1.;
+                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
+                  {
+                     weightPC2 = CppTools::Minimum(1., 1. + accVar.PC2);
+                  }
+                  else
+                  {
+                     weightPC2 = CppTools::Maximum(0., accVar.PC2);
+                  }
+
+                  if (weightPC2 > 1e-15) idPC2 = PART_ID::NONE;
                }
             }
 
@@ -193,11 +205,18 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
                if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
-                   !dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset))
                {
-                  idPC3 = PART_ID::NONE;
-                  weightPC3 = 1.;
+                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
+                  {
+                     weightPC3 = CppTools::Minimum(1., 1. + accVar.PC3[dcarm]);
+                  }
+                  else
+                  {
+                     weightPC3 = CppTools::Maximum(0., accVar.PC3[dcarm]);
+                  }
+                  
+                  if (weightPC3 > 1e-15) idPC3 = PART_ID::NONE;
                }
             }
 
@@ -212,33 +231,45 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
                else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
 
-               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && !isCutByECore && 
-                   !dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && !isCutByECore)
                {
-                  weightEMCal = 1.;
-                  if (useEMCalId && !(dcarm == 0 && simCNT.sect(i) < 2) &&
-                      !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
-                                                  simCNT.ysect(i), simCNT.zsect(i)))
+                  if (!dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), 
+                                            simCNT.ysect(i), simCNT.zsect(i)))
                   {
-                     switch (charge)
-                     {
-                        case 1:
-                           idEMCal = daughter1Id;
-                           break;
-                        case -1:
-                           idEMCal = daughter2Id;
-                           break;
-                     }
-                     weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
-                                                            idEMCal, pT, 1. + cutsSigmOffset, 
-                                                            2. - cutsSigmOffset)*weightEMCal;
-                     if (weightIdEMCal <= 0.)
-                     {
-                        idEMCal = PART_ID::NONE;
-                        weightIdEMCal = 0.;
-                     }
+                     weightEMCal = CppTools::Minimum(1., 1. + 
+                                                     accVar.EMCal[dcarm][simCNT.sect(i)]);
                   }
-                  else idEMCal = PART_ID::NONE;
+                  else
+                  {
+                     weightEMCal = CppTools::Maximum(0., accVar.EMCal[dcarm][simCNT.sect(i)]);
+                  }
+
+                  if (weightEMCal > 1e-15)
+                  {
+                     if (useEMCalId && !(dcarm == 0 && simCNT.sect(i) < 2) &&
+                         !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
+                                                     simCNT.ysect(i), simCNT.zsect(i)))
+                     {
+                        switch (charge)
+                        {
+                           case 1:
+                              idEMCal = daughter1Id;
+                              break;
+                           case -1:
+                              idEMCal = daughter2Id;
+                              break;
+                        }
+                        weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                               idEMCal, pT, 1. + cutsSigmOffset, 
+                                                               2. - cutsSigmOffset)*weightEMCal;
+                        if (weightIdEMCal <= 0.)
+                        {
+                           idEMCal = PART_ID::NONE;
+                           weightIdEMCal = 0.;
+                        }
+                     }
+                     else idEMCal = PART_ID::NONE;
+                  }
                }
             }
 
@@ -257,31 +288,41 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // slat number for the current chamber
                const int slat = simCNT.slat(i) % 96;
 
-               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && 
-                   !dmCutter.IsDeadTOFe(chamber, slat))
+               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3. + cutsSigmOffset))
                {
-                  weightTOFe = 1.;
-                  if (!dmCutter.IsDeadTimingTOFe(chamber, slat))
+                  if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
-                     switch (charge)
-                     {
-                        case 1:
-                           idTOFe = daughter1Id;
-                           break;
-                        case -1:
-                           idTOFe = daughter2Id;
-                           break;
-                     }
-                     weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2. + cutsSigmOffset, 
-                                                          2. - cutsSigmOffset)*weightTOFe;
-
-                     if (weightIdTOFe <= 0.)
-                     {
-                        idTOFe = PART_ID::NONE;
-                        weightIdTOFe = 0.;
-                     }
+                     weightTOFe = CppTools::Minimum(1., 1. + accVar.TOFe);
                   }
-                  else idTOFe = PART_ID::NONE;
+                  else
+                  {
+                     weightTOFe = CppTools::Maximum(0., accVar.TOFe);
+                  }
+
+                  if (weightTOFe > 1e-15)
+                  {
+                     if (!dmCutter.IsDeadTimingTOFe(chamber, slat))
+                     {
+                        switch (charge)
+                        {
+                           case 1:
+                              idTOFe = daughter1Id;
+                              break;
+                           case -1:
+                              idTOFe = daughter2Id;
+                              break;
+                        }
+                        weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2. + cutsSigmOffset, 
+                                                             2. - cutsSigmOffset)*weightTOFe;
+
+                        if (weightIdTOFe <= 0.)
+                        {
+                           idTOFe = PART_ID::NONE;
+                           weightIdTOFe = 0.;
+                        }
+                     }
+                     else idTOFe = PART_ID::NONE;
+                  }
                }
             }
             else if (useTOFw && IsHit(simCNT.tofwdz(i)))
@@ -294,30 +335,41 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // strip number for the current chamber
                const int strip = simCNT.striptofw(i) % 64;
 
-               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset) && !dmCutter.IsDeadTOFw(chamber, strip))
+               if (IsMatch(sdphi, sdz, 3. + cutsSigmOffset))
                {
-                  weightTOFw = 0.7996;
-                  if (!dmCutter.IsDeadTimingTOFw(chamber, strip))
+                  if (!dmCutter.IsDeadTOFw(chamber, strip))
                   {
-                     switch (charge)
-                     {
-                        case 1:
-                           idTOFw = daughter1Id;
-                           break;
-                        case -1:
-                           idTOFw = daughter2Id;
-                           break;
-                     }
-                     weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2. + cutsSigmOffset, 
-                                                          2. - cutsSigmOffset)*weightTOFw;
-
-                     if (weightIdTOFw <= 0.)
-                     {
-                        idTOFw = PART_ID::NONE;
-                        weightIdTOFw = 0.;
-                     }
+                     weightTOFw = CppTools::Minimum(1., 0.7996*(1. + accVar.TOFw));
                   }
-                  else idTOFw = PART_ID::NONE;
+                  else
+                  {
+                     weightTOFw = CppTools::Maximum(0., 0.7996*accVar.TOFw);
+                  }
+
+                  if (weightTOFw > 1e-15)
+                  {
+                     if (!dmCutter.IsDeadTimingTOFw(chamber, strip))
+                     {
+                        switch (charge)
+                        {
+                           case 1:
+                              idTOFw = daughter1Id;
+                              break;
+                           case -1:
+                              idTOFw = daughter2Id;
+                              break;
+                        }
+                        weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2. + cutsSigmOffset, 
+                                                             2. - cutsSigmOffset)*weightTOFw;
+
+                        if (weightIdTOFw <= 0.)
+                        {
+                           idTOFw = PART_ID::NONE;
+                           weightIdTOFw = 0.;
+                        }
+                     }
+                     else idTOFw = PART_ID::NONE;
+                  }
                }
             }
 
@@ -629,21 +681,25 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 5) 
+   if (argc < 2 || argc > 6) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance ";
-      errMsg += "inputYAMLName pTScale=1. cutsSigmOffset=0. "\
-                "numberOfThreads=std::thread::hardware_concurrency()";
+      std::string errMsg = 
+         "Expected 1-6 parameters while " + std::to_string(argc - 1) + " "\
+         "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance "\
+         "inputYAMLName pTScale=1. acceptanceVar=0 cutsVar = 0"\
+         "numberOfThreads=std::thread::hardware_concurrency()\n"\
+         "Unless at leat pTScale is not a default parameter this program will "\
+         "run for all variations of every individual parameters (pTScale, acceptanceVar, "\
+         "and cutsVar) while setting values of the rest to default";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
 
    if (argc > 2) pTScale = std::atof(argv[2]);
-   if (argc > 3) cutsSigmOffset = std::atof(argv[3]);
-
-   if (argc == 5) numberOfThreads = std::stoi(argv[4]);
+   if (argc > 3) acceptanceVar = std::atoi(argv[3]);
+   if (argc > 4) cutsVar = std::atoi(argv[4]);
+   if (argc == 6) numberOfThreads = std::stoi(argv[5]);
    else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
@@ -765,14 +821,25 @@ int main(int argc, char **argv)
       box.AddEntry("Magnetic field", "run default");
    }
    else box.AddEntry("Magnetic fields", magneticFieldsList);
+
    box.AddEntry("pT ranges", pTRangesList);
    box.AddEntry("Charged track minimum pT [GeV/c]", pTMin);
    box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
    box.AddEntry("Reweight for pT spectra", reweightForSpectra);
-   box.AddEntry("pT scale", pTScale, 3);
+   box.AddEntry("pT variation scale", pTScale, 3);
+
+   if (acceptanceVar > 0) box.AddEntry("Acceptance variation", "increased");
+   else if (acceptanceVar < 0) box.AddEntry("Acceptance variation", "decreased");
+   else box.AddEntry("Acceptance variation", "none");
+
+   if (cutsVar < 0) box.AddEntry("Cuts variation", "tightened");
+   else if (cutsVar > 0) box.AddEntry("Cuts variation", "loosened");
+   else box.AddEntry("Cuts variation", "none");
+
    box.AddEntry("Cuts sigmalized offset", cutsSigmOffset, 2);
    box.AddEntry("Number of threads", numberOfThreads);
-   box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
+   box.AddEntry("Number of events to be analyzed, 1e6", 
+                static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
 
    bool isProcessFinished = false;
@@ -828,7 +895,16 @@ int main(int argc, char **argv)
    }
    if (fabs(cutsSigmOffset) > 1e-15) 
    {
-      outputFileName += "_cut_sigm_offset_" + CppTools::DtoStr(cutsSigmOffset, 2);
+      outputFileName += "_cuts_sigm_offset_" + CppTools::DtoStr(cutsSigmOffset, 2);
+   }
+   if (acceptanceVar != 0) 
+   {
+      outputFileName += std::string("_acceptance_var_") + 
+                        (acceptanceVar > 0 ? "increased" : "decreased");
+   }
+   if (cutsVar != 0) 
+   {
+      outputFileName += std::string("_cuts_var_") + (cutsVar < 0 ? "tightened" : "loosened");
    }
 
    outputFileName += ".root";
@@ -926,6 +1002,45 @@ void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
    static_cast<std::shared_ptr<TH3F>>(distrDYTowerDZTowerVsPT.Merge())->Write();
 
    outputFile.Close();
+}
+
+void AnalyzeSimResonance::AcceptanceVar::Set(const std::string& fileName)
+{
+   CppTools::CheckInputFile(fileName);
+
+   std::ifstream file(fileName);
+
+   if (!(file >> DCe0 >> DCe1 >> DCw0 >> DCw1 >>
+                 PC1[0] >> PC1[1] >> PC2 >> PC3[0] >> PC3[1] >>
+                 TOFe >> TOFw >>
+                 EMCal[0][0] >> EMCal[0][1] >> EMCal[0][2] >> EMCal[0][3] >>
+                 EMCal[1][0] >> EMCal[1][1] >> EMCal[1][2] >> EMCal[1][3]))
+   {
+      CppTools::PrintError("Could not read acceptance systematic uncertainties "\
+                           "from file " + fileName);
+   }
+}
+
+void AnalyzeSimResonance::CutsVar::Set()
+{
+   if (cutsVar < 0)
+   {
+      bbcz = 0.5;
+      zed = 3.;
+      sdphi = 0.5;
+      sdz = 0.5;
+      ecore = 0.025; // sigma/2 in ecore distribution
+      etof = 0.0005; // sigma/2 in etof distribution
+   }
+   else if (cutsVar > 0)
+   {
+      bbcz = -0.5;
+      zed = -3.;
+      sdphi = -0.5;
+      sdz = -0.5;
+      ecore = -0.025;
+      etof = -0.0005;
+   }
 }
 
 #endif /* ANALYZE_SIM_RESONANCE_CPP */
