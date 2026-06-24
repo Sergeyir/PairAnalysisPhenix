@@ -1128,8 +1128,6 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
          averageAlphaDCw0 /= sumWAlphaDCw0;
          averageAlphaDCw1 /= sumWAlphaDCw1;
 
-         CppTools::Print(averageAlphaDCe0, alphaReweightDCe0->GetSumOfWeights(), sumWAlphaDCe0);
-
          // setting maximum (minimum) scaling to 20 (1/20) of average value since DC in 
          // real data and simulation might not align perfectly. This disaligment mostly 
          // affects the lowest and/or highest pT systematic uncertainty, 
@@ -1282,7 +1280,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
-                                       simPC1ePos->GetBinContent(i, j), 100.);
+                                       simPC1ePos->GetBinContent(i, j), 10.);
 
                   reweightPC1ePos->SetBinContent(i, j, reweightValue);
                }
@@ -1297,7 +1295,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
-                                       simPC1eNeg->GetBinContent(i, j), 100.);
+                                       simPC1eNeg->GetBinContent(i, j), 10.);
 
                   reweightPC1eNeg->SetBinContent(i, j, reweightValue);
                }
@@ -1312,7 +1310,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
-                                       simPC1wPos->GetBinContent(i, j), 100.);
+                                       simPC1wPos->GetBinContent(i, j), 10.);
 
                   reweightPC1wPos->SetBinContent(i, j, reweightValue);
                }
@@ -1327,7 +1325,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
-                                       simPC1wNeg->GetBinContent(i, j), 100.);
+                                       simPC1wNeg->GetBinContent(i, j), 10.);
 
                   reweightPC1wNeg->SetBinContent(i, j, reweightValue);
                }
