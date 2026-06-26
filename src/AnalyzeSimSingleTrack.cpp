@@ -1266,6 +1266,26 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
          doReweightPC1 = false;
       }
 
+      reweightPC1ePos->RebinX(2.);
+      reweightPC1eNeg->RebinX(2.);
+      reweightPC1wPos->RebinX(2.);
+      reweightPC1wNeg->RebinX(2.);
+
+      reweightPC1ePos->RebinY(2.);
+      reweightPC1eNeg->RebinY(2.);
+      reweightPC1wPos->RebinY(2.);
+      reweightPC1wNeg->RebinY(2.);
+
+      simPC1ePos->RebinX(2.);
+      simPC1eNeg->RebinX(2.);
+      simPC1wPos->RebinX(2.);
+      simPC1wNeg->RebinX(2.);
+
+      simPC1ePos->RebinY(2.);
+      simPC1eNeg->RebinY(2.);
+      simPC1wPos->RebinY(2.);
+      simPC1wNeg->RebinY(2.);
+
       if (doReweightPC1 && CheckHistsAxis(reweightPC1ePos, simPC1ePos) &&
                            CheckHistsAxis(reweightPC1eNeg, simPC1eNeg) &&
                            CheckHistsAxis(reweightPC1wPos, simPC1wPos) &&
@@ -1280,7 +1300,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
-                                       simPC1ePos->GetBinContent(i, j), 10.);
+                                       simPC1ePos->GetBinContent(i, j), 1e3);
 
                   reweightPC1ePos->SetBinContent(i, j, reweightValue);
                }
@@ -1295,7 +1315,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
-                                       simPC1eNeg->GetBinContent(i, j), 10.);
+                                       simPC1eNeg->GetBinContent(i, j), 1e3);
 
                   reweightPC1eNeg->SetBinContent(i, j, reweightValue);
                }
@@ -1310,7 +1330,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
-                                       simPC1wPos->GetBinContent(i, j), 10.);
+                                       simPC1wPos->GetBinContent(i, j), 1e3);
 
                   reweightPC1wPos->SetBinContent(i, j, reweightValue);
                }
@@ -1325,28 +1345,13 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
-                                       simPC1wNeg->GetBinContent(i, j), 10.);
+                                       simPC1wNeg->GetBinContent(i, j), 1e3);
 
                   reweightPC1wNeg->SetBinContent(i, j, reweightValue);
                }
                else reweightPC1wNeg->SetBinContent(i, j, 0.);
             }
          }
-
-         reweightPC1ePos->RebinX(2.);
-         reweightPC1eNeg->RebinX(2.);
-         reweightPC1wPos->RebinX(2.);
-         reweightPC1wNeg->RebinX(2.);
-
-         reweightPC1ePos->RebinY(2.);
-         reweightPC1eNeg->RebinY(2.);
-         reweightPC1wPos->RebinY(2.);
-         reweightPC1wNeg->RebinY(2.);
-
-         reweightPC1ePos->Scale(1./4.);
-         reweightPC1eNeg->Scale(1./4.);
-         reweightPC1wPos->Scale(1./4.);
-         reweightPC1wNeg->Scale(1./4.);
 
          const std::string reweightPC1OutputFileName = 
             "data/PostSim/" + runName + "/SingleTrack/pc1_reweight.root";
