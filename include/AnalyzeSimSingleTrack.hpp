@@ -94,6 +94,12 @@ namespace AnalyzeSimSingleTrack
    TH2F *reweightPC1wPos;
    /// histogram with scaling for PC1w, charge<0 that is used when doReweightPC1 is true
    TH2F *reweightPC1wNeg;
+   /// simple reweight to adjust PC1 distributions only areas on average for 
+   /// different arms (0, 1), charges (positive, negative), and z_{PC1} (positive, negative)
+   /// this reweight is needed for PC1 heatmap reweight only due to the need to
+   /// readjust the DC alpha scaling for PC1. Adjustments to other detectors of PC1
+   /// comes from specific reweightPC1(e/w)(Pos/Neg) distributions
+   std::array<double, 8> reweightPC1Simple;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
    /// parameter for monitoring the progress

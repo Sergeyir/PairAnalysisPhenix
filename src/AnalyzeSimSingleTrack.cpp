@@ -118,6 +118,11 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
    {
       weightFunc = std::make_unique<TF1>("weightFunc", "expo");
 
+      // Default exponential weights for pions, kaons, and protons which ensure the multiplicities
+      // ratios of these particles close to the experiment on average.
+      // This is not an accurate approximation and fits from measured spectra should be fed
+      // into this program instead. However the default option allows to estimate averaged
+      // quantities accurately enough
       switch (abs(particleId))
       {
          case 211: 
@@ -272,8 +277,6 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
             if (dcarm == 1) // PC1w
             {
-               histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
-                                               eventWeight*alphaReweight);
                if (charge == 1)
                {
                   histContainer.heatmapPC1wPos->Fill(simCNT.ppc1z(i), ppc1phi, 
@@ -282,6 +285,19 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (doReweightPC1) reweightPC1 = reweightPC1wPos->
                      GetBinContent(reweightPC1wPos->GetXaxis()->FindBin(simCNT.ppc1z(i)),
                                    reweightPC1wPos->GetYaxis()->FindBin(ppc1phi));
+
+                  if (simCNT.ppc1z(i) < 0.)
+                  {
+                     histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[4]);
+                  }
+                  else
+                  {
+                     histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[5]);
+                  }
                }
                else
                {
@@ -291,13 +307,24 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (doReweightPC1) reweightPC1 = reweightPC1wNeg->
                      GetBinContent(reweightPC1wNeg->GetXaxis()->FindBin(simCNT.ppc1z(i)),
                                    reweightPC1wNeg->GetYaxis()->FindBin(ppc1phi));
+
+                  if (simCNT.ppc1z(i) < 0.)
+                  {
+                     histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[6]);
+                  }
+                  else
+                  {
+                     histContainer.heatmapPC1w->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[7]);
+                  }
                }
             }
             else // PC1e
             {
                if (ppc1phi < 0) ppc1phi += 2.*M_PI;
-               histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
-                                               eventWeight*alphaReweight);
 
                if (charge == 1)
                {
@@ -307,6 +334,19 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (doReweightPC1) reweightPC1 = reweightPC1ePos->
                      GetBinContent(reweightPC1ePos->GetXaxis()->FindBin(simCNT.ppc1z(i)),
                                    reweightPC1ePos->GetYaxis()->FindBin(ppc1phi));
+
+                  if (simCNT.ppc1z(i) < 0.)
+                  {
+                     histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[0]);
+                  }
+                  else
+                  {
+                     histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[1]);
+                  }
                }
                else
                {
@@ -315,6 +355,19 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (doReweightPC1) reweightPC1 = reweightPC1eNeg->
                      GetBinContent(reweightPC1eNeg->GetXaxis()->FindBin(simCNT.ppc1z(i)),
                                    reweightPC1eNeg->GetYaxis()->FindBin(ppc1phi));
+
+                  if (simCNT.ppc1z(i) < 0.)
+                  {
+                     histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[2]);
+                  }
+                  else
+                  {
+                     histContainer.heatmapPC1e->Fill(simCNT.ppc1z(i), ppc1phi, 
+                                                     eventWeight*alphaReweight*
+                                                     reweightPC1Simple[3]);
+                  }
                }
             }
             if (dmCutter.IsDeadPC1(dcarm, simCNT.ppc1z(i), ppc1phi)) continue;
@@ -987,7 +1040,21 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
       if (!realDataDCe0 || !realDataDCe1 || !realDataDCw0 || !realDataDCw1 ||
           !simUnscaledDCe0 || !simUnscaledDCe1 || !simUnscaledDCw0 || !simUnscaledDCw1)
       {
-         CppTools::PrintInfo("Alpha reweight is now disabled due to needed histogram not existing");
+         std::string msg = "Alpha reweight is disabled due to needed histograms not existing:\n";
+         if (!realDataDCe0) msg += "\"_Heatmap: DCe, zDC>=0\" in " + realDataInputFileName + "\n";
+         if (!realDataDCe1) msg += "\"_Heatmap: DCe, zDC<0\" in " + realDataInputFileName + "\n";
+         if (!realDataDCw0) msg += "\"_Heatmap: DCw, zDC>=0\" in " + realDataInputFileName + "\n";
+         if (!realDataDCw1) msg += "\"_Heatmap: DCw, zDC<0\" in " +  realDataInputFileName + "\n";
+         if (!simUnscaledDCe0) msg += "\"Unscaled heatmap: DCe, zDC>=0\" in " + 
+                                      postSimInputFileName + "\n";
+         if (!simUnscaledDCe1) msg += "\"Unscaled heatmap: DCe, zDC<0\" in " +
+                                      postSimInputFileName + "\n";
+         if (!simUnscaledDCw0) msg += "\"Unscaled heatmap: DCw, zDC>=0\" in " +
+                                      postSimInputFileName + "\n";
+         if (!simUnscaledDCw1) msg += "\"Unscaled heatmap: DCw, zDC<0\" in " +
+                                      postSimInputFileName + "\n";
+         CppTools::PrintWarning(msg);
+
          doReweightAlpha = false;
       }
 
@@ -1237,6 +1304,13 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
 {
    const std::string alphaReweightOutputFileName = 
       "data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root";
+
+   // by default disabling simple reweights; this reweights are enabled if all checks pass below
+   for (unsigned int i = 0; i < reweightPC1Simple.size(); i++)
+   {
+      reweightPC1Simple[i] = 1.;
+   }
+
    if (std::filesystem::exists("data/PostSim/" + runName + "/SingleTrack/alpha_reweight.root"))
    {
       CppTools::CheckInputFile(postSimInputFileName);
@@ -1250,60 +1324,144 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
       reweightPC1wPos = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1w, charge>0");
       reweightPC1wNeg = GetHistogramFromFile(realDataInputFile, "_Heatmap: PC1w, charge<0");
 
-      TH2F *simPC1ePos = 
-         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge>0");
-      TH2F *simPC1eNeg = 
-         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge<0");
-      TH2F *simPC1wPos = 
-         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge>0");
-      TH2F *simPC1wNeg = 
-         GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge<0");
+      TH2F *simPC1ePos = GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge>0");
+      TH2F *simPC1eNeg = GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1e, charge<0");
+      TH2F *simPC1wPos = GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge>0");
+      TH2F *simPC1wNeg = GetHistogramFromFile(postSimInputFile, "_Heatmap: PC1w, charge<0");
 
       if (!reweightPC1ePos || !reweightPC1eNeg || !reweightPC1wPos || !reweightPC1wNeg ||
           !simPC1ePos || !simPC1eNeg || !simPC1wPos || !simPC1wNeg)
       {
-         CppTools::PrintInfo("PC1 reweight is now disabled due to needed histogram not existing");
+         std::string msg = "PC1 reweight is disabled due to needed histograms not existing:\n";
+         if (!reweightPC1ePos) msg += "\"_Heatmap: PC1e, charge>0\" in " + 
+                                      realDataInputFileName + "\n";
+         if (!reweightPC1eNeg) msg += "\"_Heatmap: PC1e, charge<0\" in " + 
+                                      realDataInputFileName + "\n";
+         if (!reweightPC1wPos) msg += "\"_Heatmap: PC1w, charge>0\" in " + 
+                                      realDataInputFileName + "\n";
+         if (!reweightPC1wNeg) msg += "\"_Heatmap: PC1w, charge<0\" in " + 
+                                      realDataInputFileName + "\n";
+         if (!simPC1ePos) msg += "\"_Heatmap: PC1e, charge>0\" in " + postSimInputFileName + "\n";
+         if (!simPC1eNeg) msg += "\"_Heatmap: PC1e, charge<0\" in " + postSimInputFileName + "\n";
+         if (!simPC1wPos) msg += "\"_Heatmap: PC1w, charge>0\" in " + postSimInputFileName + "\n";
+         if (!simPC1wNeg) msg += "\"_Heatmap: PC1w, charge<0\" in " + postSimInputFileName;
+
+         CppTools::PrintWarning(msg);
+
          doReweightPC1 = false;
       }
 
-      reweightPC1ePos->RebinX(2.);
-      reweightPC1eNeg->RebinX(2.);
-      reweightPC1wPos->RebinX(2.);
-      reweightPC1wNeg->RebinX(2.);
+      for (unsigned int i = 0; i < reweightPC1Simple.size(); i++)
+      {
+         reweightPC1Simple[i] = 0.;
+      }
 
-      reweightPC1ePos->RebinY(2.);
-      reweightPC1eNeg->RebinY(2.);
-      reweightPC1wPos->RebinY(2.);
-      reweightPC1wNeg->RebinY(2.);
-
-      simPC1ePos->RebinX(2.);
-      simPC1eNeg->RebinX(2.);
-      simPC1wPos->RebinX(2.);
-      simPC1wNeg->RebinX(2.);
-
-      simPC1ePos->RebinY(2.);
-      simPC1eNeg->RebinY(2.);
-      simPC1wPos->RebinY(2.);
-      simPC1wNeg->RebinY(2.);
-
+      // cutting bad/dead areas
       if (doReweightPC1 && CheckHistsAxis(reweightPC1ePos, simPC1ePos) &&
                            CheckHistsAxis(reweightPC1eNeg, simPC1eNeg) &&
                            CheckHistsAxis(reweightPC1wPos, simPC1wPos) &&
                            CheckHistsAxis(reweightPC1wNeg, simPC1wNeg))
       {
-         // No need to cut dead areas since those will be cut in analysis
+         for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(0, reweightPC1ePos->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1ePos->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1ePos->SetBinContent(i, j, 0.);
+                  simPC1ePos->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1eNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(0, reweightPC1eNeg->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1eNeg->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1eNeg->SetBinContent(i, j, 0.);
+                  simPC1eNeg->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1wPos->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(1, reweightPC1wPos->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1wPos->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1wPos->SetBinContent(i, j, 0.);
+                  simPC1wPos->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+         for (int i = 1; i <= reweightPC1wNeg->GetXaxis()->GetNbins(); i++)
+         {
+            for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
+            {
+               if (dmCutter.IsDeadPC1(1, reweightPC1wNeg->GetXaxis()->GetBinCenter(i),
+                                      reweightPC1wNeg->GetYaxis()->GetBinCenter(j)))
+               {
+                  reweightPC1wNeg->SetBinContent(i, j, 0.);
+                  simPC1wNeg->SetBinContent(i, j, 0.);
+               }
+            }
+         }
+      }
+
+      // rebinning below to smear large differences across multiple bins to avoid extreme reweights
+      reweightPC1ePos->RebinX(2.); reweightPC1ePos->RebinY(2.);
+      reweightPC1eNeg->RebinX(2.); reweightPC1eNeg->RebinY(2.);
+      reweightPC1wPos->RebinX(2.); reweightPC1wPos->RebinY(2.);
+      reweightPC1wNeg->RebinX(2.); reweightPC1wNeg->RebinY(2.);
+
+      simPC1ePos->RebinX(2.); simPC1ePos->RebinY(2.);
+      simPC1eNeg->RebinX(2.); simPC1eNeg->RebinY(2.);
+      simPC1wPos->RebinX(2.); simPC1wPos->RebinY(2.);
+      simPC1wNeg->RebinX(2.); simPC1wNeg->RebinY(2.);
+
+      // integrals in different arms (0, 1), for different charges (positive, negative), 
+      // charges (positive, negative), and for z_{PC1} (positive, negative)
+      std::array<double, 8> simIntegrals;
+
+      // calculating reweigths
+      if (doReweightPC1 && CheckHistsAxis(reweightPC1ePos, simPC1ePos) &&
+                           CheckHistsAxis(reweightPC1eNeg, simPC1eNeg) &&
+                           CheckHistsAxis(reweightPC1wPos, simPC1wPos) &&
+                           CheckHistsAxis(reweightPC1wNeg, simPC1wNeg))
+      {
          for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
          {
             for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
             {
                if (simPC1ePos->GetBinContent(i, j) > 1e-15)
                {
+                  // 1e3 is needed to avoid extreme reweights in case the areas in data 
+                  // is very different compared to the simulation. 
+                  // These cases should be avoided by introducing appropriate 
+                  // dead map cuts to such areas
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
                                        simPC1ePos->GetBinContent(i, j), 1e3);
 
+                  if (reweightPC1ePos->GetXaxis()->GetBinCenter(i) < 0.)
+                  {
+                     reweightPC1Simple[0] += reweightPC1ePos->GetBinContent(i, j);
+                     simIntegrals[0] += simPC1ePos->GetBinContent(i, j);
+                  }
+                  else
+                  {
+                     reweightPC1Simple[1] += reweightPC1ePos->GetBinContent(i, j);
+                     simIntegrals[1] += simPC1ePos->GetBinContent(i, j);
+                  }
+
                   reweightPC1ePos->SetBinContent(i, j, reweightValue);
                }
+               // Scaling to 0 is accepted though, since these areas would correspond to empty
+               // areas in data (however these should have already been cut via dead map cuts)
                else reweightPC1ePos->SetBinContent(i, j, 0.);
             }
          }
@@ -1316,6 +1474,17 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
                                        simPC1eNeg->GetBinContent(i, j), 1e3);
+
+                  if (reweightPC1eNeg->GetXaxis()->GetBinCenter(i) < 0.)
+                  {
+                     reweightPC1Simple[2] += reweightPC1eNeg->GetBinContent(i, j);
+                     simIntegrals[2] += simPC1eNeg->GetBinContent(i, j);
+                  }
+                  else
+                  {
+                     reweightPC1Simple[3] += reweightPC1eNeg->GetBinContent(i, j);
+                     simIntegrals[3] += simPC1eNeg->GetBinContent(i, j);
+                  }
 
                   reweightPC1eNeg->SetBinContent(i, j, reweightValue);
                }
@@ -1332,6 +1501,17 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                      CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
                                        simPC1wPos->GetBinContent(i, j), 1e3);
 
+                  if (reweightPC1wPos->GetXaxis()->GetBinCenter(i) < 0.)
+                  {
+                     reweightPC1Simple[4] += reweightPC1wPos->GetBinContent(i, j);
+                     simIntegrals[4] += simPC1wPos->GetBinContent(i, j);
+                  }
+                  else
+                  {
+                     reweightPC1Simple[5] += reweightPC1wPos->GetBinContent(i, j);
+                     simIntegrals[5] += simPC1wPos->GetBinContent(i, j);
+                  }
+
                   reweightPC1wPos->SetBinContent(i, j, reweightValue);
                }
                else reweightPC1wPos->SetBinContent(i, j, 0.);
@@ -1347,10 +1527,26 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                      CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
                                        simPC1wNeg->GetBinContent(i, j), 1e3);
 
+                  if (reweightPC1wNeg->GetXaxis()->GetBinCenter(i) < 0.)
+                  {
+                     reweightPC1Simple[6] += reweightPC1wNeg->GetBinContent(i, j);
+                     simIntegrals[6] += simPC1wNeg->GetBinContent(i, j);
+                  }
+                  else
+                  {
+                     reweightPC1Simple[7] += reweightPC1wNeg->GetBinContent(i, j);
+                     simIntegrals[7] += simPC1wNeg->GetBinContent(i, j);
+                  }
+
                   reweightPC1wNeg->SetBinContent(i, j, reweightValue);
                }
                else reweightPC1wNeg->SetBinContent(i, j, 0.);
             }
+         }
+
+         for (unsigned int i = 0; i < reweightPC1Simple.size(); i++)
+         {
+            reweightPC1Simple[i] = reweightPC1Simple[i]/simIntegrals[i];
          }
 
          const std::string reweightPC1OutputFileName = 
@@ -1360,10 +1556,10 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
 
          reweightPC1OutputFile.cd();
 
-         reweightPC1ePos->Clone()->Write();
-         reweightPC1eNeg->Clone()->Write();
-         reweightPC1wPos->Clone()->Write();
-         reweightPC1wNeg->Clone()->Write();
+         reweightPC1ePos->Clone()->Write("Reweight PC1e, charge>0");
+         reweightPC1eNeg->Clone()->Write("Reweight PC1e, charge<0");
+         reweightPC1wPos->Clone()->Write("Reweight PC1w, charge>0");
+         reweightPC1wNeg->Clone()->Write("Reweight PC1w, charge<0");
 
          reweightPC1OutputFile.Close();
          CppTools::PrintInfo("File " + reweightPC1OutputFileName + " was written");
