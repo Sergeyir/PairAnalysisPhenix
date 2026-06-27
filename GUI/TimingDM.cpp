@@ -165,8 +165,24 @@ void TimingDM()
             ProjectionX((realHist->GetName() + std::to_string(i) + std::to_string(j)).c_str(), 
                         j, j, i, i);
 
+         if (detectorName == "TOFe")
+         {
+            distrTime->SetTitle(("chamber " + std::to_string(j) + 
+                                 ", strip " + std::to_string(i)).c_str());
+         }
+         else if (detectorName == "TOFw")
+         {
+            distrTime->SetTitle(("chamber " + std::to_string(j) + 
+                                 ", slat " + std::to_string(i)).c_str());
+         }
+         else
+         {
+            distrTime->SetTitle(("Y tower " + std::to_string(j) + 
+                                 ", Z tower " + std::to_string(i)).c_str());
+         }
+
          const double fullIntegral = distrTime->Integral(1, distrTime->GetXaxis()->GetNbins());
-         // removing units with insufficient statistics
+         // removing bins with insufficient statistics
          if (fullIntegral < 100.)
          {
             numberOfBinsWithLowStat++;
