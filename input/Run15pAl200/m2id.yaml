@@ -37,15 +37,15 @@ detectors:
   name: TOFw
   sigmalized_identification_range: 2
   L: 4.95
-  sigma_alpha: 0.88
+  sigma_alpha: 1.
   sigma_ms: 0.95 
-  sigma_t: 112. 
+  sigma_t: 220. 
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   pi+_pt_bounds: [0.6, 1.5]
   k+_pt_bounds: [0.3, 1.3]
-  p_pt_bounds: [0.4, 1.3]
+  p_pt_bounds: [0.6, 1.4]
   pi-_pt_bounds: [0.6, 2.0]
   k-_pt_bounds: [0.3, 1.4]
   pbar_pt_bounds: [0.4, 2.0]
