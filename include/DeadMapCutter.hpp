@@ -86,70 +86,70 @@ class DeadMapCutter
    /// Returns true if all data within variation in DC is in bad/dead area
    bool IsDeadDCLoose(const int dcarm, const double zDC, 
                       const double board, const double alpha,
-                      const double boardVar, const double alphaVar);
+                      const double boardVar = 0.3, const double alphaVar = 2.5e-3);
    /// Returns true if all data within variation in PC1 is in bad/dead area
    bool IsDeadPC1Loose(const int dcarm, const double ppc1z, const double ppc1phi,
-                       const double ppc1zVar, const double ppc1phiVar);
+                       const double ppc1zVar = 0.65, const double ppc1phiVar = 7e-3);
    /// Returns true if all data within variation in PC2 is in bad/dead area
    bool IsDeadPC2Loose(const double ppc2z, const double ppc2phi,
-                       const double ppc2zVar, const double ppc2phiVar);
+                       const double ppc2zVar = 1., const double ppc2phiVar = 7e-3);
    /// Returns true if all data within variation in PC3 is in bad/dead area
    bool IsDeadPC3Loose(const int dcarm, const double ppc3z, const double ppc3phi,
-                       const double ppc3zVar, const double ppc3phiVar);
+                       const double ppc3zVar = 1.25, const double ppc3phiVar = 7e-3);
    /// Returns true if all data within variation in TOFe is in bad/dead area
    bool IsDeadTOFeLoose(const int chamber, const int slat,
-                        const int chamberVar, const int slatVar);
+                        const int chamberVar = 1, const int slatVar = 1);
    /// Returns true if all data within variation in TOFw is in bad/dead area
    bool IsDeadTOFwLoose(const int chamber, const int strip,
-                        const int chamberVar, const int stripVar);
+                        const int chamberVar = 1, const int stripVar = 1);
    /// Returns true if all data within variation in EMCal is in bad/dead area
    bool IsDeadEMCalLoose(const int dcarm, const int sector, 
                          const int yTower, const int zTower,
-                         const int yTowerVar, const int zTowerVar);
+                         const int yTowerVar = 1, const int zTowerVar = 1);
    /// Returns true if all timing distribution within variation in TOFe is bad
    bool IsDeadTimingTOFeLoose(const int chamber, const int slat, 
-                              const int chamberVar, const int slatVar);
+                              const int chamberVar = 1, const int slatVar = 1);
    /// Returns true if all timing distribution within variation in TOFw is bad
    bool IsDeadTimingTOFwLoose(const int chamber, const int strip,
-                              const int chamberVar, const int stripVar);
+                              const int chamberVar = 1, const int stripVar = 1);
    /// Returns true if all timing distribution within variation in EMCal is bad
    bool IsDeadTimingEMCalLoose(const int dcarm, const int sector, 
                                const int yTower, const int zTower,
-                               const int yTowerVar, const int zTowerVar);
+                               const int yTowerVar = 1, const int zTowerVar = 1);
 
    /// Returns true if any of the data within variation in DC is in bad/dead area
    bool IsDeadDCTight(const int dcarm, const double zDC, 
                       const double board, const double alpha,
-                      const double boardVar, const double alphaVar);
+                      const double boardVar = 0.3, const double alphaVar = 2.5e-3);
    /// Returns true if any of the data within variation in PC1 is in bad/dead area
    bool IsDeadPC1Tight(const int dcarm, const double ppc1z, const double ppc1phi,
-                       const double ppc1zVar, const double ppc1phiVar);
+                       const double ppc1zVar = 0.65, const double ppc1phiVar = 7e-3);
    /// Returns true if any of the data within variation in PC2 is in bad/dead area
    bool IsDeadPC2Tight(const double ppc2z, const double ppc2phi,
-                       const double ppc2zVar, const double ppc2phiVar);
+                       const double ppc2zVar = 1., const double ppc2phiVar = 7e-3);
    /// Returns true if any of the data within variation in PC3 is in bad/dead area
    bool IsDeadPC3Tight(const int dcarm, const double ppc3z, const double ppc3phi,
-                       const double ppc3zVar, const double ppc3phiVar);
+                       const double ppc3zVar = 1.25, const double ppc3phiVar = 7e-3);
    /// Returns true if any of the data within variation in TOFe is in bad/dead area
    bool IsDeadTOFeTight(const int chamber, const int slat,
-                        const int chamberVar, const int slatVar);
+                        const int chamberVar = 1, const int slatVar = 1);
    /// Returns true if any of the data within variation in TOFw is in bad/dead area
    bool IsDeadTOFwTight(const int chamber, const int strip,
-                        const int chamberVar, const int stripVar);
+                        const int chamberVar = 1, const int stripVar = 1);
    /// Returns true if any of the data within variation in EMCal is in bad/dead area
    bool IsDeadEMCalTight(const int dcarm, const int sector, 
                          const int yTower, const int zTower,
-                         const int yTowerVar, const int zTowerVar);
+                         const int yTowerVar = 1, const int zTowerVar = 1);
    /// Returns true if any of the timing distribution within variation in TOFe is bad
    bool IsDeadTimingTOFeTight(const int chamber, const int slat, 
-                              const int chamberVar, const int slatVar);
+                              const int chamberVar = 1, const int slatVar = 1);
    /// Returns true if any of the timing distribution within variation in TOFw is bad
    bool IsDeadTimingTOFwTight(const int chamber, const int strip,
-                              const int chamberVar, const int stripVar);
+                              const int chamberVar = 1, const int stripVar = 1);
    /// Returns true if any of the timing distribution within variation in EMCal is bad
    bool IsDeadTimingEMCalTight(const int dcarm, const int sector, 
                                const int yTower, const int zTower,
-                               const int yTowerVar, const int zTowerVar);
+                               const int yTowerVar = 1, const int zTowerVar = 1);
 
    private:
    /// Read 2D arrays from the file into class attributes. Returns true if dead areas were set succesfully

@@ -618,7 +618,7 @@ namespace AnalyzeSimSingleTrack
                                      100, 0., 10., 100, 0., 2.),
          ROOT::TThreadedObject<TH2F>("ecore vs pT, EMCale1", "E_{core} vs p_{T}", 
                                      100, 0., 10., 200, 0., 2.),
-         ROOT::TThreadedObject<TH2F>("ecore vs pT, 1MCale2", "E_{core} vs p_{T}", 
+         ROOT::TThreadedObject<TH2F>("ecore vs pT, EMCale2", "E_{core} vs p_{T}", 
                                      100, 0., 10., 100, 0., 2.),
          ROOT::TThreadedObject<TH2F>("ecore vs pT, EMCale3", "E_{core} vs p_{T}", 
                                      100, 0., 10., 100, 0., 2.)
