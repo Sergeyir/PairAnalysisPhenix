@@ -46,23 +46,6 @@ void DeadMapSys::CheckHists(const TH2F *histReal, const TH2F *histSim, const std
    }
 }
 
-void DeadMapSys::SetHistStyle(TH2F *hist, const std::string& title, 
-                              const std::string& xTitle, const std::string &yTitle)
-{
-	hist->SetTitle(title.c_str());
-	hist->GetXaxis()->SetTitle(xTitle.c_str());
-	hist->GetYaxis()->SetTitle(yTitle.c_str());
-	
-	hist->SetTitleSize(0.05, "X");
-	hist->SetTitleSize(0.05, "Y");
-
-	hist->GetXaxis()->SetLabelSize(0.05);
-	hist->GetYaxis()->SetLabelSize(0.05);
-
-	hist->GetXaxis()->SetTitleOffset(0.9);
-	hist->GetYaxis()->SetTitleOffset(1.25);
-}
-
 double DeadMapSys::GetNormRatio(const double ratio)
 {
    if (ratio > 1.) return ratio;
@@ -195,7 +178,7 @@ double DeadMapSys::GetUncertainty(TH2F *&realDistr, TH2F *&simDistr,
       gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.07); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.1);
 
-      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, yTitle, 
+      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, "Counts", 
                            0.9, 1.0, 0.05, 0.05, true, true);
 
       simCutDistrProjX->Draw("SAME HIST");
@@ -205,7 +188,7 @@ double DeadMapSys::GetUncertainty(TH2F *&realDistr, TH2F *&simDistr,
       gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.07); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.1);
 
-      ROOTTools::DrawFrame(realCutDistrProjY, "Y projections of cut " + title, xTitle, yTitle, 
+      ROOTTools::DrawFrame(realCutDistrProjY, "Y projections of cut " + title, yTitle, "Counts", 
                            0.9, 1.0, 0.05, 0.05, true, true);
       simCutDistrProjY->Draw("SAME HIST");
       projYLegend.Draw();
@@ -238,7 +221,7 @@ double DeadMapSys::GetUncertainty(TH2F *&realDistr, TH2F *&simDistr,
       gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.07); 
       gPad->SetLeftMargin(0.145); gPad->SetBottomMargin(0.09);
 
-      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, yTitle, 
+      ROOTTools::DrawFrame(realCutDistrProjX, "X projections of cut " + title, xTitle, "Counts", 
                            0.8, 1.65, 0.05, 0.05, true, true);
       simCutDistrProjX->Draw("SAME HIST");
       projXLegend.Draw();

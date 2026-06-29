@@ -87,15 +87,6 @@ namespace DeadMapSys
     *  @param[in] simCutDistr histogram projection from the simulation with cut bad/dead areas
     */
    void CheckHists(const TH2F *histReal, const TH2F *histSim, const std::string& name);
-   /*! @brief Shortcut for setting the desired style to many histograms
-    *
-    *  @param[in] hist histogram to which the style will be applied to
-    *  @param[in] title title that will be set for the passedhistogram
-    *  @param[in] xTitle title of X axis that will be set for the passed histogram
-    *  @param[in] yTitle title of Y axis that will be set for the passed histogram
-    */
-   void SetHistStyle(TH2F *hist, const std::string& title, 
-                     const std::string& xTitle, const std::string& yTitle);
    /*! @brief Returns normalized ratio when the ratio should be between 0 and 1 and variables that are being ratioed can give the result bigger than 1 
     *
     *  @param[in] ratio ratio of 2 variables
