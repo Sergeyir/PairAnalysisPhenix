@@ -1331,20 +1331,20 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
    if (std::filesystem::exists(inputFileName))
    {
       pBar.Clear();
-      CppTools::PrintInfo("Fixed BG fits file for " + fitTypeName + " fits was found");
+      CppTools::PrintInfo("Fixed BG fits file for " + fitTypeName + " fits were found");
       pBar.RePrint();
       return TFile::Open(inputFileName.c_str());
    }
    else if (printFreeFitWarning)
    {
       pBar.Clear();
-      CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits was not found; "\
+      CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits were not found; "\
                              "using free BG fit for these fits");
       pBar.RePrint();
       return nullptr;
    }
    pBar.Clear();
-   CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits was not found; "\
+   CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits were not found; "\
                           "no fits will be performed for this fit type");
    pBar.RePrint();
    return nullptr;
