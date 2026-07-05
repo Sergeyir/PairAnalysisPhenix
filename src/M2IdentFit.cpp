@@ -608,7 +608,8 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
    m2Fit.SetParameter(4, fitPar.meansVsPTFit->Eval(pT));
    m2Fit.SetParameter(5, fitPar.sigmasVsPTFit->Eval(pT));
 
-   m2Fit.SetParLimits(3, 0., massDistr->GetBinContent(massDistr->GetMaximumBin()));
+   m2Fit.SetParLimits(3, massDistr->GetBinContent(fitPar.meansVsPTFit->Eval(pT))/100., 
+                      massDistr->GetBinContent(massDistr->GetMaximumBin()));
    if (!fitPar.useM2MeansPrevFit)
    {
       m2Fit.SetParLimits(4, fitPar.meansVsPTFit->Eval(pT) - fitPar.sigmasVsPTFit->Eval(pT)/2., 
@@ -634,8 +635,10 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
 
    for (unsigned int i = 1; i <= nFitTries; i++)
    {
+      /*
       m2Fit.SetParLimits(3, m2Fit.GetParameter(3)/(1. + 1./static_cast<double>(i*i*i)),
                          m2Fit.GetParameter(3)*(1. + 1./static_cast<double>(i*i*i)));
+                         */
       m2Fit.SetParLimits(4, m2Fit.GetParameter(4) - 
                          m2Fit.GetParameter(5)*(0.25 + 0.25/static_cast<double>(i*i*i)),
                          m2Fit.GetParameter(4) + 
