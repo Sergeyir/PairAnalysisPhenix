@@ -1,7 +1,7 @@
 # This file contains all important information about m2 identification for Run14HeAuMinBias
 ---
 status: m2id # required field for checking the file application
-run_name: Run14HeAu200 # required field for searching for main.yaml
+run_name: Run12CuAu200 # required field for searching for main.yaml
 means_vs_pt_fit_func: "pol1(0)"
 sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
@@ -23,10 +23,10 @@ detectors:
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   # minimum and maximum pT for approximation of different particles
-  pi+_pt_bounds: [0.5, 3.5] 
+  pi+_pt_bounds: [0.5, 4.0] 
   k+_pt_bounds: [0.3, 2.2]
-  p_pt_bounds: [0.5, 3.5]
-  pi-_pt_bounds: [0.5, 3.5]
+  p_pt_bounds: [0.4, 4.0]
+  pi-_pt_bounds: [0.5, 4.0]
   k-_pt_bounds: [0.3, 2.2]
   pbar_pt_bounds: [0.4, 3.5]
   # makes sigma_alpha, sigma_ms, and sigma_t tigtly limited around values specified in this file
@@ -50,7 +50,7 @@ detectors:
   k-_pt_bounds: [0.3, 3.0]
   pbar_pt_bounds: [0.4, 3.0]
   is_calibrated: true
-  use_m2_mean_par: false
+  use_m2_mean_par: true
 pt_bins: # [GeV/c]
   - {min: 0.3, max: 0.4}
   - {min: 0.4, max: 0.5}

@@ -39,7 +39,7 @@ detectors:
   L: 4.95
   sigma_alpha: 0.88
   sigma_ms: 0.95 
-  sigma_t: 108. 
+  sigma_t: 220. 
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
