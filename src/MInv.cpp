@@ -187,9 +187,6 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
    double scaleFactorBG = partIntegralMInvFGLR/partIntegralMInvBGLR;
 
    /*
-   partIntegralMInvFGLR = 0.;
-   partIntegralMInvBGLR = 0.;
-
    // if background was overestimated, some bins will be negative after BG subtraction
    // this needs to be resolved by rescaling (if needed)
    for (int i = 1; i <= distrMInvFGLR->GetXaxis()->GetNbins(); i++)
@@ -197,16 +194,13 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
       if (distrMInvBGLR->GetBinContent(i) < 1e-3) continue;
       if (distrMInvFGLR->GetBinContent(i) < 1e-3) continue;
 
-      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
-          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
 
-      partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
-      partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
+      //partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
+      //partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
 
-      if ((distrMInvBGLR->GetBinContent(i) - distrMInvBGLR->GetBinError(i))*scaleFactorBG > 
-          distrMInvFGLR->GetBinContent(i) + distrMInvFGLR->GetBinError(i))
+      if ((distrMInvBGLR->GetBinContent(i))*scaleFactorBG > distrMInvFGLR->GetBinContent(i))
       {
-         scaleFactorBG *= distrMInvFGLR->GetBinContent(i)/distrMInvBGLR->GetBinContent(i);
+         scaleFactorBG = distrMInvFGLR->GetBinContent(i)/distrMInvBGLR->GetBinContent(i);
       }
    }
    */
