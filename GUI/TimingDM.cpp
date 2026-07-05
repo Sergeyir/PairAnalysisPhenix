@@ -150,7 +150,7 @@ void TimingDM()
                           " timing offset will not be written");
    }
 
-   TCanvas fitCanv("fit canv", "", 400, 400);
+   TCanvas fitCanv("fit canv", "", 500, 500);
 
    int numberOfBinsWithLowStat = 0;
 
