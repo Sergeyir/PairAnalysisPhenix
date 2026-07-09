@@ -17,7 +17,7 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
                   const double pTMin, const double pTMax,
                   TH1D*& distrMInvMergedFG, TH1D*& distrMInvMergedBG,
                   TH1D*& distrMInvMergedFGLR, TH1D*& distrMInvMergedBGLR,
-                  double& numberOfEvents)
+                  double& numberOfEvents, const double rescaleBG)
 {
    TH1D *distrMInvMerged = nullptr;
    // iterating over CabanaBoy centrality bins
@@ -135,13 +135,15 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
                   distrMInvMerged = static_cast<TH1D *>(distrMInvFG->Clone());
                }
                else distrMInvMerged = SubtractBG(distrMInvFG, distrMInvBG, 
-                                                 distrMInvFGLR, distrMInvBGLR);
+                                                 distrMInvFGLR, distrMInvBGLR,
+                                                 rescaleBG);
             }
             else 
             {
                if (distrMInvBG->GetEntries() < 1e-3) distrMInvMerged->Add(distrMInvFG);
                else distrMInvMerged->Add(SubtractBG(distrMInvFG, distrMInvBG, 
-                                                    distrMInvFGLR, distrMInvBGLR));
+                                                    distrMInvFGLR, distrMInvBGLR,
+                                                    rescaleBG));
             }
             if (!distrMInvMergedFG)
             {
@@ -165,7 +167,8 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
 }
 
 TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG, 
-                       TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR)
+                       TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR,
+                       const double rescaleBG)
 {
    const double integralMInvFGLR = distrMInvFGLR->Integral(1, distrMInvFGLR->GetXaxis()->GetNbins());
    const double integralMInvBGLR = distrMInvBGLR->Integral(1, distrMInvBGLR->GetXaxis()->GetNbins());
@@ -206,8 +209,8 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
    */
 
    // 0.95 is a rescale so that background is not overestimated
-   distrMInvBG->Scale(scaleFactorBG*0.95);
-   distrMInvBGLR->Scale(scaleFactorBG*0.95);
+   distrMInvBG->Scale(scaleFactorBG*rescaleBG);
+   distrMInvBGLR->Scale(scaleFactorBG*rescaleBG);
 
    TH1D *distrMInvSubtr = static_cast<TH1D *>(distrMInvFG->Clone());
    distrMInvSubtr->Add(distrMInvBG, -1.);

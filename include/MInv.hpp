@@ -46,20 +46,24 @@ namespace MInv
     * @param[in] distrMInvMergedBGLR histogram to pass that will be filled with contents of all scaled background histograms with low resolution (for background scaling)
     * @param[in] numberOfEvents variable to which number of events from the current z, r, and c range will be added
     * @param[out] merged invariant mass distribution with background extracted
+    * @param[out] rescaleBG re-scale BG factor (additional multiplier to BG scaling) which is sometimes needed to adjust the BG scaling factor
     */
    TH1D *Merge(TFile *inputFile, const std::string& methodName, const std::string& decayMode,
                const int cMin, const int cMax, const int zMin, const int zMax, 
                const int rMin, const int rMax, const double pTMin, const double pTMax,
                TH1D *&distrMInvMergedFG, TH1D *&distrMInvMergedBG,
-               TH1D *&distrMInvMergedFGLR, TH1D *&distrMInvMergedBGLR, double& numberOfEvents);
+               TH1D *&distrMInvMergedFGLR, TH1D *&distrMInvMergedBGLR, double& numberOfEvents,
+               const double rescaleBG = 0.95);
    /*! Subtracts background for the specified histogram 
     *
     * @param[in] distrMInvFG foreground M_{inv} distribution from which background will be extracted
     * @param[in] distrMInvFG background M_{inv} distribution which will be extracted from foreground; in the process scaling will be applied
     * @param[out] invariant mass distribution with background subtracted
+    * @param[out] rescaleBG re-scale BG factor (additional multiplier to BG scaling) which is sometimes needed to adjust the BG scaling factor
     */
    TH1D *SubtractBG(TH1D *&distrMInvFG, TH1D *&distrMInvBG, 
-                    TH1D *&distrMInvFGLR, TH1D *&distrMInvBGLR);
+                    TH1D *&distrMInvFGLR, TH1D *&distrMInvBGLR,
+                    const double rescaleBG);
 };
 
 #endif /* M_INV_HPP */
