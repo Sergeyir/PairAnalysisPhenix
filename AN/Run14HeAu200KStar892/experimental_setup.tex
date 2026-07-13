@@ -1,0 +1,23 @@
+\section{Experimental setup}
+
+DC-PC1 subsystem was utilized for charged tracks momentum reconstruction. 
+Additionally PC3, TOFe, TOFw, EMCal were utilized for matching cuts to improve the tracking reconstruction algorithm. 
+DC-PC1 subsystem only was tested for the acquisition of \Kstar signals but was found to be inferior to the additional matching cuts due to higher contamination of incorrectly reconstructed tracks, and therefore higher signal to background ratio, especially on high \pt, where DC-PC1 NoPID pair combination method is prevalent.
+
+Apart from that the identification capabilities of charged hadrons via $m^2$ of TOFe, TOFw, and PbSc part of EMCal were tested for the opportunity of the signal to background ratio increase on low and intermediate \pt. 
+EMCal was found to be inefficient as its timing resolution degraded in last runs, thus greatly limiting the identification window in \pt, background rejection, as well as estimation accuracy of EMCal MC identification corrections (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/berd/Sergei/AN_AuAu_KStar.pdf}{AN1504}). 
+On the other hand, TOFe and TOFw were utilized for the identification.
+
+EMCal is segmented into 8 sectors, 4 in each arm. 
+All sectors in the west arm and 2 sectors in the east arm are made of lead-scintillator (PbSc) towers. The other sectors are made of lead-glass crystals (PbGl). 
+In this analysis we denote 0th and 1st sector of PbGl as EMCale0 and EMCale1 respectively, 1st and 2nd sector of east arm of PbSc as EMCale2 and EMCale3, and 0th to 3rd sectors of east arm of PbSc as EMCalw0, EMCalw1, EMCalw2, and EMCalw3.
+
+TOFe and TOFw consist of 960 slats (10 rows of 96) and 512 strips (8 rows of 64) respectively. For effective acceptance analysis these units were reorganized to match their geometric configuration: 
+\begin{equation}
+\text{chamber}_{\text{TOFe}} = \text{slat}_{\text{cnt}}/96, \ \text{slat}_{\text{TOFe}} = \text{slat}_{\text{cnt}} \ \% \ 96
+\end{equation}
+\begin{equation}
+\text{chamber}_{\text{TOFw}} = \text{strip}_{\text{cnt}}/64, \ \text{strip}_{\text{TOFw}} = \text{strip}_{\text{cnt}} \ \% \ 64
+\end{equation}
+
+Where $\%$ denotes the remainder of division, $\text{slat}_{\text{cnt}}$ and $\text{strip}_{\text{cnt}}$ - values of slat and strip returned by PHCentralTrack methods PHCentralTrack::get\_slat(const int) and PHCentralTrack::get\_striptofw(const int) respectively.

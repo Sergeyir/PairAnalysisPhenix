@@ -1,0 +1,21 @@
+\section{Analysis}
+
+\subsection{Run selection}
+
+This analysis was based on 151 subsets (runs) which were available for taxi build ana.\color{red}{???}. Every run was checked for 
+
+For this analysis we base our run list on 886 runs that were available for the Analysis taxi build ana.664. There are several ways we can determine a good run list. One way to determine the problematic runs is to compare the 1D DC distribution in board space for every run after the cuts on dead areas were applied and determine the bad runs. For this after applying the fiducial cuts, we project the DC/PC1 occupancy histograms on the board-axis and and normalize the resulting board distributions (for the East and West arms) in every run to represent the same integrals and then divide by the corresponding distributions in a reference run. The ratios are fitted to a constant function. Figure \ref{fig:dc_const} shows the fit parameter (const) and Figure \ref{fig:chi2ndf} shows the fit quality $\chi^2$/NDF for every run. The good runs are selected if $\chi^2/\text{NDF} < 2$ and $0.9 < const < 1.1$. In total 843 runs were accepted. The full list of accepted runs can be found in Appendix \ref{appendix:accepted_runs}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{deadmaps/Run7AuAu200/Ratio.pdf}
+	\caption{Fit parameter (const) of DC board distribution for East and West arms.}
+	\label{fig:dc_const}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{deadmaps/Run7AuAu200/DCChi2Ndf.pdf}
+	\caption{Fit quality $\chi^2/ndf$ of DC board distribution for East and West arms.}
+	\label{fig:chi2ndf}
+\end{figure}

@@ -278,6 +278,12 @@ void FindGoodRuns::CheckRunsByDCBoard()
    TGraph grChi2NDFDCw0Board;
    TGraph grChi2NDFDCw1Board;
 
+   // graphs for constant fit parameter
+   TGraph grConstParDCe0Board;
+   TGraph grConstParDCe1Board;
+   TGraph grConstParDCw0Board;
+   TGraph grConstParDCw1Board;
+
    TFile outputFile((outputDir + "/DC.root").c_str(), "RECREATE");
 
    std::vector<int> passedRuns;
@@ -365,20 +371,27 @@ void FindGoodRuns::CheckRunsByDCBoard()
       outputFile.cd(std::to_string(run).c_str());
 
       TF1 fit("const fit", "pol0");
+
+      fit.SetParameter(0, 1.);
+      fit.SetParLimits(0, 0., 2.);
       
-      projDCe0Board->Fit(&fit, "QP");
+      projDCe0Board->Fit(&fit, "QBMG");
+      const double constParDCe0Board = fit.GetParameter(0);
       const double chi2NDFDCe0Board = fit.GetChisquare()/fit.GetNDF();
       projDCe0Board->Write();
 
-      projDCe1Board->Fit(&fit, "QP");
+      projDCe1Board->Fit(&fit, "QBMG");
+      const double constParDCe1Board = fit.GetParameter(0);
       const double chi2NDFDCe1Board = fit.GetChisquare()/fit.GetNDF();
       projDCe1Board->Write();
 
-      projDCw0Board->Fit(&fit, "QP");
+      projDCw0Board->Fit(&fit, "QBMG");
+      const double constParDCw0Board = fit.GetParameter(0);
       const double chi2NDFDCw0Board = fit.GetChisquare()/fit.GetNDF();
       projDCw0Board->Write();
 
-      projDCw1Board->Fit(&fit, "QP");
+      projDCw1Board->Fit(&fit, "QBMG");
+      const double constParDCw1Board = fit.GetParameter(0);
       const double chi2NDFDCw1Board = fit.GetChisquare()/fit.GetNDF();
       projDCw1Board->Write();
 
@@ -386,6 +399,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
       grChi2NDFDCe1Board.AddPoint(run, chi2NDFDCe1Board);
       grChi2NDFDCw0Board.AddPoint(run, chi2NDFDCw0Board);
       grChi2NDFDCw1Board.AddPoint(run, chi2NDFDCw1Board);
+
+      grConstParDCe0Board.AddPoint(run, constParDCe0Board);
+      grConstParDCe1Board.AddPoint(run, constParDCe1Board);
+      grConstParDCw0Board.AddPoint(run, constParDCw0Board);
+      grConstParDCw1Board.AddPoint(run, constParDCw1Board);
 
       if (chi2NDFDCe0Board < chi2NDFThreshold && chi2NDFDCe1Board < chi2NDFThreshold &&
           chi2NDFDCw0Board < chi2NDFThreshold && chi2NDFDCw1Board < chi2NDFThreshold)
@@ -408,10 +426,33 @@ void FindGoodRuns::CheckRunsByDCBoard()
    grChi2NDFDCw0Board.SetMarkerStyle(7);
    grChi2NDFDCw1Board.SetMarkerStyle(7);
 
-   TCanvas canv("canv", "", 1000, 600);
+   grConstParDCe0Board.SetMarkerStyle(7);
+   grConstParDCe1Board.SetMarkerStyle(7);
+   grConstParDCw0Board.SetMarkerStyle(7);
+   grConstParDCw1Board.SetMarkerStyle(7);
 
-   gPad->SetRightMargin(0.06); gPad->SetTopMargin(0.02); 
-   gPad->SetLeftMargin(0.11); gPad->SetBottomMargin(0.1);
+   TCanvas canv("canv", "", 1000, 600);
+   canv.Divide(1, 2, 0., 0.);
+
+   canv.cd(1);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.02); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.);
+
+   ROOTTools::DrawFrame(grConstParDCe0Board.GetXaxis()->GetBinLowEdge(1), 
+                        grConstParDCe0Board.GetYaxis()->GetBinLowEdge(1),
+                        grConstParDCe0Board.GetXaxis()->
+                        GetBinUpEdge(grConstParDCe0Board.GetXaxis()->GetNbins()),
+                        grConstParDCe0Board.GetYaxis()->
+                        GetBinUpEdge(grConstParDCe0Board.GetYaxis()->GetNbins()), 
+                        "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   grConstParDCe0Board.Draw("P");
+
+   canv.cd(2);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.12);
 
    ROOTTools::DrawFrame(grChi2NDFDCe0Board.GetXaxis()->GetBinLowEdge(1), 
                         grChi2NDFDCe0Board.GetYaxis()->GetBinLowEdge(1),
@@ -419,13 +460,35 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grChi2NDFDCe0Board.GetXaxis()->GetNbins()),
                         grChi2NDFDCe0Board.GetYaxis()->
                         GetBinUpEdge(grChi2NDFDCe0Board.GetYaxis()->GetNbins()), 
-                        "", "run index", "#chi^{2}/NDF", 0.9, 1.2);
+                        "", "run index", "#chi^{2}/NDF", 0.7, 0.6, 0.07, 0.07);
 
    grChi2NDFDCe0Board.Draw("P");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/Chi2NDFDCe0");
+   ROOTTools::PrintCanvas(&canv, outputDir + "/DCe0");
 
    canv.Clear();
+
+   canv.Divide(1, 2, 0., 0.);
+
+   canv.cd(1);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.02); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.);
+
+   ROOTTools::DrawFrame(grConstParDCe1Board.GetXaxis()->GetBinLowEdge(1), 
+                        grConstParDCe1Board.GetYaxis()->GetBinLowEdge(1),
+                        grConstParDCe1Board.GetXaxis()->
+                        GetBinUpEdge(grConstParDCe1Board.GetXaxis()->GetNbins()),
+                        grConstParDCe1Board.GetYaxis()->
+                        GetBinUpEdge(grConstParDCe1Board.GetYaxis()->GetNbins()), 
+                        "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   grConstParDCe1Board.Draw("P");
+
+   canv.cd(2);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.12);
 
    ROOTTools::DrawFrame(grChi2NDFDCe1Board.GetXaxis()->GetBinLowEdge(1), 
                         grChi2NDFDCe1Board.GetYaxis()->GetBinLowEdge(1),
@@ -433,13 +496,35 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grChi2NDFDCe1Board.GetXaxis()->GetNbins()),
                         grChi2NDFDCe1Board.GetYaxis()->
                         GetBinUpEdge(grChi2NDFDCe1Board.GetYaxis()->GetNbins()), 
-                        "", "run index", "#chi^{2}/NDF", 0.9, 1.2);
+                        "", "run index", "#chi^{2}/NDF", 0.7, 0.6, 0.07, 0.07);
 
    grChi2NDFDCe1Board.Draw("P");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/Chi2NDFDCe1");
+   ROOTTools::PrintCanvas(&canv, outputDir + "/DCe1");
 
    canv.Clear();
+
+   canv.Divide(1, 2, 0., 0.);
+
+   canv.cd(1);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.02); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.);
+
+   ROOTTools::DrawFrame(grConstParDCw0Board.GetXaxis()->GetBinLowEdge(1), 
+                        grConstParDCw0Board.GetYaxis()->GetBinLowEdge(1),
+                        grConstParDCw0Board.GetXaxis()->
+                        GetBinUpEdge(grConstParDCw0Board.GetXaxis()->GetNbins()),
+                        grConstParDCw0Board.GetYaxis()->
+                        GetBinUpEdge(grConstParDCw0Board.GetYaxis()->GetNbins()), 
+                        "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   grConstParDCw0Board.Draw("P");
+
+   canv.cd(2);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.12);
 
    ROOTTools::DrawFrame(grChi2NDFDCw0Board.GetXaxis()->GetBinLowEdge(1), 
                         grChi2NDFDCw0Board.GetYaxis()->GetBinLowEdge(1),
@@ -447,13 +532,35 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grChi2NDFDCw0Board.GetXaxis()->GetNbins()),
                         grChi2NDFDCw0Board.GetYaxis()->
                         GetBinUpEdge(grChi2NDFDCw0Board.GetYaxis()->GetNbins()), 
-                        "", "run index", "#chi^{2}/NDF", 0.9, 1.2);
+                        "", "run index", "#chi^{2}/NDF", 0.7, 0.6, 0.07, 0.07);
 
    grChi2NDFDCw0Board.Draw("P");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/Chi2NDFDCw0");
+   ROOTTools::PrintCanvas(&canv, outputDir + "/DCw0");
 
    canv.Clear();
+
+   canv.Divide(1, 2, 0., 0.);
+
+   canv.cd(1);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.02); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.);
+
+   ROOTTools::DrawFrame(grConstParDCw1Board.GetXaxis()->GetBinLowEdge(1), 
+                        grConstParDCw1Board.GetYaxis()->GetBinLowEdge(1),
+                        grConstParDCw1Board.GetXaxis()->
+                        GetBinUpEdge(grConstParDCw1Board.GetXaxis()->GetNbins()),
+                        grConstParDCw1Board.GetYaxis()->
+                        GetBinUpEdge(grConstParDCw1Board.GetYaxis()->GetNbins()), 
+                        "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   grConstParDCw1Board.Draw("P");
+
+   canv.cd(2);
+
+   gPad->SetRightMargin(0.045); gPad->SetTopMargin(0.); 
+   gPad->SetLeftMargin(0.08); gPad->SetBottomMargin(0.12);
 
    ROOTTools::DrawFrame(grChi2NDFDCw1Board.GetXaxis()->GetBinLowEdge(1), 
                         grChi2NDFDCw1Board.GetYaxis()->GetBinLowEdge(1),
@@ -461,11 +568,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grChi2NDFDCw1Board.GetXaxis()->GetNbins()),
                         grChi2NDFDCw1Board.GetYaxis()->
                         GetBinUpEdge(grChi2NDFDCw1Board.GetYaxis()->GetNbins()), 
-                        "", "run index", "#chi^{2}/NDF", 0.9, 1.2);
+                        "", "run index", "#chi^{2}/NDF", 0.7, 0.6, 0.07, 0.07);
 
    grChi2NDFDCw1Board.Draw("P");
 
-   ROOTTools::PrintCanvas(&canv, outputDir + "/Chi2NDFDCw1");
+   ROOTTools::PrintCanvas(&canv, outputDir + "/DCw1");
 }
 
 #endif /* FIND_GOOD_RUNS_CPP */

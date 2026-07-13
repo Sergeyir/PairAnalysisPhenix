@@ -1,0 +1,142 @@
+\section{Systematics}
+
+\subsection{Acceptance uncertainty}
+
+Acceptance uncertainty is the uncertainty of the acceptance of detectors between the simulation and experiment. One way to determine this uncertainty for the given detector is to measure the difference between the 2D heatmaps distributions of simulation and experiment for the given detector. 
+
+For the simulation we generated $5\cdot10^6$ negatively and positively charged pions, kaons, and protons each with flat momentum distribuion for "+-" and "-+" magnetic field configurations separately. Then we merged "+-" and "-+" simulated datasets the same way we did in Section \ref{seq:datasets_merge}. After that we reweighted $p_T$ distribution in the simulation so that simulated $p_T$ distribution became identical with the $p_T$ distribution of changed hadrons in the experiment (PPG146). After applying fiducial cust we obtained simulated heatmaps.
+
+To measure the difference between simulated and experimental heatmaps we projected the 2D heatmaps onto X and Y axis (only on X axis for TOFw) for every detector. Then we normalized the simulated projection to the experimental one in 10 different non overlapping with each other areas. For every said projection we calculated the ratio of integral of simulated projection to the real one. The resulting acceptance uncertainty for the given detector was calculated as a root mean square of uncertainty of every such normalization to 1. Simulated and experimental heatmaps and their projections are shown in Appendix \ref{appendix:acceptance}. Acceptance uncertainties for every detector $\sigma_{acc}$ used in this analysis are shown in Table \ref{table:acc_unc}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c}
+      Detector & $\sigma_{acc}$ & $\sigma_{acc} \ (z \geq 0)$ & $\sigma_{acc} \ (z < 0)$ \\
+		\hline
+		\hline
+      DC east & - & 1.026 & 1.196 \\
+      DC west & - & 0.944 & 1.229 \\
+      PC1 east & 1.816 & - & - \\
+      PC1 west & 2.238 & - & - \\
+		PC2 & 2.304 & - & - \\
+		PC3 east & 2.820 & - & - \\
+		PC3 west & 1.820 & - & - \\
+		TOFe & - & 4.508 & 4.094 \\
+		TOFw & - & 2.810 & 6.699 \\
+		EMCale0 & - & 2.779 & 4.036 \\
+		EMCale1 & - & 2.078 & 5.693 \\
+		EMCale2 & - & 3.305 & 3.453 \\
+		EMCale3 & - & 2.938 & 2.869 \\
+		EMCalw0 & - & 4.774 & 3.567 \\
+		EMCalw1 & - & 3.621 & 4.277 \\
+		EMCalw2 & - & 3.118 & 2.512 \\
+		EMCalw3 & - & 3.427 & 3.551 \\
+	\end{tabular}
+   \caption{Acceptance uncertainty $\sigma_{acc}$ (relative, \%) for different detectors}
+	\label{table:acc_unc}
+\end{table}
+
+In this analysis we used pairs mixing methods that employ multiple different detectors at the same time that also have different contribution to the signal therefore different detectors acceptance uncertainties by themselves are not enough to evaluate the resulting acceptance uncertainty of \Kstar. In order to do this we separately varied the weight of all $i$ registered DC-PC1 tracks for all $j$ detectors $w_{reg}^{i,j}$ by $+\sigma_{acc}$ and $-\sigma_{acc}$ of the respective detector $j$. For the decrease and increase of the weight of the particles we calculated the number of reconstructed \Kstar mesons. The resulting relative acceptance uncertainty we used in this analysis is a relative uncertainty in number of reconstructed \Kstar mesons for different variations of weight of DC-PC1 tracks.
+
+\subsection{EMCal identification correction uncertainty}
+\label{sec:emcal_id_uncertainty}
+
+Since we introduced the correction to the identification in EMCal there is a systematic uncertainty that comes from that correction. This uncertainty comes from other uncertainties: uncertainty of invariant $p_T$ spectra of charged hadrons measured in TOFw (PPG146), uncertainty of approximation of charged hadrons in $m^2$ distribution.
+
+In order to estimate the uncertainty of approximation of charged hadrons in $m^2$ distribution we varied the signal extraction range within $0.5$ sigma. Additionally for kaons we also implemented different background approximations - exponential and 2nd order polynomial. The uncertainty of approximation was calculated as root mean square of uncertainty in raw yields of charged hadrons for every variation in range extraction and for every background approximation function.
+
+	The uncertainty of $\epsilon_{m^2}$ for the given particle in the given detector was calculated as a propagation of uncertainty approximation of charged hadrons in $m^2$ distribution, uncertainty of invariant spectra in TOFw, and a span of $\epsilon_{m^2}(p_T)$ (Tables \ref{table:m2_eff+-} - \ref{table:m2_eff-+}) divided by approximation of $\epsilon_{m^2}$.
+
+We also calculated the invariant $p_T$ spectra in EMCal using the formula \ref{eq:spectra} and then divided it by invariant $p_T$ spectra in TOFw from PPG146. Results are shown in Appendix \ref{appendix:m2_sys}. Significant deviance from the unity would imply that our method of evaluation of $\epsilon_{m^2}$ or $\epsilon_{id}$ is incomplete. However only significant deviation from unity with $p_T > 1$ GeV/c was found for kaons in EMCale2, EMCale3, EMCalw0, and EMCalw1. This implies that only estimation of value of $\epsilon_{id}$ is incomplete for kaons for those EMCal sectors. We couldn't find the way to pinpoint the exact reason why this happens therefore we applied the systematic uncertainty for $\epsilon_{id}$ for $p_T > 1.1$ GeV/c for kaons. This uncertainty was calculated as RMS of deviation from unity of ratio of invariant $p_T$ spectra of $K^+$ and $K^-$ in EMCal to invariant $p_T$ spectra of $K^+$ and $K^-$ in TOFw for "+-" and "-+" magnetic field configurations. Thogh the uncertainty values of $\epsilon_{id}$ are significant their contribution on the resulting uncertainty is very small.
+
+The systematic uncertainties for $\epsilon_{m^2}$ are shown on Tables \ref{table:epsilon_m2_sys+-} and \ref{table:epsilon_m2_sys-+}. Systematic uncertainties of $\epsilon_{id}$ are shown on Table \ref{table:epsilon_id_sys}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c}
+      EMCal sector & $\pi^+$ & $\pi^-$ & $K^+$ & $K^-$ \\
+      \hline
+      \hline
+      EMCale2 & 7.39 & 6.82 & 13.48 & 12.74 \\
+      EMCale3 & 6.62 & 7.81 & 13.37 & 13.71 \\
+      EMCalw0 & 6.76 & 7.10 & 11.99 & 14.18 \\
+      EMCalw1 & 7.84 & 7.14 & 13.33 & 13.27 \\
+      EMCalw2 & 7.32 & 6.71 & 12.83 & 12.12 \\
+      EMCalw3 & 6.91 & 7.11 & 14.03 & 13.25 \\
+   \end{tabular}
+   \caption{Systematic uncertainty of $\epsilon_{m^2}$ (relative, \%) for different particles and for different EMCal sectors for "+-" magnetic field configuration.}
+   \label{table:epsilon_m2_sys+-}
+\end{table}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c}
+      EMCal sector & $\pi^+$ & $\pi^-$ & $K^+$ & $K^-$ \\
+      \hline
+      \hline
+      EMCale2 & 7.69 & 6.97 & 13.94 & 12.91 \\
+      EMCale3 & 7.40 & 7.44 & 13.67 & 13.93 \\
+      EMCalw0 & 8.20 & 7.35 & 13.41 & 13.54 \\
+      EMCalw1 & 7.18 & 7.60 & 12.89 & 12.26 \\
+      EMCalw2 & 6.83 & 7.30 & 13.61 & 12.42 \\
+      EMCalw3 & 8.08 & 8.68 & 15.04 & 14.32 \\
+   \end{tabular}
+   \caption{Systematic uncertainty of $\epsilon_{m^2}$ (relative, \%) for different particles and for different EMCal sectors for "-+" magnetic field configuration.}
+   \label{table:epsilon_m2_sys-+}
+\end{table}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c|c|c|c}
+      EMCale2 & EMCale3 & EMCalw0 & EMCalw1 \\
+      \hline
+      28.85 & 39.60 & 22.27 & 6.39 \\
+   \end{tabular}
+   \caption{Systematic uncertainty of $\epsilon_{id}$ (relative, \%) for kaons for $p_T > 1.1$ GeV/c for different EMCal sectors.}
+   \label{table:epsilon_id_sys}
+\end{table}
+
+\subsection{Momentum scale uncertainty}
+
+The momentum scale uncertainty is the uncertainty that comes from re-weighting momentum distribution in the simulation. In order to account for it we scaled $p_T$ of generated particles as well as $p_T$ of their products by $-0.5\%$ and by $+0.5\%$. The momentum scale uncertainty was then calculated as root mean square of uncertainties of reconstruction efficiency of \Kstar in the simulation.
+
+\subsection{Raw yield uncertainty}
+
+The raw yield uncertainty is the uncertainty that comes from approximation of signal of \Kstar. This uncertainty was accounted by adding approximations that differ from the basic one ($2\Gamma$ approximation range, $\Gamma$ is a limited parameter that is bound to the range from 0.98$\Gamma_{PDG}$ to 1.02$\Gamma_{PDG}$):
+\begin{itemize}
+	\item free $\Gamma$ - approximation within $2\Gamma$ range from the mean with free parameter $\Gamma$
+	\item wide - approximation within $2.5 \Gamma$ range from the mean with parameter $\Gamma$ being limited the same way it was limited in the basic approximation (within 2\% of PDG value)
+	\item wide free $\Gamma$ - approximation within $2.5\Gamma$ range from the mean with free parameter $\Gamma$
+\end{itemize}
+
+The raw yield uncertainty was calculated as root mean square of uncertainties in raw yields of different approximations. Ratio of varied to basic approximations and raw yield uncertainties are presented in Appendix \ref{appendix:raw_yield_unc} for every method, centrality class, and $p_T$ bin.
+
+\subsection{Branching ratio uncertainty}
+
+Branching ratio uncertainty comes from the uncertainty of the branching ratio of the $K^*(892) \rightarrow \pi^\pm K^\mp$ decay channel. For this channel the relative uncertainty is 0.013 \%.
+
+\subsection{Resulting systematic uncertainty}
+
+We calculated the systematic uncertainty by propagating all systematic uncertainties for the given pair mixing method and for the given detector. The results for different pair mixing methods are presented on Figures \ref{fig:sys_TOF2PID} - \ref{fig:sys_noPID}.
+
+\foreach \method in {EMC2PID, TOF2PID, 2PID, 1PID, noPID}
+{
+	\vfill
+	\begin{figure}[h!]
+		\centering
+		\foreach \centr in {0-20, 20-40, 40-60, 60-93}
+		{
+			\begin{subfigure}{0.48\textwidth}
+			\includegraphics[width=\textwidth]{InvM/Run7AuAu200/19079/SYS_\method_\centr.pdf}
+			\end{subfigure}
+		}
+		\hfill
+		\begin{subfigure}{0.48\textwidth}
+		\includegraphics[width=\textwidth]{InvM/Run7AuAu200/19079/SYS_\method_MB.pdf}
+		\end{subfigure}
+		\caption{Systematic uncertainties of \method \ in different centrality classes for different $p_T$ bins.}
+		\label{fig:sys_\method}
+	\end{figure}
+	\vfill
+	\newpage
+}

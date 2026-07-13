@@ -1,0 +1,605 @@
+\section{Analysis}
+
+\subsection{Run selection}
+
+For this analysis we base our run list on 886 runs that were available for the Analysis taxi build ana.664. There are several ways we can determine a good run list. One way to determine the problematic runs is to compare the 1D DC distribution in board space for every run after the cuts on dead areas were applied and determine the bad runs. For this after applying the fiducial cuts, we project the DC/PC1 occupancy histograms on the board-axis and and normalize the resulting board distributions (for the East and West arms) in every run to represent the same integrals and then divide by the corresponding distributions in a reference run. The ratios are fitted to a constant function. Figure \ref{fig:dc_const} shows the fit parameter (const) and Figure \ref{fig:chi2ndf} shows the fit quality $\chi^2$/NDF for every run. The good runs are selected if $\chi^2/\text{NDF} < 2$ and $0.9 < const < 1.1$. In total 843 runs were accepted. The full list of accepted runs can be found in Appendix \ref{appendix:accepted_runs}.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{deadmaps/Run7AuAu200/Ratio.pdf}
+	\caption{Fit parameter (const) of DC board distribution for East and West arms.}
+	\label{fig:dc_const}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.9\textwidth]{deadmaps/Run7AuAu200/DCChi2Ndf.pdf}
+	\caption{Fit quality $\chi^2/ndf$ of DC board distribution for East and West arms.}
+	\label{fig:chi2ndf}
+\end{figure}
+
+\subsection{Charged hadrons identification procedure}
+
+We use TOFe, TOFw, and EMCal for charged hadrons identification ($\pi^\pm$, $K^\pm$, $p^\pm$). For TOFe and TOFw we used well established identification procedures from AN187 and AN814. For EMCal we base the identification procedure for the real data on AN375 and polished it to be suitable for our analysis. EMCal was split into sectors and identification procedure was performed on each sector separately since each sector behave differently from the other when it comes to registering charged particles.
+
+The standard identification procedure uses the squared mass ($m^2$) distribution of registered charged particles. Value of $m^2$ is calculated by the formula
+
+\begin{equation}
+	m^2 = \frac{p^2}{c^2} \left[ \left( \frac{\tau}{L/c} \right)^2 - 1 \right]
+\end{equation}
+
+Where
+
+\begin{itemize}
+	\item $p$ - reconstructed momentum of the particle,
+	\item $c$ - speed of light,
+	\item $\tau$ - time of flight of a particle,
+	\item $L$ - flight path from the collision vertex to the track projection onto the detector (TOF or EMCal) plane.
+\end{itemize}
+
+In order to get the $m^2$ distribution the 2D histogram is filled with the $m^2$ values as a function of $p_T$. Then for every $p_T$ bin each charged hadron signal is approximated independently by the gaussian distribution. The mean of gaussian approximations were parametrized by the linear function. And the widths of gausses were calculated by the well established formula (PPG101, PPG146, PPG237):
+
+\begin{equation}
+	\sigma^2_{m^2} = \frac{\sigma_{\alpha}^2}{K_1^2} \left(4m^4 p^2 \right) + \frac{\sigma_{ms}^2}{K_1^2} \left[ 4m^4 \left( 1+\frac{m^2}{p^2} \right) \right] + \frac{\sigma_t^2 c^2}{L^2} \left( 4p^2(m^2+p^2) \right)
+\end{equation}
+
+Where
+\begin{itemize}
+	\item $K_1$ is the field integral (104 mrad$\cdot$GeV for both "+-" and "-+" field configurations),
+	\item $L$ is the distance from the collision vertex to the detector - 495cm for TOFw (PPG146), 520cm for TOFe (PPG026), and 522 cm for EMCal (was measured similarly to TOFe and TOFw), 
+	\item $\sigma_{\alpha}$ is the angular resolution,
+	\item $\sigma_{ms}$ is a multiple scattering term,
+	\item $\sigma_t$ is an overall detector resolution.
+\end{itemize}
+
+We based approximations of $m^2$ for TOFe and TOFw on well established procedures described in AN187 and AN814. For EMCal the background around kaons and protons signals cannot be ignored and needs to be approximated. This background is a sum of a "tail" of pions signal and protons that are weak decay products of $\Lambda$ mesons and $\Sigma$ baryons (AN187). We found that function of the form $exp(p_0 + exp(p_1 + p_2 \cdot x))$ and $exp(p_0 + p_1 \cdot x)$ work well for background approximations around kaon and proton signals respectively. EMCal $m^2$ distributions and charged hadrons signals approximations for different magnetic field configurations, different sectors, and different $p_T$ bins are presented in Appendix \ref{appendix:m2_fits}. In this analysis we only need to extract the signals of pions and kaons therefore the approximations of protons are not required to be precise and are only needed for estimation of the mean and the width parameters. Parameters $\sigma_\alpha$, $\sigma_{ms}$, and $\sigma_{t}$ are presented in the Table \ref{table:sigma_m2}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c}
+		Detector & $\sigma_{\alpha}$, mRad & $\sigma_{ms}$, mRad$\cdot$GeV & $\sigma_{t}$, ps \\
+		\hline
+		\hline
+		TOFe & 0.835 & 1 & 120 \\
+		TOFw & 0.9 & 1 & 75.9 \\
+		EMCale2 & 0.835 & 2.3 & 500 \\
+		EMCale3 & 0.835 & 2.4 & 520 \\
+		EMCalw0 & 0.9 & 1.8 & 480 \\
+		EMCalw1 & 0.9 & 1.7 & 480 \\
+		EMCalw2 & 0.9 & 1.5 & 480 \\
+		EMCalw3 & 0.9 & 2 & 500 \\
+	\end{tabular}
+	\caption{Parameters $\sigma_\alpha$, $\sigma_{ms}$, and $\sigma_{t}$ for different detectors}
+	\label{table:sigma_m2}
+\end{table}
+
+Parameters $L$, $\sigma_\alpha$, $\sigma_{ms}$, $\sigma_{t}$ do not depend on the magnetic field configuration so identification procedure is the same for both fields. For this analysis the identification requirements (identification functions) of the charged hadron of specified type are
+\begin{enumerate}
+	\item $m^2$ needs to be within the $2\sigma$ range for TOF and $1\sigma$ range for EMCal within the signal approximation mean of the charged hadron of the specified type
+	\item $m^2$ must not be within $3\sigma$ from the mean of other particle species signals approximations ($3\sigma$ veto cuts)
+		\label{text:id_func}
+\end{enumerate}
+
+Identification functions visualisations for TOFe and TOFw can be found in AN187 and AN814. Visualisation of identification functions of charged hadrons for EMCal for different sectors are presented on the Fig. \ref{fig:id_functions}.
+
+Identification functions allow us to identify charged hadrons in $p_T$ ranges shown in Table \ref{table:id_pt_range}. The values for TOFe and TOFw were taken from AN187 and AN814 and applied for our analysis momentum range ($0.3 < p_T < 8$ GeV/c). 
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{ c || c | c | c | c | c | c }
+		Detector & $\pi^+$ & $\pi^-$ & $K^+$ & $K^-$ & $p^+$ & $p^-$ \\
+		\hline
+		\hline
+		TOFe & 0.3 - 4.5 & 0.3 - 4.5 & 0.3 - 2 & 0.3 - 2 & 0.5 - 4.5 & 0.4 - 4.5 \\
+		TOFw & 0.3 - 6 & 0.3 - 6 & 0.3 - 4 & 0.3 - 4 & 0.4 - 6 & 0.4 - 6 \\
+		EMCal & 0.3 - 1.2 & 0.3 - 1.2 & 0.4 - 1.2 & 0.3 - 1.2 & 0.3 - 1.6 & 0.4 - 1.6 \\
+	\end{tabular}
+	\caption{Identification $p_T$ ranges (GeV/c) of charged hadrons for different detectors that were used for this analysis}
+	\label{table:id_pt_range}
+\end{table}
+
+\subsection{Track pairs mixing methods}
+
+Pairs mixing method is a set of rules and cuts that determines which particles are selected to form pairs that form $M_{inv}$ distribution. In this analysis we implemented multiple \Kstar pairs mixing methods in order to minimize uncertainties of the invariant $p_T$ spectra by choosing the mixing method with the smallest uncertainties for the given $p_T$ bin. 
+Mixing methods we used in our analysis:
+
+\begin{itemize}
+	\item noPID - method of forming pairs combinations of particles that passed all required analysis cuts and passed all specific cuts and matching cuts in at least one detector (PC2, PC3, TOFe, TOFw, EMCal)
+	\item 1PID - method of forming pairs combinations of particles that satisfy noPID mixing method requirements with an additional requirement of an at least one particle in the pair being identified in either TOFe or TOFw
+	\item TOF2PID - method of forming pairs combinations of particles that passed all required analysis cuts and passed all specific cuts, matching cuts, and were identified in either TOFe or TOFw
+	\item EMC2PID - method of forming pairs combinations of particles that passed all required analysis cuts and passed all specific cuts, matching cuts, and were identified in EMCal 
+	\item 2PID - method of forming pairs combinations of particles that passed all required analysis cuts and passed all specific cuts, matching cuts, and were identified in at least one of the following detectors: TOFe, TOFw, EMCal
+\end{itemize}
+
+\vfill
+
+\newpage
+
+\begin{figure}[]
+	\centering
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCale2_0-93.pdf}
+	\end{subfigure}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCale3_0-93.pdf}
+	\end{subfigure}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCalw0_0-93.pdf}
+	\end{subfigure}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCalw1_0-93.pdf}
+	\end{subfigure}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCalw2_0-93.pdf}
+	\end{subfigure}
+	\begin{subfigure}{0.47\textwidth}
+		\includegraphics[width=\textwidth]{m2/Run7AuAu200/EMCalw3_0-93.pdf}
+	\end{subfigure}
+	\caption{Illustration of identification functions of EMCal for different sectors. Red, green, and blue colors are for pions, kaons, and protons respectively. Cross markers represent means and star markers represent $3\sigma$ veto. Filled areas are $m^2$ ranges within $1\sigma$ of each particle mean with $3\sigma$ veto cut from other particle species.}
+	\label{fig:id_functions}
+\end{figure}
+
+\newpage
+\clearpage
+\vfill
+
+\subsection{\Kstar signal gaussian broadening}
+\label{sec:gdf}
+
+In order to approximate the \Kstar signal we need to account for detector system mass resolution that comes from detectors momentum resolution. Mass resolution widens the signal of \Kstar and can be accounted by convoluting the relativistic Breit-Wigner (Equation \ref{eq:rbw}) approximation with gaussian distribution function (GDF). In order to estimate parameters of the GDF we performed the following steps:
+\begin{enumerate}
+	\item $4\cdot10^6$ events of \Kstar decay with width $\Gamma = 0$ were generated with EXODUS both for "+-" and "-+" magnetic field configurations.
+	\item \Kstar decay products interactions with materials were evaluated using PISA.
+	\item Tracks were reconstructed from PISA hits using PISAToDST.
+	\item DC-PC1 tracks were extracted and mixed into pairs thus obtaining the 2D $M_{inv} - p_T$ distribution.
+	\item \Kstar signals were approximated with GDF and width parameters from the approximations were extracted for different $p_T$ bins.
+	\item \Kstar width parameters were approximated for different $p_T$ bins with 2nd order polynomial. This approximation at the given $p_T$ bin is a GDF width parameter ($\sigma_{GDF}$).
+\end{enumerate}
+
+$\sigma_{GDF}$ of simulated \Kstar with $\Gamma = 0$ for different $p_T$ values is presented on Figure \ref{fig:sigma_gdf}.
+
+\begin{figure}[ht]
+	\centering
+	\includegraphics[width=0.55\textwidth]{InvM/Run7AuAu200/Widthless/sigmas.pdf}
+	\caption{GDF width parameters of simulated \Kstar with width $\Gamma = 0$ vs $p_T$ and their approximation.}
+	\label{fig:sigma_gdf}
+\end{figure}
+
+\subsection{\Kstar signals extraction}
+
+The analysis of experimental data was handled by CabanaBoy (CB). We used pool depth of 30 and 30 different event pools: 10 centrality $\times$ 3 vertex. The CB outputs foreground (FG) and combinatorial background (BG) histograms that were used for \Kstar signal extraction. First we scaled BG so that average ratio of FG to BG bins are equal to 1 at highest $M_{inv}$ region that represents 2\% of all statistics for the given histogram. Then we subtracted the BG from the FG. The signal of \Kstar in a resulting $M_{inv}$ distribution was approximated by a sum of 2nd order polynomial for residual background and a convolution of GDF and a relativistic Breit-Wigner function (RBW). RBW as a function of $M_{inv}$ can be written as
+
+\begin{equation}
+	RBW = \frac{A}{2 \pi} \frac{M_{inv} M_{PDG} \Gamma}{(M_{inv}^2 - M_{PDG}^2)^2 + M_{PDG}^2 \Gamma}
+	\label{eq:rbw}
+\end{equation}
+
+Where
+\begin{itemize}
+	\item $A$ - scale parameter
+	\item $M_{PDG} = 891.66$ $MeV/c^2$ - PDG value of mass of \Kstar \cite{pdg}
+	\item $\Gamma$ - width of RBW
+\end{itemize}
+
+We limited width of GDF within 5\% of PDG value $\sigma_{\text{PDG}} = 50.8$ $MeV/c^2$ \cite{pdg} and left a little room for mean of RBW within $0.95 M_{PDG} - 1.05 M_{PDG}$ and width of RBW within 5\% from the PDG value $\Gamma_{PDG}$. The limitation of width of GDF comes from the uncertainty of the width parameter of the simulation of $K^(892)$ with $\Gamma=0$. Mean of GDF doesn't affect the result since we convoluted RBW with GDF within $10 \sigma_{\text{GDF}}$ around the mean of GDF so we set it to 0.
+
+In this analysis we extracted the signal in 5 centrality classes: 0-20\%, 20-40\%, 40-60\%, 60-93\%, and MB (0-93\%) for all introduced pairs mixing methods. The $M_{inv}$ distributions for different pairs mixing methods, different centrality classes and different $p_T$ bins are presented in Appendix \ref{appendix:invm}. 
+
+$p_T$ ranges were chosen from AN911 (p+p \Kstar production at \snn). Choosing these $p_T$ ranges is essential for calculation of nuclear modification factors.
+
+\subsection{Evaluation of detector occupancy correction}
+Due to the high multiplicity particle production in central heavy ion collision final state particles density exceeds detectors segmentation which leads to a loss in a reconstruction efficiency (AN814). This loss can be estimated using embedding procedure. The embedding procedure consists of taking a single MC track and embedding it in a real event. Embedded event then can be reconstructed and the probability of recovering the said MC track can be estimated. This probability is the embedding efficiency ($\epsilon_{emb}$).
+
+For this analysis we based the embedding study on AN814 embedding procedure and \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/offline/wikioff/index.php/EmbeddingUseCase1}{offline wiki embedding page}. The $\epsilon_{emb}$ for different detectors are consistent for different charges and magnetic field configurations which is expected and has been seen in previous embedding studies (AN187, AN814). The results are presented in Tables \ref{table:emb_pi} and \ref{table:emb_k}.
+
+\subsection{TOFw efficiency and ADC cut correction}
+\label{section:tofw_corr}
+
+ADC cut we introduced for TOFw is impossible to replicate in the simulation since GEANT cannot simulate ADC distribution, neither the high electric field in materials nor the efficiency (AN814). Therefore it is important to introduce the correction $\epsilon_{TOFw}$ that accounts for the lack of these effects in the simulation. This correction has already been calculated for TOFw in run7 Au+Au with the same matching cut on TOFw and it is equal to $0.799$ (AN814). Therefore we use this value in our analysis.
+
+\input{tables/embed}
+
+\subsection{EMCal identification correction in Monte-Carlo simulation}
+
+EMCal can be used to identify the signals of charged hadrons for the experimental dataset. The simulation, however, cannot adequately describe the time particle was registered in EMCal therefore it is impossible to acquire the $m^2$ distribution and to estimate the efficiency of identification of charged hadrons through the simulation. However all analysis cuts and specific EMCal cuts can be replicated in the simulation and the invariant $p_T$ spectra that was obtained in TOFw for Au+Au at 200 GeV (PPG146) can be equated to the invariant spectra in EMCal:
+
+\begin{equation}
+	\frac{1}{2\pi p_T}\frac{d^2N_{TOFw}}{dp_T dy} = \frac{1}{2 \pi p_T N_{evt}}\frac{1}{\epsilon_{EMCal_{corr}}\epsilon_{reg}\epsilon_{emb}}\frac{d^2Y}{dp_T dy}
+	\label{eq:spectra_begin}
+\end{equation}
+
+Where
+\begin{itemize}
+	\item $1/(2 \pi p_T)d^2N_{TOFw}/dp_T dy$ - invariant $p_T$ spectra that was calculated using TOFw (PPG146)
+	\item $N_{evt}$ - number of real data events
+	\item $\epsilon_{emb}$ - embedding efficiency (detector occupancy correction)
+	\item $\epsilon_{reg}$ - probability of the generated particle in the simulation to pass all cuts
+	\item $Y$ - raw yield from the real data i.e. the number of particles that were identified. It is calculated by integrating $m^2$ distribution in the identification range for the specific particle. In order to acquire the raw yield of kaons the background needs to be subtracted from the $m^2$ distribution before integration.
+	\item $\epsilon_{EMCal_{corr}}$ - correction to the efficiency of EMCal that accounts for the identification of DC-PC1 tracks that passed all analysis cuts and specific cuts for EMCal.
+\end{itemize}
+
+This way by equating the invariant $p_T$ spectra we can calculate correction $\epsilon_{EMCal_{corr}}$. We decided to split this correction into the product of 2 - $\epsilon_{m^2}$ and $\epsilon_{id}$:
+
+\begin{itemize}
+	\item $\epsilon_{m^2}$ - probability of the particle that passed all analysis cuts and specific cuts for EMCal to have $m^2$ within $\sigma$ from mean
+	\item $\epsilon_{id}$ - probability of the particle that has passed all analysis cuts and specific cuts for EMCal that also has $m^2$ within $\sigma$ from the mean to not being cut by $3\sigma$ vetoes from other particle species
+\end{itemize}
+
+We decided to split the identification correction in two since we assume that $\epsilon_{m^2}$ is a constant value and $\epsilon_{id}$ is a variable that can be calculated using only parameters means and sigmas of identification functions. But these 2 assumptions are true if the signals of charged hadrons have purely gaussian distribution in $m^2$ distribution. This is not the case and the signals of charged hadrons only have distribution that is similar to a gaussian distribution within $1-3\sigma$ range from the mean. Which means that the given assumptions are true within an uncertainty that can be estimated as the difference between the gaussian distribution and actual distribution of the signals of charged hadrons within their extraction range in $m^2$ distribution. We then can treat this uncertainty as a systematic one (Section \ref{sec:emcal_id_uncertainty}).
+
+After splitting $\epsilon_{EMCal_{corr}}$ Equation \ref{eq:spectra_begin} becomes
+
+\begin{equation}
+	\frac{1}{2\pi p_T}\frac{d^2N_{TOFw}}{dp_T dy} = \frac{1}{2 \pi p_T N_{evt}}\frac{1}{\epsilon_m^{2}\epsilon_{id}\epsilon_{reg}\epsilon_{emb}}\frac{d^2Y}{dp_T dy}
+	\label{eq:spectra}
+\end{equation}
+
+\subsection{Evaluation of $\epsilon_{reg}$ correction}
+
+To evaluate $\epsilon_{reg}$ we performed the following steps:
+\begin{enumerate}
+	\item $\pi^+$, $\pi^-$, $K^+$, $K^-$ were generated in EXODUS with flat distribution, $5 \cdot 10^6$ events each
+	\item Simulated particles interactions with detectors were evaluated using PISA
+	\item Track were reconstructed from PISA hits with PISAToDST
+	\item $\epsilon_{reg}$ was calculated by dividing number of the particles of the given specie that passed all cuts and specific EMCal cuts by the number of generated same specie particles for the given $p_T$.
+\end{enumerate}
+
+Estimated $\epsilon_{reg}$ efficiencies are presented in Appendix \ref{appendix:reg_eff}.
+
+\subsection{Calculation of $\epsilon_{id}$ correction}
+
+$\epsilon_{id}$ is a probability of a particle that passed all analysis cuts that also has $m^2$ within $1\sigma$ range from the mean to not being cut by $3\sigma$ vetoes from other particle species. Considering the signal of charged hadrons to have purely gaussian distribution $N(\mu, \sigma, m^2)$ with mean $\mu$ and width $\sigma$, the fraction of the signal that lies within $1\sigma$ from $\mu$ can be written as
+
+\begin{multline}
+	\frac{\int_{\mu - \sigma}^{\mu + \sigma} N(\mu, \sigma)}{\int_{-\infty}^{+\infty} N(\mu, \sigma)} = 
+	\frac{\frac{1}{\sigma \sqrt{2 \pi}} \int_{\mu - \sigma}^{\mu + \sigma} e^{-\frac{1}{2} \left( \frac{m^2-\mu}{\sigma} \right)^2} dm^2}
+	{\frac{1}{\sigma \sqrt{2 \pi}} \int_{-\infty}^{+\infty} e^{-\frac{1}{2} \left( \frac{m^2-\mu}{\sigma} \right)^2} dm^2} = 
+	\frac{1}{\sigma \sqrt{2 \pi}}\int_{\mu - \sigma}^{\mu + \sigma} e^{-\frac{1}{2} \left( \frac{m^2-\mu}{\sigma} \right)^2} d m^2 = \\
+	= \frac{2}{\sqrt{\pi}}\int_{\frac{\mu}{\sqrt{2}\sigma}}^{\frac{\mu + \sigma}{\sqrt{2}\sigma}} e^{-\left( \frac{m^2-\mu}{\sqrt{2}\sigma} \right)^2} d \left( \frac{m^2}{\sqrt{2}\sigma} \right) = 
+	\erf{\frac{(\mu + \sigma) - \mu}{\sqrt{2}\sigma}} = \erf{\frac{1}{\sqrt{2}}}
+\end{multline}
+
+Where erf is an error function:
+
+\begin{equation}
+	\erf{z} = \frac{2}{\sqrt{\pi}} \int_0^z e^{-t^2} dt
+\end{equation}
+
+Having signals distributions of pions $N(\mu_\pi, \sigma_\pi, m^2)$ and of kaons $N(\mu_K, \sigma_K, m^2)$ we can write $\epsilon_{id}$ correction for pions:
+
+\begin{multline}
+	\epsilon_{id}^{\pi} = 
+	\underbrace{\frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{\mu_{\pi} - (\mu_{\pi} - \sigma_{\pi})}
+	{\sqrt{2} \sigma_{\pi}}}}_{\text{Left side from } \mu_{\pi}\text{; no veto cut}} + 
+	\underbrace{\frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{min(\mu_{\pi} + \sigma_{\pi}, \mu_{k} - 3\sigma_{K}) - \mu_{\pi}}
+	{\sqrt{2} \sigma_{\pi}}}}_{
+	\text{Remaining fraction of $\pi$ within $1\sigma$ from $\mu_\pi$ after veto cut from $K$}} = \\
+	= \frac{1}{2} + \frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{min(\mu_{\pi} + \sigma_{\pi}, \mu_{k} - 3\sigma_{K})}
+	{\sqrt{2} \sigma_{\pi}}}
+\end{multline}
+
+And for kaons
+
+\begin{multline}
+	\epsilon_{id}^{K} = 
+	\underbrace{\frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{\mu_K - max(\mu_K - \sigma_K, \mu_\pi + 3\sigma_\pi)}
+	{\sqrt{2} \sigma_K}}}_{\text{Remaining fraction of $K$ within $1\sigma$ after veto cut from $\pi$}} + 
+	\underbrace{\frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{(\mu_{K} + 3\sigma_{K}) - \mu_K}
+	{\sqrt{2} \sigma_{\pi}}}}_{\text{Right side from $\mu_{\pi}$; no veto cut}} = \\
+	\frac{1}{2}\frac{1}{\erf{1/\sqrt{2}}} 
+	\erf{\frac{\mu_K - max(\mu_K - \sigma_K, \mu_\pi + 3\sigma_\pi)}{\sqrt{2} \sigma_K}} + 
+	\frac{1}{2}
+\end{multline}
+
+Where given arbitrary values $a$ and $b$: $min(a, \ b)$ and $max(a, \ b)$ are minimum and maximum of $a$ and $b$ respectively.
+
+We omitted the $3\sigma$ veto cut from protons on kaons since this cut has no effect on signals of kaons in the $p_T$ identification range of kaons we used for this analysis \ref{table:id_pt_range} which can be seen on Figure \ref{fig:id_functions}.
+
+\subsection{Evaluation of $\epsilon_{m^2}$ correction}
+
+By equating the invariant spectra in EMCal to the invariant spectra in TOFw (Equation \ref{eq:spectra}) we can acquire
+
+\begin{multline}
+	\frac{1}{2\pi p_T}\frac{d^2N_{TOFw}}{dp_T dy} = 
+	\frac{1}{2 \pi p_T N_{evt}}\frac{1}{\epsilon_{m^2}\epsilon_{id}\epsilon_{reg}\epsilon_{emb}}\frac{d^2Y}{dp_T dy} \implies \\
+	\epsilon_{m^2} = \frac{1}{\epsilon_{id}\epsilon_{reg}\epsilon_{emb}} \frac{1/(2\pi p_T) d^2 Y/dp_T dy}{1/(2\pi p_T) d^2 N_{TOFw}/dp_T dy}
+	\label{eq:equating_inv_spectra}
+\end{multline} 
+
+Value $\epsilon_{m^2}$ is centrality independent since centrality dependence is accounted by the occupancy correction therefore we used 0-93\% (MB) centrality class for calculating it for smaller statistical uncertainty.
+
+Since $\epsilon_{m^2}$ is a probability of a particle that passed all cuts and passed EMCal specific cuts to have $m^2$ within $1\sigma$ from it's mean in the $m^2$ distribution, it is better to estimate the $\epsilon_{m^2}$ without the effect of $3\sigma$ veto cuts for more accuracy. Therefore, we require $\epsilon_{id} = 1$ for $\epsilon_{m^2}$ estimation. In order to apply this requirement for the given particle species we subtracted other particle species signals approximations from $m^2$ distribution and didn't apply $3\sigma$ veto cuts.
+
+The results of estimations of $\epsilon_{m^2}$ for the different EMCal sides and sectors and for different $p_T$ are shown in Appendix \ref{appendix:m2_eff}. The values of $\epsilon_{m^2}$ we used in this analysis come from the 0-th order approximation of estimation of $\epsilon_{m^2}$ for each $p_T$ bin and are presented in the Tables \ref{table:m2_eff+-}-\ref{table:m2_eff-+}.
+
+\input{tables/m2_eff}
+
+\subsection{\Kstar reconstruction efficiency}
+
+\subsubsection{Simulation of \Kstar}
+
+The reconstruction efficiency evaluation algorithm consists of simulating \Kstar mesons decay with EXODUS, modeling it's products interactions with detectors with PISA, reconstructing tracks from PISA hits with PISAToDST, and performing the analysis on the PISAToDST tracks. We simulated \Kstar$\rightarrow \pi^+ K^-$ and \Kstar$\rightarrow \pi^- K^+$ for both "+-" and "-+" magnetic field configurations, $15 \cdot 10^6$ events each, with the parameters, presented in the Table \ref{table:kstar_sim_par}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c}
+		Parameter & Range & Distribution \\
+		\hline
+		\hline
+		Rapidity & $-0.5 < \Delta y < 0.5$ & flat \\
+		Azimuthal angle & $0 < \varphi < 2\pi$ & flat \\
+		Transverse momentum & $0.6 < p_T < 9.1$ GeV/c & flat \\
+		Vertex & $-30 < Z_{VTX} < 30$ & flat \\
+	\end{tabular}
+	\caption{\Kstar simulation parameters for reconstruction efficiency}
+	\label{table:kstar_sim_par}
+\end{table}
+
+\subsubsection{Application of $\epsilon_{emb}$ and $\epsilon_{TOFw}$}
+
+In order to account for $\epsilon_{emb}$ we introduced $w_{reg}^{i, j}$ - weight of registered $i$th DC-PC1 track in the simulation in the $j$th detector. It represents the probability of $i$th DC-PC1 track that passed all cuts to be registered in the $j$th detector. If the simulated particle that was reconstructed as $i$th DC-PC1 track was registered in the $j$th detector and passed all detector specific cuts $w_{reg}^{i,j} \neq 0$, otherwise $w_{reg}^{i,j} = 0$. Non zero weight of $i$th DC-PC1 track for the $j$th detector can be calculated as
+
+\begin{equation}
+	w_{reg}^{i,j} = \frac{\epsilon_{emb}^{i,j}}{\epsilon_{emb}^{i, DCPC1}} \epsilon_{eff}
+	\label{eq:reg_weight}
+\end{equation}
+
+Where
+\begin{itemize}
+	\item $\epsilon_{emb}^{i, j}$ - detector occupancy correction of $i$th particle for the $j$th detector,
+	\item $\epsilon_{emb}^{i, DCPC1}$ - DC-PC1 occupancy correction for $i$th particle,
+	\item $j$th detector can be any detector that was used for the given track pairs mixing method.
+	\item $\epsilon_{eff}$ - correction to the efficiency; it is equal to $\epsilon_{TOFw}$ for TOFw (Section \ref{section:tofw_corr}), for other detectors it is equal to 1.
+\end{itemize}
+
+We divide $\epsilon_{emb}^{i,j}$ in \ref{eq:reg_weight} by $\epsilon_{emb}^{i, DCPC1}$ because we calculate weight for the DC-PC1 track, and $\epsilon_{emb}^{i,j}$ is the occupancy correction of particle for DC-PC1 + $j$th detector system. We calculate the weight of DC-PC1 track because we need to calculate the probability of a DC-PC1 track to be registered in at least one detector and then multiply it by the DC-PC1 embedding value thus acquiring the probability of a particle to be registered in at least one detector.
+
+\subsubsection{Application of $\epsilon_{m^2}$ and $\epsilon_{id}$}
+
+In order to account for $\epsilon_{m^2}$ and $\epsilon_{id}$, we introduced $w_{id}^{i,j}$ - weight of $i$th identified DC-PC1 track in a $j$th detector. It represents the probability of a simulated particle that was reconstructed as $i$th DC-PC1 track that passed all cuts and all specific cuts for $j$th detector to be identified in $j$th detector. For TOF, if $i$th DC-PC1 track was registered, passed all $j$th detector specific cuts, and was identified $w_{id}^{i,j} \neq 0$, otherwise $w_{id}^{i,j} = 0$; $j$th detector can be either TOFe or TOFw. For EMCal, if $i$th DC-PC1 track was registered and passed all $j$th detectors specific cuts $w_{id}^{i,j} \neq 0$, otherwise $w_{id}^{i,j} = 0$; $j$th detector can be any sector of PbSc. Non-zero values of $w_{id}^{i,j}$ for EMCal and TOF can be written as
+
+\begin{equation}
+	\begin{matrix}
+		w_{id}^{i,j} = \epsilon_{m^2}^j \epsilon_{id}^j w_{reg}^{i,j} & \left( \text{EMCal} \right) \\
+		w_{id}^{i,j} = w_{reg}^{i,j} & \left( \text{TOF} \right) \\
+	\end{matrix}
+\end{equation}
+
+\subsubsection{Weight of a pair of particles in the simulation}
+
+So far we only introduced the weight corrections for single particles while we need to reconstruct the simulated \Kstar that has 2 body decay channel. Therefore we introduce the weight of the pair $w_{pair}^{i,j}$ of positive $i$th and negative $j$th particles for different track pairs mixing methods. Since we use multiple detectors at the same time, this weight needs to represent the probability for both tracks each to be, depending on the pairs mixing method, registered or/and identified in at least one detector. Therefore we can represent $w_{pair}^{i,j}$ as 1 minus the probability of any of $i$th and/or $j$th particles to not being registered/identified in all detectors for the given mixing method.
+
+First we look only for the probability of the $i$th DC-PC1 track to not being registered in the $k$th detector, which is 
+
+\begin{equation}
+	1 - w_{reg}^{i, k}
+	\label{eq:not_reg_prob}
+\end{equation}
+
+ The probability of not registering DC-PC1 track in all detectors for the given track pairs mixing method detectors selection is
+
+\begin{equation}
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right)
+\end{equation}
+
+Here product index $k$ goes over all detectors in a pairs mixing method selection. 
+And the probability of at least one of DC-PC1 tracks in the pair $i,j$ to not be registered in any detectors for the given tracks pair mixing method detectors selection is
+
+\begin{multline}
+	\left[1 - \prod_{k} \left( 1 - w_{reg}^{i, k} \right)\right] \prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} \left[1 - \left( 1 - w_{reg}^{j, l} \right) \right] + 
+	\\ + \prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right) = \\
+	= \prod_{k} \left( 1 - w_{reg}^{i, k} \right) + \prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	\label{eq:pair_prob_begin}
+\end{multline}
+
+Where 
+\begin{itemize}
+	\item $\left[1 - \prod_{k} \left( 1 - w_{reg}^{i, k} \right)\right] \prod_{l} \left( 1 - w_{reg}^{j, l} \right)$ - is a probability of registering $i$th DC-PC1 track in at least one detector while not registering $j$th DC-PC1 track in any of detectors of the given pairs mixing method detectors selection,
+	\item $\prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} \left[1 - \left( 1 - w_{reg}^{j, l} \right) \right]$ - is a probability of not registering $i$th DC-PC1 track while registering $j$th DC-PC1 track in at least one detector of the given pairs mixing method detectors selection,
+	\item $\prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right)$ - is a probability of not registering both $i$th and $j$th DC-PC1 tracks in any detectors from the given pairs mixing method detectors selection,
+\end{itemize}
+
+The probability of both $i$th and $j$th DC-PC1 tracks to be registered in at least one of detectors of the given pairs mixing method detectors selection can be calculated as 1 minus Expr. \ref{eq:pair_prob_begin}. Therefore we can write this probability as
+
+\begin{equation}
+	1 - \prod_{k} \left( 1 - w_{reg}^{i, k} \right) -
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right) \prod_{l} 
+	\left( 1 - w_{reg}^{j, l} \right)
+	\label{eq:pair_prob}
+\end{equation}
+
+Now we only need to adjust for occupancy correction of DC-PC1 tracks and therefore acquire the weight of the pair for noPID pairs mixing method:
+
+\begin{equation}
+	w_{pair}^{i,j} = \epsilon_{emb}^{i, DCPC1} \epsilon_{emb}^{j, DCPC1} 
+	\left[ 1 - 
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right) -
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{reg}^{i, k} \right) 
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	\right]
+\end{equation}
+
+Where $k$ and $l$ indices can represent TOFe, TOFw, PC3, PC2, EMCale(0-3), EMCalw(0-3).
+
+Similarly for 2PID, TOF2PID, and EMC2PID by substituting $w_{reg}^{i,j}$ for $w_{id}^{i,j}$ in Equation \ref{eq:not_reg_prob} we get
+
+\begin{equation}
+	w_{pair}^{i,j} = \epsilon_{emb}^{i, DCPC1} \epsilon_{emb}^{j, DCPC1} 
+	\left[ 1 -
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) -
+	\prod_{l} \left( 1 - w_{id}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) 
+	\prod_{l} \left( 1 - w_{id}^{j, l} \right)
+	\right]
+\end{equation}
+
+Where
+\begin{itemize}
+	\item For 2PID indices $k$ and $l$ can represent TOFe, TOFw, EMCale(2-3), EMCalw(0-3),
+	\item for TOF2PID indices $k$ and $l$ can represent TOFe, TOFw,
+	\item for EMC2PID indices $k$ and $l$ can represent EMCale(2-3), ECMalw(0-3).
+\end{itemize}
+
+For 1PID the pair weight is a bit trickier to calculate. First, the probability of $i$th DC-PC1 track to not be identified or/and $j$th DC-PC1 track to not be registered in any of 1PID detectors selection can be written as:
+
+\begin{multline}
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right) + 
+	\left[ 1 - \prod_{k} \left( 1 - w_{id}^{i, k} \right) \right] \prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	+ \\
+	+ \prod_{k} \left( 1 - w_{id}^{i, k} \right) \left[ 1 - \prod_{l} \left( 1 - w_{reg}^{j, l} \right) \right]
+	= \\ =
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) + \prod_{l} \left( 1 - w_{reg}^{j, l} \right) - 
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	\label{eq:1PID_pair_prob1}
+\end{multline}
+
+Where
+\begin{itemize}
+	\item $\prod_{k} \left( 1 - w_{id}^{i, k} \right) \prod_{l} \left( 1 - w_{reg}^{j, l} \right)$ - probability of neither $i$th track to be identified nor $j$th track to be registered in any of 1PID detectors selection
+	\item $\left[ 1 - \prod_{k} \left( 1 - w_{id}^{i, k} \right) \right] \prod_{l} \left( 1 - w_{reg}^{j, l} \right)$ - probability of not identifying $i$th track while registering $j$th track in any detector from 1PID detectors selection
+	\item $\left[ 1 - \prod_{k} \left( 1 - w_{id}^{i, k} \right) \right] \prod_{l} \left( 1 - w_{reg}^{j, l} \right)$ - probability of identifying $i$th track while not registering $j$th track in any detector from 1PID detectors selection
+\end{itemize}
+
+Similarly, the probability of $i$th DC-PC1 track to not be registered and $j$th DC-PC1 track to not be identified in any of 1PID detectors selection
+	
+\begin{equation}
+	\prod_{k} \left( 1 - w_{reg}^{i, m} \right) + \prod_{l} \left( 1 - w_{id}^{j, n} \right) - 
+	\prod_{k} \left( 1 - w_{reg}^{i, m} \right) \prod_{l} \left( 1 - w_{id}^{j, n} \right)
+	\label{eq:1PID_pair_prob2}
+\end{equation}
+
+For 1PID at least one DC-PC1 track needs to be identified so at least one of $i$th or $j$th DC-PC1 tracks needs to be identified, and other particle in the pair to be registered. 1 - (Expr. \ref{eq:1PID_pair_prob1} times Expr. \ref{eq:1PID_pair_prob2}) is a probability that at least 1 DC-PC1 track is identified while the other DC-PC1 track in a pair is registered:
+
+\begin{multline}
+	1 - 
+	\left[
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) +
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) 
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	\right] \cdot \\
+	\cdot \left[
+	\prod_{m} \left( 1 - w_{reg}^{i, m} \right) +
+	\prod_{n} \left( 1 - w_{id}^{j, n} \right) +
+	\prod_{m} \left( 1 - w_{reg}^{i, m} \right) 
+	\prod_{n} \left( 1 - w_{id}^{j, n} \right)
+	\right]
+\end{multline}
+
+Adjusting this probability by the occupancy correction for DC-PC1 we acquire the pair weight for 1PID:
+
+\begin{multline}
+	w_{pair}^{i,j} = \Biggl \{ 1 - 
+	\left[
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) +
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right) +
+	\prod_{k} \left( 1 - w_{id}^{i, k} \right) 
+	\prod_{l} \left( 1 - w_{reg}^{j, l} \right)
+	\right] \cdot \\
+	\cdot \left[
+	\prod_{m} \left( 1 - w_{reg}^{i, m} \right) +
+	\prod_{n} \left( 1 - w_{id}^{j, n} \right) +
+	\prod_{m} \left( 1 - w_{reg}^{i, m} \right) 
+	\prod_{n} \left( 1 - w_{id}^{j, n} \right)
+	\right] \Biggr \}
+	\epsilon_{emb}^{i, DCPC1} \epsilon_{emb}^{j, DCPC1}
+\end{multline}
+
+Where indices $k$ and $n$ can represent TOFe, TOFw, EMCale(2-3), EMCalw(0-3), and indices $l$ and $m$ can represent TOFe, TOFw, PC2, PC3, EMCale(0-3), EMCalw(0-3).
+
+To employ the weight of the pair $i,j$ for the given pairs mixing method we filled invariant mass histogram for the given mixing method with pair $i,j$ invariant mass with weight = $w_{pair}^{i,j}$. We performed this for both "+-" and "-+" magnetic fields configurations, for all pairs, and for all pairs mixing methods.
+
+\subsubsection{Merging "+-" and "-+" field configurations datasets}
+\label{seq:datasets_merge}
+
+In order to decrease the raw yield systematic uncertainty and statistical uncertainty of \Kstar invariant $p_T$ spectra we decided to merge "+-" and "-+" magnetic field datasets before acquiring \Kstar reconstruction efficiency. The only correct way to do this is to make the simulation similar to the experiment which can be expressed in the following requirement: ratio of number of "+-" events to the number of "-+" events must be equal for simulated and experimental datasets. This can be achieved by scaling "-+" simulated dataset by the value $s^{-+}$:
+
+\begin{equation}
+	s^{-+} = \frac{N_{evt}^{-+}}{N_{evt}^{+-}} \frac{N_{gen}^{+-}}{N_{gen}^{-+}}
+\end{equation}
+
+Where
+\begin{itemize}
+	\item $N_{evt}^{+-}$, $N_{evt}^{-+}$ - number of experimental events of "+-" and "-+" magnetic field configuration datasets
+	\item $N_{gen}^{+-}$, $N_{gen}^{-+}$ - number of generated \Kstar mesons for "+-" and "-+" magnetic field configurations
+\end{itemize}
+
+After scaling simulated "-+" magnetic field dataset simulated "+-" and "-+" datasets were merged together. After that invariant mass distribution for merged simulated dataset was acquired.
+
+\subsubsection{Evaluation of \Kstar reconstruction efficiency}
+
+The signals of \Kstar were approximated with a sum of 3nd order polynomial and a convolution of RBW (Equation \ref{eq:rbw}) and GDF (\ref{sec:gdf}). The number of reconstructed \Kstar mesons ($N_{rec}$) was calculated as an integral over convolution of RBW and GDF within $2\Gamma$ from mean. The reconstruction efficiency for the given $p_T$ bin can be written 3s
+
+\begin{equation}
+	\epsilon(p_T) = \frac{N_{rec}(p_T)}{N_{gen}^{+-}(p_T) + s^{-+} N_{gen}^{-+}(p_T)}
+\end{equation}
+
+ After the first calculation of \Kstar invariant $p_T$ spectra events were re-weighted in a way for the simulated \Kstar $p_T$ distribution to match $p_T$ distribution of \Kstar in the experiment. After that reconstruction algorithm was repeated again, new reconstruction efficiency was obtained, and invariant $p_T$ spectra was calculated for the 2nd time. Simulated $p_T$ distribution was once again re-weighted and the reconstruction efficiency we use for this analysis was obtained. The results are presented on Figures \ref{fig:rec_eff_EMC2PID} - \ref{fig:rec_eff_noPID}.
+
+\newpage
+\vfill
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Efficiency/Run7AuAu200/PairEff_EMC2PID_KStar892.pdf}
+	\caption{\Kstar reconstruction efficiency for EMC2PID pair mixing method for different centrality classes and for different $p_T$ bins}
+	\label{fig:rec_eff_EMC2PID}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Efficiency/Run7AuAu200/PairEff_TOF2PID_KStar892.pdf}
+	\caption{\Kstar reconstruction efficiency for TOF2PID pair mixing method for different centrality classes and for different $p_T$ bins}
+	\label{fig:rec_eff_TOF2PID}
+\end{figure}
+
+\vfill
+\clearpage
+\vfill
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Efficiency/Run7AuAu200/PairEff_2PID_KStar892.pdf}
+	\caption{\Kstar reconstruction efficiency for 2PID pair mixing method for different centrality classes and for different $p_T$ bins}
+	\label{fig:rec_eff_2PID}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Efficiency/Run7AuAu200/PairEff_1PID_KStar892.pdf}
+	\caption{\Kstar reconstruction efficiency for 1PID pair mixing method for different centrality classes and for different $p_T$ bins}
+	\label{fig:rec_eff_1PID}
+\end{figure}
+
+\clearpage
+\vfill
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.8\textwidth]{Efficiency/Run7AuAu200/PairEff_noPID_KStar892.pdf}
+	\caption{\Kstar reconstruction efficiency for noPID pair mixing method for different centrality classes and for different $p_T$ bins}
+	\label{fig:rec_eff_noPID}
+\end{figure}
+
+\subsection{Bin width correction}
+
+Since the invariant $p_T$ spectra is a continuous function the data needs to be corrected for the effects of finite bin widths. The effect is more significant for wide bins as the average $p_T$ is shifted to the center of the bin. There are two ways to correct this effect: one way is to shift points vertically and leave $p_T$ unchanged; the other is to move points along the $p_T$ axis and leave the spectra unchanged. In this analysis we used the first method as it allows to control the position of data points on the $p_T$ axis which is important for nuclear modification factors.
+	
+The invariant $p_T$ spectra $S$ measured in a bin range from $p_T^{min}$ to $p_T^{max}$ can be written as
+
+\begin{equation}
+	S = \frac{1}{p_T^{max} - p_T^{min}} \int_{p_T^{min}}^{p_T^{max}} f(p_T) dp_T
+\end{equation}
+
+Where $f(p_T)$ is an approximation of an uncorrected invariant $p_T$ spectra by the Tsallis function. The correction factor for each point is therefore defined as the ratio of $S$ to the value of the fit at the center of the corresponding bin.
+
+The correction can be performed multiple times resulting in a better estimation. We performed the bin width correction 5 times. After that consequent corrections do not yield the result distinguishable from the previous one.

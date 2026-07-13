@@ -3,11 +3,9 @@ se-416437.root
 se-416200.root
 se-416813.root
 se-416362.root
-se-415825.root
 se-415925.root
 se-416221.root
 se-416230.root
-se-415822.root
 se-416812.root
 se-416131.root
 se-416695.root
@@ -60,7 +58,6 @@ se-416544.root
 se-416689.root
 se-415840.root
 se-416108.root
-se-415823.root
 se-416627.root
 se-415899.root
 se-416117.root

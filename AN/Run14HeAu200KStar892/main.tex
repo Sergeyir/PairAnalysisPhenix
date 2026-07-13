@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+
+\usepackage{subcaption}
+\usepackage{graphicx}
+\usepackage{xcolor}
+\usepackage{enumerate}
+\usepackage{hyperref}
+\usepackage{amsmath}
+\usepackage{xspace}
+\usepackage[natbib=true, style=numeric, sorting=none, backref=true]{biblatex}
+\usepackage{pgffor}
+\usepackage{indentfirst}
+\usepackage[top=4cm, bottom=3.5cm, left=3cm, right=3cm]{geometry}
+\usepackage{lineno}
+
+%\addbibresource{refs.bib}
+
+\numberwithin{figure}{subsection}
+\numberwithin{equation}{subsection}
+\numberwithin{table}{section}
+
+\graphicspath{{../../output}}
+
+\input{defs.tex}
+
+\makeatletter
+     \renewcommand*\l@figure{\@dottedtocline{1}{1em}{3.2em}}
+\makeatother
+
+%\linenumbers
+
+\begin{document}
+
+	\include{title}
+	\tableofcontents
+	\listoffigures
+	\listoftables
+	\newpage
+
+	%\setcounter{section}{-1}
+	\include{analysis_organization}
+	\include{introduction}
+	\include{experimental_setup}
+	\include{analysis}
+	%\include{systematics}
+	%\include{results}
+   %\include{data_tables}
+
+	%\printbibliography
+	%\addcontentsline{toc}{section}{References}
+
+   \newpage
+
+	\include{appendix}
+
+\end{document}

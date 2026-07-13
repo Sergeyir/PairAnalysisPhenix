@@ -3,11 +3,9 @@
 416200.root
 416813.root
 416362.root
-415825.root
 415925.root
 416221.root
 416230.root
-415822.root
 416812.root
 416131.root
 416695.root
@@ -60,7 +58,6 @@
 416689.root
 415840.root
 416108.root
-415823.root
 416627.root
 415899.root
 416117.root

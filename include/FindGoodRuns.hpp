@@ -57,9 +57,11 @@ namespace FindGoodRuns
    /// cutter for deadmaps
    DeadMapCutter dmCutter;
    /// Threshold for the absolute multiplicity/event and charge+/charge- deviation from the average
-   double multThreshold = 1.5;
+   double multThreshold = 1.3;
+   /// const fit parameter deviation threshold from unity for linear fit of the deviation heatmap from the reference run distributions
+   double constParDeviationThreshold = 10.;
    /// Chi2/NDF threshold for linear fit of the deviation heatmap from the reference run distributions
-   double chi2NDFThreshold = 1.;
+   double chi2NDFThreshold = 10.;
    /// Checks all run files from goodRunNames by multiplicities and finds the reference run file.
    /// goodRunNames and badRunNames will be updated accordingly after the check
    void CheckRunsByMultiplicityAndFindReferenceRun();
