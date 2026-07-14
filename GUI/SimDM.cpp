@@ -1,0 +1,99 @@
+/** 
+ *  @file   DM.cpp 
+ *  @brief  Contains implementation for usage of ROOTTools::GUIDistrCutter2D for applying additional fiducial cuts on 2D distributions on PHENIX simulated data
+ *
+ *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
+ *
+ *  @author Sergei Antsupov (antsupov0124@gmail.com)
+ **/
+#pragma once
+#include "ErrorHandler.hpp"
+#include "IOTools.hpp"
+#include "StrTools.hpp"
+
+#include "GUIDistrCutter2D.hpp"
+
+void SimDM()
+{
+	gStyle->SetOptStat(0);
+   //gStyle->SetPalette(kWaterMelon);
+   TDirectory::AddDirectory(kFALSE);
+
+   const std::string heatmapIdentifierName = "Heatmap";
+
+   CppTools::PrintInfo("List of runs in data/Real directory");
+   system("ls data/Real/");
+
+   CppTools::Print("Choose the run from the above and type it in");
+   std::string runName;
+   std::cout << ">> ";
+   std::cin >> runName;
+
+   const std::string realInputFileName = "data/Real/" + runName + "/SingleTrack/sum.root";
+   const std::string simInputFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
+   CppTools::CheckInputFile(realInputFileName);
+   CppTools::CheckInputFile(simInputFileName);
+   TFile realInputFile(realInputFileName.c_str());
+   TFile simInputFile(simInputFileName.c_str());
+
+   CppTools::PrintInfo("List of heatmaps in " + realInputFileName + " file");
+   realInputFile.ls((heatmapIdentifierName + ":*").c_str());
+
+   CppTools::Print("Type in the detector name");
+   std::string detectorName;
+   std::cout << ">> ";
+   std::cin >> std::ws;
+   std::getline(std::cin, detectorName);
+
+   TH2D *realHist = static_cast<TH2D *>
+      (realInputFile.Get((heatmapIdentifierName + ": " + detectorName).c_str()));
+
+   if (!realHist) 
+   {
+      CppTools::PrintError("No histogram named \"" + heatmapIdentifierName + ": " + detectorName + 
+                           "\" in file " + realInputFileName);
+   }
+
+   TH2D *simHist = static_cast<TH2D *>
+      (simInputFile.Get((heatmapIdentifierName + ": " + detectorName).c_str()));
+
+   if (!simHist) 
+   {
+      CppTools::PrintError("No histogram named" + heatmapIdentifierName + ": " + 
+                           detectorName + " in file " + simInputFileName);
+   }
+
+   if (detectorName == "DCeX1, zDC<0") detectorName = "DCeX1_1"; 
+   else if (detectorName == "DCeX2, zDC<0") detectorName = "DCeX2_1"; 
+   else if (detectorName == "DCeX1, zDC>=0") detectorName = "DCeX1_0"; 
+   else if (detectorName == "DCeX2, zDC>=0") detectorName = "DCeX2_0"; 
+   else if (detectorName == "DCwX1, zDC<0") detectorName = "DCwX1_1"; 
+   else if (detectorName == "DCwX2, zDC<0") detectorName = "DCwX2_1"; 
+   else if (detectorName == "DCwX1, zDC>=0") detectorName = "DCwX1_0"; 
+   else if (detectorName == "DCwX2, zDC>=0") detectorName = "DCwX2_0"; 
+
+	TCanvas *canv = new TCanvas("", "", 900, 900);
+   
+   GUIDistrCutter2D::AddHistogram(realHist);
+   GUIDistrCutter2D::AddHistogram(static_cast<TH2D *>(simHist->Clone("sim")));
+   std::filesystem::create_directory("data/Parameters/SimDeadmaps/" + runName);
+
+   /*
+   while (detectorName.find(" ") < detectorName.size())
+   {
+      const unsigned int spacePos = detectorName.find(" ");
+      detectorName.erase(spacePos, 1);
+   }
+   */
+
+   const std::string outputCutsFileName = "data/Parameters/SimDeadmaps/" + 
+                                          runName + "/" + detectorName + ".txt";
+
+   if (std::filesystem::exists(outputCutsFileName))
+   {
+      GUIDistrCutter2D::ReadCutAreas(outputCutsFileName);
+   }
+   GUIDistrCutter2D::SetOutputFile(outputCutsFileName);
+
+	gPad->AddExec("exec", "GUIDistrCutter2D::Exec()");
+}

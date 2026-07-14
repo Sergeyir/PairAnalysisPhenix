@@ -1,13 +1,13 @@
 /** 
- *  @file   FindGoodRuns.hpp
+ *  @file   CheckRuns.hpp
  *  @brief  Contains declarations of functions and variables that are used for the determination of good runs 
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef FIND_GOOD_RUNS_HPP
-#define FIND_GOOD_RUNS_HPP
+#ifndef CHECK_RUNS_HPP
+#define CHECK_RUNS_HPP
 
 #include <regex>
 
@@ -30,13 +30,13 @@
 
 #include "DeadMapCutter.hpp"
 
-/* @namespace FindGoodRuns
+/* @namespace CheckRuns
  *
- * @brief Contains all functions, variables, and containers needed for FindGoodRuns.cpp
+ * @brief Contains all functions, variables, and containers needed for CheckRuns.cpp
  *
  * This namespace is eployed so that documentation will not become a pile of variables, types, and functions from many different files that are intended to be compiled and used as executables. With this namespace finding the needed information for the given executable is easier since everything belongs to the current namespace
  */
-namespace FindGoodRuns
+namespace CheckRuns
 {
    /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
@@ -46,8 +46,8 @@ namespace FindGoodRuns
    std::string inputDir;
    /// directory for writing pictures and .root files
    std::string outputDir;
-   /// Reference run number (e.g. the run with the highest mult/event ratio)
-   int referenceRun;
+   /// simulated file name
+   std::string simFileName;
    /// Contains all runs 
    std::vector<int> runs;
    /// Contains good runs
@@ -58,19 +58,16 @@ namespace FindGoodRuns
    DeadMapCutter dmCutter;
    /// Threshold for the absolute multiplicity/event and charge+/charge- deviation from the average
    double multThreshold = 1.3;
-   /// const fit parameter deviation threshold from unity for linear fit of the deviation heatmap from the reference run distributions
-   double constParDeviationThreshold = 10.;
-   /// Chi2/NDF threshold for linear fit of the deviation heatmap from the reference run distributions
-   double chi2NDFThreshold = 10.;
-   /// Checks all run files from goodRunNames by multiplicities and finds the reference run file.
+   /// const fit parameter deviation threshold from unity for linear fit of the deviation heatmap from the simulated distributions
+   double constParDeviationThreshold = 1.1;
+   /// Chi2/NDF threshold for linear fit of the deviation heatmap from the simulated distributions
+   double chi2NDFThreshold = 3.;
+   /// Checks all run files from goodRunNames by multiplicities and finds the simulated file.
    /// goodRunNames and badRunNames will be updated accordingly after the check
-   void CheckRunsByMultiplicityAndFindReferenceRun();
-   /// Checks all run files from goodRunNames by DC projection on board.
-   /// goodRunNames and badRunNames will be updated accordingly after the check
-   void CheckRunsByDCBoard();
+   void CheckRunsByMultiplicity();
    /// Checks all run files from goodRunNames by DC projection on board.
    /// goodRunNames and badRunNames will be updated accordingly after the check
    void CheckRunsByDCBoard();
 }
 
-#endif /* FIND_GOOD_RUNS_HPP */
+#endif /* CHECK_RUNS_HPP */

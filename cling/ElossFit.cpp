@@ -23,12 +23,12 @@ void ElossFit()
    CppTools::CheckInputFile(inputFileName);
    TFile inputFile(inputFileName.c_str());
 
-   const std::string distrBetaVsETOFeName = "beta vs E, TOFe";
-   TH2F *distrBetaVsETOFe = static_cast<TH2F *>(inputFile.Get(distrBetaVsETOFeName.c_str()));
+   const std::string distrName = "beta vs E, TOFe";
+   TH2F *distr = static_cast<TH2F *>(inputFile.Get(distrName.c_str()));
 
-   if (!distrBetaVsETOFe)
+   if (!distr)
    {
-      CppTools::PrintError("No histogram named " + distrBetaVsETOFeName + 
+      CppTools::PrintError("No histogram named " + distrName + 
                            " in file " + inputFileName);
    }
 
@@ -43,13 +43,29 @@ void ElossFit()
    {
       if (firstIteration)
       {
-         distrBetaVsETOFe->Fit(&fit, "QMN");
-         std::filesystem::create_directories("output/ElossFit/");
+         if (std::filesystem::exists("data/Parameters/ElossCut/" + runName + ".txt"))
+         {
+            std::ifstream parFile("data/Parameters/ElossCut/" + runName + ".txt");
+
+            double par;
+            int i = 0;
+            while (parFile >> par)
+            {
+               fit.SetParameter(i, par);
+               i++;
+            }
+         }
+         else
+         {
+            distr->Fit(&fit, "QMN");
+            std::filesystem::create_directories("output/ElossFit/");
+         }
       }
       else
       {
          CppTools::Print("Current parameters are:", fit.GetParameter(0), fit.GetParameter(1));
-         CppTools::Print("Type in fit parameters (divide them by spaces). To exit type any character(s)");
+         CppTools::Print("Type in fit parameters (divide them by spaces). "\
+                         "To exit type any character(s)");
          double par1, par2;
 
          if (!(std::cin >> par1 >> par2))
@@ -64,7 +80,12 @@ void ElossFit()
       TCanvas canv("c", "", 800, 800);
       gPad->SetLogz(true);
 
-      distrBetaVsETOFe->Draw("COLZ");
+      gPad->SetRightMargin(0.11); gPad->SetTopMargin(0.02); 
+      gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.08);
+
+      ROOTTools::DrawFrame(distr, "", "#beta", "E_{loss}", 0.9, 1.9, 0.04, 0.04, 
+                           true, true, "COLZ");
+
       fit.Draw("SAME");
 
       ROOTTools::PrintCanvas(&canv, "output/ElossFit/" + runName);

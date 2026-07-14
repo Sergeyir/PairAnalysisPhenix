@@ -1,24 +1,24 @@
 /** 
- *  @file   FindGoodRuns.cpp
+ *  @file   CheckRuns.cpp
  *  @brief  Contains realisations of functions and variables that are used for the determination of good runs 
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
-#ifndef FIND_GOOD_RUNS_CPP
-#define FIND_GOOD_RUNS_CPP
+#ifndef CHECK_RUNS_CPP
+#define CHECK_RUNS_CPP
 
-#include "FindGoodRuns.hpp"
+#include "CheckRuns.hpp"
 
-using namespace FindGoodRuns;
+using namespace CheckRuns;
 
 int main(int argc, char **argv)
 {
    if (argc < 2 || argc > 4) 
    {
       CppTools::PrintError("Expected 1-3 parameters while " + std::to_string(argc - 1) + " "\
-                           "parameter(s) were provided \n Usage: bin/FindReferenceRun "\
+                           "parameter(s) were provided \n Usage: bin/CheckRuns "\
                            "inputYAMLMain multThreshold=2. chi2NDFThreshold=3.");
    }
 
@@ -43,6 +43,10 @@ int main(int argc, char **argv)
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
 
+   simFileName = "data/PostSim/" + runName + "/SingleTrack/all.root";
+
+   CppTools::CheckInputFile(simFileName);
+
    inputDir = "data/Real/" + runName + "/SingleTrack";
 
    outputDir = "output/Runs/" + runName;
@@ -65,7 +69,7 @@ int main(int argc, char **argv)
 
    // At first assuming all runs to be good. Bad runs will be removed from this list in later checks
    goodRuns = runs;
-   CheckRunsByMultiplicityAndFindReferenceRun();
+   CheckRunsByMultiplicity();
 
    CheckRunsByDCBoard();
 
@@ -87,12 +91,10 @@ int main(int argc, char **argv)
    }
 }
 
-void FindGoodRuns::CheckRunsByMultiplicityAndFindReferenceRun()
+void CheckRuns::CheckRunsByMultiplicity()
 {
    double averageMult = 0.;
    double averageChargeRatio = 0.;
-
-   double referenceRunMult = 0.;
 
    for (const int &run : goodRuns)
    {
@@ -106,15 +108,7 @@ void FindGoodRuns::CheckRunsByMultiplicityAndFindReferenceRun()
 
       averageMult += mult;
       averageChargeRatio += distrMult->GetBinContent(2)/distrMult->GetBinContent(3);
-
-      if (mult > referenceRunMult)
-      {
-         referenceRunMult = mult;
-         referenceRun = run;
-      }
    }
-   CppTools::PrintInfo("Reference run : " + std::to_string(referenceRun) + 
-                       " with mult/event value " + std::to_string(referenceRunMult));
 
    averageMult /= static_cast<double>(goodRuns.size());
    averageChargeRatio /= static_cast<double>(goodRuns.size());
@@ -139,7 +133,7 @@ void FindGoodRuns::CheckRunsByMultiplicityAndFindReferenceRun()
       grMult.AddPoint(static_cast<double>(run), mult);
       grChargeRatio.AddPoint(static_cast<double>(run), chargeRatio);
 
-      if (referenceRunMult/mult < multThreshold && referenceRunMult/mult > 1./multThreshold &&
+      if (averageMult/mult < multThreshold && averageMult/mult > 1./multThreshold &&
           averageChargeRatio/chargeRatio < multThreshold && 
           averageChargeRatio/chargeRatio > 1./multThreshold)
       {
@@ -198,79 +192,76 @@ void FindGoodRuns::CheckRunsByMultiplicityAndFindReferenceRun()
    ROOTTools::PrintCanvas(&canv, outputDir + "/mult");
 }
 
-void FindGoodRuns::CheckRunsByDCBoard()
+void CheckRuns::CheckRunsByDCBoard()
 {
-   TFile *referenceRunFile = TFile::Open((inputDir + "/se-" + 
-                                          std::to_string(referenceRun) + ".root").c_str());
+   TFile *simFile = TFile::Open(simFileName.c_str());
 
-   TH2F *heatmapReferenceDCe0 = static_cast<TH2F *>(referenceRunFile->Get("_Heatmap: DCe, zDC>=0"));
-   TH2F *heatmapReferenceDCe1 = static_cast<TH2F *>(referenceRunFile->Get("_Heatmap: DCe, zDC<0"));
-   TH2F *heatmapReferenceDCw0 = static_cast<TH2F *>(referenceRunFile->Get("_Heatmap: DCw, zDC>=0"));
-   TH2F *heatmapReferenceDCw1 = static_cast<TH2F *>(referenceRunFile->Get("_Heatmap: DCw, zDC<0"));
+   TH2F *heatmapSimDCe0 = static_cast<TH2F *>(simFile->Get("_Heatmap: DCe, zDC>=0"));
+   TH2F *heatmapSimDCe1 = static_cast<TH2F *>(simFile->Get("_Heatmap: DCe, zDC<0"));
+   TH2F *heatmapSimDCw0 = static_cast<TH2F *>(simFile->Get("_Heatmap: DCw, zDC>=0"));
+   TH2F *heatmapSimDCw1 = static_cast<TH2F *>(simFile->Get("_Heatmap: DCw, zDC<0"));
 
-   for (int i = 1; i <= heatmapReferenceDCe0->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= heatmapSimDCe0->GetXaxis()->GetNbins(); i++)
    {
-      for (int j = 1; j <= heatmapReferenceDCe0->GetYaxis()->GetNbins(); j++)
+      for (int j = 1; j <= heatmapSimDCe0->GetYaxis()->GetNbins(); j++)
       {
-         if (dmCutter.IsDeadDC(0, 1., heatmapReferenceDCe0->GetXaxis()->GetBinCenter(i),
-                               heatmapReferenceDCe0->GetYaxis()->GetBinCenter(j)))
+         if (dmCutter.IsDeadDC(0, 1., heatmapSimDCe0->GetXaxis()->GetBinCenter(i),
+                               heatmapSimDCe0->GetYaxis()->GetBinCenter(j)))
          {
-            heatmapReferenceDCe0->SetBinContent(i, j, 0.);
+            heatmapSimDCe0->SetBinContent(i, j, 0.);
          }
       }
    }
 
-   for (int i = 1; i <= heatmapReferenceDCe1->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= heatmapSimDCe1->GetXaxis()->GetNbins(); i++)
    {
-      for (int j = 1; j <= heatmapReferenceDCe1->GetYaxis()->GetNbins(); j++)
+      for (int j = 1; j <= heatmapSimDCe1->GetYaxis()->GetNbins(); j++)
       {
-         if (dmCutter.IsDeadDC(0, -1., heatmapReferenceDCe1->GetXaxis()->GetBinCenter(i),
-                               heatmapReferenceDCe1->GetYaxis()->GetBinCenter(j)))
+         if (dmCutter.IsDeadDC(0, -1., heatmapSimDCe1->GetXaxis()->GetBinCenter(i),
+                               heatmapSimDCe1->GetYaxis()->GetBinCenter(j)))
          {
-            heatmapReferenceDCe1->SetBinContent(i, j, 0.);
+            heatmapSimDCe1->SetBinContent(i, j, 0.);
          }
       }
    }
 
-   for (int i = 1; i <= heatmapReferenceDCw0->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= heatmapSimDCw0->GetXaxis()->GetNbins(); i++)
    {
-      for (int j = 1; j <= heatmapReferenceDCw0->GetYaxis()->GetNbins(); j++)
+      for (int j = 1; j <= heatmapSimDCw0->GetYaxis()->GetNbins(); j++)
       {
-         if (dmCutter.IsDeadDC(1, 1., heatmapReferenceDCw0->GetXaxis()->GetBinCenter(i),
-                               heatmapReferenceDCw0->GetYaxis()->GetBinCenter(j)))
+         if (dmCutter.IsDeadDC(1, 1., heatmapSimDCw0->GetXaxis()->GetBinCenter(i),
+                               heatmapSimDCw0->GetYaxis()->GetBinCenter(j)))
          {
-            heatmapReferenceDCw0->SetBinContent(i, j, 0.);
+            heatmapSimDCw0->SetBinContent(i, j, 0.);
          }
       }
    }
 
-   for (int i = 1; i <= heatmapReferenceDCw1->GetXaxis()->GetNbins(); i++)
+   for (int i = 1; i <= heatmapSimDCw1->GetXaxis()->GetNbins(); i++)
    {
-      for (int j = 1; j <= heatmapReferenceDCw1->GetYaxis()->GetNbins(); j++)
+      for (int j = 1; j <= heatmapSimDCw1->GetYaxis()->GetNbins(); j++)
       {
-         if (dmCutter.IsDeadDC(1, -1., heatmapReferenceDCw1->GetXaxis()->GetBinCenter(i),
-                               heatmapReferenceDCw1->GetYaxis()->GetBinCenter(j)))
+         if (dmCutter.IsDeadDC(1, -1., heatmapSimDCw1->GetXaxis()->GetBinCenter(i),
+                               heatmapSimDCw1->GetYaxis()->GetBinCenter(j)))
          {
-            heatmapReferenceDCw1->SetBinContent(i, j, 0.);
+            heatmapSimDCw1->SetBinContent(i, j, 0.);
          }
       }
    }
 
-   TH1D *referenceDCe0Board = heatmapReferenceDCe0->
-      ProjectionY("reference DCe0 board", 1, heatmapReferenceDCe0->GetXaxis()->GetNbins());
-   TH1D *referenceDCe1Board = heatmapReferenceDCe1->
-      ProjectionY("reference DCe1 board", 1, heatmapReferenceDCe1->GetXaxis()->GetNbins());
-   TH1D *referenceDCw0Board = heatmapReferenceDCw0->
-      ProjectionY("reference DCw0 board", 1, heatmapReferenceDCw0->GetXaxis()->GetNbins());
-   TH1D *referenceDCw1Board = heatmapReferenceDCw1->
-      ProjectionY("reference DCw1 board", 1, heatmapReferenceDCw1->GetXaxis()->GetNbins());
+   TH1D *projSimDCe0Board = heatmapSimDCe0->
+      ProjectionY("sim DCe0 board", 1, heatmapSimDCe0->GetXaxis()->GetNbins());
+   TH1D *projSimDCe1Board = heatmapSimDCe1->
+      ProjectionY("sim DCe1 board", 1, heatmapSimDCe1->GetXaxis()->GetNbins());
+   TH1D *projSimDCw0Board = heatmapSimDCw0->
+      ProjectionY("sim DCw0 board", 1, heatmapSimDCw0->GetXaxis()->GetNbins());
+   TH1D *projSimDCw1Board = heatmapSimDCw1->
+      ProjectionY("sim DCw1 board", 1, heatmapSimDCw1->GetXaxis()->GetNbins());
 
-   const double nEvtRef = static_cast<TH1D *>(referenceRunFile->Get("centrality"))->Integral();
-
-   referenceDCe0Board->Scale(1./nEvtRef);
-   referenceDCe1Board->Scale(1./nEvtRef);
-   referenceDCw0Board->Scale(1./nEvtRef);
-   referenceDCw1Board->Scale(1./nEvtRef);
+   projSimDCe0Board->Scale(1./projSimDCe0Board->Integral());
+   projSimDCe1Board->Scale(1./projSimDCe1Board->Integral());
+   projSimDCw0Board->Scale(1./projSimDCw0Board->Integral());
+   projSimDCw1Board->Scale(1./projSimDCw1Board->Integral());
 
    // graphs for chi2/NDF
    TGraph grChi2NDFDCe0Board;
@@ -287,6 +278,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
    TFile outputFile((outputDir + "/DC.root").c_str(), "RECREATE");
 
    std::vector<int> passedRuns;
+
+   double averageConstParDCe0Board = 0.;
+   double averageConstParDCe1Board = 0.;
+   double averageConstParDCw0Board = 0.;
+   double averageConstParDCw1Board = 0.;
 
    for (const int &run : goodRuns)
    {
@@ -355,17 +351,15 @@ void FindGoodRuns::CheckRunsByDCBoard()
       TH1D *projDCw1Board = heatmapDCw1->
          ProjectionY("proj DCw1 board to ref ratio", 1, heatmapDCw1->GetXaxis()->GetNbins());
 
-      const double nEvt = static_cast<TH1D *>(inputFile->Get("centrality"))->Integral();
+      projDCe0Board->Scale(1./projDCe0Board->Integral());
+      projDCe1Board->Scale(1./projDCe1Board->Integral());
+      projDCw0Board->Scale(1./projDCw0Board->Integral());
+      projDCw1Board->Scale(1./projDCw1Board->Integral());
 
-      projDCe0Board->Scale(1./nEvt);
-      projDCe1Board->Scale(1./nEvt);
-      projDCw0Board->Scale(1./nEvt);
-      projDCw1Board->Scale(1./nEvt);
-
-      projDCe0Board->Divide(referenceDCe0Board);
-      projDCe1Board->Divide(referenceDCe1Board);
-      projDCw0Board->Divide(referenceDCw0Board);
-      projDCw1Board->Divide(referenceDCw1Board);
+      projDCe0Board->Divide(projSimDCe0Board);
+      projDCe1Board->Divide(projSimDCe1Board);
+      projDCw0Board->Divide(projSimDCw0Board);
+      projDCw1Board->Divide(projSimDCw1Board);
 
       outputFile.mkdir(std::to_string(run).c_str());
       outputFile.cd(std::to_string(run).c_str());
@@ -405,6 +399,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
       grConstParDCw0Board.AddPoint(run, constParDCw0Board);
       grConstParDCw1Board.AddPoint(run, constParDCw1Board);
 
+      averageConstParDCe0Board += constParDCe0Board;
+      averageConstParDCe1Board += constParDCe1Board;
+      averageConstParDCw0Board += constParDCw0Board;
+      averageConstParDCw1Board += constParDCw1Board;
+
       if (chi2NDFDCe0Board < chi2NDFThreshold && chi2NDFDCe1Board < chi2NDFThreshold &&
           chi2NDFDCw0Board < chi2NDFThreshold && chi2NDFDCw1Board < chi2NDFThreshold)
       {
@@ -415,6 +414,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
          badRuns.push_back(run);
       }
    }
+
+   averageConstParDCe0Board /= static_cast<double>(goodRuns.size());
+   averageConstParDCe1Board /= static_cast<double>(goodRuns.size());
+   averageConstParDCw0Board /= static_cast<double>(goodRuns.size());
+   averageConstParDCw1Board /= static_cast<double>(goodRuns.size());
 
    CppTools::PrintInfo(std::to_string(passedRuns.size()) + " runs out of " + 
                        std::to_string(goodRuns.size()) + " passed DC board check");
@@ -446,6 +450,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         grConstParDCe0Board.GetYaxis()->
                         GetBinUpEdge(grConstParDCe0Board.GetYaxis()->GetNbins()), 
                         "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   ROOTTools::DrawLine(grConstParDCe0Board.GetXaxis()->GetBinLowEdge(1), averageConstParDCe0Board, 
+                       grConstParDCe0Board.GetXaxis()->GetBinUpEdge(grConstParDCe0Board.GetXaxis()->
+                                                                    GetNbins()), 
+                       averageConstParDCe0Board, kGray + 2, 0.5, 2, 2);
 
    grConstParDCe0Board.Draw("P");
 
@@ -483,6 +492,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grConstParDCe1Board.GetYaxis()->GetNbins()), 
                         "", "run index", "const", 0., 0.6, 0., 0.07);
 
+   ROOTTools::DrawLine(grConstParDCe1Board.GetXaxis()->GetBinLowEdge(1), averageConstParDCe1Board, 
+                       grConstParDCe1Board.GetXaxis()->GetBinUpEdge(grConstParDCe1Board.GetXaxis()->
+                                                                    GetNbins()), 
+                       averageConstParDCe1Board, kGray + 2, 0.5, 2, 2);
+
    grConstParDCe1Board.Draw("P");
 
    canv.cd(2);
@@ -518,6 +532,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         grConstParDCw0Board.GetYaxis()->
                         GetBinUpEdge(grConstParDCw0Board.GetYaxis()->GetNbins()), 
                         "", "run index", "const", 0., 0.6, 0., 0.07);
+
+   ROOTTools::DrawLine(grConstParDCw0Board.GetXaxis()->GetBinLowEdge(1), averageConstParDCw0Board, 
+                       grConstParDCw0Board.GetXaxis()->GetBinUpEdge(grConstParDCw0Board.GetXaxis()->
+                                                                    GetNbins()), 
+                       averageConstParDCw0Board, kGray + 2, 0.5, 2, 2);
 
    grConstParDCw0Board.Draw("P");
 
@@ -555,6 +574,11 @@ void FindGoodRuns::CheckRunsByDCBoard()
                         GetBinUpEdge(grConstParDCw1Board.GetYaxis()->GetNbins()), 
                         "", "run index", "const", 0., 0.6, 0., 0.07);
 
+   ROOTTools::DrawLine(grConstParDCw1Board.GetXaxis()->GetBinLowEdge(1), averageConstParDCw1Board, 
+                       grConstParDCw1Board.GetXaxis()->GetBinUpEdge(grConstParDCw1Board.GetXaxis()->
+                                                                    GetNbins()), 
+                       averageConstParDCw1Board, kGray + 2, 0.5, 2, 2);
+
    grConstParDCw1Board.Draw("P");
 
    canv.cd(2);
@@ -575,4 +599,39 @@ void FindGoodRuns::CheckRunsByDCBoard()
    ROOTTools::PrintCanvas(&canv, outputDir + "/DCw1");
 }
 
-#endif /* FIND_GOOD_RUNS_CPP */
+/*
+void CheckRuns::CheckRunsByPC1()
+{
+   TFile *simFile = TFile::Open(simFileName.c_str());
+
+   TH2F *heatmapSimPC1e = static_cast<TH2F *>(simFile->Get("Heatmap: PC1e"));
+   TH2F *heatmapSimPC1w = static_cast<TH2F *>(simFile->Get("Heatmap: PC1e"));
+
+   for (int i = 1; i <= heatmapPC1e->GetXaxis()->GetNbins(); i++)
+   {
+      for (int j = 1; j <= heatmapPC1e->GetYaxis()->GetNbins(); j++)
+      {
+         if (dmCutter.IsDeadPC1(0, heatmapSimPC1e->GetXaxis()->GetBinCenter(i),
+                                heatmapSimPC1e->GetYaxis()->GetBinCenter(j)))
+         {
+            heatmapSimPC1e->SetBinContent(i, j, 0.);
+         }
+      }
+   }
+
+   for (int i = 1; i <= heatmapPC1w->GetXaxis()->GetNbins(); i++)
+   {
+      for (int j = 1; j <= heatmapPC1w->GetYaxis()->GetNbins(); j++)
+      {
+         if (dmCutter.IsDeadPC1(0, heatmapSimPC1w->GetXaxis()->GetBinCenter(i),
+                                heatmapSimPC1w->GetYaxis()->GetBinCenter(j)))
+         {
+            heatmapSimPC1w->SetBinContent(i, j, 0.);
+         }
+      }
+   }
+
+}
+*/
+
+#endif /* CHECK_RUNS_CPP */

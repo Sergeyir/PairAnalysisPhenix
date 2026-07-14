@@ -39,6 +39,8 @@ void FracFit()
                            " in file " + inputFileName);
    }
 
+   distr->SetTitle("");
+
    const std::string fitFunc = "[0] - [1]*exp([2]*x*x)";
 
    CppTools::Print("Setting fit function \"" + fitFunc + "\"");
@@ -53,13 +55,30 @@ void FracFit()
    {
       if (firstIteration)
       {
-         distr->Fit(&fit, "QMN");
-         std::filesystem::create_directories("output/FracFit/");
+         if (std::filesystem::exists("data/Parameters/FracCut/" + runName + ".txt"))
+         {
+            std::ifstream parFile("data/Parameters/FracCut/" + runName + ".txt");
+
+            double par;
+            int i = 0;
+            while (parFile >> par)
+            {
+               fit.SetParameter(i, par);
+               i++;
+            }
+         }
+         else
+         {
+            distr->Fit(&fit, "QMN");
+            std::filesystem::create_directories("output/FracFit/");
+         }
       }
       else
       {
-         CppTools::Print("Current parameters are:", fit.GetParameter(0), fit.GetParameter(1), fit.GetParameter(2));
-         CppTools::Print("Type in fit parameters (divide them by spaces). To exit type any character(s)");
+         CppTools::Print("Current parameters are:", fit.GetParameter(0), 
+                         fit.GetParameter(1), fit.GetParameter(2));
+         CppTools::Print("Type in fit parameters (divide them by spaces). "\
+                         "To exit type any character(s)");
          double par1, par2, par3;
 
          if (!(std::cin >> par1 >> par2 >> par3))
@@ -71,19 +90,30 @@ void FracFit()
          fit.SetParameters(par1, par2, par3);
       }
 
+      distr->GetXaxis()->SetTitle();
+
       TCanvas canv("c", "", 800, 800);
       gPad->SetLogz(true);
+
+      gPad->SetRightMargin(0.11); gPad->SetTopMargin(0.02); 
+      gPad->SetLeftMargin(0.095); gPad->SetBottomMargin(0.08);
+
+      ROOTTools::DrawFrame(distr, "", "frac", "centrality", 0.9, 1.2, 0.04, 0.04, 
+                           true, true, "COLZ");
 
       distr->Draw("COLZ");
       fit.Draw("SAME");
 
       ROOTTools::PrintCanvas(&canv, "output/FracFit/" + runName);
 
+      /*
       if (firstIteration)
       {
          void (system(("xdg-open output/FracFit/" + runName + ".png").c_str()));
       }
+      */
       firstIteration = false;
+      exit(0);
    }
 
    exit(1);
