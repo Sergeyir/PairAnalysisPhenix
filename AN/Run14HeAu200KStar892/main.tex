@@ -13,6 +13,14 @@
 \usepackage[top=4cm, bottom=3.5cm, left=3cm, right=3cm]{geometry}
 \usepackage{lineno}
 
+\input{defs.tex}
+
+\hypersetup
+{
+   pdftitle={Measurements of \Kstar meson in \colsystem at \snntwohundred GeV},
+   pdfauthor={Sergei Antsupov}
+ }
+
 %\addbibresource{refs.bib}
 
 \numberwithin{figure}{subsection}
@@ -20,8 +28,6 @@
 \numberwithin{table}{section}
 
 \graphicspath{{../../output}}
-
-\input{defs.tex}
 
 \makeatletter
      \renewcommand*\l@figure{\@dottedtocline{1}{1em}{3.2em}}
@@ -37,12 +43,12 @@
 	\listoftables
 	\newpage
 
-	%\setcounter{section}{-1}
+	\setcounter{section}{-1}
 	\include{analysis_organization}
 	\include{introduction}
 	\include{experimental_setup}
 	\include{analysis}
-	%\include{systematics}
+	\include{systematics}
 	%\include{results}
    %\include{data_tables}
 

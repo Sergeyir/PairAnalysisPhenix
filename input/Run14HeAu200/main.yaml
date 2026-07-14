@@ -12,6 +12,29 @@ magnetic_field_configurations: # magnetic fields of a run
 - name: ''
 # shows what detectors are in use (if 1 the detector is used, otherwise it is not used). Index in the line go for the detectors in the following order: DC, PC1, PC2, PC3, TOFe, TOFw, EMCal
 detectors_configuration: '1101111'
+# shows what detectors need additional fiducial heatmap cuts in MC (same indices as above)
+addit_mc_cuts_detectors_configuration: '0100000' # PC3w only
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0
 sim_board_offset_dcw: 0
+# detector reweights in MC. These values are not read unless addit_mc_cuts_detectors_configuration contains '1' for the given detector
+detector_reweights:
+- {name: "DCe0", value: 1.}
+- {name: "DCe1", value: 1.}
+- {name: "DCw0", value: 1.}
+- {name: "DCw1", value: 1.}
+- {name: "PC1e", value: 1.}
+- {name: "PC1w", value: 1.}
+- {name: "PC2", value: 1.}
+- {name: "PC3e", value: 1.}
+- {name: "PC3w", value: 1.}
+- {name: "TOFe", value: 1.}
+- {name: "TOFw", value: 1.}
+- {name: "EMCale0", value: 1.}
+- {name: "EMCale1", value: 1.}
+- {name: "EMCale2", value: 1.}
+- {name: "EMCale3", value: 1.}
+- {name: "EMCalw0", value: 1.}
+- {name: "EMCalw1", value: 1.}
+- {name: "EMCalw2", value: 1.}
+- {name: "EMCalw3", value: 1.}

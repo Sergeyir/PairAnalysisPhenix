@@ -1,0 +1,20 @@
+Pile-up (i.e. event overlap) contamintaion was evaluated in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/mlario/phi_in_HeAu_pAu_pAl_v6.pdf}{AN1399} with the use of BBCLL1 narrow to Clock trigger rate. 
+The value was found to be 1\% in MB, with no account to centrality. 
+The determination procedure of the collision in the central region is the most prone to overlap contamination. 
+Therefore pile-up rejection cut was introduced using $frac$ variable from the module DoubleInteractionUtils described in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304}.
+
+The frac distribution dependence on centrality is shown as an occupancy histogram on Fig. \ref{fig:frac_cut}. 
+High occupancy regions are peaks on frac distribution on each centrality slice. 
+These peaks mostly come from clean (or cleanly reconstructed) events. 
+Overlapping events span almost the whole frac region. 
+In \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} it was shown that removing events with frac values outside the peaks removes most of overlap contamination. 
+Therefore the centrality dependent cut with a function of a form $\text{frac}_{\text{threshold}} = p_0 - p_1 e^{p_2 \cdot \text{centrality}^2}$ was introduced with parameters $p_0 = 80$, $p_1 = 0.5$, $p_2 = 5.5$. 
+This function is shown as a red line of Fig. \ref{fig:frac_cut}. Events to the left of $\text{frac}_{\text{threshold}}$ were removed from the analysis.
+The choice of $\text{frac}_{\text{threshold}}$ function was due to its shape closely following selected frac threshold values for all centrality slices.
+
+\begin{figure}[h!]
+	\centering
+	\includegraphics[width=0.5\textwidth]{FracFit/Run14HeAu200.pdf}
+   \caption[$\text{frac}$ vs centrality distribution and $\text{frac}_{\text{threshold}}$ cut as a function of centrality]{$\text{frac}$ vs centrality distribution and $\text{frac}_{\text{threshold}}$ cut as a function of centrality (red line).}
+	\label{fig:frac_cut}
+\end{figure}

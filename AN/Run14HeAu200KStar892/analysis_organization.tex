@@ -15,9 +15,9 @@
             \item{Sigmalized residuals calibrations} \\
                \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/taxi/Run14HeAu200MinBias/20209}
             \item{Analysis of single tracks} \\
-               \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/taxi/Run14HeAu200MinBias/\color{red}{??????}}
+               \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/taxi/Run14HeAu200MinBias/\color{red}{??}}
             \item{Analysis of track pairs} \\
-               \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/taxi/Run14HeAu200MinBias/\color{red}{??????}}
+               \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/taxi/Run14HeAu200MinBias/\color{red}{??}}
          \end{itemize}
       \item[Code directory for producing MC trees]~\\
          \texttt{/gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/sim}
@@ -36,7 +36,7 @@
 					\texttt{/home/dlario/AN/Run14HeAu200KStar892.tar.gz}
          \end{itemize}
 		\item[Data set and event selection]~\\
-         Dataset Run\runnumber 200 GeV \colsystem pro102 (MinBias) was used for this analysis. It contains 2,838,783,497 events across 151 subsets (runs). Each run was cheked for consistency of multiplicity and DC board distributions, \Sec. \ref{sec:run_selection}
+         Dataset Run\runnumber 200 GeV \colsystem pro102 (MinBias) was used for this analysis. It contains 2,838,783,497 events across 133 subsets (runs). Each run was cheked for consistency of multiplicity and DC board distributions, Sec. \ref{sec:run_selection}
 		\item[Analysis cuts]~\\
 			The following data selection criteria were implemented:
 			\begin{itemize}
@@ -44,7 +44,7 @@
 					\begin{itemize}
                   \item Trigger cut: BBCLL1($>0$ tubes) or BBCLL1($>0$ tubes) narrowvtx
                   \item BBCz vertex cut: $\lvert Z_{\text{vertex}} \rvert < 30$
-                  \item Pile-up rejection cut using $\text{frac}$ variable (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304}), Sec. \ref{sec:frac_cut}
+                  \item Pile-up rejection cut using $\text{frac}$ variable (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304}), Sec. \ref{sec:pile_up_rejection}
 					\end{itemize}
             \item \textbf{Charged tracks selection} \\					
 					\label{text:track_selection}
@@ -69,25 +69,25 @@
 					TOFe:
 					\begin{itemize}
                   \item TOFe fiducial cuts: 2D cuts in $\text{chamber}_{\text{TOF}} - \text{slat}_{\text{TOF}}$ space (Figure \ref{fig:dm_tofw})
-                  \item $\beta$ dependent $E_{\text{loss}}$ cut, Sec. \ref{sec:eloss_cut} (similar to \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/chujo/PPG026/AnalysisNote/}{AN187})
+                  \item $\beta$ dependent $E_{\text{loss}}$ cut, Sec. \ref{sec:tofe_eloss_cut} (similar to \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/chujo/PPG026/AnalysisNote/}{AN187})
 					\end{itemize}
 
 					TOFw:
 					\begin{itemize}
                   \item TOFw fiducial cuts: 2D cuts in $\text{chamber}_{\text{TOFw}} - \text{strip}_{\text{TOFw}}$ space (Figure \ref{fig:dm_tofe})
-                  \item ADC charge cut: $60 < q_{\text{TOFw}} < 600$, Sec. \ref{sec:adc_cut} (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814})
+                  \item ADC charge cut: $60 < q_{\text{TOFw}} < 600$, Sec. \ref{sec:tofw_adc_cut} (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814})
 					\end{itemize}
 
 					EMCal:
 					\begin{itemize}
                   \item EMCal fiducial cuts: 2D cuts in $Y_{\text{tower}} - Z_{\text{tower}}$ space (Figures \ref{fig:dm_emcale0} - \ref{fig:dm_emcalw3})
-                  \item $E_{core}$ cut: $E_{\text{core}} > 0.25$ for PbSc, $E_{\text{core}} > 0.35$ for PbGl, Sec. \ref{sec:ecore_cut} (similar to \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/info/an/375/}{AN375})
+                  \item $E_{core}$ cut: $E_{\text{core}} > 0.25$ for PbSc, $E_{\text{core}} > 0.35$ for PbGl, Sec. \ref{sec:emcal_ecore_cut} (similar to \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/info/an/375/}{AN375})
 					\end{itemize}
 
             \item \textbf{Track pair selection}
 					\begin{itemize}
                   \item DC-PC1 ghost rejection cut (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/nihashi/main.pdf}{AN1099}, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/chujo/PPG101/AN_pp_paper/draft_AN.pdf}{AN776})
-                  \item Ghost rejection cut for PC3, TOFe, TOFw, EMCal, Sec. \ref{sec:detectors_ghost_cut} (similar to DC-PC1 ghost rejection cut)
+                  \item Ghost rejection cut for PC3, TOFe, TOFw, EMCal, Sec. \ref{sec:ghost_cuts} (similar to DC-PC1 ghost rejection cut)
 						%\item Same arm cut: both tracks must lie in the same arm
 					\end{itemize}
 			\end{itemize}
