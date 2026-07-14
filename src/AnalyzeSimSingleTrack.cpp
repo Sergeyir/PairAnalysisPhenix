@@ -690,7 +690,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
 
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
-               const double eloss = 0.0005*pow(beta, -2.5);
+               const double eloss = 0.0015*pow(beta, -2.5);
                histContainer.distrBetaVsETOFe->Fill(beta, simCNT.etof(i), eventWeight);
 
                if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz))
