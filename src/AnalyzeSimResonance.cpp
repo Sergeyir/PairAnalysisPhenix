@@ -281,7 +281,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // eloss cut; parameters for MC may differ from real data 
                // since distributions may differ
                const double beta = simCNT.pltof(i)/simCNT.ttof(i)/29.9792;
-               const double eloss = 0.002*pow(beta, -2.3);
+               const double eloss = 0.0016*pow(beta, -2.6);
 
                // slats are organized in 10 lines of 96 we define as chambers
                const int chamber = simCNT.slat(i)/96;
