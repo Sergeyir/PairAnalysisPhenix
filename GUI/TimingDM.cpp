@@ -13,6 +13,7 @@
 
 #include "PBar.hpp"
 
+#include "TCanvasTools.hpp"
 #include "GUIDistrCutter2D.hpp"
 
 void TimingDM()
@@ -254,12 +255,18 @@ void TimingDM()
          distrTime->SetLineColor(kBlack);
 
          gPad->Clear();
-         distrTime->Draw();
+
+         gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.07); 
+         gPad->SetLeftMargin(0.17); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(distrTime, distrTime->GetTitle(), 
+                              "t - t_{exp}^{#pi^{#pm}} [ns]", "Counts", 1., 1.9);
+
          fitFG.Draw("SAME");
          fitBG.Draw("SAME");
          
-         fitCanv.SaveAs((outputDir + "/fit_" + std::to_string(i) + "_" + 
-                         std::to_string(j) + ".png").c_str());
+         ROOTTools::PrintCanvas(&fitCanv, outputDir + "/fit_" + std::to_string(i) + 
+                                "_" + std::to_string(j));
 
          if (!deadmapOutputFileExists)
          {
