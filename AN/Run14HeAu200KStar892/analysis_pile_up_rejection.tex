@@ -9,7 +9,8 @@ These peaks mostly come from clean (or cleanly reconstructed) events.
 Overlapping events span almost the whole frac region. 
 In \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} it was shown that removing events with frac values outside the peaks removes most of overlap contamination. 
 Therefore the centrality dependent cut with a function of a form $\text{frac}_{\text{threshold}} = p_0 - p_1 e^{p_2 \cdot \text{centrality}^2}$ was introduced with parameters $p_0 = 80$, $p_1 = 0.5$, $p_2 = 5.5$. 
-This function is shown as a red line of Fig. \ref{fig:frac_cut}. Events to the left of $\text{frac}_{\text{threshold}}$ were removed from the analysis.
+This function is shown as a red line of Fig. \ref{fig:frac_cut}. 
+Events with frac value smaller than $\text{frac}_{\text{threshold}}$ were removed from the analysis.
 The choice of $\text{frac}_{\text{threshold}}$ function was due to its shape closely following selected frac threshold values for all centrality slices.
 
 \begin{figure}[h!]
