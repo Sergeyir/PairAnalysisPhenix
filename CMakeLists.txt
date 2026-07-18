@@ -59,6 +59,7 @@ link_libraries(InputYAMLReader)
 
 add_library(PainterHelper ${CMAKE_SOURCE_DIR}/src/PainterHelper.cpp)
 
+add_executable(SplitSimTree ${CMAKE_SOURCE_DIR}/src/SplitSimTree.cpp)
 add_executable(AnalyzeSimSingleTrack ${CMAKE_SOURCE_DIR}/src/AnalyzeSimSingleTrack.cpp)
 add_executable(CheckRuns ${CMAKE_SOURCE_DIR}/src/CheckRuns.cpp)
 add_executable(AnalyzeSimWidthlessResonance ${CMAKE_SOURCE_DIR}/src/AnalyzeSimWidthlessResonance.cpp)
@@ -76,6 +77,7 @@ add_executable(EstimateResults ${CMAKE_SOURCE_DIR}/src/EstimateResults.cpp)
 
 target_link_libraries(SingleTrackFunc SimTreeReader)
 target_link_libraries(PairTrackFunc SimTreeReader)
+target_link_libraries(SplitSimTree SimTreeReader)
 target_link_libraries(AnalyzeSimSingleTrack SimTreeReader SingleTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
 target_link_libraries(AnalyzeSimWidthlessResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals)
 target_link_libraries(AnalyzeSimResonance SimTreeReader SingleTrackFunc PairTrackFunc DeadMapCutter SimSigmalizedResiduals SimM2Identificator)
