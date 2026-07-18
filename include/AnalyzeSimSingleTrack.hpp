@@ -17,13 +17,14 @@
 #include "TH3.h"
 #include "TFile.h"
 
+#include "ROOT/TThreadedObject.hxx"
+#include "ROOT/TTreeProcessorMT.hxx"
+
 #include "InputYAMLReader.hpp"
 
 #include "IOTools.hpp"
 #include "StrTools.hpp"
 #include "Box.hpp"
-
-#include "ThrObj.hpp"
 
 #include "Constants.hpp"
 #include "SingleTrackFunc.hpp"
@@ -33,8 +34,6 @@
 #include "SimM2Identificator.hpp"
 
 #include "PBar.hpp"
-
-#include "ROOT/TTreeProcessorMT.hxx"
 
 /* @namespace AnalyzeSimSingleTrack
  *
