@@ -75,6 +75,8 @@ namespace M2IdentFit
       bool isCalibrated;
       /// shows whether means are tigthly limited from the previous fits
       bool useM2MeansPrevFit;
+      /// shows whether old parameters will be overwritten by the new ones
+      bool rewriteParameters;
       /// color of lines and markers associated with a given particle
       Color_t color;
       /// means vs pT
@@ -82,9 +84,9 @@ namespace M2IdentFit
       /// sigmas vs pT
       TGraphErrors sigmasVsPT;
       /// means - sigmalizedExtractionRange*sigma
-      TGraphErrors extractionRangeLowVsPT;
+      TGraph extractionRangeLowVsPT;
       /// means + sigmalizedExtractionRange*sigma
-      TGraphErrors extractionRangeUpVsPT;
+      TGraph extractionRangeUpVsPT;
       /// means vs pT fit for
       std::unique_ptr<TF1> meansVsPTFit;
       /// sigmas vs pT fit for

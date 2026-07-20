@@ -154,7 +154,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
       const std::string pTRangeName = 
          CppTools::DtoStr(pTBin["min"].as<double>(), 1) + " < p_{T} < " +
-         CppTools::DtoStr(pTBin["max"].as<double>(), 1) + " [GeV/c]";
+         CppTools::DtoStr(pTBin["max"].as<double>(), 1);
 
       TH1D *m2DistrPosProj = m2DistrPos->
          ProjectionY((m2DistrPos->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
@@ -189,18 +189,17 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
 		text.SetTextFont(43);
 		text.SetTextSize(40);
-		text.SetTextAngle(90);
 	
-		text.DrawText(0.04, 0.65, "charge = +1");
-		text.DrawText(0.04, 0.15, "charge = -1");
+		text.DrawText(0.7, 0.95, "charge = +1");
+		text.DrawText(0.7, 0.45, "charge = -1");
 
 		TLatex tlText;
 
-		tlText.SetTextFont(52);
-		tlText.SetTextSize(0.05);
+		tlText.SetTextFont(43);
+		tlText.SetTextSize(40);
 
-		tlText.DrawLatex(0.45, 0.9, pTRangeName.c_str());
-		tlText.DrawLatex(0.45, 0.4, pTRangeName.c_str());
+		tlText.DrawLatex(0.7, 0.9, pTRangeName.c_str());
+		tlText.DrawLatex(0.7, 0.4, pTRangeName.c_str());
 
       m2DistrPosProj->GetXaxis()->SetRange(m2DistrPosProj->GetXaxis()->FindBin(-0.4), 
                                            m2DistrPosProj->GetXaxis()->FindBin(1.4));
@@ -215,30 +214,25 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       m2DistrPosProj->SetMarkerColor(kBlack);
       m2DistrPosProj->SetMarkerStyle(8);
       m2DistrPosProj->SetMarkerSize(0.5);
-      m2DistrPosProj->SetTitleSize(0.08, "X");
-      m2DistrPosProj->GetXaxis()->SetLabelSize(0.08);
-      m2DistrPosProj->GetYaxis()->SetLabelSize(0.08);
-      m2DistrPosProj->GetXaxis()->SetTitleOffset(0.85);
 
       m2DistrNegProj->SetTitle("");
-      m2DistrNegProj->GetXaxis()->SetTitle("m^{2} [GeV/c^{2}]");
+      m2DistrNegProj->GetXaxis()->SetTitle("");
       m2DistrNegProj->SetLineColor(kBlack);
       m2DistrNegProj->SetMarkerColor(kBlack);
       m2DistrNegProj->SetMarkerStyle(8);
       m2DistrNegProj->SetMarkerSize(0.5);
-      m2DistrNegProj->SetTitleSize(0.08, "X");
-      m2DistrNegProj->GetXaxis()->SetLabelSize(0.08);
-      m2DistrNegProj->GetYaxis()->SetLabelSize(0.08);
-      m2DistrNegProj->GetXaxis()->SetTitleOffset(0.85);
 		
       // positive tracks
 		m2SingleFitCanv.cd(1);	
-		gPad->SetPad(0.02, 0.51, 1., 1.);
-		gPad->SetBottomMargin(0.17);
+		gPad->SetPad(0., 0.51, 1., 1.);
+
+		gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+		gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.175);
+
       gPad->SetLogy();
 
-      m2DistrPosProj->Draw("E");
-      m2DistrPosProj->Draw("SAME AXIS X+ Y+");
+      ROOTTools::DrawFrame(m2DistrPosProj, "", "m^{2} [GeV/c^{2}]", "Counts", 
+                           0.85, 0.65, 0.08, 0.08, true, true, "E");
 
       if (binPTMin > detector["pi+_pt_bounds"][0].as<double>() - 1e-3 && 
           binPTMax < detector["pi+_pt_bounds"][1].as<double>() + 1e-3)
@@ -261,12 +255,15 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
 
       // negative tracks
 		m2SingleFitCanv.cd(2);
-		gPad->SetPad(0.02, 0., 1., 0.5);
-		gPad->SetBottomMargin(0.17);
+		gPad->SetPad(0., 0., 1., 0.5);
+
+		gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+		gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.175);
+
       gPad->SetLogy();
 
-      m2DistrNegProj->Draw("E");
-      m2DistrNegProj->Draw("SAME AXIS X+ Y+");
+      ROOTTools::DrawFrame(m2DistrNegProj, "", "m^{2} [GeV/c^{2}]", "Counts", 
+                           0.85, 0.65, 0.08, 0.08, true, true, "E");
 
       if (binPTMin > detector["pi-_pt_bounds"][0].as<double>() - 1e-3 && 
           binPTMax < detector["pi-_pt_bounds"][1].as<double>() + 1e-3)
@@ -540,48 +537,145 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
    ROOTTools::PrintCanvas(&fitParVsPTCanv, outputDir + "/" + detector["name"].as<std::string>() + 
                           "/fitParameters");
 
+   TH2D *m2ProfilePos = static_cast<TH2D *>(m2DistrPos->Project3D("yx"));
+   TH2D *m2ProfileNeg = static_cast<TH2D *>(m2DistrNeg->Project3D("yx"));
+
+   const int m2NXBins = m2ProfileNeg->GetXaxis()->GetNbins();
+   const int m2NYBins = m2ProfileNeg->GetYaxis()->GetNbins();
+
+   // both charges
+   TH2D m2Profile("m2 neg", "", (m2NXBins + 3)*2,
+                  -1.*m2ProfileNeg->GetXaxis()->GetBinUpEdge(m2NXBins),
+                  m2ProfilePos->GetXaxis()->GetBinUpEdge(m2NXBins),
+                  m2ProfileNeg->GetYaxis()->GetNbins(),
+                  m2ProfileNeg->GetYaxis()->GetBinLowEdge(1),
+                  m2ProfileNeg->GetYaxis()->GetBinUpEdge(m2NYBins));
+
+   for (int i = 1; i <= m2NXBins; i++)
+   {
+      for (int j = 1; j <= m2NYBins; j++)
+      {
+         m2Profile.SetBinContent(m2NXBins - i + 1, j, m2ProfileNeg->GetBinContent(i, j));
+         m2Profile.SetBinContent(m2NXBins + i + 6, j, m2ProfilePos->GetBinContent(i, j));
+      }
+   }
+
+   const double msPTMax = 
+      CppTools::Minimum(pTMax + 1.5, m2ProfilePos->GetXaxis()->GetBinUpEdge(m2NXBins));
+
+   for (double pT = pTMin; pT < msPTMax; pT += (msPTMax - pTMin)/200.)
+   {
+      fitPiPlus.extractionRangeLowVsPT.AddPoint(pT, fitPiPlus.meansVsPTFit->Eval(pT) -
+                                            fitPiPlus.sigmasVsPTFit->Eval(pT)*2);
+      fitPiPlus.extractionRangeUpVsPT.AddPoint(pT, fitPiPlus.meansVsPTFit->Eval(pT) +
+                                           fitPiPlus.sigmasVsPTFit->Eval(pT)*2);
+      fitKPlus.extractionRangeLowVsPT.AddPoint(pT, fitKPlus.meansVsPTFit->Eval(pT) -
+                                           fitKPlus.sigmasVsPTFit->Eval(pT)*2);
+      fitKPlus.extractionRangeUpVsPT.AddPoint(pT, fitKPlus.meansVsPTFit->Eval(pT) +
+                                          fitKPlus.sigmasVsPTFit->Eval(pT)*2);
+      fitP.extractionRangeLowVsPT.AddPoint(pT, fitP.meansVsPTFit->Eval(pT) -
+                                           fitP.sigmasVsPTFit->Eval(pT)*2);
+      fitP.extractionRangeUpVsPT.AddPoint(pT, fitP.meansVsPTFit->Eval(pT) +
+                                          fitP.sigmasVsPTFit->Eval(pT)*2);
+      fitPiMinus.extractionRangeLowVsPT.AddPoint(-pT, fitPiMinus.meansVsPTFit->Eval(pT) -
+                                            fitPiMinus.sigmasVsPTFit->Eval(pT)*2);
+      fitPiMinus.extractionRangeUpVsPT.AddPoint(-pT, fitPiMinus.meansVsPTFit->Eval(pT) +
+                                            fitPiMinus.sigmasVsPTFit->Eval(pT)*2);
+      fitKMinus.extractionRangeLowVsPT.AddPoint(-pT, fitKMinus.meansVsPTFit->Eval(pT) -
+                                            fitKMinus.sigmasVsPTFit->Eval(pT)*2);
+      fitKMinus.extractionRangeUpVsPT.AddPoint(-pT, fitKMinus.meansVsPTFit->Eval(pT) +
+                                           fitKMinus.sigmasVsPTFit->Eval(pT)*2);
+      fitPBar.extractionRangeLowVsPT.AddPoint(-pT, fitPBar.meansVsPTFit->Eval(pT) -
+                                            fitPBar.sigmasVsPTFit->Eval(pT)*2);
+      fitPBar.extractionRangeUpVsPT.AddPoint(-pT, fitPBar.meansVsPTFit->Eval(pT) +
+                                           fitPBar.sigmasVsPTFit->Eval(pT)*2);
+   }
+
+   fitPiPlus.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitKPlus.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitP.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitPiMinus.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitKMinus.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitPBar.extractionRangeLowVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+
+   fitPiPlus.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitKPlus.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitP.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitPiMinus.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitKMinus.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+   fitPBar.extractionRangeUpVsPT.SetLineColorAlpha(kRed - 3, 0.9);
+
+   fitPiPlus.extractionRangeLowVsPT.SetLineWidth(2);
+   fitKPlus.extractionRangeLowVsPT.SetLineWidth(2);
+   fitP.extractionRangeLowVsPT.SetLineWidth(2);
+   fitPiMinus.extractionRangeLowVsPT.SetLineWidth(2);
+   fitKMinus.extractionRangeLowVsPT.SetLineWidth(2);
+   fitPBar.extractionRangeLowVsPT.SetLineWidth(2);
+
+   fitPiPlus.extractionRangeUpVsPT.SetLineWidth(2);
+   fitKPlus.extractionRangeUpVsPT.SetLineWidth(2);
+   fitP.extractionRangeUpVsPT.SetLineWidth(2);
+   fitPiMinus.extractionRangeUpVsPT.SetLineWidth(2);
+   fitKMinus.extractionRangeUpVsPT.SetLineWidth(2);
+   fitPBar.extractionRangeUpVsPT.SetLineWidth(2);
+
    TCanvas m2IdVsPTCanv("m2 identification vs pT", "", 800, 800);
 
-   gPad->SetLeftMargin(0.11);
-   gPad->SetBottomMargin(0.11);
+   gPad->SetLogz();
 
-   ROOTTools::DrawFrame(-1.*pTMax - 0.05, -0.4, pTMax + 0.05, 1.4, 
-                        "", "p_{T} #times charge [GeV/c]", "m^{2} [GeV/c^{2})^{2}]");
+   gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.02);
+   gPad->SetLeftMargin(0.125); gPad->SetBottomMargin(0.115);
 
-   fitPiPlus.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitPiPlus.extractionRangeUpVsPT.Clone()->Draw("P");
-   fitKPlus.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitKPlus.extractionRangeUpVsPT.Clone()->Draw("P");
-   fitP.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitP.extractionRangeUpVsPT.Clone()->Draw("P");
-   fitPiMinus.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitPiMinus.extractionRangeUpVsPT.Clone()->Draw("P");
-   fitKMinus.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitKMinus.extractionRangeUpVsPT.Clone()->Draw("P");
-   fitPBar.extractionRangeLowVsPT.Clone()->Draw("P");
-   fitPBar.extractionRangeUpVsPT.Clone()->Draw("P");
+   ROOTTools::DrawFrame(-msPTMax, CppTools::Maximum(m2ProfileNeg->GetYaxis()->GetBinLowEdge(1), 
+                                                    -0.4), 
+                        msPTMax, 1.4, "", "p_{T} #times charge [GeV/c]", 
+                        "m^{2} [GeV/c^{2})^{2}]", 0.95, 1.2);
+
+   m2Profile.Draw("COL SAME");
+
+   fitPiPlus.extractionRangeLowVsPT.Draw("L");
+   fitKPlus.extractionRangeLowVsPT.Draw("L");
+   fitP.extractionRangeLowVsPT.Draw("L");
+   fitPiMinus.extractionRangeLowVsPT.Draw("L");
+   fitKMinus.extractionRangeLowVsPT.Draw("L");
+   fitPBar.extractionRangeLowVsPT.Draw("L");
+
+   fitPiPlus.extractionRangeUpVsPT.Draw("L");
+   fitKPlus.extractionRangeUpVsPT.Draw("L");
+   fitP.extractionRangeUpVsPT.Draw("L");
+   fitPiMinus.extractionRangeUpVsPT.Draw("L");
+   fitKMinus.extractionRangeUpVsPT.Draw("L");
+   fitPBar.extractionRangeUpVsPT.Draw("L");
+
+   ROOTTools::PrintCanvas(&m2IdVsPTCanv, outputDir + "/" + 
+                          detector["name"].as<std::string>() + "/ms");
 
    // writing parameters in output file
    if (detector["is_calibrated"].as<bool>())
    {
-      std::ofstream 
-         parametersOutputFile(parametersDir + "/M2Par" + detector["name"].as<std::string>() + ".txt");
+      const std::string outputFileName = 
+         parametersDir + "/M2Par" + detector["name"].as<std::string>() + ".txt";
 
-      parametersOutputFile << fitPiPlus.meansVsPTFit->GetParameter(0) << " " << 
-                             fitPiPlus.meansVsPTFit->GetParameter(1) << std::endl;;
-      parametersOutputFile << fitPiMinus.meansVsPTFit->GetParameter(0) << " " << 
-                             fitPiMinus.meansVsPTFit->GetParameter(1) << std::endl;
-      parametersOutputFile << fitKPlus.meansVsPTFit->GetParameter(0) << " " << 
-                             fitKPlus.meansVsPTFit->GetParameter(1) << std::endl;;
-      parametersOutputFile << fitKMinus.meansVsPTFit->GetParameter(0) << " " << 
-                             fitKMinus.meansVsPTFit->GetParameter(1) << std::endl;
-      parametersOutputFile << fitP.meansVsPTFit->GetParameter(0) << " " << 
-                             fitP.meansVsPTFit->GetParameter(1) << std::endl;;
-      parametersOutputFile << fitPBar.meansVsPTFit->GetParameter(0) << " " << 
-                             fitPBar.meansVsPTFit->GetParameter(1) << std::endl;
-      parametersOutputFile << sigmaAlpha << " " << sigmaMS << " " << sigmaT << " " <<
-                             fitP.sigmasVsPTFit->GetParameter(5) << " " <<
-                             fitP.sigmasVsPTFit->GetParameter(6);
+      if (std::filesystem::exists(outputFileName) && fitP.rewriteParameters)
+      {
+         std::ofstream parametersOutputFile(outputFileName);
+
+         parametersOutputFile << fitPiPlus.meansVsPTFit->GetParameter(0) << " " << 
+                                fitPiPlus.meansVsPTFit->GetParameter(1) << std::endl;;
+         parametersOutputFile << fitPiMinus.meansVsPTFit->GetParameter(0) << " " << 
+                                fitPiMinus.meansVsPTFit->GetParameter(1) << std::endl;
+         parametersOutputFile << fitKPlus.meansVsPTFit->GetParameter(0) << " " << 
+                                fitKPlus.meansVsPTFit->GetParameter(1) << std::endl;;
+         parametersOutputFile << fitKMinus.meansVsPTFit->GetParameter(0) << " " << 
+                                fitKMinus.meansVsPTFit->GetParameter(1) << std::endl;
+         parametersOutputFile << fitP.meansVsPTFit->GetParameter(0) << " " << 
+                                fitP.meansVsPTFit->GetParameter(1) << std::endl;;
+         parametersOutputFile << fitPBar.meansVsPTFit->GetParameter(0) << " " << 
+                                fitPBar.meansVsPTFit->GetParameter(1) << std::endl;
+         parametersOutputFile << sigmaAlpha << " " << sigmaMS << " " << sigmaT << " " <<
+                                fitP.sigmasVsPTFit->GetParameter(5) << " " <<
+                                fitP.sigmasVsPTFit->GetParameter(6);
+      }
    }
    else
    {
@@ -590,9 +684,6 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
                         to true in file " + inputYAMLM2Id.GetFileName() + 
                         " for the approximation parameters to be written");
    }
-
-   ROOTTools::PrintCanvas(&m2IdVsPTCanv, outputDir + "/" + 
-                          detector["name"].as<std::string>() + "/ms");
 }
 
 void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYieldExtractionRange,
@@ -671,12 +762,6 @@ void M2IdentFit::PerformSingleM2Fit(TH1D *massDistr, const double sigmalizedYiel
 
    fitPar.meansVsPT.AddPoint(pT, m2Fit.GetParameter(4));
    fitPar.sigmasVsPT.AddPoint(pT, m2Fit.GetParameter(5));
-
-   const double chargeMult = fitPar.isPositive ? 1. : -1;
-   fitPar.extractionRangeLowVsPT.AddPoint(chargeMult*pT, m2Fit.GetParameter(4) -
-                                          m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
-   fitPar.extractionRangeUpVsPT.AddPoint(chargeMult*pT, m2Fit.GetParameter(4) +
-                                         m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
 
    m2Fit.SetRange(m2Fit.GetParameter(4) - m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange, 
                   m2Fit.GetParameter(4) + m2Fit.GetParameter(5)*sigmalizedYieldExtractionRange);
@@ -767,6 +852,7 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
 
    isCalibrated = detector["is_calibrated"].as<bool>();
    useM2MeansPrevFit = detector["use_m2_mean_par"].as<bool>();
+   rewriteParameters = detector["rewrite_parameters"].as<bool>();
 
    meansVsPTFit = 
       std::make_unique<TF1>(("means vs pT fit " + name).c_str(),
@@ -777,13 +863,9 @@ M2IdentFit::FitParameters::FitParameters(const std::string& particleName, const 
 
    meansVsPT.SetMarkerStyle(20);
    sigmasVsPT.SetMarkerStyle(20);
-   extractionRangeLowVsPT.SetMarkerStyle(20);
-   extractionRangeUpVsPT.SetMarkerStyle(20);
 
    meansVsPT.SetMarkerColor(color - 3);
    sigmasVsPT.SetMarkerColor(color - 3);
-   extractionRangeLowVsPT.SetMarkerColor(color - 3);
-   extractionRangeUpVsPT.SetMarkerColor(color - 3);
 
    meansVsPTFit->SetLineWidth(3);
    sigmasVsPTFit->SetLineWidth(3);
