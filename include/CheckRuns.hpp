@@ -22,6 +22,7 @@
 
 #include "IOTools.hpp"
 #include "StrTools.hpp"
+#include "MathTools.hpp"
 #include "Box.hpp"
 
 #include "PBar.hpp"
@@ -38,6 +39,18 @@
  */
 namespace CheckRuns
 {
+   /// Checks all run files from goodRunNames by multiplicities and finds the simulated file.
+   /// goodRunNames and badRunNames will be updated accordingly after the check
+   void CheckRunsByMultiplicity();
+   /// Checks all run files from goodRunNames by DC projection on board.
+   /// goodRunNames and badRunNames will be updated accordingly after the check
+   void CheckRunsByDCBoard();
+   /// Returns weighted average Y value of a distribution without accounting for empty bins
+   /// This function is used instead of a fit due to fit poor optimization algorythms for simplest functions
+   double GetYWeightedAverage(TH1D *hist);
+   /// Returns chi2/ndf without accounting for empty bins
+   /// This function is used instead of a TF1::Getchi2 and TF1::GetNdf due to fit poor optimization algorythms for simplest functions
+   double GetChi2NDF(TH1D *hist, TF1 *fit);
    /// file reader for all required parameters for the current run
    InputYAMLReader inputYAMLMain;
    /// run name (e.g. Run14HeAu200)
@@ -47,7 +60,7 @@ namespace CheckRuns
    /// directory for writing pictures and .root files
    std::string outputDir;
    /// simulated file name
-   std::string simFileName;
+   std::string sumFileName;
    /// Contains all runs 
    std::vector<int> runs;
    /// Contains good runs
@@ -57,17 +70,11 @@ namespace CheckRuns
    /// cutter for deadmaps
    DeadMapCutter dmCutter;
    /// Threshold for the absolute multiplicity/event and charge+/charge- deviation from the average
-   double multThreshold = 1.3;
+   double multThreshold = 1.2;
    /// const fit parameter deviation threshold from unity for linear fit of the deviation heatmap from the simulated distributions
    double constParDeviationThreshold = 1.1;
    /// Chi2/NDF threshold for linear fit of the deviation heatmap from the simulated distributions
    double chi2NDFThreshold = 3.;
-   /// Checks all run files from goodRunNames by multiplicities and finds the simulated file.
-   /// goodRunNames and badRunNames will be updated accordingly after the check
-   void CheckRunsByMultiplicity();
-   /// Checks all run files from goodRunNames by DC projection on board.
-   /// goodRunNames and badRunNames will be updated accordingly after the check
-   void CheckRunsByDCBoard();
 }
 
 #endif /* CHECK_RUNS_HPP */
