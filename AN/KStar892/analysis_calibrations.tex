@@ -1,11 +1,161 @@
-\subsubsection{EMCal sigmalized residuals calibrations}
+\subsubsection{Sigmalized residuals calibrations}
 
+Sigmalized residual calibrations for this analysis were performed for EMCal(e,w)(0-3) in Run14 \HeAu, EMCal(e,w)(0-3), TOFe, and TOFw in Run15 \pAl, TOFe and TOFw in Run15 \pAu.
 
+Matching cuts are important in this analysis for improving the signal to background ratio.
+The sigmalized residuals that are used in these cut are defined as follows
+
+\begin{equation}
+   sdz = \frac{(dz - \mu_{dz})}{\sigma_{dz}}, \ \ \ sd\varphi = \frac{(d\varphi - \mu_{d\varphi})}{\sigma_{d\varphi}}
+\end{equation}
+
+Where $dz$ and $d\varphi$ are deviation of detected $z$ and $\varphi$ positions respectively from the predicted by the projection of a DC-PC1 track on the detector plane,
+$\mu_{dz}$, $\mu_{d\varphi}$, $\sigma_{dz}$, $\sigma_{d\varphi}$ are means and sigmas of $dz$ and $dphi$ distributions.
+The calibration of sigmalized residuals is a process of parametrization of these means and sigmas in terms of centrality, $z_{\text{DC}}$, and \pT. 
+
+The calibration was performed by dissecting the dataset in 2 charge bins (positive and negative), 10 $z_{\text{DC}}$ bins (Table. \ref{table:sigm_res_cal_zdc_bins}) for all datasets, and variable number and range of centrality bins depending on the dataset: 17 bins for Run14 \HeAu (Table. \ref{table:sigm_res_cal_centr_bins_run14heau}), 7 bins for Run15 \pAl (Table. \ref{table:sigm_res_cal_centr_bins_run15pal}), 8 bins for Run15 \pAu (Table. \ref{table:sigm_res_cal_centr_bins_run15pau}).
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c|c|c|c|c|c|c}
+      Bin minimum & -75 & -60 & -45 & -30 & -15 & 0 & 15 & 30 & 45 & 60 \\
+      \hline
+      Bin maximum & -60 & -45 & -30 & -15 & 0 & 15 & 30 & 45 & 60 & 75 \\
+	\end{tabular}
+   \caption{$z_{\text{DC}}$ bins for sigmalized residuals calibration}
+	\label{table:sigm_res_cal_zdc_bins}
+\end{table}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c|c}
+      Bin minimum & 0 & 5 & 10 & 15 & 20 & 25 & 30 & 35 & 40 & 45 & 50 & 55 & 60 & 65 & 70 & 75 & 80 \\
+      \hline
+      Bin maximum & 5 & 10 & 15 & 20 & 25 & 30 & 35 & 40 & 45 & 50 & 55 & 60 & 65 & 70 & 75 & 80 & 88 \\
+	\end{tabular}
+   \caption{Centrality bins for sigmalized residuals calibration in Run14 \HeAu}
+	\label{table:sigm_res_cal_centr_bins_run14heau}
+\end{table}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c|c|c|c}
+      Bin minimum & 0 & 10 & 20 & 30 & 40 & 50 & 60 \\
+      \hline
+      Bin maximum & 10 & 20 & 30 & 40 & 50 & 60 & 72 \\
+	\end{tabular}
+   \caption{Centrality bins for sigmalized residuals calibration in Run15 \pAl}
+	\label{table:sigm_res_cal_centr_bins_run15pal}
+\end{table}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c|c|c|c|c}
+      Bin minimum & 0 & 10 & 20 & 30 & 40 & 50 & 60 & 70 \\
+      \hline
+      Bin maximum & 10 & 20 & 30 & 40 & 50 & 60 & 70 & 84 \\
+	\end{tabular}
+   \caption{Centrality bins for sigmalized residuals calibration in Run15 \pAu}
+	\label{table:sigm_res_cal_centr_bins_run15pau}
+\end{table}
+
+Additionally each centrality and $z_{\text{DC}}$ bins were dissected into fine $p_T$ bins with widths 0.1 GeV for $p_T \lesssim 1.5$ GeV, 0.2 GeV for $1.5 \lesssim p_T 2 \div 2.5$ and 0.5 GeV for $2 \div 2.5 \lesssim p_T \lesssim 3\div3.5$ depending on the statistics. 
+Higher $p_T$ regions were not used for calibration due to high background contamination and low statistics which leads to unpredictable behavior of approximation algorithms. 
+In each charge-centrality-$z_{\text{DC}}$-$p_T$ bin 1-D distributions of $dz$ and $d\varphi$ were approximated with the sum of 2 gausses - one for the signal and the other for the background. 
+Example of these approximations are presented on Fig. \ref{fig:sim_res_cal_dz_fit_example}. 
+Means and sigmas for different $p_T$ were then approximated separately in each charge-centrality-$z_{\text{DC}}$ bin.
+
+\begin{figure}[h!]
+   \centering
+   \includegraphics[width=\textwidth]{../../../CalPHENIX/output/SigmalizedResiduals/Run15pAl200/EMCale2/dz_pos_c0-10_zDC0-15.pdf}
+   \caption[Example of $dz$ approximations]
+   {Example of EMCale2 $dz$ approximations in Run15pAl for 0-10\% centrality class for $0 < z_{\text{DC}} < 15$, $\text{charge} > 0$}
+   \label{fig:sim_res_cal_dz_fit_example}
+\end{figure}
+
+It was found that same fit function forms for approximation means and sigmas of $dz$ and $d\varphi$ work universally well for different datasets, so the same fit types were used for the same detector across different datasets. 
+Fit functions for sigmalized residuals parametrization for different detectors are presented in Table. \ref{table:sigm_res_cal_fit_func}. Example of $\mu_{dz}$ approximations are shown on Fig. \ref{fig:sim_res_cal_means_dz_fit_example}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c}
+       & TOFe \& TOFw \& EMCale(0-1) & EMCale(2-3) \& EMCalw(0-3) \\
+      \hline
+      \hline
+      $\mu_{d\varphi}$ & $p_0 + \frac{p_1}{p_T} + \frac{p_2}{p_T^2} + \frac{p_3}{p_T^3}$ & $p_0 + \frac{p_1}{p_T^2} + \frac{p_2}{p_T^3} + e^{p_3 + p_4 p_T} + p_5 p_T$ \\
+      \hline
+      $\mu_{dz}$ & $p_0 + \frac{p_1}{p_T^2} + p_2 p_T$ & $p_0 + \frac{p_1}{p_T} + p_2 p_T$ \\
+      \hline
+      $\sigma_{d\varphi}$ & $p_0 + \frac{p_1}{p_T^2} + p_2 p_T$ & $p_0 + \frac{p_1}{p_T} + p_2 p_T$ \\
+      \hline
+      $\sigma_{dz}$ & $p_0 + \frac{p_1}{p_T^2} + p_2 p_T$ & $p_0 + \frac{p_1}{p_T} + p_2 p_T$ \\
+	\end{tabular}
+   \caption[$\mu_{dz}$, $\mu_{d\varphi}$, $\sigma_{dz}$, and $\sigma_{d\varphi}$ parametrization]
+           {$\mu_{dz}$, $\mu_{d\varphi}$, $\sigma_{dz}$, and $\sigma_{d\varphi}$ parametrization as functions of \pT for different detectors}
+	\label{table:sigm_res_cal_fit_func}
+\end{table}
+
+\begin{figure}[h!]
+   \centering
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{../../../CalPHENIX/output/SigmalizedResiduals/Run15pAl200/EMCale2/means_dz_pos_c0-10.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{../../../CalPHENIX/output/SigmalizedResiduals/Run15pAl200/EMCale2/sigmas_dz_pos_c0-10.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Example of $\mu_{dz}$ and $\sigma_{dz}$ approximations]
+           {Example of EMCale2 $\mu_{dz}$ (a) and $\sigma_{dz}$ (b) approximations in Run15 \pAl in 0-10\% centrality class for different $z_{\text{DC}}$ bins, $\text{charge} > 0$}
+   \label{fig:sim_res_cal_means_dz_fit_example}
+\end{figure}
+
+While calibrations were performed in $0.3 < p_T < 2\div3$ range, parametrizations can be used on higher \pT due to the trend of means and sigmas of $dz$ and $d\varphi$ becoming constants at $p_T \gtrsim 2\div2.5$. 
+Thus the parametrization of means and sigmas at the highest $p_T$ measured during the calibration was used to estimate the same parameters at higher $p_T$.
+
+After obtaining all $\mu_{dz}$, $\mu_{d\varphi}$, $\sigma_{dz}$, and $\sigma_{d\varphi}$ parametrizations, $sdz$, $sd\varphi$ distributions were investigated for possible additional recalibrations in each charge-centrality-$z_{\text{DC}}$-$p_T$. 
+Since these distributions are sigmalized, the main signal should be a gauss centered around 0 with width 1.
+However approximations of $\mu_{dz}$, $\mu_{d\varphi}$, $\sigma_{dz}$, and $\sigma_{d\varphi}$ were not ideal and for some parametrizations additional small constant shift for means and small constant scaling for sigmas were implemented since non-constant deviations were negligible or within uncertainties. Fig. \ref{fig:sim_res_recal_means_sdz_fit_example} shows an example of these constant offsets.
+
+\begin{figure}[h!]
+   \centering
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{../../../CalPHENIX/output/SigmalizedResiduals/Run14HeAu200/EMCale0/means_sdz_neg_c15-20.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{../../../CalPHENIX/output/SigmalizedResiduals/Run14HeAu200/EMCale0/sigmas_sdz_neg_c15-20.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Example of $\mu_{sdz}$ and $\sigma_{sdz}$ constant offsets]
+           {Example of EMCale0 $\mu_{sdz}$ (a) and $\sigma_{sdz}$ (b) approximations in Run14 \HeAu in 15-20\% centrality class for different $z_{\text{DC}}$ bins, $\text{charge} < 0$. Constant offset can fix the deviation of $\mu_{sdz}$ from 0, and constant scaling can fix $\sigma_{sdz}$ deviation from 1.}
+   \label{fig:sim_res_recal_means_sdz_fit_example}
+\end{figure}
+
+An example of applying sigmalized residuals calibrations is shown on Fig. \ref{fig:sdz_example}.
+
+\begin{figure}[h!]
+   \centering
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{other/sdphi_example.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.48\textwidth}
+      \includegraphics[width=\textwidth]{other/sdz_example.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Example of $sd\varphi$ and $sdz$ distributions after applying calibrations]
+           {Example of EMCale0 $sd\varphi$ (a) and $sdz$ (b) distributions after applying sigmalized residuals calibrations in Run15 \pAl, $\text{charge} > 0$}
+   \label{fig:sim_res_recal_means_sdz_fit_example}
+\end{figure}
 
 \subsubsection{TOFe and TOFw timing recalibrations}
 
 For each slat in TOFe and strip in TOFw $t - t_{exp}^{\pi^\pm}$ distributions were investigated, where $t$ - time of flight, $t_{exp}^{\pi^\pm}$ - expected time of flight for charged pion. 
-These distributions were obtained for charged tracks that passed every fiducial cut of DC-PC1, TOFe/TOFw, PC3, and EMCal and matching cuts ($|\sigma_{dz}| < 3$ and $|\sigma_{d\varphi}| < 3$) which allows to obtain clean time of flight distributions - the similar setup that was used for charged hadron analyses (for example \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814} for TOFw, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dlario/Charged_Hadrons_HeAu/AN1447_charged_hadrons_in_HeAu.pdf}{AN1447} for TOFe).
+These distributions were obtained for charged tracks that passed every fiducial cut of DC-PC1, TOFe/TOFw, PC3, and EMCal and matching cuts ($|sdz| < 3$ and $|sd\varphi| < 3$) which allows to obtain clean time of flight distributions - the similar setup that was used for charged hadron analyses (for example \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814} for TOFw, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dlario/Charged_Hadrons_HeAu/AN1447_charged_hadrons_in_HeAu.pdf}{AN1447} for TOFe).
 
 As most of charged tracks come from charged pions $t - t_{exp}^{\pi^\pm}$ timing distributions should mostly consists of charged pion signals with a gauss-like shape centered around $t - t_{exp}^{\pi^\pm} = 0$. 
 It turned out that that not all slats/strips have such distribution - some of them have additional signals that are comparable to the signals of charged pions or strong background contamination. 
