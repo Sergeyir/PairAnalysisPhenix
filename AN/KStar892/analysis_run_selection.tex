@@ -1,0 +1,14 @@
+This analysis was based on 133 runs for \HeAu, 151 run for \pAl, and 417 runs for \pAu which were available for taxi build ana.668. 
+It is important to have consistent data in each subset for any measurement over the whole dataset to be accurate. 
+This analysis was performed with charged tracks only therefore each run was investigated for charged track multiplicity and DC occupancy distribution.
+
+Multiplicity was investigated by measuring 2 variables for each run - ratio of number of charged tracks $N_{\text{charged}}$ to the number of events $N_{\text{evt}}$ and ratio of positively $N_{\text{charged}}^+$ to negatively $N_{\text{charged}}^-$ charged tracks. 
+Calculated values are shown on Fig. \ref{fig:run_mult_check}. 
+Runs outside the 20\% window of deviation from the mean value were rejected.
+
+The investigation of DC occupancy distributions was performed by comparing normalized DC heatmaps projection on board from each run to the average one from the whole dataset.
+Comparison was performed by taking a ratio of a real to the average board distributions. 
+0-th order polynomial fit was performed on obtained ratios. 
+The constant fit parameter and $\chi^2/\text{NDF}$ of approximation were investigated for DC occupancy consistency.
+These values for each run are shown on Fig. \ref{fig:run_dc_check}.
+Runs were found to be consistent in constant parameter value deviation from the mean (less than 5\%), but runs that exceeded $\chi^2/\text{NDF} > 3$ threshold were removed from the analysis.
