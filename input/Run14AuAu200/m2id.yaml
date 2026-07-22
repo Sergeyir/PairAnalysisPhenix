@@ -1,7 +1,7 @@
-# This file contains all important information about m2 identification for Run15pAuMinBias
+# This file contains all important information about m2 identification for Run14HeAuMinBias
 ---
 status: m2id # required field for checking the file application
-run_name: Run15pAu200 # required field for searching for main.yaml
+run_name: Run14AuAu200 # required field for searching for main.yaml
 means_vs_pt_fit_func: "pol1(0)"
 sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
@@ -10,7 +10,7 @@ sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
 K1: 104. # integral of a magnetic field [mrad*GeV]
 # centrality range that will be used for approximation of m2 distributions
 centrality_min: 0
-centrality_max: 84
+centrality_max: 93
 detectors:
 - 
   name: TOFe
@@ -18,20 +18,20 @@ detectors:
   # in m2 distribution will be performed
   sigmalized_identification_range: 2 
   L: 5.2 # distance to the detector
-  sigma_alpha: 0.9 # DC angular resolution [mrad]
-  sigma_ms: 1.0 # multiple scattering resolution [mrad*GeV]
-  sigma_t: 150. # timing resolution [ps]
+  sigma_alpha: 1.0 # DC angular resolution [mrad]
+  sigma_ms: 0.9 # multiple scattering resolution [mrad*GeV]
+  sigma_t: 155. # timing resolution [ps]
   # background is needed to help the approximation
   pion_bg_func: "exp(pol1(0))" 
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
   # minimum and maximum pT for approximation of different particles
-  pi+_pt_bounds: [0.3, 2.5] 
-  k+_pt_bounds: [0.3, 2.2]
-  p_pt_bounds: [0.5, 3.5]
-  pi-_pt_bounds: [0.3, 2.5]
-  k-_pt_bounds: [0.3, 2.2]
-  pbar_pt_bounds: [0.4, 3.5]
+  pi+_pt_bounds: [0.3, 1.9] 
+  k+_pt_bounds: [0.3, 1.5]
+  p_pt_bounds: [0.4, 1.9]
+  pi-_pt_bounds: [0.3, 1.9]
+  k-_pt_bounds: [0.3, 1.7]
+  pbar_pt_bounds: [0.4, 2.2]
   # makes sigma_alpha, sigma_ms, and sigma_t tigtly limited around values specified in this file
   is_calibrated: true
   # makes m2 means tigtly limited around the parameters obtained from the previous fit
@@ -44,16 +44,16 @@ detectors:
   L: 4.95
   sigma_alpha: 0.9
   sigma_ms: 1.0
-  sigma_t: 220. 
+  sigma_t: 175
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  pi+_pt_bounds: [0.3, 1.5]
-  k+_pt_bounds: [0.3, 1.2]
-  p_pt_bounds: [0.5, 1.5]
-  pi-_pt_bounds: [0.3, 2.5]
-  k-_pt_bounds: [0.3, 1.4]
-  pbar_pt_bounds: [0.4, 2.5]
+  pi+_pt_bounds: [0.3, 1.3]
+  k+_pt_bounds: [0.3, 1.0]
+  p_pt_bounds: [0.4, 1.5]
+  pi-_pt_bounds: [0.3, 1.3]
+  k-_pt_bounds: [0.3, 1.2]
+  pbar_pt_bounds: [0.4, 1.7]
   is_calibrated: true
   use_m2_mean_par: true
   rewrite_parameters: false

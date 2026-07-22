@@ -8,6 +8,9 @@ sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
                              [3]*[3]/([5]*[5])*4.*pol1(0)*pol1(0)*(1. + pol1(0)/(x*x)) + \
                              [4]*[4]*2.9972e-4*2.9972e-4/([6]*[6])*4.*x*x*(pol1(0) + x*x))"
 K1: 104. # integral of a magnetic field [mrad*GeV]
+# centrality range that will be used for approximation of m2 distributions
+centrality_min: 0
+centrality_max: 72
 detectors:
 - 
   name: TOFe
