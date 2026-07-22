@@ -27,9 +27,7 @@ void FracFit()
 
    TFile inputFile(inputFileName.c_str());
 
-   std::string distrName; 
-   if (inputYAMLMain["is_pp"].as<bool>()) distrName = "multiplicity vs frac";
-   else distrName = "frac vs centrality";
+   std::string distrName = "centrality vs frac";
 
    TH2F *distr = static_cast<TH2F *>(inputFile.Get(distrName.c_str()));
 
@@ -41,13 +39,16 @@ void FracFit()
 
    distr->SetTitle("");
 
-   const std::string fitFunc = "[0] - [1]*exp([2]*x*x)";
+   const std::string fitFunc = "([0] - exp((x/[1])^4) - x/[2])*(([0] - exp((x/[1])^4) - x/[2]) > 0.5) + 0.5*(([0] - exp((x/[1])^4) - x/[2]) <= 0.5)";
 
    CppTools::Print("Setting fit function \"" + fitFunc + "\"");
    TF1 fit("frac fit", fitFunc.c_str());
 
    fit.SetRange(distr->GetXaxis()->GetBinLowEdge(1), 
                 distr->GetXaxis()->GetBinUpEdge(distr->GetXaxis()->GetNbins()));
+
+   const std::string outputDir = "output/Frac/" + runName;
+   std::filesystem::create_directories(outputDir);
 
    bool firstIteration = true;
 
@@ -70,7 +71,6 @@ void FracFit()
          else
          {
             distr->Fit(&fit, "QMN");
-            std::filesystem::create_directories("output/FracFit/");
          }
       }
       else
@@ -98,22 +98,15 @@ void FracFit()
       gPad->SetRightMargin(0.11); gPad->SetTopMargin(0.02); 
       gPad->SetLeftMargin(0.095); gPad->SetBottomMargin(0.08);
 
-      ROOTTools::DrawFrame(distr, "", "frac", "centrality", 0.9, 1.2, 0.04, 0.04, 
+      ROOTTools::DrawFrame(distr, "", "centrality", "frac", 0.9, 1.2, 0.04, 0.04, 
                            true, true, "COLZ");
 
       distr->Draw("COLZ");
       fit.Draw("SAME");
 
-      ROOTTools::PrintCanvas(&canv, "output/FracFit/" + runName);
+      ROOTTools::PrintCanvas(&canv, outputDir + "/frac_fit");
 
-      /*
-      if (firstIteration)
-      {
-         void (system(("xdg-open output/FracFit/" + runName + ".png").c_str()));
-      }
-      */
       firstIteration = false;
-      exit(0);
    }
 
    exit(1);
