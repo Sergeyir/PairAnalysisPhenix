@@ -50,6 +50,9 @@ int main(int argc, char **argv)
 
    K1 = inputYAMLM2Id["K1"].as<double>();
 
+   centralityMin = inputYAMLM2Id["centrality_min"].as<double>();
+   centralityMax = inputYAMLM2Id["centrality_max"].as<double>();
+
    outputDir = "output/M2Id/" + runName;
 
    parametersDir = "data/Parameters/M2Id/" + runName;
@@ -90,8 +93,7 @@ int main(int argc, char **argv)
    {
       if (argc == 3 && detector["name"].as<std::string>() != std::string(argv[2])) continue;
       std::filesystem::create_directories(outputDir + "/" + detector["name"].as<std::string>());
-      PerformFitsForDetector(detector, inputYAMLMain["centrality_min"].as<double>(), 
-                             inputYAMLMain["centrality_max"].as<double>());
+      PerformFitsForDetector(detector);
       pBar.Clear();
       CppTools::PrintInfo(detector["name"].as<std::string>() + " done");
       pBar.RePrint();
@@ -100,9 +102,7 @@ int main(int argc, char **argv)
    CppTools::PrintInfo("M2IdentFit has finished running succesfully");
 }
 
-void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector, 
-                                        const double centralityMin, 
-                                        const double centralityMax)
+void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
 {
    TH3F* m2DistrPos = static_cast<TH3F *>
       (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + ", charge>0").c_str()));
@@ -160,8 +160,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
          ProjectionY((m2DistrPos->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
                      m2DistrPos->GetXaxis()->FindBin(binPTMin + 1e-15),
                      m2DistrPos->GetXaxis()->FindBin(binPTMax - 1e-15),
-                     m2DistrPos->GetXaxis()->FindBin(centralityMin + 1e-15),
-                     m2DistrPos->GetXaxis()->FindBin(centralityMax - 1e-15));
+                     m2DistrPos->GetZaxis()->FindBin(centralityMin + 1e-15),
+                     m2DistrPos->GetZaxis()->FindBin(centralityMax - 1e-15));
 
       if (m2DistrPosProj->Integral(1, m2DistrPosProj->GetXaxis()->GetNbins()) < 1.)
       {
@@ -173,8 +173,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
          ProjectionY((m2DistrNeg->GetName() + std::to_string((binPTMin + binPTMax)/2.)).c_str(),
                      m2DistrNeg->GetXaxis()->FindBin(binPTMin + 1e-15),
                      m2DistrNeg->GetXaxis()->FindBin(binPTMax - 1e-15),
-                     m2DistrNeg->GetXaxis()->FindBin(centralityMin + 1e-15),
-                     m2DistrNeg->GetXaxis()->FindBin(centralityMax - 1e-15));
+                     m2DistrNeg->GetZaxis()->FindBin(centralityMin + 1e-15),
+                     m2DistrNeg->GetZaxis()->FindBin(centralityMax - 1e-15));
 
       if (m2DistrNegProj->Integral(1, m2DistrPosProj->GetXaxis()->GetNbins()) < 1.)
       {
@@ -656,7 +656,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector,
       const std::string outputFileName = 
          parametersDir + "/M2Par" + detector["name"].as<std::string>() + ".txt";
 
-      if (std::filesystem::exists(outputFileName) && fitP.rewriteParameters)
+      if (!std::filesystem::exists(outputFileName) || fitP.rewriteParameters)
       {
          std::ofstream parametersOutputFile(outputFileName);
 

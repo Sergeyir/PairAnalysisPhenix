@@ -98,12 +98,8 @@ namespace M2IdentFit
     * for the given detector and for the given centrality class
     *
     * @param[in] detector yaml node for the given detector
-    * @param[in] centralityMin lowest bound of centrality range
-    * @param[in] centralityMax highest bound of centrality range
     */
-   void PerformFitsForDetector(const YAML::Node& detector, 
-                               const double centralityMin,
-                               const double centralityMax);
+   void PerformFitsForDetector(const YAML::Node& detector);
    /* @brief Performs m2 fits for charged hadrons for the given histogram
     *
     * @param[in] massProj projection of m2 histogram distribution taken from the real data
@@ -160,6 +156,10 @@ namespace M2IdentFit
    std::string rawYieldsDir;
    /// integral of a magnetic field [mrad*GeV]
    double K1;
+   /// lower bound of centrality region in which approximations will be performed
+   double centralityMin;
+   /// upper bound of centrality region in which approximations will be performed
+   double centralityMax;
    /// number of sequential fits with regressive parameter limiter 
    /// for the improvement of approximation
    const unsigned int nFitTries = 5.;
