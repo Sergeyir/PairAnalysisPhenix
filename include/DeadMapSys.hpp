@@ -18,6 +18,7 @@
 #include "TH3.h"
 #include "TStyle.h"
 #include "TLegend.h"
+#include "TImage.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
@@ -54,6 +55,18 @@ namespace DeadMapSys
    CppTools::Table table{4};
    /// Cutter for bad/dead areas of heatmaps
    DeadMapCutter dmCutter;
+   /*! @brief Draws deadmpaps before and after the application of fiducial cuts
+    *
+    * @param[in] heatmap heatmap without fiducial cuts to be drawn
+    * @param[in] cutHeatmap heatmap with fiducial cuts to be drawn
+    * @param[in] detectorName name of the detector of the passed heatmap
+    * @param[in] title title that will be assigned to the histograms
+    * @param[in] xTitle title of X axis that will be assigned to the histograms
+    * @param[in] yTitle title of Y axis that will be assigned to the histograms
+    */
+   void DrawDeadmap(TH2F *&heatmap, TH2F *&cutHeatmap, 
+                    const std::string& detectorName, const std::string& title,
+                    const std::string& xTitle, const std::string& yTitle);
    /*! @brief Returns the uncertainty that is originated from the difference between 2 2D 
     * histograms measured by taking numberOfProjectionDivisions regions for normalization. 
     * Also draws the real data and simulated heatmaps, and its projection for comparison, 
@@ -64,7 +77,6 @@ namespace DeadMapSys
     * @param[in] simHeatmap heatmap from the PHENIX simulation
     * @param[in] realCutHeatmap heatmap from the real data with bad/dead areas cut
     * @param[in] simCutHeatmap heatmap from the PHENIX simulation with bad/dead areas cut
-    * @param[in] detectorName name of the detector heatmap of which was passed 
     * @param[in] numberOfHeatmapDivisions number of divisions of heatmap for systematic ucnertainty evaluation 
     * @param[in] detectorName name of the detector heatmap of which was passed 
     * @param[in] title title that will be assigned to the histograms
