@@ -330,7 +330,7 @@ int main(int argc, char **argv)
    {
       CppTools::CheckInputFile("data/Real/" + runName + "/SingleTrack/sum" + 
                                magneticField["name"].as<std::string>() + ".root");
-      for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
+      for (const auto& pTRange : inputYAMLResonance["sim_pt_ranges"])
       {
          std::string simInputFileName = 
             "data/SimTrees/" + runName + "/WidthlessResonance/" + 
@@ -384,7 +384,7 @@ int main(int argc, char **argv)
    }
 
    std::vector<std::string> pTRangesList;
-   for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
+   for (const auto& pTRange : inputYAMLResonance["sim_pt_ranges"])
    {
       pTRangesList.emplace_back(pTRange["name"].as<std::string>());
    }
@@ -410,7 +410,7 @@ int main(int argc, char **argv)
 
    auto pBarCall = [&]()
    {
-      ProgressBar pBar{"BLOCK"};
+      ProgressBar pBar{"FANCY"};
       while (!isProcessFinished)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/
@@ -427,7 +427,7 @@ int main(int argc, char **argv)
 
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
    {
-      for (const auto& pTRange : inputYAMLResonance["pt_ranges"])
+      for (const auto& pTRange : inputYAMLResonance["sim_pt_ranges"])
       {
          AnalyzeConfiguration(thrContainer, inputYAMLResonance["name"].as<std::string>(), 
                               inputYAMLResonance["daughter1_id"].as<int>(),

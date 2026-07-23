@@ -178,7 +178,8 @@ void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& det
                                           distrRecPTPBar->GetBinContent(firstBinInRange))/20., 
                         1e-8)/2.;
 
-   ROOTTools::DrawFrame(pTMin, yMin, pTMax, 2., "", "p_{T} [GeV/c]", "#varepsilon_{" + 
+   ROOTTools::DrawFrame(pTMin, yMin, pTMax, 2., "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#varepsilon}_{" + 
                         static_cast<std::string>((isIdentification) ? "id" : "reg") + "}");
 
    line.Draw();

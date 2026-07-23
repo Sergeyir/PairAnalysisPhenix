@@ -402,16 +402,20 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, 
                         realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
-                        "DCe0", "DC east, zDC>=0", "board", "#alpha", 3, 1, false) << " " <<
+                        "DCe0", "DC east, #it{z}_{DC}#geq0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
          GetUncertainty(realHeatmapDCe1, simHeatmapDCe1,
                         realCutHeatmapDCe1, simCutHeatmapDCe1, 10,
-                        "DCe1", "DC east, zDC<0", "board", "#alpha", 3, 1, false) << " " <<
+                        "DCe1", "DC east, #it{z}_{DC}<0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
          GetUncertainty(realHeatmapDCw0, simHeatmapDCw0,
                         realCutHeatmapDCw0, simCutHeatmapDCw0, 10,
-                        "DCw0", "DC west, zDC>=0", "board", "#alpha", 3, 1, false) << " " <<
+                        "DCw0", "DC west, #it{z}_{DC}#geq0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
          GetUncertainty(realHeatmapDCw1, simHeatmapDCw1,
                         realCutHeatmapDCw1, simCutHeatmapDCw1, 10,
-                        "DCw1", "DC west, zDC<0", "board", "#alpha", 3, 1, false) << std::endl;
+                        "DCw1", "DC west, #it{z}_{DC}<0", 
+                        "board", "#it{#alpha}", 3, 1, false) << std::endl;
    }
    else
    {
@@ -463,10 +467,10 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, 
                         realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
-                        "PC1e", "PC1 east", "z_{PC1}", "y_{PC1}", 2) << " " <<
+                        "PC1e", "PC1 east", "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2) << " " <<
          GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, 
                         realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
-                        "PC1w", "PC1 west", "z_{PC1}", "y_{PC1}", 2) << std::endl;
+                        "PC1w", "PC1 west", "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2) << std::endl;
    }
    else
    {
@@ -501,7 +505,7 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC2, simHeatmapPC2, 
                         realCutHeatmapPC2, simCutHeatmapPC2, 10,
-                        "PC2", "PC2", "z_{PC2}", "y_{PC2}") << std::endl;
+                        "PC2", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}") << std::endl;
    }
    else
    {
@@ -553,10 +557,10 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
                         realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
-                        "PC3e", "PC3 east", "z_{PC3}", "y_{PC3}", 2) << " " <<
+                        "PC3e", "PC3 east", "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2) << " " <<
          GetUncertainty(realHeatmapPC3w, simHeatmapPC3w, 
                         realCutHeatmapPC3w, simCutHeatmapPC3w, 10,
-                        "PC3w", "PC3 west", "z_{PC3}", "y_{PC3}", 2) << std::endl;
+                        "PC3w", "PC3 west", "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2) << std::endl;
    }
    else
    {
@@ -662,7 +666,7 @@ int main(int argc, char **argv)
             GetUncertainty(realHeatmapEMCale, simHeatmapEMCale, 
                            realCutHeatmapEMCale, simCutHeatmapEMCale, 8,
                            "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
-                           "y_{tower}", "z_{tower}");
+                           "#it{Y}_{tower}", "#it{Z}_{tower}");
       }
       systematicsOutputFile << std::endl;
       for (int i = 0; i < 4; i++)
@@ -695,7 +699,7 @@ int main(int argc, char **argv)
             GetUncertainty(realHeatmapEMCalw, simHeatmapEMCalw, 
                            realCutHeatmapEMCalw, simCutHeatmapEMCalw, 8,
                            "EMCalw" + std::to_string(i), "EMCalw" + std::to_string(i), 
-                           "y_{tower}", "z_{tower}");
+                           "#it{Y}_{tower}", "#it{Z}_{tower}");
          if (i < 3) systematicsOutputFile << " ";
       }
       systematicsOutputFile << std::endl;

@@ -19,7 +19,7 @@ void DrawSDZExample()
 
    gPad->SetLogz();
 
-   ROOTTools::DrawFrame(distrSDZ, "", "sdz", "p_{T}", 
+   ROOTTools::DrawFrame(distrSDZ, "", "#it{sdz}", "#it{p}_{T}", 
                         0.9, 1., 0.05, 0.05, true, true, "COLZ");
    canv.SaveAs("output/other/sdz_example.pdf");
 
@@ -30,7 +30,7 @@ void DrawSDZExample()
 
    gPad->SetLogz();
 
-   ROOTTools::DrawFrame(distrSDPhi, "", "sd#varphi", "p_{T}", 
+   ROOTTools::DrawFrame(distrSDPhi, "", "#it{sd#varphi}", "#it{p}_{T}", 
                         0.9, 1., 0.05, 0.05, true, true, "COLZ");
    canv.SaveAs("output/other/sdphi_example.pdf");
 }

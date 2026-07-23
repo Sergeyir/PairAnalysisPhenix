@@ -341,8 +341,9 @@ int main(int argc, char **argv)
 
       gPad->SetLogy();
 
-      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "p_{T} [GeV/c]", 
-                           "1/(2#pip_{T}) d^{2} N/dp_{T}/dy [(GeV/c)^{-2}]");
+      ROOTTools::
+         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]", 
+                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
 
       canvSpectra.SetFillStyle(4000);
       canvSpectra.SetFrameFillColor(0);
@@ -404,8 +405,9 @@ int main(int argc, char **argv)
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.);
 
-      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
-                           "1/(2#pip_{T}) d^{2} N/dp_{T}/dy [(GeV/c)^{-2}]");
+      ROOTTools::
+         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
+                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
 
       tsallisFit.Draw("SAME");
 
@@ -433,7 +435,7 @@ int main(int argc, char **argv)
       gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.25);
 
       ROOTTools::DrawFrame(xMin - 0.1, ratioMin/1.1, xMax + 0.1, ratioMax*1.1, 
-                           "", "p_{T} [GeV/c]", "Data/Fit", 1., 0.7, 0.11, 0.11);
+                           "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.7, 0.11, 0.11);
 
       if (ratioMin/1.1 < 1. && ratioMax*1.1 > 1.)
       {
@@ -504,7 +506,7 @@ int main(int argc, char **argv)
          gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
          ROOTTools::DrawFrame(xMin - 0.1, 0., xMax + 0.1, maxRAB, 
-                              "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
+                              "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
          if (maxRAB > 1.)
          {

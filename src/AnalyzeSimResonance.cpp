@@ -846,7 +846,7 @@ int main(int argc, char **argv)
 
    auto pBarCall = [&]()
    {
-      ProgressBar pBar{"BLOCK"};
+      ProgressBar pBar{"FANCY"};
       while (!isProcessFinished)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/

@@ -83,7 +83,7 @@ void ElossFit()
       gPad->SetRightMargin(0.11); gPad->SetTopMargin(0.02); 
       gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.08);
 
-      ROOTTools::DrawFrame(distr, "", "#beta", "E_{loss}", 0.9, 1.9, 0.04, 0.04, 
+      ROOTTools::DrawFrame(distr, "", "#it{#beta}", "#it{E}_{loss}", 0.9, 1.9, 0.04, 0.04, 
                            true, true, "COLZ");
 
       fit.Draw("SAME");

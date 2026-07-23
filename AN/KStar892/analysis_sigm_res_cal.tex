@@ -1,5 +1,3 @@
-\subsubsection{Sigmalized residuals calibrations}
-
 Sigmalized residual calibrations for this analysis were performed for EMCal(e,w)(0-3) in Run14 \HeAu, EMCal(e,w)(0-3), TOFe, and TOFw in Run15 \pAl, TOFe and TOFw in Run15 \pAu.
 
 Matching cuts are important in this analysis for improving the signal to background ratio.
@@ -150,44 +148,4 @@ An example of applying sigmalized residuals calibrations is shown on Fig. \ref{f
    \caption[Example of $sd\varphi$ and $sdz$ distributions after applying calibrations]
            {Example of EMCale0 $sd\varphi$ (a) and $sdz$ (b) distributions after applying sigmalized residuals calibrations in Run15 \pAl, $\text{charge} > 0$}
    \label{fig:sim_res_recal_means_sdz_fit_example}
-\end{figure}
-
-\subsubsection{TOFe and TOFw timing recalibrations}
-
-For each slat in TOFe and strip in TOFw $t - t_{exp}^{\pi^\pm}$ distributions were investigated, where $t$ - time of flight, $t_{exp}^{\pi^\pm}$ - expected time of flight for charged pion. 
-These distributions were obtained for charged tracks that passed every fiducial cut of DC-PC1, TOFe/TOFw, PC3, and EMCal and matching cuts ($|sdz| < 3$ and $|sd\varphi| < 3$) which allows to obtain clean time of flight distributions - the similar setup that was used for charged hadron analyses (for example \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814} for TOFw, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dlario/Charged_Hadrons_HeAu/AN1447_charged_hadrons_in_HeAu.pdf}{AN1447} for TOFe).
-
-As most of charged tracks come from charged pions $t - t_{exp}^{\pi^\pm}$ timing distributions should mostly consists of charged pion signals with a gauss-like shape centered around $t - t_{exp}^{\pi^\pm} = 0$. 
-It turned out that that not all slats/strips have such distribution - some of them have additional signals that are comparable to the signals of charged pions or strong background contamination. 
-Wide signals of charged pions were also removed since these may indicate detector faults, incorrect calibrations, multiple signals overlap, or background contamination. 
-Fig. \ref{fig:tofe_slats_timing} shows examples of good and bad timing distributions. 
-Additionally it was found that some slats/stips charged pions signals in $t - t_{exp}^{\pi^\pm}$ were not at 0 - to correct this individual slat/strip constant shift to the time of flight was introduced for all charged tracks.
-
-\begin{figure}[h!]
-	\centering
-   \begin{subfigure}{0.45\textwidth}
-      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_6_5.pdf}
-      \subcaption{}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}{0.45\textwidth}
-      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_36_9.pdf}
-      \subcaption{}
-   \end{subfigure}
-   \begin{subfigure}{0.45\textwidth}
-      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_4.pdf}
-      \subcaption{}
-   \end{subfigure}
-   \hfill
-   \begin{subfigure}{0.45\textwidth}
-      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_9.pdf}
-      \subcaption{}
-   \end{subfigure}
-   \caption[Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions in TOFe slats]
-   {Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions for different TOFe slats. 
-   (a) - Good distribution (clean $\pi^\pm$ signal), 
-   (b) - Bad distribution (multiple significant signals are present), 
-   (c) - Bad distribution (strong background presence), 
-   (d) - Bad distribution (the signal is too wide for the timing resolution of TOFe)}
-   \label{fig:tofe_slats_timing}
 \end{figure}

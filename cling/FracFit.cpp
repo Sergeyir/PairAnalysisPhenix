@@ -90,6 +90,8 @@ void FracFit()
          fit.SetParameters(par1, par2, par3);
       }
 
+      fit.SetLineWidth(2);
+
       distr->GetXaxis()->SetTitle();
 
       TCanvas canv("c", "", 800, 800);

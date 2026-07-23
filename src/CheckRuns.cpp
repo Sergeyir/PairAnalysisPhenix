@@ -175,7 +175,7 @@ void CheckRuns::CheckRunsByMultiplicity()
                         grMult.GetYaxis()->GetBinLowEdge(1),
                         grMult.GetXaxis()->GetBinUpEdge(grMult.GetXaxis()->GetNbins()),
                         grMult.GetYaxis()->GetBinUpEdge(grMult.GetYaxis()->GetNbins()), 
-                        "", "", "N_{charged}/N_{evt}", 0., 0.4, 0., 0.08);
+                        "", "", "#it{N}_{charged}/#it{N}_{evt}", 0., 0.4, 0., 0.08);
 
    ROOTTools::DrawLine(grMult.GetXaxis()->GetBinLowEdge(1), averageMult, 
                        grMult.GetXaxis()->GetBinUpEdge(grMult.GetXaxis()->GetNbins()), averageMult,
@@ -190,8 +190,9 @@ void CheckRuns::CheckRunsByMultiplicity()
    ROOTTools::DrawFrame(grChargeRatio.GetXaxis()->GetBinLowEdge(1), 
                         grChargeRatio.GetYaxis()->GetBinLowEdge(1),
                         grChargeRatio.GetXaxis()->GetBinUpEdge(grChargeRatio.GetXaxis()->GetNbins()),
-                        grChargeRatio.GetYaxis()->GetBinUpEdge(grChargeRatio.GetYaxis()->GetNbins()), 
-                        "", "run index", "N_{charged}^{+}/N_{charged}^{-}", 0.7, 0.4, 0.08, 0.08);
+                        grChargeRatio.GetYaxis()->GetBinUpEdge(grChargeRatio.GetYaxis()->GetNbins()),
+                        "", "run index", "#it{N}_{charged}^{+}/#it{N}_{charged}^{-}", 
+                        0.7, 0.4, 0.08, 0.08);
 
    ROOTTools::DrawLine(grChargeRatio.GetXaxis()->GetBinLowEdge(1), averageChargeRatio, 
                        grChargeRatio.GetXaxis()->GetBinUpEdge(grChargeRatio.GetXaxis()->GetNbins()), 

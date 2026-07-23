@@ -231,7 +231,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
 
       gPad->SetLogy();
 
-      ROOTTools::DrawFrame(m2DistrPosProj, "", "m^{2} [GeV/c^{2}]", "Counts", 
+      ROOTTools::DrawFrame(m2DistrPosProj, "", "#it{m}^{2} [GeV/#it{c}^{2}]", "Counts", 
                            0.85, 0.65, 0.08, 0.08, true, true, "E");
 
       if (binPTMin > detector["pi+_pt_bounds"][0].as<double>() - 1e-3 && 
@@ -262,7 +262,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
 
       gPad->SetLogy();
 
-      ROOTTools::DrawFrame(m2DistrNegProj, "", "m^{2} [GeV/c^{2}]", "Counts", 
+      ROOTTools::DrawFrame(m2DistrNegProj, "", "#it{m}^{2} [GeV/#it{c}^{2}]", "Counts", 
                            0.85, 0.65, 0.08, 0.08, true, true, "E");
 
       if (binPTMin > detector["pi-_pt_bounds"][0].as<double>() - 1e-3 && 
@@ -462,7 +462,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1,
-                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [(GeV/c^{2})^{2}]");
+                        "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#mu}_{#it{m}^{2}} [(GeV/#it{c}^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -484,7 +485,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
-                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [(GeV/c^{2})^{2}]");
+                        "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#sigma}_{#it{m}^{2}} [(GeV/#it{c}^{2})^{2}]");
 
    fitPiPlus.sigmasVsPTFit->Draw("SAME");
    fitKPlus.sigmasVsPTFit->Draw("SAME");
@@ -502,7 +504,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
-                        "", "p_{T} [GeV/c]", "#mu_{m^{2}} [(GeV/c^{2})^{2}]");
+                        "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#mu}_{#it{m}^{2}} [(GeV/#it{c}^{2})^{2}]");
 
    trueM2LinePi.Draw();
    trueM2LineK.Draw();
@@ -524,7 +527,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
-                        "", "p_{T} [GeV/c]", "#sigma_{m^{2}} [(GeV/c^{2})^{2}]");
+                        "", "#it{p}_{T} [GeV/#it{c}]", 
+                        "#it{#sigma}_{#it{m}^{2}} [(GeV/#it{c}^{2})^{2}]");
 
    fitPiMinus.sigmasVsPTFit->Draw("SAME");
    fitKMinus.sigmasVsPTFit->Draw("SAME");
@@ -628,8 +632,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
 
    ROOTTools::DrawFrame(-msPTMax, CppTools::Maximum(m2ProfileNeg->GetYaxis()->GetBinLowEdge(1), 
                                                     -0.4), 
-                        msPTMax, 1.4, "", "p_{T} #times charge [GeV/c]", 
-                        "m^{2} [GeV/c^{2})^{2}]", 0.95, 1.2);
+                        msPTMax, 1.4, "", "#it{p}_{T} #times charge [GeV/#it{c}]", 
+                        "#it{m}^{2} [GeV/#it{c}^{2})^{2}]", 0.95, 1.2);
 
    m2Profile.Draw("COL SAME");
 

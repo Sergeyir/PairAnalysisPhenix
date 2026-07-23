@@ -1,48 +1,115 @@
-Pile-up (i.e. event overlap) contamintaion was evaluated in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/mlario/phi_in_HeAu_pAu_pAl_v6.pdf}{AN1399} for Run14 \HeAu with the use of BBCLL1 narrow to Clock trigger rate. 
-The value was found to be 1\% in MB, with no account to centrality. 
-The determination procedure of the collision in the central region is the most prone to overlap contamination. Run15 \pAl and Run15 \pAu have even higher contamination of overlapping events.
-Therefore pile-up rejection cut was introduced using $frac$ variable from the module DoubleInteractionUtils described in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304}.
+The pile-up, or multiple interaction, study in the current analysis is based on the data from \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} as well as frac (the fraction of the timing distribution within $+-5$ ns from the mean in BBCs) variable from the same AN. 
 
-The frac distribution dependence on centrality is shown as an occupancy histogram on Fig. \ref{fig:frac_cut}. 
-High occupancy regions are peaks on frac distribution on each centrality slice. 
-These peaks mostly come from clean (or cleanly reconstructed) events. 
-Overlapping events span almost the whole frac region. 
-In \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} it was shown that removing events with frac values outside the peaks removes most of overlap contamination. 
-Therefore the centrality dependent cut with a function of a form $\text{frac}_{\text{threshold}} = p_0 - p_1 e^{p_2 \cdot \text{centrality}^2}$ was introduced with parameters presented in Table. \ref{table:frac_cut_par} 
-This function is shown on Fig. \ref{fig:frac_cut}. 
-Events with frac value smaller than $\text{frac}_{\text{threshold}}$ were removed from the analysis.
-The choice of $\text{frac}_{\text{threshold}}$ function was due to its shape closely following selected frac threshold values for all centrality slices.
+Due to high luminosities in light collision systems pile-up contamination is significant and cannot be ignored. Frac vs centrality ditributions (Fig. \ref{fig:frac_cut}) were investigated for possible rejection of double interaciton events. 
+In \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} it was shown that in each centrailty slice the tail of frac distribution matches the distribution of manufactured double interaction events, while peaks (high occupancy regions in frac vs centrality distribution) originate from single interactions only.
+Therefore the centrality dependent cut with a function $\text{frac}_{\text{threshold}} = \text{max}(p_0 - e^{(centrality/p_1)^4} - centrality/p_2, 0.5)$ was introduced with parameters presented in Table. \ref{table:frac_cut_par}. 
+Events with frac value lower than $\text{frac}_{\text{threshold}}$ were removed from this analysis. 
+This cut removes most of overlapping events ($~80-90\%$) while removing only small fraction of events ($~5\%$ in \HeAu and \pAu, $~25\%$ in \pAl). 
+$\text{frac}_{\text{threshold}}$ functions are presented on Fig. \ref{fig:frac_cut}.
 
 \begin{table}[h!]
 	\centering
 	\begin{tabular}{c||c|c|c}
-		Dataset & $p_0$ & $p_1$ & $p_2$ \\
+		 & $p_0$ & $p_1$ & $p_2$ \\
 		\hline
 		\hline
-		Run14 \HeAu & 80 & 0.5 & 5.5 \\
-		Run15 \pAl & 65 & 0.3 & 5.9 \\
-		Run15 \pAu & 75 & 0.4 & 5.7 \\
+		Run14 \HeAu & 1.95 & 110 & 1200 \\
+		Run15 \pAl & 1.95 & 80 & 1200 \\
+		Run15 \pAu & 1.95 & 100 & 1200 \\
 	\end{tabular}
-   \caption[Parameters for frac cut]{Parameters for frac cut $\text{frac}_{\text{threshold}} = p_0 - p_1 e^{p_2 \cdot \text{centrality}^2}$}
+   \caption[Parameters for frac cut]{Parameters for $\text{frac}_{\text{threshold}} = \text{max}(p_0 - e^{(centrality/p_1)^4} - centrality/p_2, 0.5)$}
 	\label{table:frac_cut_par}
 \end{table}
 
 \begin{figure}[h!]
 	\centering
    \begin{subfigure}{0.32\textwidth}
-      \includegraphics[width=\textwidth]{FracFit/Run14HeAu200.pdf}
+      \includegraphics[width=\textwidth]{Frac/Run14HeAu200/frac_fit.pdf}
       \subcaption{Run14 \HeAu}
    \end{subfigure}
    \hfill
    \begin{subfigure}{0.32\textwidth}
-      \includegraphics[width=\textwidth]{FracFit/Run15pAl200.pdf}
+      \includegraphics[width=\textwidth]{Frac/Run15pAl200/frac_fit.pdf}
       \subcaption{Run15 \pAl}
    \end{subfigure}
    \hfill
    \begin{subfigure}{0.32\textwidth}
-      \includegraphics[width=\textwidth]{FracFit/Run15pAu200.pdf}
+      \includegraphics[width=\textwidth]{Frac/Run15pAu200/frac_fit.pdf}
       \subcaption{Run15 \pAu}
    \end{subfigure}
    \caption[$\text{frac}$ vs centrality distribution and $\text{frac}_{\text{threshold}}$ cut as a function of centrality]{$\text{frac}$ vs centrality distribution and $\text{frac}_{\text{threshold}}$ cut as a function of centrality (red line).}
 	\label{fig:frac_cut}
 \end{figure}
+
+Tails of frac distributions for different centralities were approximated in $\text{frac}_{\text{threshold}}/2. < \text{frac} < \text{frac}_{\text{threshold}} - 0.1$ region with 2 different functions (gauss and exponent + 1st order polynomial). 
+An example of these approximations is shown on Fig. \ref{fig:frac_bg_fit_example}. 
+These approximations were made under the assumption that no single event collisions forms the shape similar to the tail of the distribution since single events produce only one time signal in BBCs and thus have high frac value (which makes it impossible for a single event to have small frac value straightforwardly). 
+However this assumption should be taken with a grain of salt as there was no analysis performed to determine this and in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dcm07e/DoubleInteractionAN/small-system-double.pdf}{AN1304} it was not shown what kind of shape single interactions produce. 
+Therefore there may be a very small contribution from single events in the tail of a frac distribution, but this may just lead to a small overestimation of uncertainty, so not taking single events contribution into frac tail distribution is fine as there are much greater uncertainties in this analysis.
+
+The frac tail approximations discussed above were extended in $\text{frac}_{\text{threshold}} < frac < 1$ region. 
+This way background contamination was evaluated with contamination ratio - ratio of integral of backgroun distribution to the integral of the whole distribution. 
+This evaluation was performed for $\text{frac}_{\text{threshold}} < frac < 1$ region for estimation of pile-up contamination after the application of frac cut and within the whole frac region for estimation of pile-up contamination before the application of frac cut. 
+In the latter case in region $0 < frac < \text{frac}_{\text{threshold}} - 0.1$ tail of the distribution was used to obatin background instead of an approximation. 
+But in this case this means that this estimate is a higher bound of a true value.
+
+Values of pile-up contamination rate are shown in Fig. \ref{fig:pile_up_contamination}. 
+Approximations were not performed in peripheral region since frac distributions become wider with larger centrality which leads to difficulties distinguishing the background from the peak.
+However pile-up contamination in peripheral regions is always smaller than in central regions since multiple interaction often lead to higher event multiplicities which makes the determination of centrality of multiple interaction collisions heavily skewed towards central regions. 
+Therefore central collisions contamination rates can be used as a higher bound estimate of the same value in peripheral collisions.
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run14HeAu200/1.pdf}
+      \subcaption{Run14 \HeAu}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run15pAl200/1.pdf}
+      \subcaption{Run15 \pAl}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run15pAu200/1.pdf}
+      \subcaption{Run15 \pAu}
+   \end{subfigure}
+   \caption[Example of frac background approximations]{Example of frac background approximations in $0-5\%$ centrality class. 
+   Red line represents gauss approximation, blue dashed line represents exponent + 1st order polynomial approximation, gray dashed line shows the position of $\text{frac}_{\text{threshold}}$}
+	\label{fig:frac_bg_fit_example}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run14HeAu200/contamination_rate.pdf}
+      \subcaption{Run14 \HeAu}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run15pAl200/contamination_rate.pdf}
+      \subcaption{Run15 \pAl}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{Frac/Run15pAu200/contamination_rate.pdf}
+      \subcaption{Run15 \pAu}
+   \end{subfigure}
+   \caption[Pile-up contamination rate estimates before and after frac cut]{Estimation of higher bounds of pile-up contamination rates before the frac cut (gray boxes) and pile-up contamination rate estimates after the frac cut (red boxes) for different centrality classes. Red dashed lines show the average pile-up contamination rates after the application of a frac cut.}
+	\label{fig:pile_up_contamination}
+\end{figure}
+
+In this analysis the average pile-up contamination values (Table \ref{table:pile_up_average}) in the chose approximation centrailty region ($0-40\%$ for \HeAu and \pAu, $0-30\%$ for \pAl) after the application of frac cut were used as uncertainties.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c|c|c}
+		Run14 \HeAu & Run15 \pAl & Run15 \pAu \\
+		\hline
+		\hline
+      0.39 \% & 5.44 \% & 1.12 \% \\
+	\end{tabular}
+   \caption{Average pile-up contamination rates}
+	\label{table:pile_up_average}
+\end{table}
+

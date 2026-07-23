@@ -1,0 +1,38 @@
+For each slat in TOFe and strip in TOFw the difference between observed and expected time-of-flight of charged pions $t - t_{exp}^{\pi^\pm}$ distributions were investigated. 
+These distributions were obtained for charged tracks that passed all fiducial cuts on DC-PC1, TOFe/TOFw, PC3, and EMCal (Sec. \ref{sec:fiducial_cuts}), TOFw ADC cut (Sec. \ref{sec:tofw_adc_cut}) or TOFe eloss (Sec. \ref{sec:tofe_eloss_cut}) cut, and matching cuts ($|sdz| < 3$ and $|sd\varphi| < 3$) in PC3 and EMCal, which allows to obtain clean time of flight distributions - similar setup was used for charged hadron analyses (for example \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814} for TOFw, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dlario/Charged_Hadrons_HeAu/AN1447_charged_hadrons_in_HeAu.pdf}{AN1447} for TOFe).
+
+As most of charged tracks come from charged pions, the $t - t_{exp}^{\pi^\pm}$ timing distributions should mostly consists of charged pion signals with a gauss-like shape centered around $t - t_{exp}^{\pi^\pm} = 0$. 
+It turnes out that that not all slats/strips have such distribution - some of them have additional signals that are comparable to the signals of charged pions or strong background contamination. 
+Slats/strips with wide signals (copmpared to the average in the dataset) in timing distributions were also removed since these may indicate detector faults, incorrect calibrations, multiple signals overlap, or background contamination.
+Fig. \ref{fig:tofe_slats_timing} shows examples of good and bad timing distributions.  Fig. \ref{fig:tofe_timing_deadmap} - \ref{tofw_timing_deamap} show TOFe and TOFw heatmaps before and after the removal of slats/strips with bad $t - t_{exp}^{\pi^\pm}$.
+
+Additionally it was found that for a few slats in TOFe and for $~10\%$ strips in TOFw charged pions signals in $t - t_{exp}^{\pi^\pm}$ were not at 0 - to correct this individual slat/strip constant shift to the time of flight was introduced for all charged tracks.
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_6_5.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_36_9.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_4.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.45\textwidth}
+      \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_9.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions in different TOFe slats in Run14 \HeAu MB]
+   {Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions for different TOFe slats. 
+   (a) - Good distribution (clean $\pi^\pm$ signal), 
+   (b) - Bad distribution (2 significant signals are present), 
+   (c) - Bad distribution (strong background presence), 
+   (d) - Bad distribution (the signal is too wide compared to the timing resolution of TOFe)}
+   \label{fig:tofe_slats_timing}
+\end{figure}
