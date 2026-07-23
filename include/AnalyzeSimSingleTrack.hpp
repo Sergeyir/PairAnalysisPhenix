@@ -207,6 +207,8 @@ namespace AnalyzeSimSingleTrack
       std::shared_ptr<TH2F> heatmapPC3w;
       /// heatmap of TOFe
       std::shared_ptr<TH2F> heatmapTOFe;
+      /// heatmap of TOFe hits
+      std::shared_ptr<TH2F> heatmapTOFeHit;
       /// heatmap of TOFw
       std::shared_ptr<TH2F> heatmapTOFw;
       /// heatmaps of EMCale(0-3)
@@ -492,6 +494,10 @@ namespace AnalyzeSimSingleTrack
       /// heatmap of TOFe
       ROOT::TThreadedObject<TH2F> heatmapTOFe{"Heatmap: TOFe", "chamber vs slat", 
                                               10, 0., 10., 96, 0., 96.};
+
+      /// heatmap of TOFe hits
+      ROOT::TThreadedObject<TH2F> heatmapTOFeHit{"_Heatmap: TOFe hit", "chamber vs slat", 
+                                                 10, 0., 10., 96, 0., 96.};
       /// heatmap of TOFw
       ROOT::TThreadedObject<TH2F> heatmapTOFw{"Heatmap: TOFw", "chamber vs strip", 
                                               8, 0., 8., 64, 0., 64.};

@@ -705,6 +705,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                   simCNT.etof(i)*eventWeight*
                                                   alphaReweight*reweightPC1);
 
+                  histContainer.heatmapTOFeHit->Fill(static_cast<double>(chamber) + 0.5, 
+                                                     static_cast<double>(slat) + 0.5, 
+                                                     eventWeight* alphaReweight*reweightPC1);
+
                   if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
                      const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
@@ -1653,6 +1657,7 @@ ThrContainerCopy AnalyzeSimSingleTrack::ThrContainer::GetCopy()
    copy.heatmapPC3e = heatmapPC3e.Get();
    copy.heatmapPC3w = heatmapPC3w.Get();
    copy.heatmapTOFe = heatmapTOFe.Get();
+   copy.heatmapTOFeHit = heatmapTOFeHit.Get();
    copy.heatmapTOFw = heatmapTOFw.Get();
    copy.distrRecPTPC2 = distrRecPTPC2.Get();
    copy.distrRecPTPC3 = distrRecPTPC3.Get();
@@ -1792,6 +1797,7 @@ void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileNam
    static_cast<std::shared_ptr<TH2F>>(heatmapPC3e.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapPC3w.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapTOFe.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(heatmapTOFeHit.Merge())->Write();
    static_cast<std::shared_ptr<TH2F>>(heatmapTOFw.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecPTPC2.Merge())->Write();
    static_cast<std::shared_ptr<TH1D>>(distrRecPTPC3.Merge())->Write();
