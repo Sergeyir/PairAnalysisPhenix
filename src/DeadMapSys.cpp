@@ -56,6 +56,9 @@ void DeadMapSys::DrawDeadmap(TH2F *&heatmap, TH2F *&cutHeatmap,
                              const std::string& detectorName, const std::string& title,
                              const std::string& xTitle, const std::string& yTitle)
 {	
+   heatmap->SetMinimum(0.5);
+   cutHeatmap->SetMinimum(0.5);
+
 	TCanvas canv = TCanvas("canv", "canv", 900, 450);
 
 	canv.Divide(2);
@@ -111,6 +114,8 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
 	
 	realCutHeatmapProjX->SetLineColor(kRed - 3);
 	simCutHeatmapProjX->SetLineColor(kAzure - 3);
+
+	realCutHeatmapProjX->SetLineWidth(2);
 
 	projXLegend.AddEntry(realCutHeatmapProjX, "Data");
 	projXLegend.AddEntry(simCutHeatmapProjX, "MC");
@@ -184,9 +189,9 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
       gPad->SetLeftMargin(0.11); gPad->SetBottomMargin(0.1);
 
       realCutHeatmapProjX->SetMinimum(CppTools::Minimum(realCutHeatmapProjX->GetMinimum(), 
-                                                        simCutHeatmapProjX->GetMinimum()));
+                                                        simCutHeatmapProjX->GetMinimum())/1.1);
       realCutHeatmapProjX->SetMaximum(CppTools::Maximum(realCutHeatmapProjX->GetMaximum(), 
-                                                        simCutHeatmapProjX->GetMaximum()));
+                                                        simCutHeatmapProjX->GetMaximum())*1.1);
 
       ROOTTools::DrawFrame(realCutHeatmapProjX, "X projections of cut " + title, xTitle, "", 
                            0.9, 0., 0.045, 0.045, true, true);
@@ -252,10 +257,12 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
    const double realDataLost = (1. - realCutHeatmap->Integral()/realHeatmap->Integral())*100.;
    const double simDataLost = (1. - simCutHeatmap->Integral()/simHeatmap->Integral())*100.;
 
-   realCutHeatmap->Scale(1./realCutHeatmap->Integral(1, realCutHeatmap->GetXaxis()->GetNbins(),
-                                                 1, realCutHeatmap->GetYaxis()->GetNbins()));
-   simCutHeatmap->Scale(1./simCutHeatmap->Integral(1, simCutHeatmap->GetXaxis()->GetNbins(),
-                                               1, simCutHeatmap->GetYaxis()->GetNbins()));
+   const double realHeatmapScaling = 
+      realCutHeatmap->Integral(1, realCutHeatmap->GetXaxis()->GetNbins(),
+                               1, realCutHeatmap->GetYaxis()->GetNbins());
+   const double simHeatmapScaling  = 
+      simCutHeatmap->Integral(1, simCutHeatmap->GetXaxis()->GetNbins(),
+                              1, simCutHeatmap->GetYaxis()->GetNbins());
 
    std::vector<double> divisionRealIntegral;
    std::vector<double> divisionSimIntegral;
@@ -269,9 +276,9 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
       for (int j = 1; j <= realCutHeatmap->GetYaxis()->GetNbins(); j++)
       {
          divisionRealIntegral[realCutHeatmap->GetBin(i, j) % numberOfHeatmapDivisions] += 
-            realCutHeatmap->GetBinContent(i, j);
+            realCutHeatmap->GetBinContent(i, j)/realHeatmapScaling;
          divisionSimIntegral[realCutHeatmap->GetBin(i, j) % numberOfHeatmapDivisions] += 
-            simCutHeatmap->GetBinContent(i, j);
+            simCutHeatmap->GetBinContent(i, j)/simHeatmapScaling;
       }
    }
 
@@ -646,7 +653,30 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
                         realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
-                        "TOFe", "TOFe", "chamber", "slat") << std::endl;
+                        "TOFe", "TOFe", "chamber", "slat") << " ";
+
+      for (int i = 1; i <= realHeatmapTOFe->GetXaxis()->GetNbins(); i++)
+      {
+         for (int j = 1; j <= realHeatmapTOFe->GetYaxis()->GetNbins(); j++)
+         {
+            if (dmCutter.IsDeadTimingTOFe(i - 1, j - 1))
+            {
+               realCutHeatmapTOFe->SetBinContent(i, j, 0.);
+
+               realCutHeatmapTOFeSys->SetBinContent(i, j, 0.);
+               simCutHeatmapTOFeSys->SetBinContent(i, j, 0.);
+            }
+         }
+      }
+
+      DrawDeadmap(realHeatmapTOFe, realCutHeatmapTOFe,
+                  "TimingTOFe", "TOFe", "chamber", "slat");
+
+      systematicsOutputFile << 
+         GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
+                        realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
+                        "TimingTOFe", "TOFe", "chamber", "slat") << std::endl;
+
    }
    else
    {
@@ -682,7 +712,27 @@ int main(int argc, char **argv)
       systematicsOutputFile << 
          CppTools::RMS(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
                                       realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                                      "TOFw", "TOFw", "chamber", "strip")) << std::endl;
+                                      "TOFw", "TOFw", "chamber", "strip")) << " ";
+
+      for (int i = 1; i <= realHeatmapTOFw->GetXaxis()->GetNbins(); i++)
+      {
+         for (int j = 1; j <= realHeatmapTOFw->GetYaxis()->GetNbins(); j++)
+         {
+            if (dmCutter.IsDeadTimingTOFw(i - 1, j - 1))
+            {
+               realCutHeatmapTOFw->SetBinContent(i, j, 0.);
+               simCutHeatmapTOFw->SetBinContent(i, j, 0.);
+            }
+         }
+      }
+
+      DrawDeadmap(realHeatmapTOFw, realCutHeatmapTOFw,
+                  "TimingTOFw", "TOFw", "chamber", "strip");
+
+      systematicsOutputFile << 
+         CppTools::RMS(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+                                      realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
+                                      "TimingTOFw", "TOFw", "chamber", "strip")) << std::endl;
    }
    else
    {
@@ -724,17 +774,19 @@ int main(int argc, char **argv)
             }
          }
 
-      DrawDeadmap(realHeatmapEMCale, realCutHeatmapEMCale,
-                  "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
-                  "#it{Y}_{tower}", "#it{Z}_{tower}");
+         DrawDeadmap(realHeatmapEMCale, realCutHeatmapEMCale,
+                     "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
+                     "#it{Y}_{tower}", "#it{Z}_{tower}");
 
          systematicsOutputFile << 
             GetUncertainty(realHeatmapEMCaleSys, simHeatmapEMCaleSys, 
                            realCutHeatmapEMCaleSys, simCutHeatmapEMCaleSys, 8,
                            "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
                            "#it{Y}_{tower}", "#it{Z}_{tower}");
+         if (i < 3) systematicsOutputFile << " ";
       }
       systematicsOutputFile << std::endl;
+
       for (int i = 0; i < 4; i++)
       {
          TH2F *realHeatmapEMCalw = static_cast<TH2F *>
