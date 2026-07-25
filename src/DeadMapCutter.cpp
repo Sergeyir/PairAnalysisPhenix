@@ -330,33 +330,21 @@ bool DeadMapCutter::IsDeadEMCal(const int dcarm, const int sector,
 
 bool DeadMapCutter::IsDeadTimingTOFe(const int chamber, const int slat)
 {
-   if (!useTOFe) return false;
-   if (chamber <= cutAreasTimingTOFeRange[0] || chamber >= cutAreasTimingTOFeRange[1] ||
-       slat <= cutAreasTimingTOFeRange[2] || slat >= cutAreasTimingTOFeRange[3]) return true;
+   if (!useTOFeTiming) return false;
+   if (chamber < cutAreasTimingTOFeRange[0] || chamber >= cutAreasTimingTOFeRange[1] ||
+       slat < cutAreasTimingTOFeRange[2] || slat >= cutAreasTimingTOFeRange[3]) return true;
 
-   const short yBin = static_cast<short>((slat - cutAreasTimingTOFeRange[2])/
-                                         (cutAreasTimingTOFeRange[3] - cutAreasTimingTOFeRange[2])*
-                                         static_cast<double>(cutAreasTimingTOFe.size()));
-   const short xBin = static_cast<short>((chamber - cutAreasTimingTOFeRange[0])/
-                                         (cutAreasTimingTOFeRange[1] - cutAreasTimingTOFeRange[0])*
-                                         static_cast<double>(cutAreasTimingTOFe[0].size()));
-   return cutAreasTimingTOFe[yBin][xBin];
+   return cutAreasTimingTOFe[slat][chamber];
 }
 
 bool DeadMapCutter::IsDeadTimingTOFw(const int chamber, const int strip)
 {
-   if (!useTOFw) return false;
+   if (!useTOFwTiming) return false;
 
-   if (chamber <= cutAreasTimingTOFwRange[0] || chamber >= cutAreasTimingTOFwRange[1] ||
-       strip <= cutAreasTimingTOFwRange[2] || strip >= cutAreasTimingTOFwRange[3]) return true;
+   if (chamber < cutAreasTimingTOFwRange[0] || chamber >= cutAreasTimingTOFwRange[1] ||
+       strip < cutAreasTimingTOFwRange[2] || strip >= cutAreasTimingTOFwRange[3]) return true;
 
-   const short yBin = static_cast<short>((strip - cutAreasTimingTOFwRange[2])/
-                                         (cutAreasTimingTOFwRange[3] - cutAreasTimingTOFwRange[2])*
-                                         static_cast<double>(cutAreasTimingTOFw.size()));
-   const short xBin = static_cast<short>((chamber - cutAreasTimingTOFwRange[0])/
-                                         (cutAreasTimingTOFwRange[1] - cutAreasTimingTOFwRange[0])*
-                                         static_cast<double>(cutAreasTimingTOFw[0].size()));
-   return cutAreasTimingTOFw[yBin][xBin];
+   return cutAreasTimingTOFw[strip][chamber];
 }
 
 bool DeadMapCutter::IsDeadTimingEMCal(const int dcarm, const int sector, 
