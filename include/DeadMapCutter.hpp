@@ -39,8 +39,16 @@ class DeadMapCutter
     *  -# EMCal
     *
     * Options example: "1101111" - this one uses all detectors apart from PC2
+    *
+    * @param[in] deadmapsDir directory containing deadmaps for all runs; 
+    * subdirectories of this directory must be the same as run parameter;
+    * deadmapsDir/runName/ contains all .txt files with fiducial heatmap map cuts
+    *
+    * @param[in] timingDeadmapsDir directory containing timing deadmaps for all runs
     */
-   DeadMapCutter(const std::string& detectorName, const std::string& options = "1111111");
+   DeadMapCutter(const std::string& runName, const std::string& options = "1111111",
+                 const std::string& deadmapsDir = "data/Parameters/Deadmaps",
+                 const std::string& timingDeadmapsDir = "data/Parameters/TimingDeadmaps");
    /*! @brief Initializes the object DeadMapCutter
     *
     * @param[in] runName name of the run
@@ -56,8 +64,16 @@ class DeadMapCutter
     *  -# EMCal
     *
     * Options example: "1101111" - this one uses all detectors apart from PC2
+    *
+    * @param[in] deadmapsDir directory containing deadmaps for all runs; 
+    * subdirectories of this directory must be the same as run parameter;
+    * deadmapsDir/runName/ contains all .txt files with fiducial heatmap map cuts
+    *
+    * @param[in] timingDeadmapsDir directory containing timing deadmaps for all runs
     */
-   void Initialize(const std::string& runName, const std::string& options = "1111111");
+   void Initialize(const std::string& runName, const std::string& options = "1111111",
+                   const std::string& deadmapsDir = "data/Parameters/Deadmaps",
+                   const std::string& timingDeadmapsDir = "data/Parameters/TimingDeadmaps");
 
    /// Returns true if data in DC is in bad/dead area
    bool IsDeadDC(const int dcarm, const double zDC, 
