@@ -90,10 +90,6 @@ void SimElossFit()
 
       ROOTTools::PrintCanvas(&canv, "output/ElossFit/Sim" + runName);
 
-      if (firstIteration)
-      {
-         void (system(("xdg-open output/ElossFit/Sim" + runName + ".png").c_str()));
-      }
       firstIteration = false;
    }
 
