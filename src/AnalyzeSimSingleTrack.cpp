@@ -183,9 +183,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
 
-            const double board = (dcarm == 0 ?
-               ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496 + boardOffsetDCe) :
-               ((0.573231 + phi - 0.0046 * cos(phi + 0.05721))/0.01963496 + boardOffsetDCw));
+            const double board = 
+               (dcarm == 0 ?
+                ((3.72402 - phi + 0.008047*cos(phi + 0.87851))/0.01963496 + boardOffsetDCe) :
+                ((0.573231 + phi - 0.0046 * cos(phi + 0.05721))/0.01963496 + boardOffsetDCw));
 
             // reweight for heatmaps
             double alphaReweight = 1.;
@@ -855,6 +856,9 @@ int main(int argc, char **argv)
    timeShiftEMCal = inputYAMLSim["time_shift_emcal"].as<double>();
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
+   dmCutterMC.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>(),
+                          "data/Parameters/SimDeadmaps");
+
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simM2Id.Initialize(runName, false);
 
@@ -1073,7 +1077,8 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             for (int j = 1; j <= realDataDCe0->GetYaxis()->GetNbins(); j++)
             {
                const double alpha = realDataDCe0->GetYaxis()->GetBinCenter(j);
-               if (dmCutter.IsDeadDC(1, 1., board, alpha))
+               if (dmCutter.IsDeadDC(1, 1., board, alpha) ||
+                   dmCutterMC.IsDeadDC(1, 1., board, alpha))
                {
                   realDataDCe0->SetBinContent(i, j, 0.);
                   simUnscaledDCe0->SetBinContent(i, j, 0.);
@@ -1086,7 +1091,8 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             for (int j = 1; j < realDataDCe1->GetYaxis()->GetNbins(); j++)
             {
                const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
-               if (dmCutter.IsDeadDC(1, -1., board, alpha))
+               if (dmCutter.IsDeadDC(1, -1., board, alpha) ||
+                   dmCutterMC.IsDeadDC(1, -1., board, alpha))
                {
                   realDataDCe1->SetBinContent(i, j, 0.);
                   simUnscaledDCe1->SetBinContent(i, j, 0.);
@@ -1099,7 +1105,8 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             for (int j = 1; j < realDataDCw0->GetYaxis()->GetNbins(); j++)
             {
                const double alpha = realDataDCe1->GetYaxis()->GetBinCenter(j);
-               if (dmCutter.IsDeadDC(0, 1., board, alpha))
+               if (dmCutter.IsDeadDC(0, 1., board, alpha) ||
+                   dmCutterMC.IsDeadDC(0, 1., board, alpha))
                {
                   realDataDCw0->SetBinContent(i, j, 0.);
                   simUnscaledDCw0->SetBinContent(i, j, 0.);
@@ -1112,7 +1119,8 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             for (int j = 1; j < realDataDCw1->GetYaxis()->GetNbins(); j++)
             {
                const double alpha = realDataDCw1->GetYaxis()->GetBinCenter(j);
-               if (dmCutter.IsDeadDC(0, -1., board, alpha))
+               if (dmCutter.IsDeadDC(0, -1., board, alpha) ||
+                   dmCutterMC.IsDeadDC(0, -1., board, alpha))
                {
                   realDataDCw1->SetBinContent(i, j, 0.);
                   simUnscaledDCw1->SetBinContent(i, j, 0.);
@@ -1133,11 +1141,6 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
             static_cast<TH1D *>(realDataDCw1->ProjectionY("Alpha reweight: DCw, zDC<0",
                                 1, realDataDCw1->GetXaxis()->GetNbins())->Clone());
 
-         //alphaReweightDCe0->Scale(simUnscaledDCe0->Integral()/alphaReweightDCe0->Integral());
-         //alphaReweightDCe1->Scale(simUnscaledDCe1->Integral()/alphaReweightDCe1->Integral());
-         //alphaReweightDCw0->Scale(simUnscaledDCw0->Integral()/alphaReweightDCw0->Integral());
-         //alphaReweightDCw1->Scale(simUnscaledDCw1->Integral()/alphaReweightDCw1->Integral());
-
          alphaReweightDCe0->Divide(simUnscaledDCe0->ProjectionY("DCe0 proj",
                                    1, simUnscaledDCe0->GetXaxis()->GetNbins()));
          alphaReweightDCe1->Divide(simUnscaledDCe1->ProjectionY("DCe1 proj",
@@ -1146,13 +1149,6 @@ void AnalyzeSimSingleTrack::SetAlphaReweight(const std::string& realDataInputFil
                                    1, simUnscaledDCw0->GetXaxis()->GetNbins()));
          alphaReweightDCw1->Divide(simUnscaledDCw1->ProjectionY("DCw1 proj",
                                    1, simUnscaledDCw1->GetXaxis()->GetNbins()));
-
-         /*
-         const double averageAlphaDCe0 = alphaReweightDCe0->GetMean(2);
-         const double averageAlphaDCe1 = alphaReweightDCe1->GetMean(2);
-         const double averageAlphaDCw0 = alphaReweightDCw0->GetMean(2);
-         const double averageAlphaDCw1 = alphaReweightDCw1->GetMean(2);
-         */
 
          double averageAlphaDCe0 = 0.;
          double averageAlphaDCe1 = 0.;
@@ -1368,48 +1364,34 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
       {
          for (int i = 1; i <= reweightPC1ePos->GetXaxis()->GetNbins(); i++)
          {
+            const double x = reweightPC1ePos->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j <= reweightPC1ePos->GetYaxis()->GetNbins(); j++)
             {
-               if (dmCutter.IsDeadPC1(0, reweightPC1ePos->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1ePos->GetYaxis()->GetBinCenter(j)))
+               const double y = reweightPC1ePos->GetYaxis()->GetBinCenter(j);
+
+               if (dmCutter.IsDeadPC1(0, x, y) || dmCutterMC.IsDeadPC1(0, x, y))
                {
                   reweightPC1ePos->SetBinContent(i, j, 0.);
-                  simPC1ePos->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-         for (int i = 1; i <= reweightPC1eNeg->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1eNeg->GetYaxis()->GetNbins(); j++)
-            {
-               if (dmCutter.IsDeadPC1(0, reweightPC1eNeg->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1eNeg->GetYaxis()->GetBinCenter(j)))
-               {
                   reweightPC1eNeg->SetBinContent(i, j, 0.);
+
+                  simPC1ePos->SetBinContent(i, j, 0.);
                   simPC1eNeg->SetBinContent(i, j, 0.);
                }
             }
          }
+
          for (int i = 1; i <= reweightPC1wPos->GetXaxis()->GetNbins(); i++)
          {
+            const double x = reweightPC1wPos->GetXaxis()->GetBinCenter(i);
             for (int j = 1; j <= reweightPC1wPos->GetYaxis()->GetNbins(); j++)
             {
-               if (dmCutter.IsDeadPC1(1, reweightPC1wPos->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1wPos->GetYaxis()->GetBinCenter(j)))
+               const double y = reweightPC1wPos->GetYaxis()->GetBinCenter(j);
+               if (dmCutter.IsDeadPC1(1, x, y) || dmCutterMC.IsDeadPC1(1, x, y))
                {
                   reweightPC1wPos->SetBinContent(i, j, 0.);
-                  simPC1wPos->SetBinContent(i, j, 0.);
-               }
-            }
-         }
-         for (int i = 1; i <= reweightPC1wNeg->GetXaxis()->GetNbins(); i++)
-         {
-            for (int j = 1; j <= reweightPC1wNeg->GetYaxis()->GetNbins(); j++)
-            {
-               if (dmCutter.IsDeadPC1(1, reweightPC1wNeg->GetXaxis()->GetBinCenter(i),
-                                      reweightPC1wNeg->GetYaxis()->GetBinCenter(j)))
-               {
                   reweightPC1wNeg->SetBinContent(i, j, 0.);
+
+                  simPC1wPos->SetBinContent(i, j, 0.);
                   simPC1wNeg->SetBinContent(i, j, 0.);
                }
             }
@@ -1443,13 +1425,15 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
             {
                if (simPC1ePos->GetBinContent(i, j) > 1e-15)
                {
-                  // 1e3 is needed to avoid extreme reweights in case the areas in data 
+                  // 10 is needed to avoid extreme reweights in case the areas in data 
                   // is very different compared to the simulation. 
                   // These cases should be avoided by introducing appropriate 
                   // dead map cuts to such areas
+                  // however low statistic regions that are not bad areas can introduce
+                  // extreme re-weights. The average re-weight should be ~1
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1ePos->GetBinContent(i, j)/
-                                       simPC1ePos->GetBinContent(i, j), 1e3);
+                                       simPC1ePos->GetBinContent(i, j), 10.);
 
                   if (reweightPC1ePos->GetXaxis()->GetBinCenter(i) < 0.)
                   {
@@ -1477,7 +1461,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1eNeg->GetBinContent(i, j)/
-                                       simPC1eNeg->GetBinContent(i, j), 1e3);
+                                       simPC1eNeg->GetBinContent(i, j), 10.);
 
                   if (reweightPC1eNeg->GetXaxis()->GetBinCenter(i) < 0.)
                   {
@@ -1503,7 +1487,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wPos->GetBinContent(i, j)/
-                                       simPC1wPos->GetBinContent(i, j), 1e3);
+                                       simPC1wPos->GetBinContent(i, j), 10.);
 
                   if (reweightPC1wPos->GetXaxis()->GetBinCenter(i) < 0.)
                   {
@@ -1529,7 +1513,7 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
                {
                   const double reweightValue = 
                      CppTools::Minimum(reweightPC1wNeg->GetBinContent(i, j)/
-                                       simPC1wNeg->GetBinContent(i, j), 1e3);
+                                       simPC1wNeg->GetBinContent(i, j), 10.);
 
                   if (reweightPC1wNeg->GetXaxis()->GetBinCenter(i) < 0.)
                   {
@@ -1571,6 +1555,11 @@ void AnalyzeSimSingleTrack::SetPC1Reweight(const std::string& realDataInputFileN
       else if (doReweightPC1)
       {
          CppTools::PrintInfo("PC1 reweight is now disabled due to insonsistent histogram axis");
+      }
+
+      for (unsigned int i = 0; i < reweightPC1Simple.size(); i++)
+      {
+         reweightPC1Simple[i] = 1.;
       }
    }
    else
