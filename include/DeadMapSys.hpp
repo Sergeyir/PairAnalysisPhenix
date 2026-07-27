@@ -9,7 +9,7 @@
 #ifndef DEAD_MAP_SYS_HPP
 #define DEAD_MAP_SYS_HPP
 
-#include <thread>
+#include <array>
 
 #include "TError.h"
 #include "TFile.h"
@@ -55,6 +55,8 @@ namespace DeadMapSys
    CppTools::Table table{4};
    /// Cutter for bad/dead areas of heatmaps
    DeadMapCutter dmCutter;
+   /// Additional cutter for bad/dead areas of heatmaps for MC
+   DeadMapCutter dmCutterMC;
    /*! @brief Draws deadmpaps before and after the application of fiducial cuts
     *
     * @param[in] heatmap heatmap without fiducial cuts to be drawn
