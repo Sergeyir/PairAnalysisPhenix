@@ -1,6 +1,6 @@
 /** 
  *  @file   SplitSimTree.hpp
- *  @brief  Contains declarations of functions and variables that are used for splitting one TFile with simulated tree into TFile containing TTree with smaller pT range. This is useful when more statistics is needed on the given pT range while the simulated Tree pT range is wider.
+ *  @brief  Contains declarations of functions and variables that are used for splitting one TFile with simulated tree into TFile containing TTree with smaller pT range and/or (if specified) number of events.
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysisPhenix).
  *
@@ -20,6 +20,7 @@
 
 #include "IOTools.hpp"
 #include "StrTools.hpp"
+#include "MathTools.hpp"
 
 #include "SimTreeReader.hpp"
 
@@ -39,6 +40,8 @@ namespace SplitSimTree
    double pTMax;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
+   /// number of processed events
+   unsigned long numberOfProcessedEvents = 0;
    /// parameter for monitoring the progress
    unsigned long numberOfCalls = 0;
 

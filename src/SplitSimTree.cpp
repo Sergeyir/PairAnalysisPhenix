@@ -18,11 +18,11 @@ using namespace SplitSimTree;
 
 int main(int argc, char **argv)
 {
-   if (argc != 4) 
+   if (argc < 4 || argc > 5) 
    {
-      std::string errMsg = "Expected 3 parameters while " + std::to_string(argc - 1) + " ";
+      std::string errMsg = "Expected 3-4 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/SplitSimTree ";
-      errMsg += "treeFileName.root pTMin pTMax";
+      errMsg += "treeFileName.root pTMin pTMax numberOfEvents=all";
       CppTools::PrintError(errMsg);
    }
  
@@ -36,6 +36,7 @@ int main(int argc, char **argv)
    TFile *inputFile = TFile::Open(argv[1]);
 
    numberOfEvents = ((static_cast<TTree *>(inputFile->Get("Tree"))->GetEntries()));
+   if (argc >= 5) numberOfEvents = CppTools::Minimum(std::stoul(argv[4]), numberOfEvents);
 
    ProgressBar pBar{"BLOCK"};
 
@@ -48,7 +49,7 @@ int main(int argc, char **argv)
    TFile outputFile(outputFileName.c_str(), "RECREATE");
    outputFile.SetCompressionLevel(6);
 
-   while (reader.Next())
+   while (reader.Next() && numberOfProcessedEvents < numberOfEvents)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/
                  static_cast<double>(numberOfEvents));
@@ -57,6 +58,8 @@ int main(int argc, char **argv)
       const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + pow(simCNT.mom_orig(1), 2));
 
       if (origPT < pTMin || origPT > pTMax) continue;
+
+      numberOfProcessedEvents++;
 
       int nch = simCNT.nch();
 
