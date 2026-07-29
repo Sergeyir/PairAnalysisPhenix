@@ -1,0 +1,7 @@
+There is a need for MC predicions of various distributions for fiducial, $E_{\text{loss}}$, and $E_{\text{core}}$ cuts, as well as MC sigmalized residuals calibrations. 
+Therefore for each dataset 75 million single particle events were generated using PHENIX exodus. 
+For each hadron ($\pi^\pm$, $K^\pm$, $p$, and $\bar{p}$) there were generated 12.5 million events, with 10 and 2.5 million events generated uniformly within $0.3<p_T<4$ GeV/$c$ and $4.0<p_T<10$ GeV/$c$ respectively. 
+PHENIX pisa and pisaToDST were used to handle the particle interactions with detectors and track reconstruction respectively.
+The uniform $p_T$ of original generated particles was re-weighted to match the measured spectra of charged hadrons (\href{https://arxiv.org/abs/2312.09827}{PPG249}). 
+
+$\alpha$ distribution was re-weighted after the application of fiducial cuts on DC to match the real data. MC DC and PC1 heatmaps were obtained only after applying $\alpha$ re-weights in MC. After that PC1 $dz_{\text{PC1}}-d\varphi_{\text{PC1}}$ distribution was re-weighted to match the real data. After the application of PC1 re-weight in MC heatmaps for other detectors were obtained. All re-weights mentioned in this paragraph were recalculated after the application of additional fiducial heatmaps in MC (Sec. \ref{sec:additional_fiducial_cuts}).

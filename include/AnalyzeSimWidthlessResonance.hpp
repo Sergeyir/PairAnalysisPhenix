@@ -111,7 +111,7 @@ namespace AnalyzeSimWidthlessResonance
                             100, 0., 10., 100, 0., 10.};
       /// NoPID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
-                                                 200, 0., 20., 10000, 0., 10.};
+                                                 100, 0., 10., 10000, 0., 10.};
    };
    /* @brief Processes the single configuration (for the given particle, 
     * magnetic field, and pT range) from one file

@@ -22,22 +22,24 @@ sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + si
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
   - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
-  - {value: 1.00, min: 0.9, max: 1.1} # 0
-  - {value: 1.25, min: 1.1, max: 1.4} # 1
-  - {value: 1.55, min: 1.4, max: 1.7} # 2
-  - {value: 1.80, min: 1.7, max: 1.9} # 3
-  - {value: 2.00, min: 1.9, max: 2.1} # 4
-  - {value: 2.20, min: 2.1, max: 2.3} # 5
-  - {value: 2.45, min: 2.3, max: 2.6} # 6
-  - {value: 2.75, min: 2.6, max: 2.9} # 7
-  - {value: 3.15, min: 2.9, max: 3.4} # 8
-  - {value: 3.70, min: 3.4, max: 4.0} # 9
-  - {value: 4.25, min: 4.0, max: 4.5} # 10
-  - {value: 4.75, min: 4.5, max: 5.0} # 11
-  - {value: 5.75, min: 5.0, max: 6.5} # 12
-  - {value: 7.50, min: 6.5, max: 8.5} # 13
+  - {value: 0.6, min: 0.5, max: 0.7} # 0
+  - {value: 0.8, min: 0.7, max: 0.9} # 1
+  - {value: 1.00, min: 0.9, max: 1.1} # 2
+  - {value: 1.25, min: 1.1, max: 1.4} # 3
+  - {value: 1.55, min: 1.4, max: 1.7} # 4
+  - {value: 1.80, min: 1.7, max: 1.9} # 5
+  - {value: 2.00, min: 1.9, max: 2.1} # 6
+  - {value: 2.20, min: 2.1, max: 2.3} # 7
+  - {value: 2.45, min: 2.3, max: 2.6} # 8
+  - {value: 2.75, min: 2.6, max: 2.9} # 9
+  - {value: 3.15, min: 2.9, max: 3.4} # 10
+  - {value: 3.70, min: 3.4, max: 4.0} # 11
+  - {value: 4.25, min: 4.0, max: 4.5} # 12
+  - {value: 4.75, min: 4.5, max: 5.0} # 13
+  - {value: 5.75, min: 5.0, max: 6.5} # 14
+  - {value: 7.50, min: 6.5, max: 8.5} # 15
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
-#  - name: '0.4-0.9'
+  - name: '0.4-0.9'
   - name: '0.9-2.0'
   - name: '2.0-5.0'
   - name: '5.0-12.0'
