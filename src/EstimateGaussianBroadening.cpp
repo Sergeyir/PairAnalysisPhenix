@@ -99,7 +99,7 @@ int main(int argc, char **argv)
    gPad->SetBottomMargin(0.112);
 
    ROOTTools::DrawFrame(pTMin, 0., pTMax, TMath::MaxElement(grSigmas.GetN(), grSigmas.GetY())*1.2,
-                        "", "#it{p}_{T} [GeV/c]", "#it{#sigma} [GeV/c^{2}]", 1., 1.8);
+                        "", "#it{p}_{T} [GeV/#it{c}]", "#it{#sigma} [GeV/#it{c}^{2}]", 1., 1.8);
 
    fitSigmas.Draw("SAME");
    grSigmas.Clone()->Draw("P");
@@ -121,6 +121,8 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
 {
    TH1D *distrMInv = distr2DMInv->ProjectionY("proj", pTBinMin, pTBinMax);
 
+   if (distrMInv->GetEntries() < 100.) return;
+
    // fit for resonance+bg approximation
    TF1 fit("resonance + bg fit", "gaus(0) + gaus(3)");
    // fit for resonance approximation
@@ -140,7 +142,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
    fit.SetParLimits(5, 5e-2, 1.);
 
    fit.SetRange(massResonance - 1e-2, massResonance + 1e-2);
-   distrMInv->Fit(&fit, "RQMNBL");
+   distrMInv->Fit(&fit, "RQMNB");
 
    for (unsigned int j = 1; j <= fitNTries; j++)
    {
@@ -148,15 +150,17 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
                        fit.GetParameter(1) + 1e-2/static_cast<double>(j*j*j));
       fit.SetParLimits(2, fit.GetParameter(2)/(1. + 2./static_cast<double>(j*j*j)),
                        fit.GetParameter(2)*(1. + 2./static_cast<double>(j*j*j)));
+      /*
       fit.SetParLimits(4, fit.GetParameter(4)/(1. + 2./static_cast<double>(j*j*j)),
                        fit.GetParameter(4)*(1. + 2./static_cast<double>(j*j*j)));
       fit.SetParLimits(5, fit.GetParameter(2)*5.,
                        fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j*j)));
+                       */
 
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
 
-      distrMInv->Fit(&fit, "RQMNBL");
+      distrMInv->Fit(&fit, "RQMNB");
       if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
    }
 
@@ -203,7 +207,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
    const double pTMin = distr2DMInv->GetXaxis()->GetBinLowEdge(pTBinMin);
    const double pTMax = distr2DMInv->GetXaxis()->GetBinUpEdge(pTBinMax);
 
-   ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/c^{2}]", "Weighted counts");
+   ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", "Weighted counts");
 
    texText.DrawLatexNDC(0.17, 0.9, (CppTools::DtoStr(pTMin, 1) + " < #it{p}_{T} < " + 
                         CppTools::DtoStr(pTMax, 1)).c_str());
@@ -216,7 +220,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
                           CppTools::DtoStr(pTMin, 1) + "-" + CppTools::DtoStr(pTMax, 1));
 
    grSigmas.AddPoint(CppTools::Average(pTMin, pTMax), fit.GetParameter(2));
-   grSigmas.SetPointError(grSigmas.GetN() - 1, 0., fit.GetParError(2));
+   grSigmas.SetPointError(grSigmas.GetN() - 1, 0., 0.0001 + fit.GetParError(2));
 }
 
 #endif /* ESTIMATE_ESTIMATE_GAUSSIAN_BROADENING_CPP */
