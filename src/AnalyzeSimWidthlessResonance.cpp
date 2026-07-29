@@ -242,17 +242,23 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
                }
             }
 
-            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && 
-                idEMCal == PART_ID::JUNK && 
-                idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
-
             switch (charge)
             {
                case 1:
                   positiveTracks.emplace_back(daughter1Mass, simCNT, i);
+                  positiveTracks.back().idPC2 = idPC2;
+                  positiveTracks.back().idPC3 = idPC3;
+                  positiveTracks.back().idEMCal = idEMCal;
+                  positiveTracks.back().idTOFe = idTOFe;
+                  positiveTracks.back().idTOFw = idTOFw;
                   break;
                case -1:
                   negativeTracks.emplace_back(daughter2Mass, simCNT, i);
+                  negativeTracks.back().idPC2 = idPC2;
+                  negativeTracks.back().idPC3 = idPC3;
+                  negativeTracks.back().idEMCal = idEMCal;
+                  negativeTracks.back().idTOFe = idTOFe;
+                  negativeTracks.back().idTOFw = idTOFw;
                   break;
             }
          }
@@ -261,8 +267,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
          {
             for (const auto& negTrack : negativeTracks)
             {
-               if (IsOneArmCut(posTrack, negTrack) || IsGhostCut(posTrack, negTrack) ||
-                   !IsNoPID(posTrack, negTrack)) continue;
+               if (IsOneArmCut(posTrack, negTrack) || IsGhostCut(posTrack, negTrack)) continue;
 
                const double mInv = GetPairMass(posTrack, negTrack);
                const double pT = GetPairPT(posTrack, negTrack);
@@ -401,7 +406,8 @@ int main(int argc, char **argv)
    box.AddEntry("pT ranges", pTRangesList);
    box.AddEntry("Charged track minimum pT [GeV/c]", pTMin);
    box.AddEntry("Charged track maximum pT [GeV/c]", pTMax);
-   box.AddEntry("Reweight for pT spectra", reweightForSpectra);
+   box.AddEntry("Re-weight for pT spectra", 
+                std::string(reweightForSpectra ? "user defined" : "default (exp)"));
    box.AddEntry("Number of threads", numberOfThreads);
    box.AddEntry("Number of events to be analyzed, 1e6", static_cast<double>(numberOfEvents)/1e6, 3);
    box.Print();
