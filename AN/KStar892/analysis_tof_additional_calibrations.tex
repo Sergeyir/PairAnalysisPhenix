@@ -1,3 +1,5 @@
+\subsubsection{Individual TOFe slat and TOFw strip offset and exclusion}
+
 For each slat in TOFe and strip in TOFw the difference between observed and expected time-of-flight of charged pions $t - t_{exp}^{\pi^\pm}$ distributions were investigated. 
 These distributions were obtained for charged tracks that passed all fiducial cuts on DC-PC1, TOFe/TOFw, PC3, and EMCal (Sec. \ref{sec:fiducial_cuts}), TOFw ADC cut (Sec. \ref{sec:tofw_adc_cut}) or TOFe eloss (Sec. \ref{sec:tofe_eloss_cut}) cut, and matching cuts ($|sdz| < 3$ and $|sd\varphi| < 3$) in PC3 and EMCal, which allows to obtain clean time of flight distributions - similar setup was used for charged hadron analyses (for example \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814} for TOFw, \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/dlario/Charged_Hadrons_HeAu/AN1447_charged_hadrons_in_HeAu.pdf}{AN1447} for TOFe).
 
@@ -10,26 +12,26 @@ Additionally it was found that for a few slats in TOFe and for $~10\%$ strips in
 
 \begin{figure}[h!]
 	\centering
-   \begin{subfigure}{0.45\textwidth}
+   \begin{subfigure}{0.24\textwidth}
       \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_6_5.pdf}
       \subcaption{}
    \end{subfigure}
    \hfill
-   \begin{subfigure}{0.45\textwidth}
+   \begin{subfigure}{0.24\textwidth}
       \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_36_9.pdf}
       \subcaption{}
    \end{subfigure}
-   \begin{subfigure}{0.45\textwidth}
+   \begin{subfigure}{0.24\textwidth}
       \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_4.pdf}
       \subcaption{}
    \end{subfigure}
    \hfill
-   \begin{subfigure}{0.45\textwidth}
+   \begin{subfigure}{0.24\textwidth}
       \includegraphics[width=\textwidth]{TimingDeadmaps/Run14HeAu200/TOFe/fit_24_9.pdf}
       \subcaption{}
    \end{subfigure}
    \caption[Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions in different TOFe slats in Run14 \HeAu MB]
-   {Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions for different TOFe slats. 
+   {Examples of good and bad $t - t_{exp}^{\pi^\pm}$ distributions for different TOFe slats in Run14 \HeAu. 
    (a) - Good distribution (clean $\pi^\pm$ signal), 
    (b) - Bad distribution (2 significant signals are present), 
    (c) - Bad distribution (strong background presence), 
@@ -38,3 +40,55 @@ Additionally it was found that for a few slats in TOFe and for $~10\%$ strips in
 \end{figure}
 
 After introducing timing offsets for each individual strip/slat, $t - t_{exp}^{\pi^\pm}$ distributions were checked for possible run-by-run offsets, but found to be consistent across all runs.
+
+\subsubsection{TOFw slewing correction}
+
+The slewing correction procedure for TOFw is the same as in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/peng/AN/pAupid/pAuPID.pdf}{AN1282}.
+Since there exists the minimal level of trigger, signals with lower amplitude are triggered with delay, which introduces the dependency of time-of-flight from the amplitude.
+One way to account for this is to shift the signal of charged pions in $t - t_{exp}^{\pi^\pm}$ distribution for different $q_{\text{TOFw}}$, so that the means of charged pions signals are at 0 for every $q_{\text{TOFw}}$ value.
+For this the distribution of $t - t_{exp}^{\pi^\pm}$ vs $q_{\text{TOFw}}$ was plotted and for each $q_{\text{TOFw}}$ slice the $t - t_{exp}^{\pi^\pm}$ distribution was approximated with 2 gauses - one for the signal and one for the background.
+From the approximation means for different $q_{\text{TOFw}}$ were obtanied and fitted with the function of the form (\href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/peng/AN/pAupid/pAuPID.pdf}{AN1282}):
+
+\begin{equation}
+   t_{\text{slewing}} = p_0 + p_1/q_{\text{TOFw}}^{0.4}
+\end{equation}
+
+The correction is then applied by subtraction $t_{\text{slewing}}$ value from the time-of-flight for teh corresponding $q_{\text{TOFw}}$.
+$t_{\text{slewing}}$ for different datasets are shown on Fig. \ref{fig:tofw_slewing_fit}. 
+Parameters $p_0$ and $p_1$ for $t_{\text{slewing}}$ are presented in Table \ref{table:tofw_slewing_par}.
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{SlewingTOFw/Run14HeAu200/distr_with_fit.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{SlewingTOFw/Run15pAl200/distr_with_fit.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{SlewingTOFw/Run15pAl200/distr_with_fit.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[$t - t_{exp}^{\pi^\pm}$ vs $q_{\text{TOFw}}$ distribution and $t_{\text{slewing}}$ fit]
+   {$t - t_{exp}^{\pi^\pm}$ vs $q_{\text{TOFw}}$ distribution and $t_{\text{slewing}}$ fit (red dashed line) for Run14 \HeAu (a), Run15 \pAl (b), and Run15 \pAu (c)}
+   \label{fig:tofw_slewing_fit}
+\end{figure}
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c}
+      & $p_0$ & $p_1$ \\
+      \hline
+      \hline
+      Run14 \HeAu & -0.133259 & 1.14994 \\
+      \hline
+      Run15 \pAl & -1.10954 & 9.20361 \\
+      \hline
+      Run15 \pAu & ?? & ?? \\
+	\end{tabular}
+   \caption{TOFw slewing correction parameters}
+	\label{table:tofw_slewing_par}
+\end{table}
