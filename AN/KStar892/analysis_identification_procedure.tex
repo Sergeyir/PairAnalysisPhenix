@@ -1,0 +1,44 @@
+The identificaion procedure of charged hadrons allows to significantly decrease the background on low $p_T$ for the analysis of pair of charged tracks. The $m^2$ is obtained as follows
+
+\begin{equation}
+	m^2 = \frac{p^2}{c^2} \left[ \left( \frac{\tau}{L/c} \right)^2 - 1 \right]
+\end{equation}
+
+Where $p$ is a reconstructed momentum of the particle, $c$ - speed of light in a vacuum, $\tau$ - time of flight of a particle, and $L$ - flight path from the collision vertex to the track projection onto the detector (TOFe, TOFw) plane.
+
+The $m^2$ vs $p_T$ distributions for positive and negative tracks were obtained and for each $p_T$ slice $0.1$ GeV/$c$ in width the $m^2$ distribution for each charge was approximated with 3 functions (gauss + 1st order polynomial for background) for each charged hadron - $pi^\pm$, $K^\pm$, $p$ and $\bar{p}$. From these approximations means and sigmas of gausses for different \pT were obtained. Means were individually approximated with 1st order polynomials, while sigmas were simultaneously approximated with the following function:
+
+\begin{equation}
+   \sigma^2_{\mu_{m^2}m^2} = \frac{\sigma_{\alpha}^2}{K_1^2} \left(4\mu_{m^2}^4 p^2 \right) + \frac{\sigma_{ms}^2}{K_1^2} \left[4\mu_{m^2}^4 \left( 1+\frac{\mu_{m^2}^2}{p^2} \right) \right] + \frac{\sigma_t^2 c^2}{L^2} \left( 4p^2(\mu_{m^2}^2+p^2) \right)
+\end{equation}
+
+Where
+\begin{itemize}
+   \item $\mu_{m^2}$ is the mean value of gauss for the given particle specie,
+   \item $K_1$ is the field integral (the value of 104 mrad$\cdot$GeV was taken as in Run8 $d$+Au \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun8.pdf}{AN814} since magnetic configuration is the same),
+   \item $L$ is the distance from the collision vertex to the detector - 495cm for TOFw (\href{http://arxiv.org/abs/1304.3410}{PPG146}), 520cm for TOFe (\href{http://arxiv.org/abs/nucl-ex/0307022}{PPG026}), 
+	\item $\sigma_{\alpha}$ is the angular resolution,
+	\item $\sigma_{ms}$ is a multiple scattering term,
+	\item $\sigma_t$ is an overall detector resolution.
+\end{itemize}
+
+Approximations of $\mu_{m^2}$ and $\sigma_{m^2}$ are shown on Fig. \ref{fig:identification_parameters_fit_run14heau}-\ref{fig:identification_parameters_fit_run15pau}. 
+Free approximation parameters $\sigma_{\alpha}$, $\sigma_{ms}$, and $\sigma_t$ are listed in Table \ref{table:identification_parameters}.
+
+\begin{table}[h!]
+	\centering
+	\begin{tabular}{c||c|c|c|c|c|c|c|c|c|}
+      \multirow{2}{*}{Detector} & \multicolumn{3}{|c|}{Run14 \HeAu} & \multicolumn{3}{|c|}{Run15 \pAl} & \multicolumn{3}{|c|}{Run15 \pAu} \\
+      \cline{2-10} & $\sigma_{\alpha}$ & $\sigma_{ms}$ & $\sigma_t$ & $\sigma_{\alpha}$ & $\sigma_{ms}$ & $\sigma_t$ & $\sigma_{\alpha}$ & $\sigma_{ms}$ & $\sigma_t$ \\
+      \hline
+      \hline
+      TOFe & & & & & & & & & \\
+      \hline
+      TOFw & & & & & & & & & \\
+	\end{tabular}
+   \caption{$\sigma_{m^2}$ parametrization parameters}
+	\label{table:identification_parameters}
+\end{table}
+
+The particle is then identified as a given specie if its $m^2$ lies within $2\sigma_{m^2}$ from $2\sigma_{m^2}$ and outside $2\sigma_{m^2}'$ from $2\sigma_{m^2}'$, where prime denotes parameters for other particle species. 
+The identification of charged hadrons (i.e. identification cuts) are shown on Fig. \ref{fig:identification_cuts_run14heau}-\ref{fig:identification_cuts_run15pau}.

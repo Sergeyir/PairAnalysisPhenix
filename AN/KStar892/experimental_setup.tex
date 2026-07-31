@@ -14,10 +14,10 @@ In this analysis we denote 0th and 1st sector of PbGl as EMCale0 and EMCale1 res
 
 TOFe and TOFw consist of 960 slats (10 rows of 96) and 512 strips (8 rows of 64) respectively. For effective acceptance analysis these units were reorganized to match their geometric configuration: 
 \begin{equation}
-\text{chamber}_{\text{TOFe}} = \text{slat}_{\text{cnt}}/96 + 1, \ \text{slat}_{\text{TOFe}} = \text{slat}_{\text{cnt}} \ \% \ 96 + 1
+   \text{Z}_{\text{slat}} = \text{slat}_{\text{cnt}}/96 + 1, \ \text{Y}_{\text{slat}} = \text{slat}_{\text{cnt}} \ \% \ 96 + 1
 \end{equation}
 \begin{equation}
-\text{chamber}_{\text{TOFw}} = \text{strip}_{\text{cnt}}/64, + 1 \ \text{strip}_{\text{TOFw}} = \text{strip}_{\text{cnt}} \ \% \ 64 + 1
+\text{Z}_{\text{stirp}} = \text{strip}_{\text{cnt}}/64, + 1 \ \text{Y}_{\text{strip}} = \text{strip}_{\text{cnt}} \ \% \ 64 + 1
 \end{equation}
 
 Where $\%$ denotes the remainder of division, $\text{slat}_{\text{cnt}}$ and $\text{strip}_{\text{cnt}}$ - values of slat and strip returned by PHCentralTrack methods PHCentralTrack::get\_slat(const int) and PHCentralTrack::get\_striptofw(const int) respectively.

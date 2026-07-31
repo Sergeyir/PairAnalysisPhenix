@@ -12,6 +12,7 @@
 \usepackage{indentfirst}
 \usepackage[top=4cm, bottom=3.5cm, left=3cm, right=3cm]{geometry}
 \usepackage{lineno}
+\usepackage{multirow}
 
 \input{defs.tex}
 
@@ -32,6 +33,11 @@
 \makeatletter
      \renewcommand*\l@figure{\@dottedtocline{1}{1em}{3.2em}}
 \makeatother
+
+% for many images in appendix to speed up compilation while in development
+\newcommand{\isdraft}{true}
+% for final version
+%\newcommand{\isdraft}{false}
 
 %\linenumbers
 
