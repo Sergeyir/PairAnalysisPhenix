@@ -458,8 +458,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    fitParVsPTCanv.cd(1);
    gPad->SetPad(0.04, 0.51, 0.52, 1.);
 
-   gPad->SetLeftMargin(0.155);
-   gPad->SetBottomMargin(0.11);
+   gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+   gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1,
                         "", "#it{p}_{T} [GeV/#it{c}]", 
@@ -481,8 +481,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    fitParVsPTCanv.cd(2);
    gPad->SetPad(0.52, 0.51, 1., 1.);
 
-   gPad->SetLeftMargin(0.155);
-   gPad->SetBottomMargin(0.11);
+   gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+   gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitP.sigmasVsPTFit->Eval(pTMax)*1.3, 
                         "", "#it{p}_{T} [GeV/#it{c}]", 
@@ -500,8 +500,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    fitParVsPTCanv.cd(3);
    gPad->SetPad(0.04, 0.02, 0.52, 0.51);
 
-   gPad->SetLeftMargin(0.155);
-   gPad->SetBottomMargin(0.11);
+   gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+   gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, -0.1, pTMax + 0.05, 1.1, 
                         "", "#it{p}_{T} [GeV/#it{c}]", 
@@ -523,8 +523,8 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
    fitParVsPTCanv.cd(4);
    gPad->SetPad(0.52, 0.02, 1., 0.51);
 
-   gPad->SetLeftMargin(0.155);
-   gPad->SetBottomMargin(0.11);
+   gPad->SetRightMargin(0.025); gPad->SetTopMargin(0.015);
+   gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.11);
 
    ROOTTools::DrawFrame(pTMin - 0.05, 0., pTMax + 0.05, fitPBar.sigmasVsPTFit->Eval(pTMax)*1.3, 
                         "", "#it{p}_{T} [GeV/#it{c}]", 
@@ -627,7 +627,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
 
    gPad->SetLogz();
 
-   gPad->SetRightMargin(0.02); gPad->SetTopMargin(0.02);
+   gPad->SetRightMargin(0.11); gPad->SetTopMargin(0.02);
    gPad->SetLeftMargin(0.125); gPad->SetBottomMargin(0.115);
 
    ROOTTools::DrawFrame(-msPTMax, CppTools::Maximum(m2ProfileNeg->GetYaxis()->GetBinLowEdge(1), 
@@ -635,7 +635,7 @@ void M2IdentFit::PerformFitsForDetector(const YAML::Node& detector)
                         msPTMax, 1.4, "", "#it{p}_{T} #times charge [GeV/#it{c}]", 
                         "#it{m}^{2} [GeV/#it{c}^{2})^{2}]", 0.95, 1.2);
 
-   m2Profile.Draw("COL SAME");
+   m2Profile.Draw("COLZ SAME");
 
    fitPiPlus.extractionRangeLowVsPT.Draw("L");
    fitKPlus.extractionRangeLowVsPT.Draw("L");
