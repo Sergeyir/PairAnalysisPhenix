@@ -14,14 +14,12 @@ void RunByRunTimingOffset()
    std::cout << ">> ";
    std::cin >> inputDir;
    */
-   const std::string inputDir = "data/Real/Run15pp200/SingleTrack";
+   const std::string inputDir = "data/Real/Run14HeAu200/SingleTrack";
 
 
-   std::array<std::string, 1> detectorNames = {/*"EMCale0", "EMCale1", "EMCale2", "EMCale3",
-                                                "EMCalw0", "EMCalw1", "EMCalw2", "EMCalw3",
-                                                "TOFe", */"TOFw"};
+   std::array<std::string, 1> detectorNames = {"TOFw", /*"TOFw"*/};
 
-   TH1D distrT("t", "", 1000, 0., 1000.);
+   TH1D distrT("t", "", 417, 0., 417.);
 
    int i = 1;
    for (const auto &file : std::filesystem::directory_iterator(inputDir))
