@@ -11,6 +11,7 @@
    gSystem->Load("lib/libBox.so");
    gSystem->Load("lib/libTable.so");
 
+   gSystem->Load("lib/libHistTools.so");
    gSystem->Load("lib/libTCanvasTools.so");
    gSystem->Load("lib/libGUIDistrCutter2D.so");
    gSystem->Load("lib/libGUIFit.so");
