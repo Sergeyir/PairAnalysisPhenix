@@ -7,6 +7,8 @@
 #include "HistTools.hpp"
 #include "TCanvasTools.hpp"
 
+#include "PBar.hpp"
+
 void SlewingCorrectionTOFw()
 {
    gROOT->SetBatch(kTRUE);
@@ -46,8 +48,13 @@ void SlewingCorrectionTOFw()
    double minY = 1e31;
    double maxY = -1e31;
 
-   for (int i = 1; i <= distr->GetXaxis()->GetNbins(); i++)
+   ProgressBar pBar("FANCY");
+
+   const int xNBins = distr->GetXaxis()->GetNbins();
+   for (int i = 1; i <= xNBins; i++)
    {
+      pBar.Print(static_cast<double>(i - 1)/static_cast<double>(xNBins));
+
       TH1D *distrProj = distr->ProjectionY(std::to_string(i).c_str(), i, i);
 
       TF1 fit("fit", "gaus(0) + gaus(3)");
@@ -129,6 +136,8 @@ void SlewingCorrectionTOFw()
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + std::to_string(i));
    }
 
+   pBar.Finish();
+
    if (minY < 0) minY *= 1.1;
    else minY /= 1.1;
 
@@ -192,9 +201,12 @@ void SlewingCorrectionTOFw()
                         1.0, 1.0, 0.04, 0.04, true, true, "COLZ");
 
    fitMeans.SetLineColor(kRed - 3);
+   fitMeans.SetLineWidth(4);
    fitMeans.Draw("SAME");
 
    ROOTTools::PrintCanvas(&canv, outputDir + "/distr_with_fit");
+
+   CppTools::Print("Fit parameters:", fitMeans.GetParameter(0), fitMeans.GetParameter(1));
 
    exit(1);
 }
