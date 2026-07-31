@@ -168,18 +168,18 @@ void TimingDM()
 
          if (detectorName == "TOFe")
          {
-            distrTime->SetTitle(("chamber " + std::to_string(j) + 
-                                 ", strip " + std::to_string(i)).c_str());
+            distrTime->SetTitle(("#it{Z}_{strip}=" + std::to_string(i + 1) + 
+                                 ", #it{Y}_{strip}= " + std::to_string(j + 1)).c_str());
          }
          else if (detectorName == "TOFw")
          {
-            distrTime->SetTitle(("chamber " + std::to_string(j) + 
-                                 ", slat " + std::to_string(i)).c_str());
+            distrTime->SetTitle(("#it{Z}_{slat}=" + std::to_string(i + 1) + 
+                                 ", #it{Y}_{slat}= " + std::to_string(j + 1)).c_str());
          }
          else
          {
-            distrTime->SetTitle(("Y tower " + std::to_string(j) + 
-                                 ", Z tower " + std::to_string(i)).c_str());
+            distrTime->SetTitle(("#it{Z}_{tower}=" + std::to_string(i + 1) + 
+                                 ", #it{Y}_{tower}= " + std::to_string(j + 1)).c_str());
          }
 
          const double fullIntegral = distrTime->Integral(1, distrTime->GetXaxis()->GetNbins());
@@ -203,50 +203,62 @@ void TimingDM()
          }
 
          // approximation of t-t_exp for pi+
-         TF1 fitFG("fg fit", "gaus(0) + gaus(3) + [6]");
+         TF1 fit("fg fit", "gaus(0) + gaus(3) + [6]");
+         TF1 fitFG("fg fit", "gaus(0)");
          TF1 fitBG("bg fit", "gaus(0) + [3]");
 
-         fitBG.SetLineColor(kBlue);
+         fit.SetLineColor(kRed - 3);
+
+         fitFG.SetLineColor(kGreen - 3);
+         fitFG.SetLineStyle(2);
+
+         fitBG.SetLineColor(kAzure - 3);
          fitBG.SetLineStyle(2);
 
          // usually the time is distributed by gausses of pions, kaons, and protons
          // by taking maximum value we extract the value close to the center of pions signal
          const int maximumBin = distrTime->GetMaximumBin();
 
-         fitFG.SetParameters(distrTime->GetBinContent(maximumBin), 
-                             distrTime->GetXaxis()->GetBinCenter(maximumBin), 
-                             distrTime->GetXaxis()->GetBinWidth(1)*2., 
-                             distrTime->GetBinContent(maximumBin + 10),
-                             distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 6),
-                             distrTime->GetXaxis()->GetBinWidth(1)*5.);
+         fit.SetParameters(distrTime->GetBinContent(maximumBin), 
+                           distrTime->GetXaxis()->GetBinCenter(maximumBin), 
+                           distrTime->GetXaxis()->GetBinWidth(1)*2., 
+                           distrTime->GetBinContent(maximumBin + 10),
+                           distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 6),
+                           distrTime->GetXaxis()->GetBinWidth(1)*5.);
 
-         fitFG.SetParLimits(0, distrTime->GetBinContent(maximumBin)/3., 
-                            distrTime->GetBinContent(maximumBin));
-         fitFG.SetParLimits(1, distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 1), 
-                            distrTime->GetXaxis()->GetBinUpEdge(maximumBin));
-         fitFG.SetParLimits(3, distrTime->GetBinContent(maximumBin + 10)/2., 
-                            distrTime->GetBinContent(maximumBin)/2.);
-         fitFG.SetParLimits(4, distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 2),
-                            distrTime->GetXaxis()->GetBinCenter(maximumBin + 10));
+         fit.SetParLimits(0, distrTime->GetBinContent(maximumBin)/3., 
+                          distrTime->GetBinContent(maximumBin));
+         fit.SetParLimits(1, distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 1), 
+                          distrTime->GetXaxis()->GetBinUpEdge(maximumBin));
+         fit.SetParLimits(3, distrTime->GetBinContent(maximumBin + 10)/2., 
+                          distrTime->GetBinContent(maximumBin)/2.);
+         fit.SetParLimits(4, distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 2),
+                          distrTime->GetXaxis()->GetBinCenter(maximumBin + 10));
 
+         fit.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
+                      distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
          fitFG.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
                         distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
          fitBG.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
                         distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
 
-         distrTime->Fit(&fitFG, "RQMBN");
-         meanTimeHist.SetBinContent(j, i, fitFG.GetParameter(1));
-         sigmaTimeHist.SetBinContent(j, i, fabs(fitFG.GetParameter(2)));
+         distrTime->Fit(&fit, "RQMBN");
+         meanTimeHist.SetBinContent(j, i, fit.GetParameter(1));
+         sigmaTimeHist.SetBinContent(j, i, fabs(fit.GetParameter(2)));
 
+         for (int k = 0; k < fitFG.GetNpar(); k++)
+         {
+            fitFG.SetParameter(k, fit.GetParameter(k));
+         }
          for (int k = 0; k < fitBG.GetNpar(); k++)
          {
-            fitBG.SetParameter(k, fitFG.GetParameter(k + 3));
+            fitBG.SetParameter(k, fit.GetParameter(k + 3));
          }
 
          double integralFG = 0.;
          for (int k = maximumBin - 5; k <= maximumBin + 5; k++)
          {
-            integralFG += fitFG.Eval(distrTime->GetXaxis()->GetBinCenter(k)) - 
+            integralFG += fit.Eval(distrTime->GetXaxis()->GetBinCenter(k)) - 
                           fitBG.Eval(distrTime->GetXaxis()->GetBinCenter(k)); 
          }
 
@@ -262,6 +274,7 @@ void TimingDM()
          ROOTTools::DrawFrame(distrTime, distrTime->GetTitle(), 
                               "t - t_{exp}^{#pi^{#pm}} [ns]", "Counts", 1., 1.9);
 
+         fit.Draw("SAME");
          fitFG.Draw("SAME");
          fitBG.Draw("SAME");
          
