@@ -168,18 +168,18 @@ void TimingDM()
 
          if (detectorName == "TOFe")
          {
-            distrTime->SetTitle(("#it{Z}_{strip}=" + std::to_string(i + 1) + 
-                                 ", #it{Y}_{strip}= " + std::to_string(j + 1)).c_str());
+            distrTime->SetTitle(("#it{Y}_{strip}=" + std::to_string(j) + 
+                                 ", #it{Z}_{strip}= " + std::to_string(i)).c_str());
          }
          else if (detectorName == "TOFw")
          {
-            distrTime->SetTitle(("#it{Z}_{slat}=" + std::to_string(i + 1) + 
-                                 ", #it{Y}_{slat}= " + std::to_string(j + 1)).c_str());
+            distrTime->SetTitle(("#it{Y}_{slat}=" + std::to_string(j) + 
+                                 ", #it{Z}_{slat}= " + std::to_string(i)).c_str());
          }
          else
          {
-            distrTime->SetTitle(("#it{Z}_{tower}=" + std::to_string(i + 1) + 
-                                 ", #it{Y}_{tower}= " + std::to_string(j + 1)).c_str());
+            distrTime->SetTitle(("#it{Z}_{tower}=" + std::to_string(i) + 
+                                 ", #it{Y}_{tower}= " + std::to_string(j)).c_str());
          }
 
          const double fullIntegral = distrTime->Integral(1, distrTime->GetXaxis()->GetNbins());
@@ -203,9 +203,9 @@ void TimingDM()
          }
 
          // approximation of t-t_exp for pi+
-         TF1 fit("fg fit", "gaus(0) + gaus(3) + [6]");
+         TF1 fit("fg fit", "gaus(0) + gaus(3)");
          TF1 fitFG("fg fit", "gaus(0)");
-         TF1 fitBG("bg fit", "gaus(0) + [3]");
+         TF1 fitBG("bg fit", "gaus(0)");
 
          fit.SetLineColor(kRed - 3);
 
@@ -234,6 +234,7 @@ void TimingDM()
                           distrTime->GetBinContent(maximumBin)/2.);
          fit.SetParLimits(4, distrTime->GetXaxis()->GetBinLowEdge(maximumBin + 2),
                           distrTime->GetXaxis()->GetBinCenter(maximumBin + 10));
+         fit.SetParLimits(5, 0., 10.);
 
          fit.SetRange(distrTime->GetXaxis()->GetBinLowEdge(maximumBin - 10), 
                       distrTime->GetXaxis()->GetBinUpEdge(maximumBin + 10));
@@ -296,10 +297,11 @@ void TimingDM()
       }
    }
 
+   pBar.Finish();
+
    CppTools::PrintInfo("There were " + std::to_string(numberOfBinsWithLowStat) + 
                        " bins with low statistics");
 
-   pBar.Clear();
    CppTools::PrintInfo("Preparing heatmaps: done");
 
    gROOT->SetBatch(kFALSE);
