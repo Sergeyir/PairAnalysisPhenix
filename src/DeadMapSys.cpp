@@ -431,15 +431,21 @@ int main(int argc, char **argv)
       DrawDeadmap(realHeatmapDCw1, realCutHeatmapDCw1,
                   "DCw1", "DC west, #it{z}_{DC}<0", "board", "#it{#alpha}");
 
-      GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
-                     "DCe0", "DC east, #it{z}_{DC}#geq0", "board", "#it{#alpha}", 3, 1, false);
-      GetUncertainty(realHeatmapDCe1, simHeatmapDCe1, realCutHeatmapDCe1, simCutHeatmapDCe1, 10,
-                     "DCe1", "DC east, #it{z}_{DC}<0", "board", "#it{#alpha}", 3, 1, false);
-      GetUncertainty(realHeatmapDCw0, simHeatmapDCw0, realCutHeatmapDCw0, simCutHeatmapDCw0, 10,
-                     "DCw0", "DC west, #it{z}_{DC}#geq0", "board", "#it{#alpha}", 3, 1, false);
-      GetUncertainty(realHeatmapDCw1, simHeatmapDCw1, realCutHeatmapDCw1, simCutHeatmapDCw1, 10,
-                     "DCw1", "DC west, #it{z}_{DC}<0", "board", "#it{#alpha}", 3, 1, false);
+      systematicsOutputFile << 
+         GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
+                        "DCe0", "DC east, #it{z}_{DC}#geq0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCe1, simHeatmapDCe1, realCutHeatmapDCe1, simCutHeatmapDCe1, 10,
+                        "DCe1", "DC east, #it{z}_{DC}<0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCw0, simHeatmapDCw0, realCutHeatmapDCw0, simCutHeatmapDCw0, 10,
+                        "DCw0", "DC west, #it{z}_{DC}#geq0", 
+                        "board", "#it{#alpha}", 3, 1, false) << " " <<
+         GetUncertainty(realHeatmapDCw1, simHeatmapDCw1, realCutHeatmapDCw1, simCutHeatmapDCw1, 10,
+                        "DCw1", "DC west, #it{z}_{DC}<0", "board", "#it{#alpha}", 3, 1, false) <<
+         std::endl;
 
+      /* unused and not needed for now
       // setting uncut heatmaps to be the heatmaps after fiducial cuts on real data
       // before starting additional fiducial cuts on MC
       simHeatmapDCe0 = static_cast<TH2F *>(simCutHeatmapDCe0->Clone());
@@ -522,6 +528,7 @@ int main(int argc, char **argv)
                                                  1, realHeatmapDCw1->GetYaxis()->GetNbins())/
                        realCutHeatmapDCw1->Integral(1, realHeatmapDCw1->GetXaxis()->GetNbins(),
                                                     1, realHeatmapDCw1->GetYaxis()->GetNbins());
+      */
    }
    else
    {
@@ -780,6 +787,8 @@ int main(int argc, char **argv)
 
       realHeatmapPC3e = static_cast<TH2F *>(realCutHeatmapPC3e->Clone());
       realHeatmapPC3w = static_cast<TH2F *>(realCutHeatmapPC3w->Clone());
+      simHeatmapPC3e = static_cast<TH2F *>(simCutHeatmapPC3e->Clone());
+      simHeatmapPC3w = static_cast<TH2F *>(simCutHeatmapPC3w->Clone());
 
       for (int i = 1; i <= realHeatmapPC3e->GetXaxis()->GetNbins(); i++)
       {
@@ -888,18 +897,18 @@ int main(int argc, char **argv)
       }
 
       DrawDeadmap(realHeatmapTOFe, realCutHeatmapTOFe,
-                  "TOFe", "TOFe", "chamber", "slat");
+                  "TOFe", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
       DrawDeadmap(simCutHeatmapTOFe, simMCCutHeatmapTOFe,
-                  "TOFe_MC", "TOFe", "chamber", "slat");
+                  "TOFe_MC", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
 
       GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
                      realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
-                     "TOFe", "TOFe", "chamber", "slat");
+                     "TOFe", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
 
       systematicsOutputFile << 
          GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
                         realMCCutHeatmapTOFeSys, simMCCutHeatmapTOFeSys, 5,
-                        "TOFe_MC", "TOFe", "chamber", "slat") << " ";
+                        "TOFe_MC", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}") << " ";
 
       reweightTOFe = 
          realCutHeatmapTOFeSys->Integral(1, realHeatmapTOFe->GetXaxis()->GetNbins(),
@@ -931,18 +940,18 @@ int main(int argc, char **argv)
       }
 
       DrawDeadmap(realCutHeatmapTOFe, realCutHeatmapTOFe,
-                  "TimingTOFe", "TOFe", "chamber", "slat");
+                  "TimingTOFe", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
       DrawDeadmap(simCutHeatmapTOFe, simMCCutHeatmapTOFe,
-                  "TimingTOFe_MC", "TOFe", "chamber", "slat");
+                  "TimingTOFe_MC", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
 
       GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
                      realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
-                     "TimingTOFe", "TOFe", "chamber", "slat");
+                     "TimingTOFe", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}");
 
       systematicsOutputFile << 
          GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
                         realMCCutHeatmapTOFeSys, simMCCutHeatmapTOFeSys, 5,
-                        "TimingTOFe_MC", "TOFe", "chamber", "slat") << std::endl;
+                        "TimingTOFe_MC", "TOFe", "#it{Z}_{slat}", "#it{Y}_{slat}") << std::endl;
 
       reweightTimingTOFe = 
          realCutHeatmapTOFeSys->Integral(1, realHeatmapTOFe->GetXaxis()->GetNbins(),
@@ -988,16 +997,16 @@ int main(int argc, char **argv)
          }
       }
 
-      DrawDeadmap(realHeatmapTOFw, realCutHeatmapTOFw, "TOFw", "TOFw", "chamber", "strip");
-      DrawDeadmap(simCutHeatmapTOFw, simMCCutHeatmapTOFw, "TOFw_MC", "TOFw", "chamber", "strip");
+      DrawDeadmap(realHeatmapTOFw, realCutHeatmapTOFw, "TOFw", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
+      DrawDeadmap(simCutHeatmapTOFw, simMCCutHeatmapTOFw, "TOFw_MC", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
 
       GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                     "TOFw", "TOFw", "chamber", "strip");
+                     "TOFw", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
 
       systematicsOutputFile << 
          GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
                         realMCCutHeatmapTOFw, simMCCutHeatmapTOFw, 4,
-                        "TOFw_MC", "TOFw", "chamber", "strip") << " ";
+                        "TOFw_MC", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}") << " ";
 
       reweightTOFw = 
          realCutHeatmapTOFw->Integral(1, realHeatmapTOFw->GetXaxis()->GetNbins(),
@@ -1025,16 +1034,16 @@ int main(int argc, char **argv)
          }
       }
 
-      DrawDeadmap(realHeatmapTOFw, realCutHeatmapTOFw, "TimingTOFw", "TOFw", "chamber", "strip");
+      DrawDeadmap(realHeatmapTOFw, realCutHeatmapTOFw, "TimingTOFw", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
       DrawDeadmap(simCutHeatmapTOFw, simMCCutHeatmapTOFw, 
-                  "TimingTOFw_MC", "TOFw", "chamber", "strip");
+                  "TimingTOFw_MC", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
 
      GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                    "TimingTOFw", "TOFw", "chamber", "strip");
+                    "TimingTOFw", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}");
       systematicsOutputFile << 
         GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
                        realMCCutHeatmapTOFw, simMCCutHeatmapTOFw, 4,
-                       "TimingTOFw_MC", "TOFw", "chamber", "strip") << std::endl;
+                       "TimingTOFw_MC", "TOFw", "#it{Z}_{strip}", "#it{Y}_{strip}") << std::endl;
 
       reweightTimingTOFw = 
          realCutHeatmapTOFw->Integral(1, realHeatmapTOFw->GetXaxis()->GetNbins(),
