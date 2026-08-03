@@ -3,7 +3,6 @@
 status: m2id # required field for checking the file application
 run_name: Run15pAl200 # required field for searching for main.yaml
 means_vs_pt_fit_func: "pol1(0)"
-sigmas_vs_pt_fit_func: "sqrt(pow([2]/[5], 2)*(4.*pow(pol1(0)*x, 2)) + pow([3]/[5], 2)*(4.*pow(pol1(0), 2)*(1+pol1(0)/pow(x, 2))) + pow([4]*2.9972e-4/[6], 2)*(4.*pow(x, 2)*(pol1(0) + pow(x, 2))))"
 sigmas_vs_pt_fit_func: "sqrt([2]*[2]/([5]*[5])*4.*pol1(0)*pol1(0)*x*x + \
                              [3]*[3]/([5]*[5])*4.*pol1(0)*pol1(0)*(1. + pol1(0)/(x*x)) + \
                              [4]*[4]*2.9972e-4*2.9972e-4/([6]*[6])*4.*x*x*(pol1(0) + x*x))"
@@ -44,16 +43,16 @@ detectors:
   L: 4.95
   sigma_alpha: 0.9
   sigma_ms: 1.0
-  sigma_t: 220. 
+  sigma_t: 145. 
   pion_bg_func: "exp(pol1(0))"
   kaon_bg_func: "exp(pol1(0))"
   proton_bg_func: "exp(([0] + exp([1] + [2]*x)))"
-  pi+_pt_bounds: [0.3, 1.5]
-  k+_pt_bounds: [0.3, 1.3]
-  p_pt_bounds: [0.6, 1.4]
-  pi-_pt_bounds: [0.3, 2.0]
-  k-_pt_bounds: [0.3, 1.4]
-  pbar_pt_bounds: [0.4, 2.0]
+  pi+_pt_bounds: [0.3, 2.2]
+  k+_pt_bounds: [0.3, 1.5]
+  p_pt_bounds: [0.6, 1.5]
+  pi-_pt_bounds: [0.3, 2.5]
+  k-_pt_bounds: [0.3, 1.9]
+  pbar_pt_bounds: [0.4, 2.2]
   is_calibrated: true
   use_m2_mean_par: true
   rewrite_parameters: false

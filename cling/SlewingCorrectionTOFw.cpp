@@ -91,16 +91,16 @@ void SlewingCorrectionTOFw()
       distrProj->Fit(&fit, "RQMNB");
 
 
-      fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*5., 
+      fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*20., 
                    fit.GetParameter(1) + fit.GetParameter(2)*5.);
 
       distrProj->Fit(&fit, "RQMNB");
 
-      fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*5., 
+      fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*20., 
                    fit.GetParameter(1) + fit.GetParameter(2)*5.);
-      fitFG.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*5., 
+      fitFG.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*20., 
                      fit.GetParameter(1) + fit.GetParameter(2)*5.);
-      fitBG.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*5., 
+      fitBG.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*20., 
                      fit.GetParameter(1) + fit.GetParameter(2)*5.);
 
       distrProj->Fit(&fit, "RQMNB");
@@ -156,9 +156,9 @@ void SlewingCorrectionTOFw()
    grMeans.SetMarkerColorAlpha(kRed, 0.9);
    grSigmas.SetMarkerColorAlpha(kRed, 0.9);
 
-   TF1 fitMeans("means vs adc fit", "[0] + ([1]/x^0.4)");
+   TF1 fitMeans("means vs adc fit", "[0] + [1]/x^0.4");
 
-   fitMeans.SetRange(60., 600.);
+   fitMeans.SetRange(100., 600.);
    fitMeans.SetLineStyle(2);
    fitMeans.SetLineWidth(3);
    fitMeans.SetLineColor(kGray + 3);
@@ -167,7 +167,7 @@ void SlewingCorrectionTOFw()
 
    TCanvas canv("par canv", "", 800, 800);
 
-   gPad->SetRightMargin(0.01); gPad->SetTopMargin(0.02); 
+   gPad->SetRightMargin(0.04); gPad->SetTopMargin(0.02); 
    gPad->SetLeftMargin(0.17); gPad->SetBottomMargin(0.112);
 
    ROOTTools::DrawFrame(60, minY, 600, maxY, "", "q_{TOFw}",
@@ -180,7 +180,7 @@ void SlewingCorrectionTOFw()
 
    canv.Clear();
 
-   gPad->SetRightMargin(0.01); gPad->SetTopMargin(0.02); 
+   gPad->SetRightMargin(0.04); gPad->SetTopMargin(0.02); 
    gPad->SetLeftMargin(0.17); gPad->SetBottomMargin(0.112);
 
    ROOTTools::DrawFrame(60, 0., 600, 0.3, "", "q_{TOFw}", 
@@ -200,6 +200,7 @@ void SlewingCorrectionTOFw()
    ROOTTools::DrawFrame(distr, "", "q_{TOFw}", "t - t_{exp}^{#pi^{#pm}} [ns]", 
                         1.0, 1.0, 0.04, 0.04, true, true, "COLZ");
 
+   fitMeans.SetRange(60., 600.);
    fitMeans.SetLineColor(kRed - 3);
    fitMeans.SetLineWidth(4);
    fitMeans.Draw("SAME");
