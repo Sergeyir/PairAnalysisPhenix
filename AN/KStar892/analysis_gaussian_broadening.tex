@@ -1,0 +1,49 @@
+The PHENIX detector system has finite energy and momentum resolution.
+The limit in the resolution leads to the broadening of the signals that are usually described very well by the gaussian approximation.
+This gaussian broadening can be estimated by performing MC of \Kstar with $\Gamma=0$ to prevent the width of a resonance interfering with the measurement.
+For this analysis 10 million $K^{*0}(892) \rightarrow pi^\pm K^\mp$ events were generated for each dataset distributed uniformly within $0 < \varphi < 2\pi$, $\lvert \eta \rvert < 0.5$, and $\lvert z_{\text{VTX}} \rvert < 30$ from which 3, 3, 2, and 2 millions were generated uniformly within $0.4 < p_T < 0.9$, $0.9 < p_T < 2$, $2 < p_T < 5$, and $5 < p_T < 12$ GeV/$c$.
+At first events were weighed to match $e^{-p_T}$ distribution, and after the estimation of invariant $p_T$ spectra events were weighted to match the obtained spectra.
+
+Invariant mass distributions were obtained for DC-PC1 tracks for different $p_T$ from which the signals of \Kstar were approximated with 2 gausses - one for the signal of \Kstar and the other for background.
+An example of such approximation is shown in Fig. \ref{fig:widthless_approximation_example}.
+From these approximations widths of signals for different $p_T$ were obtained. 
+These width vs $p_T$ distributions were approximated with 2nd order polynomial. Results are shown on Fig. \ref{fig:gaussian_broadening}. 
+These approximatinos were used to estimate the gaussian broadening in real data for different $p_T$ bins.
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_1.0-1.2.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_1.0-1.2.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_1.0-1.2.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Examples of gaussian fit of $\Gamma = 0$ \Kstar in MC]{Examples of gaussian fit of $\Gamma = 0$ \Kstar in MC within $1 < p_T < 1.2$ GeV for Run14 \HeAu (a), Run15 \pAl (b), Run15 \pAu (c)}
+	\label{fig:widthless_approximation_example}
+\end{figure}
+
+\begin{figure}[h!]
+	\centering
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_sigmas.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \hfill
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_sigmas.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \begin{subfigure}{0.32\textwidth}
+      \includegraphics[width=\textwidth]{GaussianBroadening/Run14HeAu200/KStar892_sigmas.pdf}
+      \subcaption{}
+   \end{subfigure}
+   \caption[Gaussian broadening estimations of $\Gamma = 0$ \Kstar in MC]{Gaussian broadening estimations of $\Gamma = 0$ \Kstar in MC for different $p_T$ bins (red markers) and their approximations (dashed black line) for Run14 \HeAu (a), Run15 \pAl (b), Run15 \pAu (c)}
+	\label{fig:widthless_approximation_example}
+\end{figure}
