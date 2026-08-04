@@ -37,6 +37,9 @@ void SimElossFit()
    CppTools::Print("Setting fit function \"" + fitFunc + "\"");
    TF1 fit("E_{loss} fit", fitFunc.c_str());
 
+   const std::string outputDir = "output/ElossFit";
+   std::filesystem::create_directories(outputDir);
+
    bool firstIteration = true;
 
    while (true)
@@ -58,7 +61,6 @@ void SimElossFit()
          else
          {
             distr->Fit(&fit, "QMN");
-            std::filesystem::create_directories("output/ElossFit/");
          }
       }
       else
@@ -88,7 +90,7 @@ void SimElossFit()
 
       fit.Draw("SAME");
 
-      ROOTTools::PrintCanvas(&canv, "output/ElossFit/Sim" + runName);
+      ROOTTools::PrintCanvas(&canv, outputDir + "/Sim" + runName);
 
       firstIteration = false;
    }
