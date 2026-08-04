@@ -39,6 +39,9 @@ void ElossFit()
 
    bool firstIteration = true;
 
+   const std::string outputDir = "output/ElossFit";
+   std::filesystem::create_directories(outputDir);
+
    while (true)
    {
       if (firstIteration)
@@ -58,7 +61,6 @@ void ElossFit()
          else
          {
             distr->Fit(&fit, "QMN");
-            std::filesystem::create_directories("output/ElossFit/");
          }
       }
       else
@@ -88,11 +90,11 @@ void ElossFit()
 
       fit.Draw("SAME");
 
-      ROOTTools::PrintCanvas(&canv, "output/ElossFit/" + runName);
+      ROOTTools::PrintCanvas(&canv, outputDir + "/" + runName);
 
       if (firstIteration)
       {
-         void (system(("xdg-open output/ElossFit/" + runName + ".png").c_str()));
+         void (system(("xdg-open " + outputDir + "/" + runName + ".png").c_str()));
       }
       firstIteration = false;
    }
