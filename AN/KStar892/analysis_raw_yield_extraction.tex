@@ -1,0 +1,25 @@
+The analysis of experimental data was handled by CabanaBoy. 
+Pool depth of 30 was used for combinatorial background invariant mass ($M_{\text{inv}}$) distribution (BG). 
+The data was divided into 30 bins (3 vertex and 10 centrality). 
+The tail (10\% of statistics from the right edge of the distribution) of foreground $M_{\text{inv}}$ distribution (FG) has very low non-combinatorial contamination therefore for each centrality, vertex, and $p_T$ bin the BG was scaled so that it's tail integral matches the tail integral of FG.
+Additional re-scaling factor of 0.95 for BG was introduced to avoid overestimation of BG scaling due to presence of low non-combinatorial contamination and in some cases insufficient statistics.
+BG was then subtracted from the FG and obtained distributions were merged for all vertex bins and for some centrality bins according to centrality measurement ranges.
+
+Obtained $M_{\text{inv}}$ distributions for different centrailty and $p_T$ ranges were approximated with the sum of background function and convolution of gauss and Relativistic Breit-Wigner (RBW) function.
+For background function 3rd order polynomial was used for \nopid and 2nd order polynomial was used for \twopid and \onepid.
+The convolution with gauss is needed to account for gaussian broadening $\sigma_{\text{gb}}$ of \kstar signal (Sec. \ref{sec:analysis_gaussian_broadening}).
+RBW is presented below.
+
+\begin{equation}
+\text{RBW}(M_{\text{inv}}) = \frac{A}{2\pi} \frac{M_{\text{inv}} M_{\text{mean}} \Gamma}{\left( M_{\text{inv}}^2 - M_{\text{mean}}^2 \right)^2 + M_{\text{mean}}^2 \Gamma^2}
+\end{equation}
+
+Where $A$ - scale parameter, $M_{\text{mean}}$ and $\Gamma$ - mean and width of \kstar RBW respectively. 
+For each approximation $M_{\text{mean}}$ was limited within 5\% of PDG value (891.66 GeV/$c^2$), $\Gamma$ was limited within 10\% of PDG value (50.8 GeV/$c^2$), width of gauss was limited within 10 \% of $\sigma_{\text{gb}}$.
+Approximations were performed for every statisticaly significant signal of \kstar in different centrality and $p_T$ bins for each dataset. 
+All approximations are presented on Fig. \ref{fig:minv}.
+
+To ensure the validity of BG subtraction and approximation of \kstar signal FG/BG ratio were investigated. 
+An example is shown on Fig. \ref{fig:minv_summary_example}. 
+FG/BG ratios must approach 1 from above at high $M_{\text{inv}}$, and no statisticaly significant points below 1 should be present on FG/BG distribution. 
+Signal of \kstar must be visible on FG/BG distribution (since \kstar signal is non-combinatorial) and background fit for \kstar signal, when divided by BG, must have a reasonable form in FG/BG.

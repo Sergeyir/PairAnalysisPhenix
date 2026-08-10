@@ -1,0 +1,15 @@
+There are over 20 pair selection methods that were tested for suitability for this analysis but only 3 were chosen. 
+The selection was based off persistence of statistical significance of \kstar signal over the wide $p_T$ range. 
+Pair selection methods for this analysis comprise of a charged tracks that passed DC and PC1 cuts and additional cuts that are described below:
+
+\begin{itemize}
+   \item \textbf{TOF2PID}: Both tracks must pass cuts in TOFe or TOFw (matching, fiducial cuts, cuts on individual slats/strips with poor timing) and detector specific cuts ($E_{\text{loss}}$ cut for TOFe, ADC cut for TOFw) while one track must be identified as $\pi^\pm$ while the other is $K^\mp$ in TOFe or TOFw. This method provides the best signal to background ratio on low $p_T$.
+   \label{term:tof2pid}
+   \item \textbf{1K1TOF1PID}: At least one track must pass cuts in TOFe or TOFw (matching, fiducial cuts, cuts on individual slats/strips with poor timing) and detector specific cuts ($E_{\text{loss}}$ cut for TOFe, ADC cut for TOFw) and be identified as $K^\pm$ in TOFe or TOFw. 
+   The other track must pass cuts (matching, fiducial) and detector specific cuts ($E_{\text{loss}}$ cut for TOFe, ADC cut for TOFw, $E_{\text{core}}$ cut for EMCal) in at least one of the following detectors: PC2 (for Run15 \pAl and Run15 \pAu), PC3, TOFe, TOFw, EMCal.
+   This method provides the best signal to background ratio on mid $p_T$.
+   \label{term:1k1tof1pid}
+   \item \textbf{NoPID} Both tracks must pass cuts (matching, fiducial) and detector specific cuts ($E_{\text{loss}}$ cut for TOFe, ADC cut for TOFw, $E_{\text{core}}$ cut for EMCal) in at least one of the following detectors: PC2 (for Run15 \pAl and Run15 \pAu), PC3, TOFe, TOFw, EMCal.
+   This method provides the best signal to background ratio on high $p_T$.
+   \label{term:nopid}
+\end{itemize}

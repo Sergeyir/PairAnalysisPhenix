@@ -1,7 +1,8 @@
 Due to GEANT limitations to simulate the high-electric fields in materials MC generation is not accurate. 
 To circumvent this ADC and efficiency correction was introduced. Efficiency correction value of 0.909 was taken from \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814}. 
-The ADC cut correction was estimated as the ratio of the data lost in TOFw by applying ADC cut ($60 < q_{\text{TOFw}} < 600$) to the full amount of data in TOFw in real data.
-The products of TOFw efficiency $\varepsilon_{\text{eff}}^{\text{TOFw}}$ and ADC cut correction $\varepsilon_{\text{ADC}}^{\text{TOFw}}$ (0.842) were used to re-weight TOFw in MC. Results are shown in Table \ref{table:tofw_adc_corr}.
+The ADC cut correction was estimated as the ratio of the data lost in TOFw by applying ADC cut ($100 < q_{\text{TOFw}} < 600$) to the full amount of data in TOFw in real data. 
+The lower bound of 100 (instead of 60 as in \href{https://phenix-intra.sdcc.bnl.gov/phenix/WWW/p/draft/belmonrj/AnalysisNotes/ananoterun7.pdf}{AN814}) was taken due to worse time-of-flight resolution in $q_{\text{TOFw}} < 100$ region compared to the rest.
+The products of TOFw efficiency $\varepsilon_{\text{eff}}^{\text{TOFw}}$ and ADC cut correction $\varepsilon_{\text{ADC}}^{\text{TOFw}}$ were used to re-weight TOFw in MC. Results are shown in Table \ref{table:tofw_adc_corr}.
 
 \begin{table}[h!]
 	\centering
@@ -9,9 +10,9 @@ The products of TOFw efficiency $\varepsilon_{\text{eff}}^{\text{TOFw}}$ and ADC
 		 & Run14 \HeAu & Run15 \pAl & Run15 \pAu \\
 		\hline
 		\hline
-      $\varepsilon_{\text{ADC}}^{\text{TOFw}}$ & 0.926 & 0.929 & 0.915 \\
+      $\varepsilon_{\text{ADC}}^{\text{TOFw}}$ & 0.754 & 0.751 & 0.734 \\
 		\hline
-      $\varepsilon_{\text{ADC}}^{\text{TOFw}}\cdot\varepsilon_{\text{eff}}^{\text{TOFw}}$ & 0.780 \% & 0.782 \% & 0.770 \% \\
+      $\varepsilon_{\text{ADC}}^{\text{TOFw}}\cdot\varepsilon_{\text{eff}}^{\text{TOFw}}$ & 0.635 \% & 0.633 \% & 0.619 \% \\
 	\end{tabular}
    \caption{TOFw $\varepsilon_{\text{ADC}}^{\text{TOFw}}$ and $\varepsilon_{\text{ADC}}^{\text{TOFw}}\cdot\varepsilon_{\text{eff}}^{\text{TOFw}}$ values}
 	\label{table:tofw_adc_corr}
