@@ -27,8 +27,8 @@ void TOFwADC()
 
    const double cutADCIntegral = 
       distrTOFwADC->Integral(1, distrTOFwADC->GetXaxis()->GetNbins(),
-                             distrTOFwADC->GetYaxis()->FindBin(61.), 
-                             distrTOFwADC->GetYaxis()->FindBin(599));
+                             distrTOFwADC->GetYaxis()->FindBin(100.5), 
+                             distrTOFwADC->GetYaxis()->FindBin(599.5));
 
    CppTools::PrintInfo("TOFw ADC correction for simulation is:");
    CppTools::Print(cutADCIntegral/fullIntegral);
