@@ -28,6 +28,7 @@
 
 #include "Constants.hpp"
 #include "SingleTrackFunc.hpp"
+#include "PairTrackFunc.hpp"
 #include "SimTreeReader.hpp"
 #include "DeadMapCutter.hpp"
 #include "SimSigmalizedResiduals.hpp"
@@ -391,6 +392,10 @@ namespace AnalyzeSimSingleTrack
       std::array<std::shared_ptr<TH2F>, 4> distrM2EMCalwPosCharge;
       /// EMCalw(0-3) m2 distributions for negative tracks
       std::array<std::shared_ptr<TH2F>, 4> distrM2EMCalwNegCharge;
+      /// NoPID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInvNoPID;
+      /// NoPID invariant mass distribution without ghost cuts on detectors
+      std::shared_ptr<TH2F> distrMInvNoPIDNoGhost;
    };
    /* @struct ThrContainer
     * @brief Container for storing ROOT::TThreadedObject variables 
@@ -1087,6 +1092,12 @@ namespace AnalyzeSimSingleTrack
          ROOT::TThreadedObject<TH2F>("m2, EMCalw3, charge<0", "p_{T} vs m^{2}", 
                                      250, -0.5, 2.0, 100, 0., 10.)
       };
+      /// NoPID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInvNoPID{"M_inv: NoPID", "M_{inv} vs p_{T}", 
+                                                 200, 0., 20., 1000, 0., 5.};
+      /// NoPID invariant mass distribution without ghost cuts on detectors
+      ROOT::TThreadedObject<TH2F> distrMInvNoPIDNoGhost{"M_inv: NoPID, no ghost", "M_{inv} vs p_{T}", 
+                                                        200, 0., 20., 1000, 0., 5.};
    };
 
    /* @brief Processes the single configuration (for the given particle, 

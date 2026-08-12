@@ -159,7 +159,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
          const double bbcz = simCNT.bbcz();
          if (fabs(bbcz) > 30.) continue;
 
-         for(int i = 0; i < simCNT.nch(); i++)
+         std::vector<ChargedTrack> positiveTracks;
+         std::vector<ChargedTrack> negativeTracks;
+
+         for (int i = 0; i < simCNT.nch(); i++)
          {
             const double the0 = simCNT.the0(i);
             const double pT = (simCNT.mom(i))*sin(the0);
@@ -380,6 +383,12 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
             histContainer.distrRecPT->Fill(pT, eventWeight);
             //histContainer.distrRecPTNoScaleReweight->Fill(pT, eventWeight/scaleReweight);
 
+            int idPC2 = PART_ID::JUNK;
+            int idPC3 = PART_ID::JUNK;
+            int idEMCal = PART_ID::JUNK;
+            int idTOFe = PART_ID::JUNK;
+            int idTOFw = PART_ID::JUNK;
+
             if (IsHit(simCNT.pc2dphi(i)))
             {
                const double sdphi = simSigmRes.PC2SDPhi(simCNT.pc2dphi(i), pT, charge);
@@ -409,9 +418,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                   histContainer.heatmapPC2->Fill(simCNT.ppc2z(i), pc2phi, 
                                                  eventWeight*alphaReweight*reweightPC1);
 
-                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi) && isParticleOrig)
+                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
                   {
-                     histContainer.distrRecPTPC2->Fill(pT, eventWeight);
+                     idPC2 = PART_ID::NONE;
+                     if (isParticleOrig) histContainer.distrRecPTPC2->Fill(pT, eventWeight);
                   }
                }
             }
@@ -476,9 +486,10 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      histContainer.heatmapPC3w->Fill(simCNT.ppc3z(i), pc3phi, 
                                                      eventWeight*alphaReweight*reweightPC1);
                   }
-                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi) && isParticleOrig) 
+                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc3z(i), pc3phi)) 
                   {
-                     histContainer.distrRecPTPC3->Fill(pT, eventWeight);
+                     idPC3 = PART_ID::NONE;
+                     if (isParticleOrig) histContainer.distrRecPTPC3->Fill(pT, eventWeight);
                   }
                }
             }
@@ -603,6 +614,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                                             simCNT.ysect(i), simCNT.zsect(i)) && 
                       !isCutByECore)
                   {
+                     idEMCal = PART_ID::NONE;
+
                      const double tExpPi = sqrt(simCNT.plemc(i)*simCNT.plemc(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -632,7 +645,6 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         if (isParticleOrig)
                         {
                            histContainer.distrRecPTEMCale[simCNT.sect(i)]->Fill(pT, eventWeight);
-
                            if (simCNT.sect(i) > 1)
                            {
                               histContainer.distrRecIdPTEMCale[simCNT.sect(i) - 2]->
@@ -661,6 +673,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                         if (isParticleOrig)
                         {
                            histContainer.distrRecPTEMCalw[simCNT.sect(i)]->Fill(pT, eventWeight);
+                           idEMCal = PART_ID::NONE;
                            histContainer.distrRecIdPTEMCalw[simCNT.sect(i)]->
                               Fill(pT, simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
                                                               particleId, pT, 1., 2.)*eventWeight);
@@ -714,6 +727,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                   if (!dmCutter.IsDeadTOFe(chamber, slat))
                   {
+                     idTOFe = PART_ID::NONE;
+
                      const double tExpPi = sqrt(simCNT.pltof(i)*simCNT.pltof(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -732,6 +747,7 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      if (isParticleOrig)
                      {
                         histContainer.distrRecPTTOFe->Fill(pT, eventWeight);
+                        idTOFe = PART_ID::NONE;
                         histContainer.distrRecIdPTTOFe->
                            Fill(pT, eventWeight*simM2Id.GetTOFeIdProb(particleId, pT, 2., 2.));
                      }
@@ -778,6 +794,8 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                   if (!dmCutter.IsDeadTOFw(chamber, strip))
                   {
+                     idTOFw = PART_ID::NONE;
+
                      const double tExpPi = sqrt(simCNT.pltofw(i)*simCNT.pltofw(i)/
                                                 (SPEED_OF_LIGHT*SPEED_OF_LIGHT)*
                                                 (MASS_PION*MASS_PION/
@@ -806,6 +824,58 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
                      }
                   }
                }
+            }
+
+            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && idEMCal == PART_ID::JUNK && 
+                idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
+
+            switch (charge)
+            {
+               case 1:
+                  positiveTracks.emplace_back(MASS_PION, simCNT, i, 1.);
+                  positiveTracks.back().idPC2 = idPC2;
+                  positiveTracks.back().idPC3 = idPC3;
+                  positiveTracks.back().idEMCal = idEMCal;
+                  positiveTracks.back().idTOFe = idTOFe;
+                  positiveTracks.back().idTOFw = idTOFw;
+                  break;
+               case -1:
+                  negativeTracks.emplace_back(MASS_KAON, simCNT, i, 1.);
+                  negativeTracks.back().idPC2 = idPC2;
+                  negativeTracks.back().idPC3 = idPC3;
+                  negativeTracks.back().idEMCal = idEMCal;
+                  negativeTracks.back().idTOFe = idTOFe;
+                  negativeTracks.back().idTOFw = idTOFw;
+                  break;
+            }
+         }
+         // looping over pairs of tracks
+         for (auto& posTrack : positiveTracks)
+         {
+            for (auto& negTrack : negativeTracks)
+            {
+               // invariant mass [GeV/c^2] of pi+ k- pair
+               const double mInvPiK = GetPairMass(posTrack, negTrack);
+
+               posTrack.m = MASS_KAON;
+               negTrack.m = MASS_KAON;
+
+               // invariant mass [GeV/c^2] of k+ pi- pair
+               const double mInvKPi = GetPairMass(posTrack, negTrack);
+
+               // pT of a pair [GeV/c]
+               const double pT = GetPairPT(posTrack, negTrack);
+
+               if (IsGhostCut(posTrack, negTrack)) continue;
+               if (IsOneArmCut(posTrack, negTrack)) continue;
+
+               histContainer.distrMInvNoPIDNoGhost->Fill(pT, mInvPiK, eventWeight);
+               histContainer.distrMInvNoPIDNoGhost->Fill(pT, mInvKPi, eventWeight);
+
+               if (!IsNoPID(posTrack, negTrack)) continue;
+
+               histContainer.distrMInvNoPID->Fill(pT, mInvPiK, eventWeight);
+               histContainer.distrMInvNoPID->Fill(pT, mInvKPi, eventWeight);
             }
          }
       }
@@ -1783,6 +1853,9 @@ ThrContainerCopy AnalyzeSimSingleTrack::ThrContainer::GetCopy()
    {
       copy.distrRecIdPTEMCale[i] = distrRecIdPTEMCale[i].Get();
    }
+
+   copy.distrMInvNoPID = distrMInvNoPID.Get();
+   copy.distrMInvNoPIDNoGhost = distrMInvNoPIDNoGhost.Get();
    return copy;
 }
 
@@ -1867,6 +1940,9 @@ void AnalyzeSimSingleTrack::ThrContainer::Write(const std::string& outputFileNam
    {
       static_cast<std::shared_ptr<TH1D>>(distrRecIdPTEMCale[i].Merge())->Write();
    }
+
+   static_cast<std::shared_ptr<TH2F>>(distrMInvNoPID.Merge())->Write();
+   static_cast<std::shared_ptr<TH2F>>(distrMInvNoPIDNoGhost.Merge())->Write();
 
    outputFile.mkdir("dphi");
    outputFile.cd("dphi");
