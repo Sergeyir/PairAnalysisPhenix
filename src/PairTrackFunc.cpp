@@ -57,6 +57,11 @@ bool Is1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2,
            ((track1.idTOFw == id1 || track2.idTOFw == id1) && !IsTOFwGhost(track1, track2)));
 }
 
+bool Is1K1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (Is1TOFDCPC11PID(track1, track2, PART_ID::KAON, PART_ID::KAON));
+}
+
 bool Is1EMCalDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                  const int id1, const int id2)
 {
@@ -80,6 +85,11 @@ bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id
 bool Is1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id1, const int id2)
 {
    return (IsNoPID(track1, track2) && Is1TOFDCPC11PID(track1, track2, id1, id2));
+}
+
+bool Is1K1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2)
+{
+   return (Is1TOF1PID(track1, track2, PART_ID::KAON, PART_ID::KAON));
 }
 
 bool Is1EMCal1PID(const ChargedTrack& track1, const ChargedTrack& track2, const int id1, const int id2)

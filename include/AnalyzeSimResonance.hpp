@@ -151,12 +151,16 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrMInvDCPC11PID;
       /// 1TOFDCPC11PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1TOFDCPC11PID;
+      /// 1K1TOFDCPC11PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1K1TOFDCPC11PID;
       /// 1EMCalDCPC11PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1EMCalDCPC11PID;
       /// 1PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1PID;
       /// 1TOF1PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1TOF1PID;
+      /// 1K1TOF1PID invariant mass distribution
+      std::shared_ptr<TH2F> distrMInv1K1TOF1PID;
       /// 1EMCal1PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInv1EMCal1PID;
       /// 2PID invariant mass distribution
@@ -169,12 +173,6 @@ namespace AnalyzeSimResonance
       std::shared_ptr<TH2F> distrMInvTOFw2PID;
       /// EMCal2PID invariant mass distribution
       std::shared_ptr<TH2F> distrMInvEMCal2PID;
-      /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrPAsymVsPT;
-      /// phi1 - phi2 vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrDPhiVsPT;
-      /// alpha1 - alpha2 vs pT vs Minv for pairs of tracks
-      std::shared_ptr<TH3F> distrDAlphaVsPT;
       /// zed1 - zed2 vs pT vs Minv for pairs of tracks
       std::shared_ptr<TH3F> distrDZedVsPT;
       /// pc2phi1 - pc2phi2 vs pc2z1 - pc2z2 vs pT within 
@@ -265,6 +263,9 @@ namespace AnalyzeSimResonance
       /// 1TOFDCPC11PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1TOFDCPC11PID{"M_inv: 1TOFDCPC11PID", "M_{inv} vs p_{T}", 
                                                          200, 0., 20., 1000, 0., 5.};
+      /// 1K1TOFDCPC11PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1K1TOFDCPC11PID{"M_inv: 1K1TOFDCPC11PID", "M_{inv} vs p_{T}", 
+                                                           200, 0., 20., 1000, 0., 5.};
       /// 1EMCalDCPC11PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1EMCalDCPC11PID{"M_inv: 1EMCalDCPC11PID", 
                                                            "M_{inv} vs p_{T}", 
@@ -275,6 +276,9 @@ namespace AnalyzeSimResonance
       /// 1TOF1PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1TOF1PID{"M_inv: 1TOF1PID", "M_{inv} vs p_{T}", 
                                                     200, 0., 20., 1000, 0., 5.};
+      /// 1K1TOF1PID invariant mass distribution
+      ROOT::TThreadedObject<TH2F> distrMInv1K1TOF1PID{"M_inv: 1K1TOF1PID", "M_{inv} vs p_{T}", 
+                                                      200, 0., 20., 1000, 0., 5.};
       /// 1EMCal1PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInv1EMCal1PID{"M_inv: 1EMCal1PID", "M_{inv} vs p_{T}", 
                                                       200, 0., 20., 1000, 0., 5.};
@@ -293,22 +297,6 @@ namespace AnalyzeSimResonance
       /// EMCal2PID invariant mass distribution
       ROOT::TThreadedObject<TH2F> distrMInvEMCal2PID{"M_inv: EMCal2PID", "M_{inv} vs p_{T}", 
                                                      200, 0., 20., 1000, 0., 5.};
-      /// abs(p1 - p2)/(p1 + p2) vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> 
-         distrPAsymVsPT{"p asym", "(p_{pos} - p_{neg})/(p_{pos} + p_{neg}) vs p_{T} vs M_{inv}", 
-                        100, 0., 20., 200, -1., 1., 100, 0., 5.};
-      /// phi1 - phi2 vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> 
-         distrDPhiVsPT{"delta phi", "#varphi_{pos} - #varphi_{neg} vs p_{T} vs M_{inv}", 
-                       100, 0., 20., 200, -M_PI, M_PI, 100, 0., 5.};
-      /// alpha1 - alpha2 vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> 
-         distrDAlphaVsPT{"delta alpha", "#alpha_{pos} - #alpha_{neg} vs p_{T} vs M_{inv}", 
-                         100, 0., 20., 200, -1., 0., 100, 0., 5.};
-      /// zed1 - zed2 vs pT vs Minv for pairs of tracks
-      ROOT::TThreadedObject<TH3F> 
-         distrDZedVsPT{"delta zed", "zed_{pos} - zed_{neg} vs p_{T} vs M_{inv}", 
-                       100, 0., 20., 200, -150., 150., 100, 0., 5.};
       /// pc2phi1 - pc2phi2 vs pc2z1 - pc2z vs pT within 
       /// 2*Gamma + 10 MeV of the center of the signal for the same sector of EMCal
       ROOT::TThreadedObject<TH2F> 

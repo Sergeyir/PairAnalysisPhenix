@@ -42,48 +42,58 @@ bool IsNoPID(const ChargedTrack& track1, const ChargedTrack& track2);
 /*! @brief Returns true if at least one charged track in a pair is identified in TOFe, TOFw, or EMCal while the other has no NoPID requirements
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool IsDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                  const int id1, const int id2);
 /*! @brief Returns true if at least one charged track in a pair is identified in TOFe or TOFw while the other has no NoPID requirements
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool Is1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                      const int id1, const int id2);
+/*! @brief Returns true if at least one charged track in a pair is identified in TOFe or TOFw while the other has no NoPID requirements
+ * @param[in] track1 1st charged track in a p1ir
+ * @param[in] track1 2nd charged track in a pair
+ */
+bool Is1K1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2);
 /*! @brief Returns true if at least one charged track in a pair is identified in EMCal while the other has no NoPID requirements
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool Is1EMCalDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                        const int id1, const int id2);
 /*! @brief Returns true if at least one charged track in a pair is identified in TOFe or TOFw, or EMCal
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2, 
             const int id1, const int id2);
 /*! @brief Returns true if at least one charged track in a pair is identified in TOFe or TOFw
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool Is1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                 const int id1, const int id2);
+/*! @brief Returns true if at least one charged track in a pair is identified as kaon in TOFe or TOFw
+ * @param[in] track1 1st charged track in a p1ir
+ * @param[in] track1 2nd charged track in a pair
+ */
+bool Is1K1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2);
 /*! @brief Returns true if at least one charged track in a pair is identified in EMCal
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st might have 
- * @param[in] id2 id that 2nd might have
+ * @param[in] id1 id of a 1st track in a pair 
+ * @param[in] id2 if of a 2nd track in a pair
  */
 bool Is1EMCal1PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                 const int id1, const int id2);
@@ -94,48 +104,48 @@ bool Is1EMCal1PID(const ChargedTrack& track1, const ChargedTrack& track2,
 /*! @brief Returns true if both of charged tracks in a pair are identified in TOFe
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool IsTOFe2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                 const int id1, const int id2);
 /*! @brief Returns true if both of charged tracks in a pair are both identified in TOFw
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool IsTOFw2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                 const int id1, const int id2);
 /*! @brief Returns true if both of charged tracks in a pair are both identified in TOFe or TOFw
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool IsTOF2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                const int id1, const int id2);
 /*! @brief Returns true if both of charged tracks in a pair are both identified in EMCal
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool IsEMCal2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                  const int id1, const int id2);
 /*! @brief Returns true if 1 track of a pair was identified in TOF and the other in EMCal
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool Is1TOF1EMCal2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                       const int id1, const int id2);
 /*! @brief Returns true if both of charged tracks in a pair are both either identified in EMCal, TOFe, or TOFw
  * @param[in] track1 1st charged track in a pair
  * @param[in] track1 2nd charged track in a pair
- * @param[in] id1 id that 1st track must have
- * @param[in] id2 id that 2nd track must have
+ * @param[in] id1 id of a 1st track in a pair
+ * @param[in] id2 id of a 2nd track in a pair
  */
 bool Is2PID(const ChargedTrack& track1, const ChargedTrack& track2, 
             const int id1, const int id2);
