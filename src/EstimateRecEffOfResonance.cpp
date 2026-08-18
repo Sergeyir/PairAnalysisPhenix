@@ -338,8 +338,8 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
 
    fit.SetParLimits(0, maxBinVal/1.2, maxBinVal);
    fit.SetParLimits(1, massResonance/1.1, massResonance*1.1);
-   fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
-   //fit.FixParameter(2, gammaResonance);
+   //fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
+   fit.FixParameter(2, gammaResonance);
    fit.SetParLimits(3, gaussianBroadeningSigma/1.05, gaussianBroadeningSigma*1.05);
    fit.SetParLimits(4, 0., maxBinVal/3.);
    fit.SetParLimits(5, 0., massResonance*10.);
