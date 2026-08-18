@@ -45,16 +45,6 @@ sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange 
   - name: hpt
 pair_selection_methods:
 - 
-  name: DCPC1NoPID
-  bg_fit_func: pol3
-  sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
-  centrality_bin_parameters:
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-20
-    - {pt_bin_min: -1, pt_bin_max: -1} # 20-40
-    - {pt_bin_min: -1, pt_bin_max: -1} # 40-60
-  color: "#7a21dd"
-- 
   name: NoPID
   bg_fit_func: pol3
   sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
@@ -64,16 +54,6 @@ pair_selection_methods:
     - {pt_bin_min: -1, pt_bin_max: -1} # 20-40
     - {pt_bin_min: -1, pt_bin_max: -1} # 40-60
   color: "#7a21dd"
-- 
-  name: 1TOF1PID
-  bg_fit_func: pol3
-  sigmalized_fit_range: 2.5
-  centrality_bin_parameters:
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-20
-    - {pt_bin_min: -1, pt_bin_max: -1} # 20-40
-    - {pt_bin_min: -1, pt_bin_max: -1} # 40-60
-  color: "#e42536"
 - 
   name: 1K1TOF1PID
   bg_fit_func: pol3
@@ -86,16 +66,6 @@ pair_selection_methods:
   color: "#e42536"
 - 
   name: TOF2PID
-  bg_fit_func: pol2
-  sigmalized_fit_range: 3.
-  centrality_bin_parameters:
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
-    - {pt_bin_min: -1, pt_bin_max: -1} # 0-20
-    - {pt_bin_min: -1, pt_bin_max: -1} # 20-40
-    - {pt_bin_min: -1, pt_bin_max: -1} # 40-60
-  color: "#5790fc"
-- 
-  name: 2ARMSTOF2PID
   bg_fit_func: pol2
   sigmalized_fit_range: 3.
   centrality_bin_parameters:
