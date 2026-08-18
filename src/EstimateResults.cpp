@@ -63,6 +63,9 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
+   pTBinMinRAB = -1;
+   pTBinMaxRAB = -1;
+
    const std::string resultsOutputDir = "data/Results/" + runName;
    std::filesystem::create_directories(resultsOutputDir);
 
@@ -109,6 +112,60 @@ int main(int argc, char **argv)
          {
             CppTools::PrintError("No p+p spectra with systematic uncertainty was "\
                                  "found in file " + spectraPPFileName);
+         }
+      }
+      // searching for pT min bin for RAB
+      for (unsigned int i = 0; i < pTBinRanges.size(); i++)
+      {
+         bool pTBinMinChosen = false;
+         for (int j = 1; j <= distrSpectraPPVsPTStatErr->GetXaxis()->GetNbins(); j++)
+         {
+            const double pT = distrSpectraPPVsPTStatErr->GetXaxis()->GetBinCenter(j);
+
+            if (pT > pTBinRanges[i] && pT < pTBinRanges[i + 1])
+            {
+               pTBinMinRAB = i;
+               pTBinMinChosen = true;
+               break;
+            }
+         }
+         if (pTBinMinChosen) break;
+      }
+      // searching for pT max bin for RAB
+      for (int i = static_cast<int>(pTBinRanges.size()) - 1; i >= 0; i--)
+      {
+         bool pTBinMaxChosen = false;
+         for (int j = distrSpectraPPVsPTStatErr->GetXaxis()->GetNbins(); j > 0; j--)
+         {
+            const double pT = distrSpectraPPVsPTStatErr->GetXaxis()->GetBinCenter(j);
+
+            if (pT > pTBinRanges[i] && pT < pTBinRanges[i + 1])
+            {
+               pTBinMaxRAB = i;
+               pTBinMaxChosen = true;
+               break;
+            }
+         }
+         if (pTBinMaxChosen) break;
+      }
+      if (pTBinMinRAB == -1 || pTBinMaxRAB == -1)
+      {
+         CppTools::PrintError("Could not determine the range for RAB");
+      }
+      // checking pT bins consistency
+      for (int i = 1; i <= distrSpectraPPVsPTStatErr->GetXaxis()->GetNbins(); i++)
+      {
+         if (fabs(distrSpectraPPVsPTStatErr->GetXaxis()->GetBinLowEdge(i) - 
+                  pTBinRanges[pTBinMinRAB + i - 1]) > 1e-7 ||
+             fabs(distrSpectraPPVsPTStatErr->GetXaxis()->GetBinUpEdge(i) - 
+                  pTBinRanges[pTBinMinRAB + i]) > 1e-7)
+         {
+            CppTools::Print(distrSpectraPPVsPTStatErr->GetXaxis()->GetBinLowEdge(i),
+                  pTBinRanges[pTBinMinRAB + i - 1],
+             distrSpectraPPVsPTStatErr->GetXaxis()->GetBinUpEdge(i),
+                  pTBinRanges[pTBinMinRAB + i]);
+            CppTools::PrintError("pT bins mismatch between p+p and A+B "\
+                                 "spectra for pT bin " + std::to_string(i));
          }
       }
    }
@@ -475,9 +532,25 @@ int main(int argc, char **argv)
          for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
          {
             distrRABsVsPTStatErr.
-               emplace_back(static_cast<TH1D *>(spectrasVsPTStatErr[i]->Clone()));
+               push_back(new TH1D(("rab stat " + std::to_string(i)).c_str(), "", 
+                                   pTBinMaxRAB - pTBinMinRAB + 1,
+                                   &pTBinRanges[pTBinMinRAB]));
             distrRABsVsPTSysErr.
-               emplace_back(static_cast<TH1D *>(spectrasVsPTSysErr[i]->Clone()));
+               push_back(new TH1D(("rab sys " + std::to_string(i)).c_str(), "", 
+                                   pTBinMaxRAB - pTBinMinRAB + 1,
+                                   &pTBinRanges[pTBinMinRAB]));
+
+            for (int j = 1; j <= distrRABsVsPTStatErr.back()->GetXaxis()->GetNbins(); j++)
+            {
+               distrRABsVsPTStatErr.back()->
+                  SetBinContent(j, spectrasVsPTStatErr[i]->GetBinContent(pTBinMinRAB + j));
+               distrRABsVsPTStatErr.back()->
+                  SetBinError(j, spectrasVsPTStatErr[i]->GetBinError(pTBinMinRAB + j));
+               distrRABsVsPTSysErr.back()->
+                  SetBinContent(j, spectrasVsPTSysErr[i]->GetBinContent(pTBinMinRAB + j));
+               distrRABsVsPTSysErr.back()->
+                  SetBinError(j, spectrasVsPTSysErr[i]->GetBinError(pTBinMinRAB + j));
+            }
 
             distrRABsVsPTStatErr.back()->Divide(distrSpectraPPVsPTStatErr);
             distrRABsVsPTSysErr.back()->Divide(distrSpectraPPVsPTSysErr);
@@ -544,28 +617,42 @@ int main(int argc, char **argv)
          ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/" + resonanceName + 
                                 "_RAB_all_methods_" + centralityName);
 
-         TH1D *distrResultingRABVsPTStatErr = 
-            static_cast<TH1D *>(distrResultingSpectraVsPTStatErr.Clone());
-         TH1D *distrResultingRABVsPTSysErr = 
-            static_cast<TH1D *>(distrResultingSpectraVsPTSysErr.Clone());
+         TH1D distrResultingRABVsPTStatErr("resulting rab stat", "", 
+                                           pTBinMaxRAB - pTBinMinRAB + 1,
+                                           &pTBinRanges[pTBinMinRAB]);
+         TH1D distrResultingRABVsPTSysErr("resulting rab sys", "", 
+                                           pTBinMaxRAB - pTBinMinRAB + 1,
+                                           &pTBinRanges[pTBinMinRAB]);
 
-         distrResultingRABVsPTStatErr->Divide(distrSpectraPPVsPTStatErr);
-         distrResultingRABVsPTSysErr->Divide(distrSpectraPPVsPTSysErr);
-
-         distrResultingRABVsPTStatErr->Scale(scaleRAB);
-         distrResultingRABVsPTSysErr->Scale(scaleRAB);
-
-         for (int i = 1; i <= distrResultingRABVsPTStatErr->GetXaxis()->GetNbins(); i++)
+         for (int i = 1; i <= distrResultingRABVsPTStatErr.GetXaxis()->GetNbins(); i++)
          {
-            if (distrResultingRABVsPTStatErr->GetBinContent(i) < 1e-7)
+            distrResultingRABVsPTStatErr.
+               SetBinContent(i, distrResultingSpectraVsPTStatErr.GetBinContent(pTBinMinRAB + i));
+            distrResultingRABVsPTStatErr.
+               SetBinError(i, distrResultingSpectraVsPTStatErr.GetBinError(pTBinMinRAB + i));
+            distrResultingRABVsPTSysErr.
+               SetBinContent(i, distrResultingSpectraVsPTSysErr.GetBinContent(pTBinMinRAB + i));
+            distrResultingRABVsPTSysErr.
+               SetBinError(i, distrResultingSpectraVsPTSysErr.GetBinError(pTBinMinRAB + i));
+         }
+
+         distrResultingRABVsPTStatErr.Divide(distrSpectraPPVsPTStatErr);
+         distrResultingRABVsPTSysErr.Divide(distrSpectraPPVsPTSysErr);
+
+         distrResultingRABVsPTStatErr.Scale(scaleRAB);
+         distrResultingRABVsPTSysErr.Scale(scaleRAB);
+
+         for (int i = 1; i <= distrResultingRABVsPTStatErr.GetXaxis()->GetNbins(); i++)
+         {
+            if (distrResultingRABVsPTStatErr.GetBinContent(i) < 1e-7)
             {
-               distrResultingRABVsPTStatErr->SetBinContent(i, -1e-7);
-               distrResultingRABVsPTSysErr->SetBinContent(i, -1e-7);
+               distrResultingRABVsPTStatErr.SetBinContent(i, -1e-7);
+               distrResultingRABVsPTSysErr.SetBinContent(i, -1e-7);
             }
          }
 
-         distrResultingRABVsPTStatErr->Write("RAB vs pT with stat errors");
-         distrResultingRABVsPTSysErr->Write("RAB vs pT with sys errors");
+         distrResultingRABVsPTStatErr.Write("RAB vs pT with stat errors");
+         distrResultingRABVsPTSysErr.Write("RAB vs pT with sys errors");
       }
    }
 
