@@ -347,7 +347,18 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
          if (performFit)
          {
-            const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
+            std::string bgFitFunc = method["bg_default_fit_func"].as<std::string>();
+            for (const auto& customBG : method["custom_bg_fit"])
+            {
+               for (const auto& pTBinCustomBG : customBG["pt_bins"])
+               {
+                  if (pTBinCustomBG.as<unsigned int>() == i)
+                  {
+                     bgFitFunc = customBG["func"].as<std::string>();
+                     break;
+                  }
+               }
+            }
             if (bgFitFunc == "pol2")
             {
                fit = new TF1("Default", &FitFunc::RBWConvGausBGPol2, 
@@ -476,9 +487,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                           gammaResonance, gaussianBroadeningSigma);
                altFitFreeG->SetParLimits(0, 1., maxBinVal - minBinVal);
                altFitFreeG->SetParLimits(1, massResonance/1.05, massResonance*1.05);
-               altFitFreeG->SetParLimits(2, gammaResonance/2., gammaResonance*2.);
-               altFitFreeG->SetParLimits(3, gaussianBroadeningSigma/1.10, 
-                                         gaussianBroadeningSigma*1.10);
+               altFitFreeG->SetParLimits(2, gammaResonance/1.5, gammaResonance*1.5);
+               altFitFreeG->SetParLimits(3, gaussianBroadeningSigma/100., gaussianBroadeningSigma*2.);
 
                altFitFixedG->SetParameters(maxBinVal, massResonance, 
                                            gammaResonance, gaussianBroadeningSigma);

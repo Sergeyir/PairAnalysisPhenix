@@ -69,7 +69,7 @@ void MInvFit()
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
 
-   ROOT::EnableImplicitMT();
+   ROOT::EnableImplicitMT(4);
    gROOT->SetBatch(true);
 
    CppTools::PrintInfo("List of directories in data/Real directory that contain "\
@@ -408,7 +408,19 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       const double gaussianBroadeningSigma = 
          gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
-      const std::string bgFitFunc = method["bg_fit_func"].as<std::string>();
+      std::string bgFitFunc = method["bg_default_fit_func"].as<std::string>();
+
+      for (const auto& customBG : method["custom_bg_fit"])
+      {
+         for (const auto& pTBinCustomBG : customBG["pt_bins"])
+         {
+            if (pTBinCustomBG.as<int>() == i)
+            {
+               bgFitFunc = customBG["func"].as<std::string>();
+               break;
+            }
+         }
+      }
       if (bgFitFunc == "pol2")
       {
          fits.push_back(new TF1(("Default" + std::to_string(i)).c_str(), 
@@ -579,9 +591,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
          altFitsFreeG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFreeG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
-         altFitsFreeG.back()->SetParLimits(2, gammaResonance/2., gammaResonance*2.);
-         altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/1.10, 
-                                            gaussianBroadeningSigma*1.10);
+         altFitsFreeG.back()->SetParLimits(2, gammaResonance/1.5, gammaResonance*1.5);
+         altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/100., gaussianBroadeningSigma*2.);
 
          altFitsFixedG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFixedG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
