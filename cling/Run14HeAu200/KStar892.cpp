@@ -10,7 +10,7 @@
 
 const std::string runName = "Run14HeAu200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20292;
+const int taxiNumber = 20457;
 
 const double xMin = 0.8;
 const double xMax = 8.6;
