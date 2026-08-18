@@ -240,7 +240,7 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
       }
    }
    CppTools::PrintWarning("No field qualifier \"" + qualifier + "\" found in file " + fileName + 
-                          "; no graph will not be created");
+                          "; graph will not be created");
    return nullptr;
 }
 
