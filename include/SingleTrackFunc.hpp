@@ -24,6 +24,8 @@ namespace PART_ID
    const int ELECTRON = 11;
    const int NONE = 999;
    const int JUNK = 1999;
+   // fail dummy is never assigned to any track id. it is only used to always fail id checks for pair cuts
+   const int FAIL_DUMMY = -999;
 }
 
 /*! @struct ChargedTrack
