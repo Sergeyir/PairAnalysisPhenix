@@ -55,11 +55,6 @@ bool IsDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2,
  */
 bool Is1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                      const int id1, const int id2);
-/*! @brief Returns true if at least one charged track in a pair is identified in TOFe or TOFw while the other has no NoPID requirements
- * @param[in] track1 1st charged track in a p1ir
- * @param[in] track1 2nd charged track in a pair
- */
-bool Is1K1TOFDCPC11PID(const ChargedTrack& track1, const ChargedTrack& track2);
 /*! @brief Returns true if at least one charged track in a pair is identified in EMCal while the other has no NoPID requirements
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
@@ -84,11 +79,6 @@ bool Is1PID(const ChargedTrack& track1, const ChargedTrack& track2,
  */
 bool Is1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2, 
                 const int id1, const int id2);
-/*! @brief Returns true if at least one charged track in a pair is identified as kaon in TOFe or TOFw
- * @param[in] track1 1st charged track in a p1ir
- * @param[in] track1 2nd charged track in a pair
- */
-bool Is1K1TOF1PID(const ChargedTrack& track1, const ChargedTrack& track2);
 /*! @brief Returns true if at least one charged track in a pair is identified in EMCal
  * @param[in] track1 1st charged track in a p1ir
  * @param[in] track1 2nd charged track in a pair
