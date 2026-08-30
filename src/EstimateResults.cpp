@@ -15,11 +15,17 @@ using namespace EstimateResults;
 
 int main(int argc, char **argv)
 {
-   if (argc < 3) 
+   if (argc < 2 || argc > 5) 
    {
       CppTools::PrintError("Expected 2 parameters while " + std::to_string(argc - 1) + " "\
                            "parameter(s) were provided \n Usage: bin/EstimateResults "\
-                           "inputYAMLName taxiNumber");
+                           "inputYAMLName taxiNumber=default* taxiNumberWithLoosenedCuts=default*"\
+                           "taxiNumberWithTightenedCuts=default*"\
+                           "* default taxi job numbers are defined in inputYAMLName; "\
+                           "if default value in inputYAMLName is -9999 then you have to provide the "\
+                           "taxi number manually or change the default value\n"\
+                           "  default value of -9999 for cut variations will make the program skip "\
+                           "cut variation analysis and systematics");
    }
 
 
@@ -27,7 +33,44 @@ int main(int argc, char **argv)
 
    CppTools::CheckInputFile(argv[1]);
 
-   taxiNumber = std::stoi(argv[2]);
+   inputYAMLResonance.OpenFile(argv[1]);
+   inputYAMLResonance.CheckStatus("resonance");
+
+   if (argc > 2) taxiNumber = std::stoi(argv[2]);
+   else taxiNumber = inputYAMLResonance["taxi_job"].as<int>();
+   if (argc > 4) 
+   {
+      taxiNumberLoosenedCuts = std::stoi(argv[3]);
+      taxiNumberTightenedCuts = std::stoi(argv[4]);
+   }
+   else 
+   {
+      taxiNumberLoosenedCuts = inputYAMLResonance["taxi_job_loosened_cuts"].as<int>();
+      taxiNumberTightenedCuts = inputYAMLResonance["taxi_job_tightened_cuts"].as<int>();
+   }
+
+   if (taxiNumber == -9999) CppTools::PrintError("Taxi job number was not defined");
+
+   if (taxiNumberLoosenedCuts == -9999) 
+   {
+      CppTools::PrintWarning("Taxi job number for loosened cut variation was not defined");
+      doCutsVarSys = false;
+   }
+   if (taxiNumberTightenedCuts == -9999) 
+   {
+      CppTools::PrintWarning("Taxi job number for tightened cut variation was not defined");
+      doCutsVarSys = false;
+   }
+
+   if (doCutsVarSys == false)
+   {
+      CppTools::PrintWarning("Cuts variation systematics evaluation will be disabled");
+   }
+
+   runName = inputYAMLResonance["run_name"].as<std::string>();
+
+   inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
+   inputYAMLMain.CheckStatus("main");
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
@@ -36,16 +79,7 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(kFALSE);
 
    TH1::AddDirectory(kFALSE);
-
    ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-
-   inputYAMLResonance.OpenFile(argv[1]);
-   inputYAMLResonance.CheckStatus("resonance");
-
-   runName = inputYAMLResonance["run_name"].as<std::string>();
-
-   inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
-   inputYAMLMain.CheckStatus("main");
 
    const std::string resonanceName = inputYAMLResonance["name"].as<std::string>();
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
@@ -63,14 +97,14 @@ int main(int argc, char **argv)
    }
    pTBinRanges.push_back(inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>());
 
-   pTBinMinRAB = -1;
-   pTBinMaxRAB = -1;
-
    const std::string resultsOutputDir = "data/Results/" + runName;
    std::filesystem::create_directories(resultsOutputDir);
 
-   const std::string outputDir = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
-   std::filesystem::create_directories(outputDir);
+   const std::string outputDirResults = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
+   std::filesystem::create_directories(outputDirResults);
+
+   const std::string outputDirSys = "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
+   std::filesystem::create_directories(outputDirSys);
 
    double spectraNorm = inputYAMLResonance["branching_ratio"].as<double>();
 
@@ -170,6 +204,8 @@ int main(int argc, char **argv)
       }
    }
 
+   // counter for centrality bins
+   int iC = 0;
    for (const YAML::Node& centralityBin : inputYAMLResonance["centrality_bins"])
    {
       const std::string centralityName = centralityBin["name"].as<std::string>();
@@ -192,11 +228,43 @@ int main(int argc, char **argv)
          const std::string methodName = method["name"].as<std::string>();
          methodColors.emplace_back(TColor::GetColor(method["color"].as<std::string>().c_str()));
 
-         inputFileName = "data/RawYields/" + runName + "/Resonance/" + 
-                         std::to_string(taxiNumber) + "_" + resonanceName + 
-                         "_" + methodName + ".root";
+         const std::string inputFileName = 
+            "data/RawYields/" + runName + "/Resonance/" + std::to_string(taxiNumber) + 
+            "_" + resonanceName + "_" + methodName + ".root";
          CppTools::CheckInputFile(inputFileName);
-         inputFile = TFile::Open(inputFileName.c_str());
+         TFile *inputFile = TFile::Open(inputFileName.c_str());
+
+         TFile *inputFileLoosenedCuts = nullptr;
+         TFile *inputFileTightenedCuts = nullptr;
+
+         if (doCutsVarSys)
+         {
+            const std::string inputFileLoosenedCutsName = 
+               "data/RawYields/" + runName + "/Resonance/" + 
+               std::to_string(taxiNumberLoosenedCuts) + 
+               "_" + resonanceName + "_" + methodName + ".root";
+            const std::string inputFileTightenedCutsName = 
+               "data/RawYields/" + runName + "/Resonance/" + 
+               std::to_string(taxiNumberTightenedCuts) +
+               "_" + resonanceName + "_" + methodName + ".root";
+
+            CppTools::CheckInputFile(inputFileLoosenedCutsName);
+            CppTools::CheckInputFile(inputFileTightenedCutsName);
+
+            inputFileLoosenedCuts = TFile::Open(inputFileLoosenedCutsName.c_str());
+            inputFileTightenedCuts = TFile::Open(inputFileTightenedCutsName.c_str());
+         }
+
+         // contains systematic uncertainties of pT scale variation
+         TH1D sysPTScale("pT scale sys", "", pTNBins, &pTBinRanges[0]);
+         // contains systematic uncertainties of acceptance variation
+         TH1D sysAccVar("acc var sys", "", pTNBins, &pTBinRanges[0]);
+         // contains systematic uncertainties of cuts variation
+         TH1D sysCutsVar("cut var sys", "", pTNBins, &pTBinRanges[0]);
+         // contains systematic uncertainties of raw yield extraction
+         TH1D sysYieldExtr("yield extr sys", "", pTNBins, &pTBinRanges[0]);
+         // contains full systematic uncertainty (A+B)
+         TH1D sysFull("full sys", "", pTNBins, &pTBinRanges[0]);
 
          TH1D *rawYieldVsPTStatErr = 
             static_cast<TH1D *>(inputFile->Get((centralityName + 
@@ -218,12 +286,42 @@ int main(int argc, char **argv)
                                  " in centrality " + centralityName);
          }
 
+         TH1D *rawYieldVsPTLoosenedCuts = nullptr;
+         TH1D *rawYieldVsPTTightenedCuts = nullptr;
+
+         if (doCutsVarSys)
+         {
+            rawYieldVsPTLoosenedCuts = static_cast<TH1D *>(inputFileLoosenedCuts->
+               Get((centralityName + "/raw yield vs pT with stat errors").c_str()));
+            rawYieldVsPTTightenedCuts = static_cast<TH1D *>(inputFileTightenedCuts->
+               Get((centralityName + "/raw yield vs pT with stat errors").c_str()));
+
+            if (!rawYieldVsPTLoosenedCuts) 
+            {
+               CppTools::PrintError("No raw yield distribution for loosened cuts "\
+                                    "was found in file " + inputFileName + " for " + methodName + 
+                                    " in centrality " + centralityName);
+            }
+            if (!rawYieldVsPTTightenedCuts) 
+            {
+               CppTools::PrintError("No raw yield distribution for tightened cuts "\
+                                    "was found in file " + inputFileName + " for " + methodName + 
+                                    " in centrality " + centralityName);
+            }
+         }
+
          TH1D *recEffVsPTStatErr = static_cast<TH1D *>
             (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
                                    "vs pT with stat errors").c_str()));
+         TH1D *recEffVsPTSysErrAltPT = static_cast<TH1D *>
+            (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                   "vs pT with sys errors, alt pT scale").c_str()));
+         TH1D *recEffVsPTSysErrAccVar = static_cast<TH1D *>
+            (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                   "vs pT with sys errors, acceptance variation").c_str()));
          TH1D *recEffVsPTSysErr = static_cast<TH1D *>
             (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
-                                   "vs pT with stat errors").c_str()));
+                                   "vs pT with sys errors").c_str()));
 
          if (!recEffVsPTStatErr)
          {
@@ -235,23 +333,168 @@ int main(int argc, char **argv)
             CppTools::PrintError("No reconstruction efficiency with systematic errors was "\
                                  "found in file " + inputRecEffFileName + " for " + methodName);
          }
+         if (!recEffVsPTSysErrAltPT)
+         {
+            CppTools::PrintError("No reconstruction efficiency with systematic errors for "\
+                                 " alternative pT scale was found in file " + 
+                                 inputRecEffFileName + " for " + methodName);
+         }
+         if (!recEffVsPTSysErrAccVar)
+         {
+            CppTools::PrintError("No reconstruction efficiency with systematic errors for "\
+                                 " acceptance variation was found in file " + 
+                                 inputRecEffFileName + " for " + methodName);
+         }
+
+         TH1D *recEffVsPTLoosenedCuts = nullptr;
+         TH1D *recEffVsPTTightenedCuts = nullptr;
+
+         if (doCutsVarSys)
+         {
+            // no systematics needed for cut variations
+            recEffVsPTLoosenedCuts = static_cast<TH1D *>
+               (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                      "vs pT, loosened cuts").c_str()));
+            recEffVsPTTightenedCuts = static_cast<TH1D *>
+               (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
+                                      "vs pT, tightened cuts").c_str()));
+            if (!recEffVsPTLoosenedCuts)
+            {
+               CppTools::PrintError("No reconstruction efficiency for loosened cuts "\
+                                    "analysis was found in file " + inputRecEffFileName + 
+                                    " for " + methodName);
+            }
+            if (!recEffVsPTTightenedCuts)
+            {
+               CppTools::PrintError("No reconstruction efficiency for tightened cuts "\
+                                    "analysis was found in file " + inputRecEffFileName + 
+                                    " for " + methodName);
+            }
+         }
 
          rawYieldVsPTStatErr->Divide(recEffVsPTStatErr);
-         rawYieldVsPTSysErr->Divide(recEffVsPTSysErr);
-
          rawYieldVsPTStatErr->Scale(1./spectraNorm);
-         rawYieldVsPTSysErr->Scale(1./spectraNorm);
 
-         spectrasVsPTStatErr.emplace_back(rawYieldVsPTStatErr);
-         spectrasVsPTSysErr.emplace_back(rawYieldVsPTSysErr);
+         if (doCutsVarSys)
+         {
+            rawYieldVsPTLoosenedCuts->Divide(recEffVsPTLoosenedCuts);
+            rawYieldVsPTTightenedCuts->Divide(recEffVsPTTightenedCuts);
+            rawYieldVsPTLoosenedCuts->Scale(1./spectraNorm);
+            rawYieldVsPTTightenedCuts->Scale(1./spectraNorm);
+         }
 
          for (unsigned int i = 1; i <= pTNBins; i++)
          {
             if (rawYieldVsPTStatErr->GetBinContent(i) < 1e-31) continue;
 
+            sysPTScale.SetBinContent(i, recEffVsPTSysErrAltPT->GetBinError(i)/
+                                     recEffVsPTSysErrAltPT->GetBinContent(i));
+            sysAccVar.SetBinContent(i, recEffVsPTSysErrAccVar->GetBinError(i)/
+                                     recEffVsPTSysErrAccVar->GetBinContent(i));
+            sysYieldExtr.SetBinContent(i, rawYieldVsPTSysErr->GetBinError(i)/
+                                       rawYieldVsPTSysErr->GetBinContent(i));
+
+            double cutsVarSys = 0.;
+            if (doCutsVarSys)
+            {
+               cutsVarSys = 
+                  CppTools::RMS(rawYieldVsPTStatErr->GetBinContent(i) - 
+                                rawYieldVsPTLoosenedCuts->GetBinContent(i),
+                                rawYieldVsPTStatErr->GetBinContent(i) - 
+                                rawYieldVsPTTightenedCuts->GetBinContent(i))/
+                  rawYieldVsPTStatErr->GetBinContent(i);
+
+               if (methodName == "1K1TOF1PID")
+               {
+                  CppTools::Print(methodName, centralityName, 
+                                  pTBinRanges[i - 1], pTBinRanges[i],
+                                  rawYieldVsPTLoosenedCuts->GetBinContent(i)/
+                                  rawYieldVsPTStatErr->GetBinContent(i),
+                                  rawYieldVsPTTightenedCuts->GetBinContent(i)/
+                                  rawYieldVsPTStatErr->GetBinContent(i));
+               }
+
+               sysCutsVar.SetBinContent(i, cutsVarSys);
+            }
+
+            // full relative systematic uncertainty (A+B types)
+            const double sys = 
+               CppTools::UncertaintyProp(sysPTScale.GetBinContent(i), 
+                                         sysAccVar.GetBinContent(i),
+                                         sysCutsVar.GetBinContent(i),
+                                         sysYieldExtr.GetBinContent(i));
+            sysFull.SetBinContent(i, sys);
+
+            rawYieldVsPTSysErr->SetBinContent(i, rawYieldVsPTStatErr->GetBinContent(i));
+            rawYieldVsPTSysErr->SetBinError(i, sys*rawYieldVsPTSysErr->GetBinContent(i));
+
             yMin = CppTools::Minimum(yMin, rawYieldVsPTStatErr->GetBinContent(i));
             yMax = CppTools::Maximum(yMax, rawYieldVsPTStatErr->GetBinContent(i));
          }
+
+         spectrasVsPTStatErr.emplace_back(rawYieldVsPTStatErr);
+         spectrasVsPTSysErr.emplace_back(rawYieldVsPTSysErr);
+
+         sysFull.GetXaxis()->
+            SetRange(sysFull.GetXaxis()->FindBin(pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_min"].as<int>()] + 1e-7),
+                     sysFull.GetXaxis()->FindBin(pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_max"].as<int>()] - 1e-7) + 1);
+
+         sysFull.SetMaximum(sysFull.GetMaximum()*1.2);
+         sysFull.SetMinimum(0.001);
+
+         sysPTScale.SetLineColorAlpha(kP6Blue, 0.9);
+         sysAccVar.SetLineColorAlpha(kP6Red, 0.9);
+         sysYieldExtr.SetLineColorAlpha(kP6Yellow, 0.9);
+         sysFull.SetLineColor(kP6Gray);
+
+         sysPTScale.SetLineWidth(2);
+         sysAccVar.SetLineWidth(2);
+         sysYieldExtr.SetLineWidth(2);
+         sysFull.SetLineWidth(4);
+
+         sysPTScale.SetLineStyle(2);
+         sysAccVar.SetLineStyle(9);
+         sysYieldExtr.SetLineStyle(8);
+
+         TCanvas canvSys("sys canv", "", 800, 800);
+
+         canvSys.SetFillStyle(4000);
+         canvSys.SetFrameFillColor(0);
+         canvSys.SetFrameFillStyle(0);
+         canvSys.SetFrameBorderMode(0);
+
+         gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(&sysFull, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.4);
+
+         sysPTScale.Draw("SAME");
+         sysAccVar.Draw("SAME");
+         sysYieldExtr.Draw("SAME");
+
+         if (doCutsVarSys)
+         {
+            sysCutsVar.SetLineStyle(7);
+            sysCutsVar.SetLineColorAlpha(kP6Violet, 0.9);
+            sysCutsVar.SetLineWidth(2);
+            sysCutsVar.Draw("SAME");
+         }
+
+         TLegend legend(0.15, 0.85, 0.9, 0.95);
+         legend.SetLineColorAlpha(0, 0.);
+         legend.SetFillColorAlpha(0, 0.);
+         legend.SetNColumns(3);
+
+         legend.AddEntry(&sysPTScale, "#it{p}_{T} scale");
+         legend.AddEntry(&sysAccVar, "Acceptance");
+         legend.AddEntry(&sysCutsVar, "Cuts");
+         legend.AddEntry(&sysYieldExtr, "Yield extraction");
+         legend.AddEntry(&sysFull, "Full");
+
+         legend.Draw();
+
+         ROOTTools::PrintCanvas(&canvSys, outputDirSys + "/" +  resonanceName + 
+                                "_" + methodName + "_" + centralityName);
       }
 
       resultsOutputFile->mkdir(centralityName.c_str());
@@ -335,7 +578,7 @@ int main(int argc, char **argv)
 
       tsallisFit.SetLineStyle(2);
       tsallisFit.SetLineWidth(4);
-      tsallisFit.SetLineColor(kRed - 3);
+      tsallisFit.SetLineColorAlpha(kBlack, 0.5);
 
       for (unsigned int i = 0; i < fitNTries; i++)
       {
@@ -414,7 +657,7 @@ int main(int argc, char **argv)
       distrResultingSpectraVsPTStatErr.Clone()->Write();
       distrResultingSpectraVsPTSysErr.Clone()->Write();
 
-      ROOTTools::PrintCanvas(&canvSpectra, outputDir + "/" + resonanceName + 
+      ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
                              "_spectra_" + centralityName);
 
       std::vector<TH1D *> spectraRatiosVsPTStatErr;
@@ -440,10 +683,18 @@ int main(int argc, char **argv)
          {
             if (spectraRatiosVsPTStatErr[i]->GetBinContent(j) < 1e-15) continue;
 
-            ratioMin = CppTools::Minimum(ratioMin, spectraRatiosVsPTStatErr[i]->GetBinContent(j));
-            ratioMax = CppTools::Maximum(ratioMax, spectraRatiosVsPTStatErr[i]->GetBinContent(j));
+            ratioMin = 
+               CppTools::Minimum(ratioMin, spectraRatiosVsPTStatErr[i]->GetBinContent(j) - 
+                                 CppTools::Maximum(spectraRatiosVsPTStatErr[i]->GetBinError(j),
+                                                   spectraRatiosVsPTSysErr[i]->GetBinError(j)));
+            ratioMax = 
+               CppTools::Maximum(ratioMax, spectraRatiosVsPTStatErr[i]->GetBinContent(j) +
+                                 CppTools::Maximum(spectraRatiosVsPTStatErr[i]->GetBinError(j),
+                                                   spectraRatiosVsPTSysErr[i]->GetBinError(j)));
          }
       }
+
+      tsallisFit.SetLineColor(kRed - 3);
 
       TCanvas canvAllSpectra("all spectra canv", "", 800, 1000);
 
@@ -458,15 +709,21 @@ int main(int argc, char **argv)
 
       gPad->SetLogy();
 
-      gPad->SetPad(0., 0.3, 1., 1.);
+      gPad->SetPad(0., 0.5, 1., 1.);
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.);
+      gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.);
 
       ROOTTools::
          DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
-                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
+                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]", 0., 0.95, 0.07, 0.07);
 
       tsallisFit.Draw("SAME");
+
+      TLatex tlText;
+
+      tlText.SetTextFont(52);
+      tlText.SetTextSize(0.1);
+      tlText.DrawLatexNDC(0.2, 0.1, centralityNameTex.c_str());
 
       for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
@@ -487,12 +744,12 @@ int main(int argc, char **argv)
 
       canvAllSpectra.cd(2);
 
-      gPad->SetPad(0., 0., 1., 0.3);
+      gPad->SetPad(0., 0., 1., 0.5);
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.); 
-      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.25);
+      gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.16);
 
       ROOTTools::DrawFrame(xMin - 0.1, ratioMin/1.1, xMax + 0.1, ratioMax*1.1, 
-                           "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.7, 0.11, 0.11);
+                           "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.95, 0.07, 0.07);
 
       if (ratioMin/1.1 < 1. && ratioMax*1.1 > 1.)
       {
@@ -513,7 +770,7 @@ int main(int argc, char **argv)
          spectraRatiosVsPTSysErr[i]->Draw("SAME E2");
       }
 
-      ROOTTools::PrintCanvas(&canvAllSpectra, outputDir + "/" + resonanceName + 
+      ROOTTools::PrintCanvas(&canvAllSpectra, outputDirResults + "/" + resonanceName + 
                              "_spectra_" + centralityName + "_all");
 
       legend.Clear();
@@ -568,7 +825,7 @@ int main(int argc, char **argv)
 
          maxRAB = CppTools::Maximum(maxRAB, 1.99);
 
-         TCanvas canvAllRAB("all spectra canv", "", 800, 800);
+         TCanvas canvAllRAB("rab canv", "", 800, 800);
 
          canvAllRAB.SetFillStyle(4000);
          canvAllRAB.SetFrameFillColor(0);
@@ -614,7 +871,7 @@ int main(int argc, char **argv)
 
          tlText.DrawLatexNDC(0.15, 0.15, centralityNameTex.c_str());
 
-         ROOTTools::PrintCanvas(&canvAllRAB, outputDir + "/" + resonanceName + 
+         ROOTTools::PrintCanvas(&canvAllRAB, outputDirResults + "/" + resonanceName + 
                                 "_RAB_all_methods_" + centralityName);
 
          TH1D distrResultingRABVsPTStatErr("resulting rab stat", "", 
@@ -654,13 +911,16 @@ int main(int argc, char **argv)
          distrResultingRABVsPTStatErr.Write("RAB vs pT with stat errors");
          distrResultingRABVsPTSysErr.Write("RAB vs pT with sys errors");
       }
+      iC++;
    }
 
    resultsOutputFile->Close();
 
-   CppTools::PrintInfo("Results (spectra and RAB) were succesfully evaluated");
-   CppTools::PrintInfo("Results were written in " + resultsOutputFileName);
-   CppTools::PrintInfo("Pictures were written in " + outputDir + " directory");
+   CppTools::PrintInfo("Results were succesfully evaluated");
+   CppTools::PrintInfo("Spectras were written in " + resultsOutputFileName);
+   CppTools::PrintInfo("RAB and spectra pictures were written in " + 
+                       outputDirResults + " directory");
+   CppTools::PrintInfo("Systematics were written in " + outputDirSys + " directory");
 
    return 0;
 }
