@@ -56,6 +56,8 @@ namespace AnalyzeSimResonance
    double pTMin;
    /// maximum pT of a charged track
    double pTMax;
+   /// correction for TOFw due to ADC and efficiency correction
+   double correctionTOFw;
    /// shows whether the  particles will be reweighted to the corresponding spectra
    bool reweightForSpectra;
    /// file reader for all required parameters for the resonance and for its simulation processing
@@ -103,6 +105,12 @@ namespace AnalyzeSimResonance
    bool useEMCal;
    /// shows whether identification with EMCal is used
    bool useEMCalId;
+   /// shows whether no cut variation will be applied
+   bool cutsOffsetNone;
+   /// shows whether cuts are loosened
+   bool cutsOffsetLoose;
+   /// shows whether cuts are tight
+   bool cutsOffsetTight;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 
@@ -338,21 +346,15 @@ namespace AnalyzeSimResonance
    void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
                              const int daughter1Id, const int daugther2Id,
                              const std::string& magneticFieldName, const std::string& pTRangeName);
-   /* @struct AcceptanceVar
-    * @brief Container for storing acceptance variations for different detectors
+   /* @struct DetectorWeights
+    * @brief Container for storinga detector weights or weight variations 
     */
-   struct AcceptanceVar
+   struct DetectorWeights
    {
       /// @brief sets acceptance variation values from the specified file
       void Set(const std::string& fileName);
-      /// value of acceptance variation for DCe0
-      double DCe0 = 0.;
-      /// value of acceptance variation for DCe1
-      double DCe1 = 0.;
-      /// value of acceptance variation for DCw0
-      double DCw0 = 0.;
-      /// value of acceptance variation for DCw1
-      double DCw1 = 0.;
+      /// value of acceptance variation for DC
+      std::array<std::array<double, 2>, 2> DC = {{{{0., 0.}}, {{0., 0.}}}};
       /// values of acceptance variation for PC1e and PC1w
       std::array<double, 2> PC1 = {0., 0.};
       /// value of acceptance variation for PC2
