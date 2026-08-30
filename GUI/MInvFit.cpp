@@ -57,7 +57,7 @@ std::vector<TF1 *> altFitsBGFixedG;
 // shows whether the alternative fits will be performed and written
 // this value needs to be true if you want to later use different fits in this run
 // for systematic uncertainty evaluation
-bool performAltFits = true;
+bool performAltFits = false;
 
 using namespace AnalyzeRealMInv;
 
@@ -475,13 +475,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
-                                        &FitFunc::RBWConvGausBGPol2, 
+                                        &FitFunc::RBWConvGausBGPol4, 
                                         massResonance - gammaResonance*3., 
-                                        massResonance + gammaResonance*3., 7));
+                                        massResonance + gammaResonance*3., 9));
             altFitsBGAB.push_back(new TF1(("BGAB" + std::to_string(i)).c_str(), 
-                                          &FitFunc::Pol2,
+                                          &FitFunc::Pol4,
                                           massResonance - gammaResonance*3., 
-                                          massResonance + gammaResonance*3., 3));
+                                          massResonance + gammaResonance*3., 5));
 
             altFitsFreeG.push_back(new TF1(("Free G" + std::to_string(i)).c_str(), 
                                             &FitFunc::RBWConvGausBGPol3, 
