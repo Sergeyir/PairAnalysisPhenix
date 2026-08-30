@@ -10,12 +10,14 @@
 
 const std::string runName = "Run14HeAu200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20457;
+const int taxiNumber = 20474;
 
-const double xMin = 0.8;
-const double xMax = 8.6;
-const double yMin = 0.;
-const double yMax = 1.999;
+const double pTMinRAB = 0.8;
+const double pTMaxRAB = 8.6;
+const double pTMinRCP = 0.4;
+const double pTMaxRCP = 6.5;
+const double rMin = 0.;
+const double rMax = 1.999;
 
 TFile *resultsInputFile;
 
@@ -115,9 +117,9 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(xMin, yMin, 6.5, yMax, "", "p_{T} [GeV/c]", "R_{CP}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRCP, rMin, pTMaxRCP, rMax, "", "p_{T} [GeV/c]", "R_{CP}", 1., 0.95);
 
-      TLine line(xMin, 1., xMax, 1.);
+      TLine line(pTMinRCP, 1., pTMaxRCP, 1.);
       line.SetLineColor(kGray + 1);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
@@ -145,7 +147,7 @@ void KStar892()
 
       rcp.DrawLegend();
 
-      rcp.DrawTypeCUncertainty(scalingUncertainty, 6.4, 1., kBlack, 0.3);
+      rcp.DrawTypeCUncertainty(scalingUncertainty, pTMinRCP - 0.1, 1., kBlack, 0.3);
 
       TLatex tlText;
 
@@ -199,9 +201,9 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(xMin, yMin, xMax, yMax, "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
 
-      TLine line(xMin, 1., xMax, 1.);
+      TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
       line.SetLineColor(kGray + 1);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
