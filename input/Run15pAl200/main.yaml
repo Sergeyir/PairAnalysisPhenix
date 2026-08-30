@@ -15,3 +15,4 @@ detectors_configuration: '1111111'
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0.4
 sim_board_offset_dcw: 0.4
+correction_tofw: 0.7796 # correction to TOFw due to ADC cut and efficiency correction

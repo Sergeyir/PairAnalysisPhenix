@@ -17,24 +17,4 @@ addit_mc_cuts_detectors_configuration: '0101000'
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0.1
 sim_board_offset_dcw: 0
-# detector reweights in MC. These values are not read unless addit_mc_cuts_detectors_configuration contains '1' for the given detector
-detector_reweights:
-- {name: "DCe0", value: 1.}
-- {name: "DCe1", value: 1.}
-- {name: "DCw0", value: 1.}
-- {name: "DCw1", value: 1.}
-- {name: "PC1e", value: 1.}
-- {name: "PC1w", value: 1.}
-- {name: "PC2", value: 1.}
-- {name: "PC3e", value: 1.}
-- {name: "PC3w", value: 1.}
-- {name: "TOFe", value: 1.}
-- {name: "TOFw", value: 1.}
-- {name: "EMCale0", value: 1.}
-- {name: "EMCale1", value: 1.}
-- {name: "EMCale2", value: 1.}
-- {name: "EMCale3", value: 1.}
-- {name: "EMCalw0", value: 1.}
-- {name: "EMCalw1", value: 1.}
-- {name: "EMCalw2", value: 1.}
-- {name: "EMCalw3", value: 1.}
+correction_tofw: 0.842 # correction to TOFw due to ADC cut and efficiency correction
