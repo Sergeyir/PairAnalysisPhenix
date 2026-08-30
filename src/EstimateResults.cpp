@@ -28,7 +28,6 @@ int main(int argc, char **argv)
                            "cut variation analysis and systematics");
    }
 
-
    gStyle->SetPalette(kSouthWest);
 
    CppTools::CheckInputFile(argv[1]);
@@ -228,6 +227,9 @@ int main(int argc, char **argv)
          const std::string methodName = method["name"].as<std::string>();
          methodColors.emplace_back(TColor::GetColor(method["color"].as<std::string>().c_str()));
 
+         const double methodPTMin = pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_min"].as<int>()];
+         const double methodPTMax = pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_max"].as<int>() + 1];
+
          const std::string inputFileName = 
             "data/RawYields/" + runName + "/Resonance/" + std::to_string(taxiNumber) + 
             "_" + resonanceName + "_" + methodName + ".root";
@@ -383,6 +385,12 @@ int main(int argc, char **argv)
             rawYieldVsPTTightenedCuts->Scale(1./spectraNorm);
          }
 
+         TH1D resultVarCutsVarL("results variation from loosened cuts", 
+                                "", pTNBins, &pTBinRanges[0]);
+         TH1D resultVarCutsVarT("results variation from tightened cuts", 
+                                "", pTNBins, &pTBinRanges[0]);
+
+         // setting all systematics (cuts variation and yield extraction are corrected lower)
          for (unsigned int i = 1; i <= pTNBins; i++)
          {
             if (rawYieldVsPTStatErr->GetBinContent(i) < 1e-31) continue;
@@ -397,32 +405,160 @@ int main(int argc, char **argv)
             double cutsVarSys = 0.;
             if (doCutsVarSys)
             {
-               cutsVarSys = 
-                  CppTools::RMS(rawYieldVsPTStatErr->GetBinContent(i) - 
-                                rawYieldVsPTLoosenedCuts->GetBinContent(i),
-                                rawYieldVsPTStatErr->GetBinContent(i) - 
-                                rawYieldVsPTTightenedCuts->GetBinContent(i))/
-                  rawYieldVsPTStatErr->GetBinContent(i);
+               // relative variations of loosened and tightened cuts 
+               // and their statistical uncertainties
+               const double varL = (rawYieldVsPTStatErr->GetBinContent(i) - 
+                                    rawYieldVsPTLoosenedCuts->GetBinContent(i))/
+                                   rawYieldVsPTStatErr->GetBinContent(i);
+               const double varT = (rawYieldVsPTStatErr->GetBinContent(i) - 
+                                    rawYieldVsPTTightenedCuts->GetBinContent(i))/
+                                   rawYieldVsPTStatErr->GetBinContent(i);
+               const double varLErr = 
+                  CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
+                                            rawYieldVsPTStatErr->GetBinContent(i),
+                                            rawYieldVsPTLoosenedCuts->GetBinError(i)/
+                                            rawYieldVsPTLoosenedCuts->GetBinContent(i));
+               const double varTErr = 
+                  CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
+                                            rawYieldVsPTStatErr->GetBinContent(i),
+                                            rawYieldVsPTTightenedCuts->GetBinError(i)/
+                                            rawYieldVsPTTightenedCuts->GetBinContent(i));
 
-               if (methodName == "1K1TOF1PID")
-               {
-                  CppTools::Print(methodName, centralityName, 
-                                  pTBinRanges[i - 1], pTBinRanges[i],
-                                  rawYieldVsPTLoosenedCuts->GetBinContent(i)/
-                                  rawYieldVsPTStatErr->GetBinContent(i),
-                                  rawYieldVsPTTightenedCuts->GetBinContent(i)/
-                                  rawYieldVsPTStatErr->GetBinContent(i));
-               }
+               cutsVarSys = CppTools::RMS(varL, varT);
 
                sysCutsVar.SetBinContent(i, cutsVarSys);
+               sysCutsVar.SetBinError(i, CppTools::UncertaintyProp(varLErr, varTErr));
+
+               resultVarCutsVarL.SetBinContent(i, varL);
+               resultVarCutsVarT.SetBinContent(i, varT);
+
+               resultVarCutsVarL.SetBinError(i, varLErr*varL);
+               resultVarCutsVarT.SetBinError(i, varTErr*varT);
+            }
+         }
+         // Cuts variations: setting histograms and drawing
+         { 
+            double minY = CppTools::Minimum(resultVarCutsVarL.GetMinimum(),
+                                            resultVarCutsVarT.GetMinimum());
+            double maxY = CppTools::Maximum(resultVarCutsVarL.GetMaximum(),
+                                            resultVarCutsVarT.GetMaximum());
+
+            if (minY > 0) minY /= 1.3;
+            else (minY) *= 1.3;
+
+            if (maxY > 0) maxY *= 1.3;
+            else maxY /= 1.3;
+            
+            resultVarCutsVarL.SetMinimum(minY);
+            resultVarCutsVarL.SetMaximum(maxY);
+
+            resultVarCutsVarL.GetXaxis()->
+               SetRange(resultVarCutsVarL.GetXaxis()->FindBin(methodPTMin + 1e-7),
+                        resultVarCutsVarL.GetXaxis()->FindBin(methodPTMax - 1e-7));
+
+            resultVarCutsVarL.SetLineWidth(2);
+            resultVarCutsVarT.SetLineWidth(2);
+
+            resultVarCutsVarL.SetLineColorAlpha(kAzure - 3, 0.8);
+            resultVarCutsVarT.SetLineColorAlpha(kRed - 3, 0.8);
+
+            TCanvas canv("cuts var canv", "", 800, 800);
+
+            canv.SetFillStyle(4000);
+            canv.SetFrameFillColor(0);
+            canv.SetFrameFillStyle(0);
+            canv.SetFrameBorderMode(0);
+
+            gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+            gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+            ROOTTools::DrawFrame(&resultVarCutsVarL, "", "#it{p}_{T} [GeV/#it{c}]", 
+                                 "Var(#it{Y})", 1., 1.5);
+
+            resultVarCutsVarT.Draw("SAME");
+
+            TLegend legend(0.15, 0.85, 0.9, 0.95);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
+            legend.SetNColumns(2);
+
+            legend.AddEntry(&resultVarCutsVarL, "Loosened cuts");
+            legend.AddEntry(&resultVarCutsVarT, "Tightened cuts");
+
+            legend.Draw();
+
+            if (minY < 0. && maxY > 0.)
+            {
+               TLine line(methodPTMin, 0., methodPTMax, 0.);
+               line.SetLineColorAlpha(kBlack, 0.5);
+               line.SetLineStyle(2);
+               line.SetLineWidth(4);
+               line.Draw();
             }
 
+            ROOTTools::PrintCanvas(&canv, outputDirSys + "/CutsVar_" +  resonanceName + 
+                                   "_" + methodName + "_" + centralityName);
+         }
+         // Systematics of cuts variation: correcting systematics, setting histograms, fits, and drawing
+         if (doCutsVarSys)
+         { 
+            sysCutsVar.GetXaxis()->
+               SetRange(sysCutsVar.GetXaxis()->FindBin(methodPTMin + 1e-7),
+                        sysCutsVar.GetXaxis()->FindBin(methodPTMax - 1e-7));
+
+            sysCutsVar.SetLineWidth(2);
+
+            sysCutsVar.SetLineColorAlpha(kRed - 3, 0.9);
+
+            TF1 fit("cuts var sys fit", "pol2");
+
+            fit.SetLineColorAlpha(kBlack, 0.5);
+            fit.SetLineWidth(4);
+            fit.SetLineStyle(2);
+
+            fit.SetRange(methodPTMin, methodPTMax);
+
+            sysCutsVar.Fit(&fit, "QMN");
+
+            TCanvas canv("cuts var systematics canv", "", 800, 800);
+
+            canv.SetFillStyle(4000);
+            canv.SetFrameFillColor(0);
+            canv.SetFrameFillStyle(0);
+            canv.SetFrameBorderMode(0);
+
+            gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+            gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+            ROOTTools::DrawFrame(&sysCutsVar, "", "#it{p}_{T} [GeV/#it{c}]", 
+                                 "Relative uncertainty", 1., 1.5);
+
+            fit.Draw("SAME");
+
+            ROOTTools::PrintCanvas(&canv, outputDirSys + "/CutsVarSys_" +  resonanceName + 
+                                   "_" + methodName + "_" + centralityName);
+
+            for (int i = 1; i < sysCutsVar.GetXaxis()->GetNbins(); i++)
+            {
+               const double val = fit.Eval(sysCutsVar.GetXaxis()->GetBinCenter(i));
+               if (val > 0.)
+               {
+                  sysCutsVar.SetBinContent(i, fit.Eval(sysCutsVar.GetXaxis()->GetBinCenter(i)));
+               }
+               else sysCutsVar.SetBinContent(i, 0.);
+            }
+         }
+         // Finishing setting systematics
+         for (unsigned int i = 1; i <= pTNBins; i++)
+         {
+            if (rawYieldVsPTStatErr->GetBinContent(i) < 1e-31) continue;
             // full relative systematic uncertainty (A+B types)
             const double sys = 
                CppTools::UncertaintyProp(sysPTScale.GetBinContent(i), 
                                          sysAccVar.GetBinContent(i),
                                          sysCutsVar.GetBinContent(i),
                                          sysYieldExtr.GetBinContent(i));
+
             sysFull.SetBinContent(i, sys);
 
             rawYieldVsPTSysErr->SetBinContent(i, rawYieldVsPTStatErr->GetBinContent(i));
@@ -435,66 +571,70 @@ int main(int argc, char **argv)
          spectrasVsPTStatErr.emplace_back(rawYieldVsPTStatErr);
          spectrasVsPTSysErr.emplace_back(rawYieldVsPTSysErr);
 
-         sysFull.GetXaxis()->
-            SetRange(sysFull.GetXaxis()->FindBin(pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_min"].as<int>()] + 1e-7),
-                     sysFull.GetXaxis()->FindBin(pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_max"].as<int>()] - 1e-7) + 1);
+         // All systematics: setting histograms and drawing
+         { 
+            sysFull.GetXaxis()->
+               SetRange(sysFull.GetXaxis()->FindBin(methodPTMin + 1e-7),
+                        sysFull.GetXaxis()->FindBin(methodPTMax - 1e-7));
 
-         sysFull.SetMaximum(sysFull.GetMaximum()*1.2);
-         sysFull.SetMinimum(0.001);
+            sysFull.SetMaximum(sysFull.GetMaximum()*1.2);
+            sysFull.SetMinimum(0.001);
 
-         sysPTScale.SetLineColorAlpha(kP6Blue, 0.9);
-         sysAccVar.SetLineColorAlpha(kP6Red, 0.9);
-         sysYieldExtr.SetLineColorAlpha(kP6Yellow, 0.9);
-         sysFull.SetLineColor(kP6Gray);
+            sysPTScale.SetLineColorAlpha(kP6Blue, 0.9);
+            sysAccVar.SetLineColorAlpha(kP6Red, 0.9);
+            sysYieldExtr.SetLineColorAlpha(kP6Yellow, 0.9);
+            sysFull.SetLineColor(kP6Gray);
 
-         sysPTScale.SetLineWidth(2);
-         sysAccVar.SetLineWidth(2);
-         sysYieldExtr.SetLineWidth(2);
-         sysFull.SetLineWidth(4);
+            sysPTScale.SetLineWidth(2);
+            sysAccVar.SetLineWidth(2);
+            sysYieldExtr.SetLineWidth(2);
+            sysFull.SetLineWidth(4);
 
-         sysPTScale.SetLineStyle(2);
-         sysAccVar.SetLineStyle(9);
-         sysYieldExtr.SetLineStyle(8);
+            sysPTScale.SetLineStyle(2);
+            sysAccVar.SetLineStyle(9);
+            sysYieldExtr.SetLineStyle(8);
 
-         TCanvas canvSys("sys canv", "", 800, 800);
+            TCanvas canv("sys canv", "", 800, 800);
 
-         canvSys.SetFillStyle(4000);
-         canvSys.SetFrameFillColor(0);
-         canvSys.SetFrameFillStyle(0);
-         canvSys.SetFrameBorderMode(0);
+            canv.SetFillStyle(4000);
+            canv.SetFrameFillColor(0);
+            canv.SetFrameFillStyle(0);
+            canv.SetFrameBorderMode(0);
 
-         gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
-         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+            gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+            gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(&sysFull, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.4);
+            ROOTTools::DrawFrame(&sysFull, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.5);
 
-         sysPTScale.Draw("SAME");
-         sysAccVar.Draw("SAME");
-         sysYieldExtr.Draw("SAME");
+            sysPTScale.Draw("SAME");
+            sysAccVar.Draw("SAME");
+            sysYieldExtr.Draw("SAME");
 
-         if (doCutsVarSys)
-         {
-            sysCutsVar.SetLineStyle(7);
-            sysCutsVar.SetLineColorAlpha(kP6Violet, 0.9);
-            sysCutsVar.SetLineWidth(2);
-            sysCutsVar.Draw("SAME");
+            if (doCutsVarSys)
+            {
+               sysCutsVar.Sumw2(false);
+               sysCutsVar.SetLineStyle(7);
+               sysCutsVar.SetLineColorAlpha(kP6Violet, 0.9);
+               sysCutsVar.SetLineWidth(2);
+               sysCutsVar.Draw("SAME");
+            }
+
+            TLegend legend(0.15, 0.85, 0.9, 0.95);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
+            legend.SetNColumns(3);
+
+            legend.AddEntry(&sysPTScale, "#it{p}_{T} scale");
+            legend.AddEntry(&sysAccVar, "Acceptance");
+            legend.AddEntry(&sysCutsVar, "Cuts");
+            legend.AddEntry(&sysYieldExtr, "Yield extraction");
+            legend.AddEntry(&sysFull, "Full");
+
+            legend.Draw();
+
+            ROOTTools::PrintCanvas(&canv, outputDirSys + "/" +  resonanceName + 
+                                   "_" + methodName + "_" + centralityName);
          }
-
-         TLegend legend(0.15, 0.85, 0.9, 0.95);
-         legend.SetLineColorAlpha(0, 0.);
-         legend.SetFillColorAlpha(0, 0.);
-         legend.SetNColumns(3);
-
-         legend.AddEntry(&sysPTScale, "#it{p}_{T} scale");
-         legend.AddEntry(&sysAccVar, "Acceptance");
-         legend.AddEntry(&sysCutsVar, "Cuts");
-         legend.AddEntry(&sysYieldExtr, "Yield extraction");
-         legend.AddEntry(&sysFull, "Full");
-
-         legend.Draw();
-
-         ROOTTools::PrintCanvas(&canvSys, outputDirSys + "/" +  resonanceName + 
-                                "_" + methodName + "_" + centralityName);
       }
 
       resultsOutputFile->mkdir(centralityName.c_str());
