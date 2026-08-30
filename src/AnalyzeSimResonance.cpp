@@ -203,7 +203,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                     (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||  
                     (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  weightPC2 = reweights.PC2 + accVar.PC2;
+                  weightPC2 = (1. + accVar.PC2)*reweights.PC2;
                   if (weightPC2 > 1e-15) idPC2 = PART_ID::NONE;
                }
             }
@@ -221,7 +221,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                     (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
                     (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  weightPC3 = reweights.PC3[dcarm] + accVar.PC3[dcarm];
+                  weightPC3 = (1. + accVar.PC3[dcarm])*reweights.PC3[dcarm];
                   if (weightPC3 > 1e-15) idPC3 = PART_ID::NONE;
                }
             }
@@ -238,7 +238,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                     (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
                     (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  weightEMCal = reweights.EMCal[dcarm][simCNT.sect(i)] + accVar.EMCal[dcarm][simCNT.sect(i)];
+                  weightEMCal = (1. + accVar.EMCal[dcarm][simCNT.sect(i)])*
+                                reweights.EMCal[dcarm][simCNT.sect(i)];
 
                   if (weightEMCal > 1e-15)
                   {
@@ -301,7 +302,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                     (cutsOffsetLoose && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.5)) ||
                     (cutsOffsetTight && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 2.5))))
                {
-                  weightTOFe = reweights.TOFe + accVar.TOFe;
+                  weightTOFe = (1. + accVar.TOFe)*reweights.TOFe;
 
                   if (weightTOFe > 1e-15)
                   {
@@ -355,7 +356,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                     (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
                     (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  weightTOFw = correctionTOFw*(reweights.TOFw + accVar.TOFw);
+                  weightTOFw = (1. + accVar.TOFw)*correctionTOFw*reweights.TOFw;
 
                   if (weightTOFw > 1e-15)
                   {
