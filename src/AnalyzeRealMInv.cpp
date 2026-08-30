@@ -400,12 +400,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                massResonance + gammaResonance*3., 4);
                if (performAltFits)
                {
-                  altFitAB = new TF1("AB", &FitFunc::RBWConvGausBGPol2, 
+                  altFitAB = new TF1("AB", &FitFunc::RBWConvGausBGPol4, 
                                      massResonance - gammaResonance*3., 
-                                     massResonance + gammaResonance*3., 7);
-                  altFitBGAB = new TF1("AB BG", &FitFunc::Pol2, 
+                                     massResonance + gammaResonance*3., 9);
+                  altFitBGAB = new TF1("AB BG", &FitFunc::Pol4, 
                                        massResonance - gammaResonance*3., 
-                                       massResonance + gammaResonance*3., 3);
+                                       massResonance + gammaResonance*3., 5);
                   altFitFreeG = new TF1("FreeG", &FitFunc::RBWConvGausBGPol3, 
                                         massResonance - gammaResonance*3., 
                                         massResonance + gammaResonance*3., 8);
@@ -1340,9 +1340,6 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
 {
    if (std::filesystem::exists(inputFileName))
    {
-      pBar.Clear();
-      CppTools::PrintInfo("Fixed BG fits file for " + fitTypeName + " fits were found");
-      pBar.RePrint();
       return TFile::Open(inputFileName.c_str());
    }
    else if (printFreeFitWarning)
