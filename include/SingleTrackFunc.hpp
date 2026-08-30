@@ -90,6 +90,8 @@ struct ChargedTrack
    int idTOFe = PART_ID::JUNK;
    /// id of a particle obtained in TOFw
    int idTOFw = PART_ID::JUNK;
+   /// probability of a particle being registered in DC-PC1
+   double weightDCPC1 = 0.;
    /// probability of a particle being registered in PC2
    double weightPC2 = 0.;
    /// probability of a particle being registered in PC3
