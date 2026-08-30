@@ -89,11 +89,14 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
       weightFunc = std::make_unique<TF1>("weightFunc", "exp(-x)");
    }
 
-   AcceptanceVar accVar;
+   DetectorWeights reweights;
+   DetectorWeights accVar;
+
+   reweights.Set("data/Parameters/MCReweights/" + runName + "/Detectors.txt");
 
    if (acceptanceVar != 0)
    {
-      accVar.Set("data/Parameters/" + runName + "/Acceptance.txt");
+      accVar.Set("data/Parameters/Systematics/" + runName + "/Acceptance.txt");
    }
 
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
@@ -122,7 +125,9 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
          const double bbcz = simCNT.bbcz();
-         if (fabs(bbcz) > 30.) continue;
+         if ((cutsOffsetNone && fabs(bbcz) > 30.) ||
+             (cutsOffsetLoose && fabs(bbcz) > 31.) ||
+             (cutsOffsetTight && fabs(bbcz) > 29.)) continue;
 
          std::vector<ChargedTrack> positiveTracks;
          std::vector<ChargedTrack> negativeTracks;
@@ -143,7 +148,9 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const int dcarm = simCNT.dcarm(i);
 
             const double zed = simCNT.zed(i);
-            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
+            if ((cutsOffsetNone && fabs(zed) > 75. && fabs(zed) < 3.) ||
+                (cutsOffsetLoose && fabs(zed) > 78.) ||  
+                (cutsOffsetTight && fabs(zed) > 72. && fabs(zed) < 6.)) continue;
  
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
@@ -160,6 +167,14 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             if (dmCutter.IsDeadPC1(dcarm, simCNT.ppc1z(i), ppc1phi)) continue;
 
             histContainer.distrOrigPTVsRecDaughtersPT->Fill(origPT, pT, eventWeight);
+
+            double weightDCPC1 = reweights.PC1[dcarm];
+            if (zed < 0) weightDCPC1 *= reweights.DC[dcarm][1];
+            else weightDCPC1 *= reweights.DC[dcarm][0];
+
+            weightDCPC1 += accVar.PC1[dcarm];
+            if (zed < 0) weightDCPC1 += accVar.DC[dcarm][1];
+            else weightDCPC1 += accVar.DC[dcarm][0];
 
             int idPC2 = PART_ID::JUNK;
             int idPC3 = PART_ID::JUNK;
@@ -183,12 +198,12 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdz = simSigmRes.PC2SDZ(simCNT.pc2dz(i), pT, charge);
                const double pc2phi = atan2(simCNT.ppc2y(i), simCNT.ppc2x(i));
 
-               if (IsMatch(sdphi, sdz, 3.0))
+               if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi) &&
+                   ((cutsOffsetNone && IsMatch(sdphi, sdz, 3.0)) ||
+                    (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||  
+                    (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  if (!dmCutter.IsDeadPC2(simCNT.ppc2z(i), pc2phi))
-                  {
-                     weightPC2 = 1. + accVar.PC2;
-                  }
+                  weightPC2 = reweights.PC2 + accVar.PC2;
                   if (weightPC2 > 1e-15) idPC2 = PART_ID::NONE;
                }
             }
@@ -201,12 +216,12 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                double pc3phi = atan2(simCNT.ppc3y(i), simCNT.ppc3x(i));
                if (dcarm == 0 && pc3phi < 0) pc3phi += 2.*M_PI;
 
-               if (IsMatch(sdphi, sdz, 3.0))
+               if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi) &&
+                   ((cutsOffsetNone && IsMatch(sdphi, sdz, 3.0)) ||
+                    (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
+                    (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  if (!dmCutter.IsDeadPC3(dcarm, simCNT.ppc2z(i), pc3phi))
-                  {
-                     weightPC3 = 1. + accVar.PC3[dcarm];
-                  }
+                  weightPC3 = reweights.PC3[dcarm] + accVar.PC3[dcarm];
                   if (weightPC3 > 1e-15) idPC3 = PART_ID::NONE;
                }
             }
@@ -218,25 +233,17 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double sdz = 
                   simSigmRes.EMCalSDZ(simCNT.emcdz(i), pT, charge, dcarm, simCNT.sect(i));
 
-               /*
-               bool isCutByECore;
-               if (dcarm == 0 && simCNT.sect(i) < 2) isCutByECore = (simCNT.ecore(i) < 0.35);
-               else isCutByECore = (simCNT.ecore(i) < 0.25); // PbSc
-                                                             // */
-
-               if (IsMatch(sdphi, sdz, 3.0)/* && !isCutByECore*/)
+               if (!dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)) && 
+                   ((cutsOffsetNone && IsMatch(sdphi, sdz, 3.0)) ||
+                    (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
+                    (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  if (!dmCutter.IsDeadEMCal(dcarm, simCNT.sect(i), 
-                                            simCNT.ysect(i), simCNT.zsect(i)))
-                  {
-                     weightEMCal = 1. + accVar.EMCal[dcarm][simCNT.sect(i)];
-                  }
+                  weightEMCal = reweights.EMCal[dcarm][simCNT.sect(i)] + accVar.EMCal[dcarm][simCNT.sect(i)];
 
                   if (weightEMCal > 1e-15)
                   {
                      if (useEMCalId && !(dcarm == 0 && simCNT.sect(i) < 2) &&
-                         !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
-                                                     simCNT.ysect(i), simCNT.zsect(i)))
+                         !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
                      {
                         switch (charge)
                         {
@@ -247,8 +254,22 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                               idEMCal = daughter2Id;
                               break;
                         }
-                        weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
-                                                               idEMCal, pT, 1., 2.)*weightEMCal;
+                        if (cutsOffsetNone) 
+                        {
+                           weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                                  idEMCal, pT, 2., 2.)*weightEMCal;
+                        }
+                        else if (cutsOffsetLoose)
+                        {
+                           weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                                  idEMCal, pT, 2.5, 2.5)*weightEMCal;
+                        }
+                        else if (cutsOffsetTight)
+                        {
+                           weightIdEMCal = simM2Id.GetEMCalIdProb(simCNT.dcarm(i), simCNT.sect(i), 
+                                                                  idEMCal, pT, 1.5, 1.5)*weightEMCal;
+                        }
+
                         if (weightIdEMCal <= 0.)
                         {
                            idEMCal = PART_ID::NONE;
@@ -275,12 +296,12 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // slat number for the current chamber
                const int slat = simCNT.slat(i) % 96;
 
-               if (simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.))
+               if (!dmCutter.IsDeadTOFe(chamber, slat) &&
+                   ((cutsOffsetNone && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.)) ||
+                    (cutsOffsetLoose && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.5)) ||
+                    (cutsOffsetTight && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 2.5))))
                {
-                  if (!dmCutter.IsDeadTOFe(chamber, slat))
-                  {
-                     weightTOFe = 1. + accVar.TOFe;
-                  }
+                  weightTOFe = reweights.TOFe + accVar.TOFe;
 
                   if (weightTOFe > 1e-15)
                   {
@@ -295,7 +316,19 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                               idTOFe = daughter2Id;
                               break;
                         }
-                        weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2., 2.)*weightTOFe;
+
+                        if (cutsOffsetNone)
+                        {
+                           weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2., 2.)*weightTOFe;
+                        }
+                        else if (cutsOffsetLoose)
+                        {
+                           weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 2.5, 2.5)*weightTOFe;
+                        }
+                        else if (cutsOffsetTight)
+                        {
+                           weightIdTOFe = simM2Id.GetTOFeIdProb(idTOFe, pT, 1.5, 1.5)*weightTOFe;
+                        }
 
                         if (weightIdTOFe <= 0.)
                         {
@@ -317,12 +350,12 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                // strip number for the current chamber
                const int strip = simCNT.striptofw(i) % 64;
 
-               if (IsMatch(sdphi, sdz, 3.0))
+               if (!dmCutter.IsDeadTOFw(chamber, strip) &&
+                   ((cutsOffsetNone && IsMatch(sdphi, sdz, 3.0)) ||
+                    (cutsOffsetLoose && IsMatch(sdphi, sdz, 3.5)) ||
+                    (cutsOffsetTight && IsMatch(sdphi, sdz, 2.5))))
                {
-                  if (!dmCutter.IsDeadTOFw(chamber, strip))
-                  {
-                     weightTOFw = 0.7996*(1. + accVar.TOFw);
-                  }
+                  weightTOFw = correctionTOFw*(reweights.TOFw + accVar.TOFw);
 
                   if (weightTOFw > 1e-15)
                   {
@@ -337,7 +370,19 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                               idTOFw = daughter2Id;
                               break;
                         }
-                        weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2., 2.)*weightTOFw;
+
+                        if (cutsOffsetNone) 
+                        {
+                           weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2., 2.)*weightTOFw;
+                        }
+                        else if (cutsOffsetLoose) 
+                        {
+                           weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 2.5, 2.5)*weightTOFw;
+                        }
+                        else if (cutsOffsetTight) 
+                        {
+                           weightIdTOFw = simM2Id.GetTOFwIdProb(idTOFw, pT, 1.5, 1.5)*weightTOFw;
+                        }
 
                         if (weightIdTOFw <= 0.)
                         {
@@ -355,7 +400,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                 idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
                 */
 
-            histContainer.distrOrigPTVsDecayRecPT->Fill(origPT, pT, eventWeight);
+            histContainer.distrOrigPTVsDecayRecPT->Fill(origPT, pT, eventWeight*weightDCPC1);
 
             switch (charge)
             {
@@ -366,6 +411,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   positiveTracks.back().idEMCal = idEMCal;
                   positiveTracks.back().idTOFe = idTOFe;
                   positiveTracks.back().idTOFw = idTOFw;
+                  positiveTracks.back().weightDCPC1 = weightDCPC1;
                   positiveTracks.back().weightPC2 = weightPC2;
                   positiveTracks.back().weightPC3 = weightPC3;
                   positiveTracks.back().weightEMCal = weightEMCal;
@@ -382,6 +428,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   negativeTracks.back().idEMCal = idEMCal;
                   negativeTracks.back().idTOFe = idTOFe;
                   negativeTracks.back().idTOFw = idTOFw;
+                  negativeTracks.back().weightDCPC1 = weightDCPC1;
                   negativeTracks.back().weightPC2 = weightPC2;
                   negativeTracks.back().weightPC3 = weightPC3;
                   negativeTracks.back().weightEMCal = weightEMCal;
@@ -403,6 +450,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                const double mInv = GetPairMass(posTrack, negTrack);
                // pT of a pair [GeV/c]
                const double pT = GetPairPT(posTrack, negTrack);
+               // DC-PC1 weight of a pair
+               const double weightDCPC1 = posTrack.weightDCPC1*negTrack.weightDCPC1;
 
                // check that shows whether invariant mass is within 2 gamma from mean of the signal
                // 10 is a rough estimation for gaussian widening 
@@ -414,7 +463,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (IsOneArmCut(posTrack, negTrack)) 
                {
-                  thrContainer.distrMInvOneArmAntiCut->Fill(pT, mInv, eventWeight);
+                  thrContainer.distrMInvOneArmAntiCut->Fill(pT, mInv, eventWeight*weightDCPC1);
                   continue;
                }
 
@@ -424,7 +473,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   {
                      thrContainer.distrDPC2PhiDPC2ZVsPT->Fill(posTrack.pc2z - negTrack.pc2z, 
                                                               posTrack.pc2phi - negTrack.pc2phi,
-                                                              eventWeight);
+                                                              eventWeight*weightDCPC1);
                   }
                }
 
@@ -434,7 +483,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   {
                      thrContainer.distrDPC3PhiDPC3ZVsPT->Fill(posTrack.pc3z - negTrack.pc3z, 
                                                               posTrack.pc3phi - negTrack.pc3phi, 
-                                                              eventWeight);
+                                                              eventWeight*weightDCPC1);
                   }
                }
 
@@ -446,12 +495,12 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                         Fill(static_cast<double>(posTrack.slat/96 - negTrack.slat/96) + 0.5,
                              static_cast<double>((posTrack.slat % 96) - 
                                                  (negTrack.slat % 96)) + 0.5,
-                             pT, eventWeight);
+                             pT, eventWeight*weightDCPC1);
                   }
 
                   if (posTrack.slat == negTrack.slat)
                   {
-                     thrContainer.distrMInvTOFeGhostNoPID->Fill(pT, mInv, eventWeight);
+                     thrContainer.distrMInvTOFeGhostNoPID->Fill(pT, mInv, eventWeight*weightDCPC1);
                   }
                }
                else if (posTrack.idTOFw != PART_ID::JUNK && negTrack.idTOFw != PART_ID::JUNK)
@@ -462,11 +511,11 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                         Fill(static_cast<double>(posTrack.strip/96 - negTrack.strip/96) + 0.5,
                              static_cast<double>((posTrack.strip % 96) - 
                                                  (negTrack.strip % 96)) + 0.5,
-                             pT, eventWeight);
+                             pT, eventWeight*weightDCPC1);
                   }
                   if (posTrack.strip == negTrack.strip)
                   {
-                     thrContainer.distrMInvTOFwGhostNoPID->Fill(pT, mInv, eventWeight);
+                     thrContainer.distrMInvTOFwGhostNoPID->Fill(pT, mInv, eventWeight*weightDCPC1);
                   }
                }
 
@@ -478,11 +527,11 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                      thrContainer.distrDYTowerDZTowerVsPT->
                         Fill(static_cast<double>(posTrack.yTower - negTrack.yTower) + 0.5, 
                              static_cast<double>(posTrack.zTower - negTrack.zTower) + 0.5, 
-                             pT, eventWeight);
+                             pT, eventWeight*weightDCPC1);
                   }
                   if (posTrack.yTower == negTrack.yTower && posTrack.zTower == negTrack.zTower)
                   {
-                     thrContainer.distrMInvEMCalGhostNoPID->Fill(pT, mInv, eventWeight);
+                     thrContainer.distrMInvEMCalGhostNoPID->Fill(pT, mInv, eventWeight*weightDCPC1);
                   }
                }
 
@@ -491,15 +540,15 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (mInv > resonanceMass - resonanceGamma*2. - 10. && 
                    mInv < resonanceMass + resonanceGamma*2. + 10.)
                {
-                  histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight);
+                  histContainer.distrOrigPTVsRecPT->Fill(origPT, pT, eventWeight*weightDCPC1);
                }
 
-               thrContainer.distrMInvDCPC1NoPID->Fill(pT, mInv, eventWeight);
+               thrContainer.distrMInvDCPC1NoPID->Fill(pT, mInv, eventWeight*weightDCPC1);
 
                if (IsDCPC11PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInvDCPC11PID->
-                     Fill(pT, mInv, eventWeight*
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
                           CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
                                                                         posTrack.weightIdTOFw,
                                                                         posTrack.weightIdEMCal), 
@@ -510,7 +559,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (Is1TOFDCPC11PID(posTrack, negTrack, daughter1Id, daughter2Id))
                   {
                      thrContainer.distrMInv1TOFDCPC11PID->
-                        Fill(pT, mInv, eventWeight*
+                        Fill(pT, mInv, eventWeight*weightDCPC1*
                              CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
                                                                            posTrack.weightIdTOFw), 
                                                     CppTools::AtLeast1Prob(negTrack.weightIdTOFe + 
@@ -519,7 +568,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                      if (Is1TOFDCPC11PID(posTrack, negTrack, PART_ID::KAON, PART_ID::KAON))
                      {
                         thrContainer.distrMInv1K1TOFDCPC11PID->
-                           Fill(pT, mInv, eventWeight*
+                           Fill(pT, mInv, eventWeight*weightDCPC1*
                                 CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
                                                                               posTrack.weightIdTOFw), 
                                                        CppTools::AtLeast1Prob(negTrack.weightIdTOFe + 
@@ -529,7 +578,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   else if (Is1EMCalDCPC11PID(posTrack, negTrack, daughter1Id, daughter2Id))
                   {
                      thrContainer.distrMInv1EMCalDCPC11PID->
-                        Fill(pT, mInv, eventWeight*
+                        Fill(pT, mInv, eventWeight*weightDCPC1*
                              CppTools::AtLeast1Prob(posTrack.weightIdEMCal, negTrack.weightIdEMCal));
                   }
                }
@@ -547,42 +596,42 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                                          negTrack.weightEMCal);
 
                thrContainer.distrMInvNoPID->
-                  Fill(pT, mInv, eventWeight*posTrackNoPIDProb*negTrackNoPIDProb);
+                  Fill(pT, mInv, eventWeight*weightDCPC1*posTrackNoPIDProb*negTrackNoPIDProb);
 
                if (IsPC2NoPID(posTrack, negTrack))
                {
                   thrContainer.distrMInvPC2NoPID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightPC2*negTrack.weightPC2);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*posTrack.weightPC2*negTrack.weightPC2);
                }
 
                if (IsPC3NoPID(posTrack, negTrack))
                {
                   thrContainer.distrMInvPC3NoPID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightPC3*negTrack.weightPC3);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*posTrack.weightPC3*negTrack.weightPC3);
                }
 
                if (IsTOFeNoPID(posTrack, negTrack))
                {
                   thrContainer.distrMInvTOFeNoPID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightTOFe*negTrack.weightTOFe);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*posTrack.weightTOFe*negTrack.weightTOFe);
                }
 
                if (IsTOFwNoPID(posTrack, negTrack))
                {
                   thrContainer.distrMInvTOFwNoPID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightTOFw*negTrack.weightTOFw);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*posTrack.weightTOFw*negTrack.weightTOFw);
                }
 
                if (IsEMCalNoPID(posTrack, negTrack))
                {
                   thrContainer.distrMInvEMCalNoPID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightEMCal*negTrack.weightEMCal);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*posTrack.weightEMCal*negTrack.weightEMCal);
                }
 
                if (!Is1PID(posTrack, negTrack, daughter1Id, daughter2Id)) continue;
 
                thrContainer.distrMInv1PID->
-                  Fill(pT, mInv, eventWeight*
+                  Fill(pT, mInv, eventWeight*weightDCPC1*
                        CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe + 
                                                                      posTrack.weightIdTOFw,
                                                                      posTrack.weightIdEMCal)*
@@ -595,7 +644,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (Is1TOF1PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInv1TOF1PID->
-                     Fill(pT, mInv, eventWeight*
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
                           CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe,
                                                                         posTrack.weightIdTOFw)*
                                                  negTrackNoPIDProb, 
@@ -606,7 +655,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (Is1TOF1PID(posTrack, negTrack, PART_ID::KAON, PART_ID::KAON))
                   {
                      thrContainer.distrMInv1K1TOF1PID->
-                        Fill(pT, mInv, eventWeight*
+                        Fill(pT, mInv, eventWeight*weightDCPC1*
                              CppTools::AtLeast1Prob(CppTools::AtLeast1Prob(posTrack.weightIdTOFe,
                                                                            posTrack.weightIdTOFw)*
                                                     negTrackNoPIDProb, 
@@ -619,7 +668,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (Is1EMCal1PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInv1EMCal1PID->
-                     Fill(pT, mInv, eventWeight*
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
                           CppTools::AtLeast1Prob(posTrack.weightIdEMCal*negTrackNoPIDProb, 
                                                  negTrack.weightIdEMCal*posTrackNoPIDProb));
                }
@@ -627,36 +676,39 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                if (!Is2PID(posTrack, negTrack, daughter1Id, daughter2Id)) continue;
 
                thrContainer.distrMInv2PID->
-                  Fill(pT, mInv, eventWeight*CppTools::AtLeast1Prob(posTrack.weightIdTOFe,
-                                                                    posTrack.weightIdTOFw, 
-                                                                    posTrack.weightIdEMCal)*
-                                             CppTools::AtLeast1Prob(negTrack.weightIdTOFe,
-                                                                    negTrack.weightIdTOFw, 
-                                                                    negTrack.weightIdEMCal));
+                  Fill(pT, mInv, eventWeight*weightDCPC1*
+                       CppTools::AtLeast1Prob(posTrack.weightIdTOFe, posTrack.weightIdTOFw, 
+                                              posTrack.weightIdEMCal)*
+                       CppTools::AtLeast1Prob(negTrack.weightIdTOFe, negTrack.weightIdTOFw, 
+                                              negTrack.weightIdEMCal));
 
                if (IsTOFe2PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInvTOFe2PID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightIdTOFe*negTrack.weightIdTOFe);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
+                          posTrack.weightIdTOFe*negTrack.weightIdTOFe);
                }
 
                if (IsTOFw2PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInvTOFw2PID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightIdTOFw*negTrack.weightIdTOFw);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
+                          posTrack.weightIdTOFw*negTrack.weightIdTOFw);
                }
 
                if (IsEMCal2PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInvEMCal2PID->
-                     Fill(pT, mInv, eventWeight*posTrack.weightIdEMCal*negTrack.weightIdEMCal);
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
+                          posTrack.weightIdEMCal*negTrack.weightIdEMCal);
                }
 
                if (IsTOF2PID(posTrack, negTrack, daughter1Id, daughter2Id))
                {
                   thrContainer.distrMInvTOF2PID->
-                     Fill(pT, mInv, eventWeight*(posTrack.weightIdTOFe*negTrack.weightIdTOFe + 
-                                                 posTrack.weightIdTOFw*negTrack.weightIdTOFw));
+                     Fill(pT, mInv, eventWeight*weightDCPC1*
+                          (posTrack.weightIdTOFe*negTrack.weightIdTOFe + 
+                           posTrack.weightIdTOFw*negTrack.weightIdTOFw));
                }
             }
          }
@@ -668,25 +720,47 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 6) 
+   if ((argc != 2 && argc < 4) || argc > 5) 
    {
       std::string errMsg = 
-         "Expected 1-6 parameters while " + std::to_string(argc - 1) + " "\
+         "Expected 1 or 3 parameters while " + std::to_string(argc - 1) + " "\
          "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance "\
-         "inputYAMLName pTScale=1. acceptanceVar=0 cutsVar=0"\
+         "inputYAMLName variation_name=""* variation_value=0** "\
          "numberOfThreads=std::thread::hardware_concurrency()\n"\
-         "Unless at leat pTScale is not a default parameter this program will "\
-         "run for all variations of every individual parameters (pTScale, acceptanceVar, "\
-         "and cutsVar) while setting values of the rest to default";
+         "*variation_name can have 3 different values: ptscale, acceptance, or cuts\n"\
+         "**variation_value for ptscale represents the value of pTScale parameter\n"\
+         "**variation_value for acceptance and cut variations can have "\
+         "3 different values: negative, 0, and positive integer\n"\
+         "  which represent decreased, default, and increased variation for acceptance variation\n"\
+         "  and loosened, default, and tightened cuts for cuts variation";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
 
-   if (argc > 2) pTScale = std::atof(argv[2]);
-   if (argc > 3) acceptanceVar = std::atoi(argv[3]);
-   if (argc > 4) cutsVar = std::atoi(argv[4]);
-   if (argc == 6) numberOfThreads = std::stoi(argv[5]);
+   if (argc > 3)
+   {
+      const std::string variation = static_cast<std::string>(argv[2]);
+
+      if (variation == "ptscale")
+      {
+         pTScale = std::atof(argv[3]);
+      }
+      else if (variation == "acceptance")
+      {
+         acceptanceVar = std::atoi(argv[3]);
+      }
+      else if (variation == "cuts")
+      {
+         cutsVar = std::atoi(argv[3]);
+      }
+      else
+      {
+         CppTools::PrintError("Unknown variation " + variation);
+      }
+   }
+
+   if (argc == 5) numberOfThreads = std::stoi(argv[4]);
    else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
@@ -709,6 +783,27 @@ int main(int argc, char **argv)
 
    pTMin = inputYAMLSimSingleTrack["pt_min"].as<double>();
    pTMax = inputYAMLSimSingleTrack["pt_max"].as<double>();
+
+   correctionTOFw = inputYAMLMain["correction_tofw"].as<double>();
+
+   if (cutsVar < 0)
+   {
+      cutsOffsetNone = false;
+      cutsOffsetLoose = true;
+      cutsOffsetTight = false;
+   }
+   else if (cutsVar > 0)
+   {
+      cutsOffsetNone = false;
+      cutsOffsetLoose = false;
+      cutsOffsetTight = true;
+   }
+   else
+   {
+      cutsOffsetNone = true;
+      cutsOffsetLoose = false;
+      cutsOffsetTight = false;
+   }
 
    dmCutter.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
    simSigmRes.Initialize(runName, inputYAMLMain["detectors_configuration"].as<std::string>());
@@ -819,8 +914,8 @@ int main(int argc, char **argv)
    else if (acceptanceVar < 0) box.AddEntry("Acceptance variation", "decreased");
    else box.AddEntry("Acceptance variation", "none");
 
-   if (cutsVar < 0) box.AddEntry("Cuts variation", "loosened");
-   else if (cutsVar > 0) box.AddEntry("Cuts variation", "tightened");
+   if (cutsVar < 0) box.AddEntry("Cuts variation", "loose");
+   else if (cutsVar > 0) box.AddEntry("Cuts variation", "tight");
    else box.AddEntry("Cuts variation", "none");
 
    box.AddEntry("Number of threads", numberOfThreads);
@@ -875,6 +970,11 @@ int main(int argc, char **argv)
    std::string outputFileName = "data/PostSim/" + runName + "/Resonance/" + 
                                 inputYAMLResonance["name"].as<std::string>();
 
+   if (fabs(pTScale - 1.) > 1e-15) 
+   {
+      outputFileName += std::string("_pTScale_") + CppTools::DtoStr(pTScale, 3);
+   }
+
    if (acceptanceVar != 0) 
    {
       outputFileName += std::string("_acceptance_var_") + 
@@ -883,7 +983,7 @@ int main(int argc, char **argv)
 
    if (cutsVar != 0) 
    {
-      outputFileName += std::string("_cuts_var_") + (cutsVar < 0 ? "tightened" : "loosened");
+      outputFileName += std::string("_cuts_var_") + (cutsVar < 0 ? "loosened" : "tightened");
    }
 
    outputFileName += ".root";
@@ -979,21 +1079,27 @@ void AnalyzeSimResonance::ThrContainer::Write(const std::string& outputFileName)
    outputFile.Close();
 }
 
-void AnalyzeSimResonance::AcceptanceVar::Set(const std::string& fileName)
+void AnalyzeSimResonance::DetectorWeights::Set(const std::string& fileName)
 {
    CppTools::CheckInputFile(fileName);
 
    std::ifstream file(fileName);
 
-   if (!(file >> DCe0 >> DCe1 >> DCw0 >> DCw1 >>
+   if (!(file >> DC[0][0] >> DC[0][1] >> DC[1][0] >> DC[1][1] >>
                  PC1[0] >> PC1[1] >> PC2 >> PC3[0] >> PC3[1] >>
                  TOFe >> TOFw >>
                  EMCal[0][0] >> EMCal[0][1] >> EMCal[0][2] >> EMCal[0][3] >>
                  EMCal[1][0] >> EMCal[1][1] >> EMCal[1][2] >> EMCal[1][3]))
    {
-      CppTools::PrintError("Could not read acceptance systematic uncertainties "\
-                           "from file " + fileName);
+      CppTools::PrintError("Could not read weights from file " + fileName);
    }
+   /*
+   CppTools::Print(DC[0][0], DC[0][1], DC[1][0], DC[1][1],
+                   PC1[0], PC1[1], PC2, PC3[0], PC3[1],
+                   TOFe, TOFw,
+                   EMCal[0][0], EMCal[0][1], EMCal[0][2], EMCal[0][3],
+                   EMCal[1][0], EMCal[1][1], EMCal[1][2], EMCal[1][3]);
+                   */
 }
 
 #endif /* ANALYZE_SIM_RESONANCE_CPP */
