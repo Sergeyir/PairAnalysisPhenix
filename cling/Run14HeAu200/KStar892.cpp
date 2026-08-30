@@ -117,7 +117,7 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(pTMinRCP, rMin, pTMaxRCP, rMax, "", "p_{T} [GeV/c]", "R_{CP}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRCP, rMin, pTMaxRCP, rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{CP}", 1., 0.95);
 
       TLine line(pTMinRCP, 1., pTMaxRCP, 1.);
       line.SetLineColor(kGray + 1);
@@ -201,7 +201,7 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, "", "p_{T} [GeV/c]", "R_{AB}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
       line.SetLineColor(kGray + 1);
