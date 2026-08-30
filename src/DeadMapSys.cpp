@@ -213,7 +213,7 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
       simCutHeatmapProjY->Draw("SAME HIST");
       projYLegend.Draw();
 
-      ROOTTools::PrintCanvas(&projCanv, "output/Systematics/" + runName + "/" + detectorName);
+      ROOTTools::PrintCanvas(&projCanv, "output/Acceptance/" + runName + "/" + detectorName);
    }
    else
    {
@@ -251,7 +251,7 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
       simCutHeatmapProjX->Draw("SAME HIST");
       projXLegend.Draw();
 
-      ROOTTools::PrintCanvas(&projCanv, "output/Systematics/" + runName + "/" + detectorName);
+      ROOTTools::PrintCanvas(&projCanv, "output/Acceptance/" + runName + "/" + detectorName);
    }
 
    const double realDataLost = (1. - realCutHeatmap->Integral()/realHeatmap->Integral())*100.;
@@ -323,7 +323,7 @@ int main(int argc, char **argv)
    gStyle->SetOptFit(0);
 
    outputDirDM = "output/Deadmaps/" + runName + "/";
-   outputDirSys = "output/Systematics/" + runName + "/";
+   outputDirSys = "output/Acceptance/" + runName + "/";
    outputDirParameters = "data/Parameters/Systematics/" + runName + "/";
 
    std::filesystem::create_directories(outputDirDM);
@@ -339,7 +339,7 @@ int main(int argc, char **argv)
    inputRealDataFile = TFile::Open(inputRealDataFileName.c_str());
    inputSimDataFile = TFile::Open(inputSimDataFileName.c_str());
 
-   std::ofstream systematicsOutputFile(outputDirParameters + "Acceptance.txt");
+   std::ofstream accVarOutputFile(outputDirParameters + "Acceptance.txt");
 
    const std::string detectorsConfiguration = 
       inputYAMLMain["detectors_configuration"].as<std::string>();
@@ -431,7 +431,7 @@ int main(int argc, char **argv)
       DrawDeadmap(realHeatmapDCw1, realCutHeatmapDCw1,
                   "DCw1", "DC west, #it{z}_{DC}<0", "board", "#it{#alpha}");
 
-      systematicsOutputFile << 
+      accVarOutputFile << 
          GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
                         "DCe0", "DC east, #it{z}_{DC}#geq0", 
                         "board", "#it{#alpha}", 3, 1, false) << " " <<
@@ -498,7 +498,7 @@ int main(int argc, char **argv)
       DrawDeadmap(simHeatmapDCw1, simCutHeatmapDCw1,
                   "DCw1_MC", "DC west, #it{z}_{DC}<0", "board", "#it{#alpha}");
 
-      systematicsOutputFile << 
+      accVarOutputFile << 
          GetUncertainty(realHeatmapDCe0, simHeatmapDCe0, realCutHeatmapDCe0, simCutHeatmapDCe0, 10,
                         "DCe0_MC", "DC east, #it{z}_{DC}#geq0", 
                         "board", "#it{#alpha}", 3, 1, false) << " " <<
@@ -532,7 +532,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << " " << 0 << " " << 0 << " " << 0 << std::endl;
+      accVarOutputFile << 0 << " " << 0 << " " << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[1] == '1') // PC1
@@ -586,10 +586,14 @@ int main(int argc, char **argv)
       DrawDeadmap(realHeatmapPC1w, realCutHeatmapPC1w,
                   "PC1w", "PC1 west", "#it{z}_{PC1}", "#it{#varphi}_{PC1}");
 
-      GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
-                     "PC1e", "PC1 east", "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2);
-      GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
-                     "PC1w", "PC1 west", "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2);
+      static_cast<void>(GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, 
+                                       realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
+                                       "PC1e", "PC1 east", 
+                                       "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2));
+      static_cast<void>(GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, 
+                                       realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
+                                       "PC1w", "PC1 west", 
+                                       "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2));
 
       // setting uncut heatmaps to be the heatmaps after fiducial cuts on real data
       // before starting additional fiducial cuts on MC
@@ -633,7 +637,7 @@ int main(int argc, char **argv)
       DrawDeadmap(simHeatmapPC1w, simCutHeatmapPC1w,
                   "PC1w_MC", "PC1 west", "#it{z}_{PC1}", "#it{#varphi}_{PC1}");
 
-      systematicsOutputFile << 
+      accVarOutputFile << 
          GetUncertainty(realHeatmapPC1e, simHeatmapPC1e, realCutHeatmapPC1e, simCutHeatmapPC1e, 10,
                         "PC1e_MC", "PC1 east", "#it{z}_{PC1}", "#it{#varphi}_{PC1}", 2) << " " <<
          GetUncertainty(realHeatmapPC1w, simHeatmapPC1w, realCutHeatmapPC1w, simCutHeatmapPC1w, 10,
@@ -651,7 +655,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << " " << 0 << std::endl;
+      accVarOutputFile << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[2] == '1') // PC2
@@ -682,8 +686,9 @@ int main(int argc, char **argv)
       DrawDeadmap(realHeatmapPC2, realCutHeatmapPC2,
                   "PC2", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}");
 
-      GetUncertainty(realHeatmapPC2, simHeatmapPC2, realCutHeatmapPC2, simCutHeatmapPC2, 10,
-                     "PC2", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}");
+      static_cast<void>(GetUncertainty(realHeatmapPC2, simHeatmapPC2, 
+                                       realCutHeatmapPC2, simCutHeatmapPC2, 10,
+                                       "PC2", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}"));
 
       // setting uncut heatmaps to be the heatmaps after fiducial cuts on real data
       // before starting additional fiducial cuts on MC
@@ -708,7 +713,7 @@ int main(int argc, char **argv)
       DrawDeadmap(simHeatmapPC2, simCutHeatmapPC2,
                   "PC2_MC", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}");
 
-      systematicsOutputFile << 
+      accVarOutputFile << 
          GetUncertainty(realHeatmapPC2, simHeatmapPC2, 
                         realCutHeatmapPC2, simCutHeatmapPC2, 10,
                         "PC2_MC", "PC2", "#it{z}_{PC2}", "#it{#varphi}_{PC2}") << std::endl;
@@ -720,7 +725,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << std::endl;
+      accVarOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[3] == '1') // PC3
@@ -774,13 +779,14 @@ int main(int argc, char **argv)
       DrawDeadmap(realHeatmapPC3w, realCutHeatmapPC3w,
                   "PC3w", "PC3 west", "#it{z}_{PC3}", "#it{#varphi}_{PC3}");
 
-      systematicsOutputFile << 
-         GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
-                        realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
-                        "PC3e", "PC3 east", "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2) << " " <<
-         GetUncertainty(realHeatmapPC3w, simHeatmapPC3w, 
-                        realCutHeatmapPC3w, simCutHeatmapPC3w, 10,
-                        "PC3w", "PC3 west", "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2) << std::endl;
+      static_cast<void>(GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
+                                       realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
+                                       "PC3e", "PC3 east", 
+                                       "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2));
+      static_cast<void>(GetUncertainty(realHeatmapPC3w, simHeatmapPC3w, 
+                                       realCutHeatmapPC3w, simCutHeatmapPC3w, 10,
+                                       "PC3w", "PC3 west", 
+                                       "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2));
 
       // setting uncut heatmaps to be the heatmaps after fiducial cuts on real data
       // before starting additional fiducial cuts on MC
@@ -824,7 +830,7 @@ int main(int argc, char **argv)
       DrawDeadmap(simHeatmapPC3w, simCutHeatmapPC3w,
                   "PC3w_MC", "PC3 west", "#it{z}_{PC3}", "#it{#varphi}_{PC3}");
 
-      systematicsOutputFile << 
+      accVarOutputFile << 
          GetUncertainty(realHeatmapPC3e, simHeatmapPC3e, 
                         realCutHeatmapPC3e, simCutHeatmapPC3e, 10,
                         "PC3e_MC", "PC3 east", "#it{z}_{PC3}", "#it{#varphi}_{PC3}", 2) << " " <<
@@ -844,7 +850,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << " " << 0 << std::endl;
+      accVarOutputFile << 0 << " " << 0 << std::endl;
    }
 
    if (detectorsConfiguration[4] == '1') // TOFe
@@ -901,12 +907,12 @@ int main(int argc, char **argv)
       DrawDeadmap(simCutHeatmapTOFe, simMCCutHeatmapTOFe,
                   "TOFe_MC", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}");
 
-      GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
-                     realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
-                     "TOFe", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}");
+      static_cast<void>(GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
+                                       realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
+                                       "TOFe", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}"));
 
-      systematicsOutputFile << 
-         GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
+      accVarOutputFile << 
+         GetUncertainty(realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 
                         realMCCutHeatmapTOFeSys, simMCCutHeatmapTOFeSys, 5,
                         "TOFe_MC", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}") << " ";
 
@@ -944,12 +950,12 @@ int main(int argc, char **argv)
       DrawDeadmap(simCutHeatmapTOFe, simMCCutHeatmapTOFe,
                   "TimingTOFe_MC", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}");
 
-      GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
-                     realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
-                     "TimingTOFe", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}");
+      static_cast<void>(GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
+                                       realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 5,
+                                       "TimingTOFe", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}"));
 
-      systematicsOutputFile << 
-         GetUncertainty(realHeatmapTOFeSys, simHeatmapTOFeSys, 
+      accVarOutputFile << 
+         GetUncertainty(realCutHeatmapTOFeSys, simCutHeatmapTOFeSys, 
                         realMCCutHeatmapTOFeSys, simMCCutHeatmapTOFeSys, 5,
                         "TimingTOFe_MC", "TOFe", "#it{Y}_{slat}", "#it{Z}_{slat}") << std::endl;
 
@@ -961,7 +967,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << std::endl;
+      accVarOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[5] == '1') // TOFw
@@ -1002,11 +1008,12 @@ int main(int argc, char **argv)
       DrawDeadmap(simCutHeatmapTOFw, simMCCutHeatmapTOFw, 
                   "TOFw_MC", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}");
 
-      GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                     "TOFw", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}");
+      static_cast<void>(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+                                       realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
+                                       "TOFw", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}"));
 
-      systematicsOutputFile << 
-         GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+      accVarOutputFile << 
+         GetUncertainty(realCutHeatmapTOFw, simCutHeatmapTOFw, 
                         realMCCutHeatmapTOFw, simMCCutHeatmapTOFw, 4,
                         "TOFw_MC", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}") << " ";
 
@@ -1041,10 +1048,11 @@ int main(int argc, char **argv)
       DrawDeadmap(simCutHeatmapTOFw, simMCCutHeatmapTOFw, 
                   "TimingTOFw_MC", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}");
 
-     GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
-                    "TimingTOFw", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}");
-      systematicsOutputFile << 
-        GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+     static_cast<void>(GetUncertainty(realHeatmapTOFw, simHeatmapTOFw, 
+                                      realCutHeatmapTOFw, simCutHeatmapTOFw, 4,
+                                      "TimingTOFw", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}"));
+      accVarOutputFile << 
+        GetUncertainty(realCutHeatmapTOFw, simCutHeatmapTOFw, 
                        realMCCutHeatmapTOFw, simMCCutHeatmapTOFw, 4,
                        "TimingTOFw_MC", "TOFw", "#it{Y}_{strip}", "#it{Z}_{strip}") << std::endl;
 
@@ -1056,7 +1064,7 @@ int main(int argc, char **argv)
    }
    else
    {
-      systematicsOutputFile << 0 << std::endl;
+      accVarOutputFile << 0 << std::endl;
    }
 
    if (detectorsConfiguration[6] == '1') // EMCal
@@ -1122,18 +1130,19 @@ int main(int argc, char **argv)
                      "EMCale" + std::to_string(i) + "_MC", "EMCale" + std::to_string(i), 
                      "#it{Y}_{tower}", "#it{Z}_{tower}");
 
-         GetUncertainty(realHeatmapEMCaleSys, simHeatmapEMCaleSys, 
-                        realCutHeatmapEMCaleSys, simCutHeatmapEMCaleSys, 8,
-                        "EMCale" + std::to_string(i), "EMCale" + std::to_string(i), 
-                        "#it{Y}_{tower}", "#it{Z}_{tower}");
+         static_cast<void>(GetUncertainty(realHeatmapEMCaleSys, simHeatmapEMCaleSys, 
+                                          realCutHeatmapEMCaleSys, simCutHeatmapEMCaleSys, 8,
+                                          "EMCale" + std::to_string(i), 
+                                          "EMCale" + std::to_string(i),
+                                          "#it{Y}_{tower}", "#it{Z}_{tower}"));
 
-         systematicsOutputFile << 
-            GetUncertainty(realHeatmapEMCaleSys, simHeatmapEMCaleSys, 
+         accVarOutputFile << 
+            GetUncertainty(realCutHeatmapEMCaleSys, simCutHeatmapEMCaleSys, 
                            realMCCutHeatmapEMCaleSys, simMCCutHeatmapEMCaleSys, 8,
                            "EMCale" + std::to_string(i) + "_MC", "EMCale" + std::to_string(i), 
                            "#it{Y}_{tower}", "#it{Z}_{tower}");
 
-         if (i < 3) systematicsOutputFile << " ";
+         if (i < 3) accVarOutputFile << " ";
 
          reweightEMCale[i] = 
             realCutHeatmapEMCaleSys->Integral(1, realHeatmapEMCale->GetXaxis()->GetNbins(),
@@ -1141,7 +1150,7 @@ int main(int argc, char **argv)
             realMCCutHeatmapEMCaleSys->Integral(1, realHeatmapEMCale->GetXaxis()->GetNbins(),
                                                 1, realHeatmapEMCale->GetYaxis()->GetNbins());
       }
-      systematicsOutputFile << std::endl;
+      accVarOutputFile << std::endl;
 
       for (int i = 0; i < 4; i++)
       {
@@ -1205,17 +1214,18 @@ int main(int argc, char **argv)
                      "EMCalw" + std::to_string(i) + "_MC", "EMCalw" + std::to_string(i), 
                      "#it{Y}_{tower}", "#it{Z}_{tower}");
 
-         GetUncertainty(realHeatmapEMCalwSys, simHeatmapEMCalwSys, 
-                        realCutHeatmapEMCalwSys, simCutHeatmapEMCalwSys, 8,
-                        "EMCalw" + std::to_string(i), "EMCalw" + std::to_string(i), 
-                        "#it{Y}_{tower}", "#it{Z}_{tower}");
+         static_cast<void>(GetUncertainty(realHeatmapEMCalwSys, simHeatmapEMCalwSys,
+                                          realCutHeatmapEMCalwSys, simCutHeatmapEMCalwSys, 8,
+                                          "EMCalw" + std::to_string(i),
+                                          "EMCalw" + std::to_string(i),
+                                          "#it{Y}_{tower}", "#it{Z}_{tower}"));
 
-         systematicsOutputFile << 
-            GetUncertainty(realHeatmapEMCalwSys, simHeatmapEMCalwSys, 
+         accVarOutputFile << 
+            GetUncertainty(realCutHeatmapEMCalwSys, simCutHeatmapEMCalwSys, 
                            realMCCutHeatmapEMCalwSys, simMCCutHeatmapEMCalwSys, 8,
                            "EMCalw" + std::to_string(i) + "_MC", "EMCalw" + std::to_string(i), 
                            "#it{Y}_{tower}", "#it{Z}_{tower}");
-         if (i < 3) systematicsOutputFile << " ";
+         if (i < 3) accVarOutputFile << " ";
 
          reweightEMCalw[i] = 
             realCutHeatmapEMCalwSys->Integral(1, realHeatmapEMCalw->GetXaxis()->GetNbins(),
@@ -1223,29 +1233,28 @@ int main(int argc, char **argv)
             realMCCutHeatmapEMCalwSys->Integral(1, realHeatmapEMCalw->GetXaxis()->GetNbins(),
                                                 1, realHeatmapEMCalw->GetYaxis()->GetNbins());
       }
-      systematicsOutputFile << std::endl;
+      accVarOutputFile << std::endl;
    }
    else
    {
-      std::ofstream systematicsOutputFile(outputDirParameters + "EMCal.txt");
       for (int i = 0; i < 4; i++)
       {
-         systematicsOutputFile << 0 << " ";
+         accVarOutputFile << 0 << " ";
       }
-      systematicsOutputFile << std::endl;
+      accVarOutputFile << std::endl;
       for (int i = 0; i < 4; i++)
       {
-         systematicsOutputFile << 0;
-         if (i < 3) systematicsOutputFile << " ";
+         accVarOutputFile << 0;
+         if (i < 3) accVarOutputFile << " ";
       }
-      systematicsOutputFile << std::endl;
+      accVarOutputFile << std::endl;
    }
 
 	table.End();
 
    const std::string reweightsDir = "data/Parameters/MCReweights/" + runName;
    std::filesystem::create_directories(reweightsDir);
-   std::ofstream reweightsFile(reweightsDir + "/ConstantScale.txt");
+   std::ofstream reweightsFile(reweightsDir + "/Detectors.txt");
 
    reweightsFile << reweightDCe[0] << " " << reweightDCe[1] << " " <<
                     reweightDCw[0] << " " << reweightDCw[1] << std::endl <<
