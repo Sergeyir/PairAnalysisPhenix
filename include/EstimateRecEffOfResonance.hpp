@@ -53,10 +53,12 @@ namespace EstimateRecEffOfResonance
     * @param[in] distrMeansVsPT histogram containing information about means vs pT; for the current pTBin the information will be updated after fit is performed
     * @param[in] distrGammasVsPT histogram containing information about gammas vs pT; for the current pTBin the information will be updated after fit is performed
     * @param[in] outputFileNameWithoutExt file name without extention in which pictures will be written (.png and .pdf). If empty string is specified (as is by default) no pictures will be saved.
+    * @param[in] savePDF shows whether .pdf pictures will be written alongside with .png
     */
    void PerformMInvFit(const unsigned int pTBin, const std::string& methodName, TFile* file,
                        TH1D& distrRecEffVsPT, TH1D& distrMeansVsPT, TH1D& distrGammasVsPT,
-                       const std::string& outputFileNameWithoutExt = "");
+                       const std::string& outputFileNameWithoutExt = "",
+                       const bool savePDF = true);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -76,8 +78,6 @@ namespace EstimateRecEffOfResonance
    InputYAMLReader inputYAMLResonance;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
-   /// Name of the input file
-   std::string inputFileName;
    /// sigmalized offset for matching and m2 identification cuts; 
    /// used for estimation of systematic uncertainties of said cuts
    double cutsSigmOffset = 0.;
@@ -86,10 +86,20 @@ namespace EstimateRecEffOfResonance
    std::string cutsSigmOffsetName = "";
    /// Input file
    TFile *inputFile;
-   /// Names of alternative pTScale simulation input files for systematic uncertainty evaluation
+   /// Name of the input file
+   std::string inputFileName;
+   /// Names of alternative pTScale simulation input files
    std::vector<std::string> altPTScaleSimInputFileNames;
-   /// Alernative pTScale simulation input files for systematic uncertainty evaluation
+   /// Alernative pTScale simulation input files
    std::vector<TFile *> altPTScaleSimInputFiles;
+   /// Names of acceptance variation simulation input files
+   std::vector<std::string> accVarSimInputFileNames;
+   /// Acceptance variation simulation input files
+   std::vector<TFile *> accVarSimInputFiles;
+   /// Names of cuts variation simulation input files
+   std::vector<std::string> cutsVarSimInputFileNames;
+   /// Cuts variation simulation input files
+   std::vector<TFile *> cutsVarSimInputFiles;
    /// Output file (for writing means, gammas, efficiency reconstruction, etc. vs pT)
    TFile *outputFile;
    /// name of the resonance

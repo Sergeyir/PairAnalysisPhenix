@@ -15,19 +15,17 @@ using namespace EstimateRecEffOfResonance;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 4) 
+   if (argc < 2 || argc > 3) 
    {
       std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
       errMsg += "parameter(s) were provided \n Usage: bin/EstimateRecEffOfResonance ";
-      errMsg += "inputYAMLName cutsSigmOffset numberOfThreads=std::thread::hardware_concurrency()";
+      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
       CppTools::PrintError(errMsg);
    }
  
    CppTools::CheckInputFile(argv[1]);
  
-   if (argc > 2) cutsSigmOffset = std::atof(argv[2]);
-
-   if (argc == 4) ROOT::EnableImplicitMT(std::stoi(argv[3]));
+   if (argc == 3) ROOT::EnableImplicitMT(std::stoi(argv[2]));
    else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
    gStyle->SetOptStat(0);
@@ -55,12 +53,7 @@ int main(int argc, char **argv)
 
    const std::string inputDir = "data/PostSim/" + runName + "/Resonance/";
 
-   if (fabs(cutsSigmOffset) > 1e-15) 
-   {
-      cutsSigmOffsetName = "_cut_sigm_offset_" + CppTools::DtoStr(cutsSigmOffset, 2);
-   }
-
-   inputFileName = inputDir + resonanceName + cutsSigmOffsetName + ".root";
+   inputFileName = inputDir + resonanceName + ".root";
 
    CppTools::CheckInputFile(inputFileName);
 
@@ -70,23 +63,67 @@ int main(int argc, char **argv)
    {
       const std::string fileName = static_cast<std::string>(file.path());
 
+      // only .root files are checked
+      if (strcmp(&fileName[fileName.size() - 5], ".root")) continue;
+
       if (fileName == inputFileName) continue;
 
-      if (std::regex_match(fileName, std::regex("(.*)" + resonanceName + cutsSigmOffsetName + 
-                                                "_pTScale_([0-9\\.]*)\\.root")))
+      const bool isAltPTScale = 
+         std::regex_match(fileName, std::regex("(.*)" + resonanceName + 
+                                               "_pTScale_([0-9\\.]*)\\.root"));
+      const bool isAccVar = 
+         std::regex_match(fileName, std::regex("(.*)" + resonanceName + 
+                          "_acceptance_var_([a-z\\.]*)\\.root"));
+      const bool isCutsVar = 
+         std::regex_match(fileName, std::regex("(.*)" + resonanceName + 
+                          "_cuts_var_([a-z\\.]*)\\.root"));
+
+      if (isAltPTScale && !isAccVar && !isCutsVar)
       {
-         CppTools::PrintInfo("Found alternative simulation file " + fileName +   
+         CppTools::PrintInfo("Found simulation file " + fileName +   
                              " for pT scale systematic uncertainties evaluation");
 
          altPTScaleSimInputFileNames.emplace_back(fileName);
          altPTScaleSimInputFiles.emplace_back(TFile::Open(fileName.c_str()));
       }
+      else if (!isAltPTScale && isAccVar && !isCutsVar)
+      {
+         CppTools::PrintInfo("Found simulation file " + fileName +   
+                             " for acceptance variation systematic uncertainties evaluation");
+
+         accVarSimInputFileNames.emplace_back(fileName);
+         accVarSimInputFiles.emplace_back(TFile::Open(fileName.c_str()));
+      }
+      else if (!isAltPTScale && !isAccVar && isCutsVar && 
+               (fileName.find("loosened") < fileName.size() ||
+                fileName.find("tightened") < fileName.size()))
+      {
+         CppTools::PrintInfo("Found simulation file " + fileName +   
+                             " for cuts variation systematic uncertainties evaluation");
+
+         cutsVarSimInputFileNames.emplace_back(fileName);
+         cutsVarSimInputFiles.emplace_back(TFile::Open(fileName.c_str()));
+      }
+      else
+      {
+         CppTools::PrintWarning("Could not determine the usage for file " + 
+                                fileName + "; ignoring this file");
+      }
    }
    if (altPTScaleSimInputFileNames.size() == 0)
    {
-      CppTools::PrintInfo("No alternative simulation files for pT scale systematic uncertainty "\
-                          "evaluation was found for cutsSigmOffset=" + 
-                          CppTools::DtoStr(cutsSigmOffset, 2));
+      CppTools::PrintInfo("No alternative simulation files for pT scale "\
+                          "systematic uncertainty evaluation was found");
+   }
+   if (accVarSimInputFileNames.size() == 0)
+   {
+      CppTools::PrintInfo("No alternative simulation files for acceptance "\
+                          "variation systematic uncertainty evaluation was found");
+   }
+   if (cutsVarSimInputFileNames.size() == 0)
+   {
+      CppTools::PrintInfo("No alternative simulation files for cuts "\
+                          "variation systematic uncertainty evaluation was found");
    }
 
    text.SetTextFont(43);
@@ -106,8 +143,8 @@ int main(int argc, char **argv)
    numberOfIterations = pTNBins*inputYAMLResonance["pair_selection_methods"].size();
 
    const std::string parametersOutputDir = "data/Parameters/RecEffResonance/" + runName;
-   outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + 
-                             cutsSigmOffsetName + ".root").c_str(), "RECREATE");
+   outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + ".root").c_str(), 
+                            "RECREATE");
 
    // performing fits for each pair selection method
    for (const auto& method : inputYAMLResonance["pair_selection_methods"])
@@ -125,34 +162,94 @@ int main(int argc, char **argv)
 
 void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& methodName)
 {
-   const std::string outputDir = "output/RecEffResonance/" + runName + "/" + 
-                                 methodName + "/" + cutsSigmOffsetName;
+   const std::string outputDir = "output/RecEffResonance/" + runName + "/" + methodName;
    std::filesystem::create_directories(outputDir);
+
+   if (altPTScaleSimInputFiles.size() != 0) 
+   {
+      std::filesystem::create_directory(outputDir + "/AltPT");
+   }
+
+   if (accVarSimInputFiles.size() != 0) 
+   {
+      std::filesystem::create_directory(outputDir + "/AcceptanceVariation");
+   }
+
+   if (cutsVarSimInputFiles.size() != 0) 
+   {
+      std::filesystem::create_directory(outputDir + "/CutsVariation");
+   }
 
    outputFile->mkdir(methodName.c_str());
    outputFile->cd(methodName.c_str());
 
    text.SetTextAngle(270.);
 
+   // histograms for default analysis
    TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
    TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
    TH1D distrRecEffVsPTStatErr("reconstruction efficiency vs pT with stat errors", 
                                "", pTNBins, &pTBinRanges[0]);
+
+   // histograms for alternative pT scale analysis and systematic uncertainty evaluation
+   std::vector<TH1D> distrAltPTScaleMeansVsPT;
+   std::vector<TH1D> distrAltPTScaleGammasVsPT;
+   std::vector<TH1D> distrAltPTScaleRecEffVsPT;
+
+   TH1D distrRecEffVsPTSysErrAltPT("reconstruction efficiency vs pT with sys errors, "\
+                                   "alt pT scale", "", pTNBins, &pTBinRanges[0]);
+   
+   // histograms for acceptance variation analysis and systematic uncertainty evaluation
+   std::vector<TH1D> distrAccVarMeansVsPT;
+   std::vector<TH1D> distrAccVarGammasVsPT;
+   std::vector<TH1D> distrAccVarRecEffVsPT;
+
+   TH1D distrRecEffVsPTSysErrAccVar("reconstruction efficiency vs pT with sys errors, "\
+                                    "acceptance variation", "", pTNBins, &pTBinRanges[0]);
+
+   std::vector<TH1D> distrCutsVarMeansVsPT;
+   std::vector<TH1D> distrCutsVarGammasVsPT;
+   std::vector<TH1D> distrCutsVarRecEffVsPT;
+
+   // full systematic uncertainty (pT scale + acceptance variation)
    TH1D distrRecEffVsPTSysErr("reconstruction efficiency vs pT with sys errors", 
                               "", pTNBins, &pTBinRanges[0]);
 
-   std::vector<TH1D> distrAltSimPTScaleMeansVsPT;
-   std::vector<TH1D> distrAltSimPTScaleGammasVsPT;
-   std::vector<TH1D> distrAltSimPTScaleRecEffVsPT;
-
    for (unsigned int i = 0; i < altPTScaleSimInputFiles.size(); i++)
    {
-      distrAltSimPTScaleMeansVsPT.emplace_back(("means vs pT " + std::to_string(i)).c_str(), 
-                                               "", pTNBins, &pTBinRanges[0]);
-      distrAltSimPTScaleGammasVsPT.emplace_back(("gammas vs pT " + std::to_string(i)).c_str(), 
-                                                 "", pTNBins, &pTBinRanges[0]);
-      distrAltSimPTScaleRecEffVsPT.emplace_back(("rec eff vs pT " + std::to_string(i)).c_str(), 
-                                                 "", pTNBins, &pTBinRanges[0]);
+      distrAltPTScaleMeansVsPT.emplace_back(("alt pT means vs pT " + std::to_string(i)).c_str(), 
+                                            "", pTNBins, &pTBinRanges[0]);
+      distrAltPTScaleGammasVsPT.emplace_back(("alt pT gammas vs pT " + std::to_string(i)).c_str(), 
+                                             "", pTNBins, &pTBinRanges[0]);
+      distrAltPTScaleRecEffVsPT.emplace_back(("alt pT rec eff vs pT " + std::to_string(i)).c_str(), 
+                                             "", pTNBins, &pTBinRanges[0]);
+   }
+
+   for (unsigned int i = 0; i < accVarSimInputFiles.size(); i++)
+   {
+      distrAccVarMeansVsPT.emplace_back(("acc var means vs pT " + std::to_string(i)).c_str(), 
+                                        "", pTNBins, &pTBinRanges[0]);
+      distrAccVarGammasVsPT.emplace_back(("acc var gammas vs pT " + std::to_string(i)).c_str(), 
+                                         "", pTNBins, &pTBinRanges[0]);
+      distrAccVarRecEffVsPT.emplace_back(("acc var rec eff vs pT " + std::to_string(i)).c_str(), 
+                                         "", pTNBins, &pTBinRanges[0]);
+   }
+
+   for (unsigned int i = 0; i < cutsVarSimInputFiles.size(); i++)
+   {
+      std::string histNameAdd;
+      if (cutsVarSimInputFileNames[i].find("loosened") < 
+          cutsVarSimInputFileNames[i].size()) histNameAdd = "loosened cuts";
+      else if (cutsVarSimInputFileNames[i].find("tightened") < 
+          cutsVarSimInputFileNames[i].size()) histNameAdd = "tightened cuts";
+
+      distrCutsVarMeansVsPT.emplace_back(("cuts var means vs pT, " + histNameAdd + 
+                                         " with stat errors").c_str(), 
+                                         "", pTNBins, &pTBinRanges[0]);
+      distrCutsVarGammasVsPT.emplace_back(("cuts var gammas vs pT, " + histNameAdd).c_str(), 
+                                          "", pTNBins, &pTBinRanges[0]);
+      distrCutsVarRecEffVsPT.emplace_back(("reconstruction efficiency vs pT, " + histNameAdd).c_str(), 
+                                          "", pTNBins, &pTBinRanges[0]);
    }
 
    for (unsigned int i = 0; i < pTNBins; i++)
@@ -165,26 +262,70 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
                      CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                      CppTools::DtoStr(pTBinRanges[i + 1], 1));
 
-      double recEffSysErr = 0.;
+      double recEffSysErrAltPT = 0.;
 
       for (unsigned j = 0; j < altPTScaleSimInputFiles.size(); j++)
       {
          PerformMInvFit(i, methodName, altPTScaleSimInputFiles[j], 
-                        distrAltSimPTScaleRecEffVsPT[j], distrAltSimPTScaleMeansVsPT[j], 
-                        distrAltSimPTScaleGammasVsPT[j], "");
+                        distrAltPTScaleRecEffVsPT[j], distrAltPTScaleMeansVsPT[j], 
+                        distrAltPTScaleGammasVsPT[j], 
+                        outputDir + "/AltPT/" + resonanceName + "_" + 
+                        CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                        CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
 
-         recEffSysErr += pow(distrRecEffVsPTStatErr.GetBinContent(i + 1) - 
-                             distrAltSimPTScaleRecEffVsPT[j].GetBinContent(i + 1), 2);
+         recEffSysErrAltPT += pow(distrRecEffVsPTStatErr.GetBinContent(i + 1) - 
+                                  distrAltPTScaleRecEffVsPT[j].GetBinContent(i + 1), 2);
       }
 
       if (altPTScaleSimInputFiles.size() != 0)
       {
-         recEffSysErr /= static_cast<double>(altPTScaleSimInputFiles.size());
-         recEffSysErr = sqrt(recEffSysErr);
+         recEffSysErrAltPT /= static_cast<double>(altPTScaleSimInputFiles.size());
+         recEffSysErrAltPT = sqrt(recEffSysErrAltPT);
       }
 
+      double recEffSysErrAccVar = 0.;
+
+      for (unsigned j = 0; j < accVarSimInputFiles.size(); j++)
+      {
+         PerformMInvFit(i, methodName, accVarSimInputFiles[j], 
+                        distrAccVarRecEffVsPT[j], distrAccVarMeansVsPT[j], 
+                        distrAccVarGammasVsPT[j], 
+                        outputDir + "/AcceptanceVariation/" + resonanceName + "_" + 
+                        CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                        CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
+
+         recEffSysErrAccVar += pow(distrRecEffVsPTStatErr.GetBinContent(i + 1) - 
+                                   distrAccVarRecEffVsPT[j].GetBinContent(i + 1), 2);
+      }
+
+      if (accVarSimInputFiles.size() != 0)
+      {
+         recEffSysErrAccVar /= static_cast<double>(accVarSimInputFiles.size());
+         recEffSysErrAccVar = sqrt(recEffSysErrAccVar);
+      }
+
+      for (unsigned j = 0; j < cutsVarSimInputFiles.size(); j++)
+      {
+         PerformMInvFit(i, methodName, cutsVarSimInputFiles[j], 
+                        distrCutsVarRecEffVsPT[j], distrCutsVarMeansVsPT[j], 
+                        distrCutsVarGammasVsPT[j], 
+                        outputDir + "/CutsVariation/" + resonanceName + "_" + 
+                        CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                        CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
+      }
+
+      const double resultingSysErr = 
+         distrRecEffVsPTStatErr.GetBinContent(i + 1)*
+         CppTools::UncertaintyProp(recEffSysErrAltPT/distrRecEffVsPTStatErr.GetBinContent(i + 1),
+                                   recEffSysErrAccVar/distrRecEffVsPTStatErr.GetBinContent(i + 1));
+
       distrRecEffVsPTSysErr.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
-      distrRecEffVsPTSysErr.SetBinError(i + 1, recEffSysErr);
+      distrRecEffVsPTSysErrAltPT.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
+      distrRecEffVsPTSysErrAccVar.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
+
+      distrRecEffVsPTSysErr.SetBinError(i + 1, resultingSysErr);
+      distrRecEffVsPTSysErrAltPT.SetBinError(i + 1, recEffSysErrAltPT);
+      distrRecEffVsPTSysErrAccVar.SetBinError(i + 1, recEffSysErrAccVar);
 
       numberOfCalls++;
    }
@@ -205,7 +346,6 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
 
    distrRecEffVsPTSysErr.SetFillStyle(1001);
    distrRecEffVsPTSysErr.SetFillColorAlpha(kRed - 2, 0.5);
-
 
    TLine massResonancePDG(pTBinRanges[0], massResonance, pTBinRanges[pTNBins], massResonance);
    massResonancePDG.SetLineColorAlpha(kBlack, 0.5);
@@ -275,6 +415,13 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
    distrGammasVsPT.Write();
    distrRecEffVsPTStatErr.Write();
    distrRecEffVsPTSysErr.Write();
+   distrRecEffVsPTSysErrAltPT.Write();
+   distrRecEffVsPTSysErrAccVar.Write();
+
+   for (unsigned i = 0; i < cutsVarSimInputFiles.size(); i++)
+   {
+      distrCutsVarRecEffVsPT[i].Write();
+   }
 
    pBar.Clear();
    CppTools::PrintInfo(methodName + " done");
@@ -285,7 +432,8 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                                                const std::string& methodName,
                                                TFile *file, TH1D& distrRecEffVsPT,
                                                TH1D& distrMeansVsPT, TH1D& distrGammasVsPT,
-                                               const std::string& outputFileNameWithoutExt)
+                                               const std::string& outputFileNameWithoutExt,
+                                               const bool savePDF)
 {
    TH1D *distrOrigUnscaledPT = static_cast<TH1D *>(file->Get("orig unscaled pT"));
    if (!distrOrigUnscaledPT) CppTools::PrintError("Original unscaled pT distribution was not found "\
@@ -306,10 +454,11 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                        distrOrigPT->GetXaxis()->FindBin(pTBinRanges[pTBin + 1] - 1e-6)));
 
    const std::string distrMInvVsPTName = "M_inv: " + methodName;
-   TH2F *distrMInvVsPT = static_cast<TH2F *>(inputFile->Get(distrMInvVsPTName.c_str()));
+   TH2F *distrMInvVsPT = static_cast<TH2F *>(file->Get(distrMInvVsPTName.c_str()));
 
-   if (!distrMInvVsPT) CppTools::PrintError("Distribution named " + distrMInvVsPTName + "\" "\
-                                            "was not found in file " + inputFileName);
+   if (!distrMInvVsPT) CppTools::PrintError("Distribution named " + distrMInvVsPTName + "\" " +
+                                            static_cast<std::string>("was not found in file ") + 
+                                            file->GetName());
 
    TH1D *distrMInv = distrMInvVsPT->
       ProjectionY("proj", distrMInvVsPT->GetXaxis()->FindBin(pTBinRanges[pTBin] + 1e-6),
@@ -454,7 +603,8 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
       fitResonance.Draw("SAME");
       fit.Draw("SAME");
 
-      ROOTTools::PrintCanvas(&canvMInv, outputFileNameWithoutExt);
+      ROOTTools::PrintCanvas(&canvMInv, outputFileNameWithoutExt, 
+                             true, savePDF);
    }
 }
 
