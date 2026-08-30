@@ -44,11 +44,17 @@ namespace EstimateResults
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
    /// Taxi number
-   int taxiNumber;
-   /// Name of the input file
-   std::string inputFileName;
-   /// Input file containing raw yields
-   TFile *inputFile;
+   int taxiNumber = -9999;
+   /// shows whether cut variation taxi files will be used for evaluation of systematic uncertainty
+   bool doCutsVarSys = true;
+   /// Taxi number with loosened cuts
+   int taxiNumberLoosenedCuts = -9999;
+   /// Taxi number with tightened cuts
+   int taxiNumberTightenedCuts = -9999;
+   /// pT minimum bin for RAB
+   int pTBinMinRAB = -1;
+   /// pT maximum bin for RAB
+   int pTBinMaxRAB = -1;
    /// Name of the reconstruction efficiency input file
    std::string inputRecEffFileName;
    /// Input file containing reconstruction efficiencies
