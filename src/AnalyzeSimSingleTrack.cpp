@@ -922,7 +922,7 @@ int main(int argc, char **argv)
 
    doUserWeightSpectra = inputYAMLSim["reweight_for_spectra"].as<bool>();
 
-   correctionTOFw = inputYAMLSim["correction_tofw"].as<double>();
+   correctionTOFw = inputYAMLMain["correction_tofw"].as<double>();
    timeShiftTOFe = inputYAMLSim["time_shift_tofe"].as<double>();
    timeShiftTOFw = inputYAMLSim["time_shift_tofw"].as<double>();
    timeShiftEMCal = inputYAMLSim["time_shift_emcal"].as<double>();
@@ -1070,7 +1070,7 @@ int main(int argc, char **argv)
 
    CppTools::PrintInfo("Merging output files into one");
 
-   std::string haddCommand = "hadd -f9 -j " + outputDir + "all.root ";
+   std::string haddCommand = "hadd -f9 " + outputDir + "all.root ";
    for (const auto& particle : inputYAMLSim["particles"])
    {
       haddCommand += outputDir + particle["name"].as<std::string>() + ".root ";
