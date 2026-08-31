@@ -220,8 +220,6 @@ void MInvFit()
 
    std::filesystem::create_directories(fitOutputDir);
 
-   // comments show indices of fit types
-   // 0
    GUIFit::AddFitType(fitOutputDir + methodName + "_" + 
                       centralityName + ".root", "Default");
    if (performAltFits)
@@ -806,8 +804,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       distrMInv->SetMarkerColor(kGray + 3);
 
       distrsMInv.emplace_back(static_cast<TH1D *>(distrMInv->Clone()));
-      distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
-                                   CppTools::DtoStr(pTBinRanges[i + 1], 2)));
+      distrMInvNames.emplace_back(pTBinRangeName);
       pTsDistrMInv.push_back((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
 
       numberOfCalls++;
