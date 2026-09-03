@@ -3,7 +3,6 @@
  *  @brief  Contains implementation for usage of ROOTTools::GUIFit for tweaking bad background approximations on PHENIX processed data
  *
  *  This file is a part of a project PairAnalysisPhenix (https://github.com/Sergeyir/PairAnalysis).
- *
  *  @author Sergei Antsupov (antsupov0124@gmail.com)
  **/
 #pragma once
@@ -33,17 +32,13 @@ std::vector<TH1D *> distrsMInvFGLR;
 std::vector<TH1D *> distrsMInvBGLR;
 /// Contains names of invariant mass distributions to be displayed on canvas
 std::vector<std::string> distrMInvNames;
-/// Contains MInv BG rescale values
-std::vector<double> rescaleMInvBG;
 
 std::string outputFileName;
 
 TCanvas *canv;
 
-bool parametersSet = false;
-
 // shows the current pT bin index of an invariant mass distribution to display
-int currentPTBinIndex = 0;
+int currentPTBin = 0;
 
 YAML::Node method;
 
@@ -96,6 +91,8 @@ void AdjustMInvBGScale()
 
    InputYAMLReader inputYAMLMain("input/" + runName + "/main.yaml");
    inputYAMLMain.CheckStatus("main");
+
+   rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
 
    int methodBinIndex;
    while (true) // ininite loop until exit or valid input is specified
@@ -159,7 +156,7 @@ void AdjustMInvBGScale()
 
    pTNBins = inputYAMLResonance["pt_bins"].size();
 
-   for (unsigned int i = 0; i < pTNBins; i++)
+   for (unsigned int i = 0; i < pTNBins - 1; i++)
    {
       pTBinRanges.push_back(inputYAMLResonance["pt_bins"][i]["min"].as<double>());
    }
@@ -167,14 +164,9 @@ void AdjustMInvBGScale()
 
    method = inputYAMLResonance["pair_selection_methods"][methodBinIndex];
 
-   const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBinIndex]
-                                          ["pt_bin_min"].as<int>();
-   const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBinIndex]
-                                          ["pt_bin_max"].as<int>();
+   numberOfIterations = pTNBins;
 
-   numberOfIterations = pTBinFitMax - pTBinFitMin + 1;
-
-   parametersOutputDir = "data/Parameters/MInvBGRescale/" + runName;
+   parametersOutputDir = "data/Parameters/MInvBGRescale/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(parametersOutputDir);
 
    const std::string methodName = 
@@ -189,29 +181,10 @@ void AdjustMInvBGScale()
    {
       CppTools::PrintWarning("File " + outputFileName + " already exists; the old file "\
                              "will be renamed to " + outputFileName + ".backup");
-
-      std::ifstream inputFile(outputFileName);
-
-      double val;
-      while (inputFile >> val)
-      {
-         rescaleMInvBG.push_back(val);
-      }
-
-      parametersSet = true;
    }
+   SetMInvBGRescale(outputFileName, pTNBins);
 
    PerformMInvFits(method, centralityBinIndex);
-
-   if (parametersSet)
-   {
-      if (rescaleMInvBG.size() != distrsMInvFG.size())
-      {
-         CppTools::PrintError("Number of rescale values mismatch the number of pT bins");
-      }
-      
-      static_cast<void>(system(("cp " + outputFileName + " " + outputFileName + ".backup").c_str()));
-   }
 
    gROOT->SetBatch(false);
  
@@ -225,17 +198,17 @@ void AdjustMInvBGScale()
 
 void Draw()
 {
-   TH1D *distrMInv = static_cast<TH1D *>(distrsMInvFG[currentPTBinIndex]->Clone());
-   TH1D *distrMInvFG = static_cast<TH1D *>(distrsMInvFG[currentPTBinIndex]->Clone());
-   TH1D *distrMInvBG = static_cast<TH1D *>(distrsMInvBG[currentPTBinIndex]->Clone());
-   TH1D *distrMInvFGLR = static_cast<TH1D *>(distrsMInvFGLR[currentPTBinIndex]->Clone());
-   TH1D *distrMInvBGLR = static_cast<TH1D *>(distrsMInvBGLR[currentPTBinIndex]->Clone());
+   TH1D *distrMInv = static_cast<TH1D *>(distrsMInvFG[currentPTBin]->Clone());
+   TH1D *distrMInvFG = static_cast<TH1D *>(distrsMInvFG[currentPTBin]->Clone());
+   TH1D *distrMInvBG = static_cast<TH1D *>(distrsMInvBG[currentPTBin]->Clone());
+   TH1D *distrMInvFGLR = static_cast<TH1D *>(distrsMInvFGLR[currentPTBin]->Clone());
+   TH1D *distrMInvBGLR = static_cast<TH1D *>(distrsMInvBGLR[currentPTBin]->Clone());
 
    distrMInv->SetLineColor(kRed - 3);
    distrMInv->SetLineWidth(2);
 
-   distrMInvBG->Scale(rescaleMInvBG[currentPTBinIndex]);
-   distrMInvBGLR->Scale(rescaleMInvBG[currentPTBinIndex]);
+   distrMInvBG->Scale(rescalesMInvBG[currentPTBin]);
+   distrMInvBGLR->Scale(rescalesMInvBG[currentPTBin]);
 
    distrMInv->Add(distrMInvBG, -1.);
 
@@ -243,7 +216,7 @@ void Draw()
 
    ROOTTools::DrawFrame(distrMInvFG->GetXaxis()->GetBinLowEdge(1), 0.,
                         distrMInvFG->GetXaxis()->GetBinUpEdge(distrMInvFG->GetXaxis()->GetNbins()),
-                        distrMInvFG->GetMaximum()*1.1, distrMInvNames[currentPTBinIndex], "", "");
+                        distrMInvFG->GetMaximum()*1.1, distrMInvNames[currentPTBin], "", "");
 
    distrMInvFG->Clone()->Draw("SAME");
    distrMInvBG->Clone()->Draw("SAME");
@@ -269,30 +242,49 @@ void Draw()
 
    distrMInvFG->Draw();
 
+   if (distrMInvFG->GetMinimum() < 1. && distrMInvFG->GetMaximum() > 1.)
+   {
+      TLine line(distrMInvFG->GetXaxis()->GetBinLowEdge(1), 1., 
+                 distrMInvFG->GetXaxis()->GetBinUpEdge(distrMInvFG->GetXaxis()->GetNbins()), 1.);
+      line.SetLineColor(kGray + 1);
+      line.SetLineWidth(3);
+      line.SetLineStyle(2);
+      line.Clone()->Draw();
+   }
+
    gPad->Modified();
    gPad->Update();
 
    canv->cd(4);
 
+   gPad->SetLogy();
+   if (distrMInvFGLR->GetMinimum() < 0.33) distrMInvFGLR->SetMinimum(0.33);
+   if (distrMInvFGLR->GetMaximum() > 3.) distrMInvFGLR->SetMaximum(3.);
    distrMInvFGLR->Draw();
+
+   TLine line(distrMInvFGLR->GetXaxis()->GetBinLowEdge(1), 1., 
+              distrMInvFGLR->GetXaxis()->GetBinUpEdge(distrMInvFGLR->GetXaxis()->GetNbins()), 1.);
+   line.SetLineColor(kGray + 1);
+   line.SetLineWidth(3);
+   line.SetLineStyle(2);
+   line.Clone()->Draw();
 
    gPad->Modified();
    gPad->Update();
 
    canv->Modified();
    canv->Update();
-   CppTools::Print("Current pT bin scale:", rescaleMInvBG[currentPTBinIndex]);
-
+   CppTools::Print("Current pT bin scale:", rescalesMInvBG[currentPTBin]);
 }
 
 void Write()
 {
    std::ofstream outputFile(outputFileName);
 
-   for (int i = 0; i < rescaleMInvBG.size(); i++)
+   for (int i = 0; i < rescalesMInvBG.size(); i++)
    {
-      outputFile << rescaleMInvBG[i];
-      if (i < rescaleMInvBG.size() - 1) outputFile << std::endl;
+      outputFile << rescalesMInvBG[i];
+      if (i < rescalesMInvBG.size() - 1) outputFile << std::endl;
    }
    CppTools::PrintInfo("Rescale values were written in " + outputFileName);
 
@@ -314,63 +306,82 @@ void PrintHelp()
    box.AddEntry("Print results", "p");
    box.AddEntry("Print help", "h");
    box.Print();
+
+   CppTools::PrintInfo("Yout can also click on the right graph to apply the new rescale value. "\
+                       "This value will be deterimed as 1 / Y value you clicked on");
 }
 
 void Exec()
 {
+	const int event = gPad->GetEvent();
    const int px = gPad->GetEventX();
    const int py = gPad->GetEventY();
 
-   switch (px)
+	const double y = gPad->PadtoY(gPad->AbsPixeltoY(py));
+
+   switch (event)
    {
-      case 'j':
+      case kKeyPress:
       {
-         if (distrsMInvFG.size() == 1)
+         switch (px)
          {
-            CppTools::PrintWarning("Cannot switch between histograms "\
-                                   "since only one was added");
+            case 'j':
+            {
+               if (distrsMInvFG.size() == 1)
+               {
+                  CppTools::PrintWarning("Cannot switch between histograms "\
+                                         "since only one was added");
+               }
+               else if (currentPTBin < static_cast<int>(distrsMInvFG.size() - 1)) currentPTBin++;
+               else currentPTBin = 0;
+
+               Draw();
+
+               break;
+            }
+            case 'k':
+            {
+               if (distrsMInvFG.size() == 1)
+               {
+               CppTools::PrintWarning("Cannot switch between histograms "\
+                                      "since only one was added");
+               }
+               else if (currentPTBin > 0) currentPTBin--;
+               else currentPTBin = distrsMInvFG.size() - 1;
+
+               Draw();
+
+               break;
+            }
+            case 'p':
+            {
+               Write();
+               break;
+            }
+            case 'i':
+            {
+               rescalesMInvBG[currentPTBin] += 0.005;
+               Draw();
+               break;
+            }
+            case 'd':
+            {
+               rescalesMInvBG[currentPTBin] -= 0.005;
+               Draw();
+               break;
+            }
+            case 'h':
+            {
+               PrintHelp();
+               break;
+            }
          }
-         else if (currentPTBinIndex < static_cast<int>(distrsMInvFG.size() - 1)) currentPTBinIndex++;
-         else currentPTBinIndex = 0;
-
+         break;
+      }
+      case kButton1Down:
+      {
+         rescalesMInvBG[currentPTBin] = 1./y;
          Draw();
-
-         break;
-      }
-      case 'k':
-      {
-         if (distrsMInvFG.size() == 1)
-         {
-         CppTools::PrintWarning("Cannot switch between histograms "\
-                                "since only one was added");
-         }
-         else if (currentPTBinIndex > 0) currentPTBinIndex--;
-         else currentPTBinIndex = distrsMInvFG.size() - 1;
-
-         Draw();
-
-         break;
-      }
-      case 'p':
-      {
-         Write();
-         break;
-      }
-      case 'i':
-      {
-         rescaleMInvBG[currentPTBinIndex] += 0.005;
-         Draw();
-         break;
-      }
-      case 'd':
-      {
-         rescaleMInvBG[currentPTBinIndex] -= 0.005;
-         Draw();
-         break;
-      }
-      case 'h':
-      {
-         PrintHelp();
          break;
       }
    }
@@ -386,12 +397,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
    pBar.SetText("Preparing M_{inv}");
 
-   const unsigned int pTBinFitMin = method["centrality_bin_parameters"][centralityBinIndex]
-                                          ["pt_bin_min"].as<int>();
-   const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBinIndex]
-                                          ["pt_bin_max"].as<int>();
-
-   for (unsigned int i = pTBinFitMin; i <= pTBinFitMax; i++)
+   for (unsigned int i = 0; i < pTNBins - 1; i++)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
@@ -507,18 +513,52 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       distrMInvBG->SetLineWidth(2);
       distrMInv->SetLineWidth(2);
 
+      for (int j = distrMInvFGLR->GetXaxis()->GetNbins(); j >= 1; j--)
+      {
+         if (distrMInvFGLR->GetBinContent(j) > 10.) 
+         {
+            if (j < distrMInvFGLR->GetXaxis()->GetNbins() - 5.)
+            distrMInvFGLR->GetXaxis()->SetRange(1, j + 5);
+            break;
+         }
+      }
+
       distrsMInvFG.emplace_back(static_cast<TH1D *>(distrMInvFG->Clone()));
       distrsMInvBG.emplace_back(static_cast<TH1D *>(distrMInvBG->Clone()));
       distrsMInvFGLR.emplace_back(static_cast<TH1D *>(distrMInvFGLR->Clone()));
       distrsMInvBGLR.emplace_back(static_cast<TH1D *>(distrMInvBGLR->Clone()));
       distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
                                    CppTools::DtoStr(pTBinRanges[i + 1], 2)));
-      if (!parametersSet)
-      {
-         rescaleMInvBG.push_back(1.);
-      }
-
       numberOfCalls++;
    }
    pBar.Finish();
+}
+
+void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
+{
+   rescalesMInvBG.clear();
+
+   if (!std::filesystem::exists(fileName))
+   {
+      rescalesMInvBG.resize(nPar);
+      for (unsigned int i = 0; i < nPar; i++)
+      {
+         rescalesMInvBG[i] = 1.;
+      }
+
+      return;
+   }
+
+   std::ifstream file(fileName);
+
+   double val;
+   while (file >> val)
+   {
+      rescalesMInvBG.push_back(val);
+   }
+
+   if (nPar != rescalesMInvBG.size())
+   {
+      CppTools::PrintError("Number of parameters mismatch from file " + fileName);
+   }
 }
