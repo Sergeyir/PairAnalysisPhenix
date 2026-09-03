@@ -16,10 +16,11 @@ use_emcal_id: true
 cb_c_bins: 10 # number of centrality bins specified in CabanaBoy
 cb_z_bins: 3 # number of z_{vtx} bins specified in CabanaBoy
 cb_r_bins: 1 # number of reaction plane bins
+default_rebin_x: 1 # rebin of MInv 1D distributions (i.e. X axis) 
 m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + sigma)*sigmalized_yield_extraction_range from mean
-taxi_job: 20474 # default taxi job number for estimating results
+taxi_job: 20484 # default taxi job number for estimating results
 taxi_job_loosened_cuts: 20480 # default taxi job number for loosened cuts variation analysis for systematics
 taxi_job_tightened_cuts: 20479 # default taxi job number for tightened cuts variation analysis for systematics
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
@@ -57,7 +58,8 @@ pair_selection_methods:
     - {pt_bin_min: 7, pt_bin_max: 15} # 20-40
     - {pt_bin_min: 6, pt_bin_max: 15} # 40-60
     - {pt_bin_min: 9, pt_bin_max: 14} # 60-88
-  color: "#7a21dd"
+  #color: "#7a21dd"
+  color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: pol4, pt_bins: [6, 7, 8]} # 1.9-2.6
     - {func: pol2, pt_bins: [15]} # 6.5-8.5
@@ -71,22 +73,24 @@ pair_selection_methods:
     - {pt_bin_min: 0, pt_bin_max: 12} # 20-40
     - {pt_bin_min: 3, pt_bin_max: 12} # 40-60
     - {pt_bin_min: 0, pt_bin_max: 10} # 60-88
-  color: "#e42536"
-  custom_bg_fit:
-    - {func: pol3, pt_bins: [2, 3, 4, 5]} # 0.9-1.9
-- 
-  name: TOF2PID
-  bg_default_fit_func: pol2
-  sigmalized_fit_range: 3.
-  centrality_bin_parameters:
-    - {pt_bin_min: 0, pt_bin_max: 11} # 0-88
-    - {pt_bin_min: 0, pt_bin_max: 11} # 0-20
-    - {pt_bin_min: 0, pt_bin_max: 11} # 20-40
-    - {pt_bin_min: 1, pt_bin_max: 6} # 40-60
-    - {pt_bin_min: 1, pt_bin_max: 6} # 60-88
+  #color: "#e42536"
   color: "#5790fc"
   custom_bg_fit:
-    - {func: pol3, pt_bins: [4, 5]} # 1.4-1.9
+    - {func: gaus, pt_bins: [0, 1]} # 0.9-1.9
+    - {func: pol3, pt_bins: [2, 3, 4, 5]} # 0.9-1.9
+#- 
+#  name: TOF2PID
+#  bg_default_fit_func: gaus
+#  sigmalized_fit_range: 3.
+#  centrality_bin_parameters:
+#    - {pt_bin_min: 0, pt_bin_max: 11} # 0-88
+#    - {pt_bin_min: 0, pt_bin_max: 11} # 0-20
+#    - {pt_bin_min: 1, pt_bin_max: 11} # 20-40
+#    - {pt_bin_min: 1, pt_bin_max: 6} # 40-60
+#    - {pt_bin_min: 1, pt_bin_max: 6} # 60-88
+#  color: "#5790fc"
+#  custom_bg_fit:
+#    - {func: "", pt_bins: []} # 1.4-1.9
 centrality_bins:
 - 
   name: "0-88"

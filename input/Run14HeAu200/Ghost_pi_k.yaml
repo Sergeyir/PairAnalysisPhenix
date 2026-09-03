@@ -37,35 +37,76 @@ pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 2.75, min: 2.6, max: 2.9} # 9
   - {value: 3.15, min: 2.9, max: 3.4} # 10
   - {value: 3.70, min: 3.4, max: 4.0} # 11
-  - {value: 4.25, min: 4.0, max: 4.5} # 12
-  - {value: 4.75, min: 4.5, max: 5.0} # 13
-  - {value: 5.75, min: 5.0, max: 6.5} # 14
-  - {value: 7.50, min: 6.5, max: 8.5} # 15
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
   - name: ''
 pair_selection_methods:
 - 
   name: "TOF2PIDNoGhostCut"
   bg_default_fit_func: ""
-  sigmalized_fit_range: 3.
+  sigmalized_fit_range: 0.
   centrality_bin_parameters:
     - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
   color: ""
   custom_bg_fit:
     - {func: "", pt_bins: []}
 - 
-  name: "GhostOnlyTOF2PID"
+  name: "TOFNoPID"
   bg_default_fit_func: ""
-  sigmalized_fit_range: 3.
+  sigmalized_fit_range: 0.
   centrality_bin_parameters:
     - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
   color: ""
   custom_bg_fit:
     - {func: "", pt_bins: []}
 - 
-  name: "TOF2PID"
+  name: "TOFNoPIDNoGhostCut"
   bg_default_fit_func: ""
-  sigmalized_fit_range: 3.
+  sigmalized_fit_range: 0.
+  centrality_bin_parameters:
+    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
+  color: ""
+  custom_bg_fit:
+    - {func: "", pt_bins: []}
+- 
+  name: "TOFNoPIDGhost"
+  bg_default_fit_func: ""
+  sigmalized_fit_range: 0.
+  centrality_bin_parameters:
+    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
+  color: ""
+  custom_bg_fit:
+    - {func: "", pt_bins: []}
+- 
+  name: "TOFNoPIDNoGhostCutEMCalMatch"
+  bg_default_fit_func: ""
+  sigmalized_fit_range: 0.
+  centrality_bin_parameters:
+    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
+  color: ""
+  custom_bg_fit:
+    - {func: "", pt_bins: []}
+- 
+  name: "TOFNoPIDNoGhostCutPC3Match"
+  bg_default_fit_func: ""
+  sigmalized_fit_range: 0.
+  centrality_bin_parameters:
+    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
+  color: ""
+  custom_bg_fit:
+    - {func: "", pt_bins: []}
+- 
+  name: "TOFNoPIDEMCalMatch"
+  bg_default_fit_func: ""
+  sigmalized_fit_range: 0.
+  centrality_bin_parameters:
+    - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
+  color: ""
+  custom_bg_fit:
+    - {func: "", pt_bins: []}
+- 
+  name: "TOFNoPIDPC3Match"
+  bg_default_fit_func: ""
+  sigmalized_fit_range: 0.
   centrality_bin_parameters:
     - {pt_bin_min: -1, pt_bin_max: -1} # 0-88
   color: ""
