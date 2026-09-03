@@ -64,7 +64,13 @@ namespace AnalyzeRealMInv
     */
    TFile *SetFixedBGFile(const std::string& inputFileName, const std::string& fitTypeName, 
                          const bool printFreeFitWarning = true);
-   /*! Set the parameters of BG fit
+   /*! Set MInv BG rescale for the current method and centrality bin
+    *
+    * @param[in] fileName name of the file from which approximation parameters will be written
+    * @param[in] nPar number of parameters expected to be read
+    */
+   void SetMInvBGRescale(const std::string& fileName, const unsigned int nPar);
+   /*! Set parameters of BG fit
     *
     * @param[in] inputFile file from which approximation parameters will be written
     * @param[in] fitBG background fit to which BG approximation parameters will be applied
@@ -84,9 +90,9 @@ namespace AnalyzeRealMInv
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     */
    double GetYield(TH1D *distr, TF1 *funcBG, const double xMin, const double xMax);
-   /// Contents of input .yaml file for run configuration
+   /// Parser of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
-   /// Contents of input .yaml file for the information about resonance
+   /// Parser of input .yaml file for the information about resonance
    InputYAMLReader inputYAMLResonance;
    /// Name of run (e.g. Run14HeAu200 or Run7AuAu200)
    std::string runName;
@@ -106,9 +112,9 @@ namespace AnalyzeRealMInv
    double massResonance;
    /// gamma of the resonance [GeV/c^2]
    double gammaResonance;
-   /// id of 1st decay product
+   /// id of a 1st decay product
    int daughter1Id;
-   /// id of 2nd decay product
+   /// id of a 2nd decay product
    int daughter2Id;
    /// M_{inv} range minimum value [GeV/c^2]
    double minMInv;
@@ -116,12 +122,16 @@ namespace AnalyzeRealMInv
    double maxMInv;
    /// number of pT bins
    unsigned int pTNBins;
+   /// Additional rescale value of MInv BG (for systematics)
+   int rescaleBG = 1.;
    /// Rebin value for M_{inv} i.e. x axis 
-   int rebinX = 1;
+   int rebinX;
    /// yield extraction range in +-(Gamma + sigma)*sigmalizedYieldExtractionRange from mean
    double sigmalizedYieldExtractionRange;
    /// pT bins ranges [GeV/c]
    std::vector<double> pTBinRanges;
+   /// rescales for invariant mass background rescale
+   std::vector<double> rescalesMInvBG;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
    TF1 *gaussianBroadeningEstimatorFunc;
    /// TText object template for quick text insertions

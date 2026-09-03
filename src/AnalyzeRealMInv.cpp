@@ -15,11 +15,11 @@ using namespace AnalyzeRealMInv;
 
 int main(int argc, char **argv)
 {
-   if (argc < 3 || argc > 6) 
+   if (argc < 3 || argc > 7)
    {
       CppTools::PrintError("Expected 2-5 parameters while " + std::to_string(argc - 1) + " "\
                            "parameter(s) were provided \n Usage: bin/AnalyzeRealMInv "\
-                           "inputYAMLName taxiNumber methodName=all rebinX=1 "\
+                           "inputYAMLName taxiNumber methodName=all rescaleBG=1 rebinX=1"\
                            "numberOfThreads=std::thread::hardware_concurrency()");
    }
  
@@ -27,13 +27,26 @@ int main(int argc, char **argv)
 
    taxiNumber = std::stoi(argv[2]);
  
-   if (argc == 6) ROOT::EnableImplicitMT(std::stoi(argv[5]));
+   if (argc == 7) ROOT::EnableImplicitMT(std::stoi(argv[5]));
    else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
-   if (argc == 5) 
+   if (argc >= 5) 
    {
-      rebinX = std::stoi(argv[4]);
+      rescaleBG = std::stoi(argv[4]);
+      if (rescaleBG <= 0) CppTools::PrintError("Rescale value cannot be 0 or negative");
+   }
+
+   inputYAMLResonance.OpenFile(argv[1]);
+   inputYAMLResonance.CheckStatus("resonance");
+
+   if (argc >= 6) 
+   {
+      rebinX = std::stoi(argv[5]);
       if (rebinX <= 0) CppTools::PrintError("Rebin value cannot be 0 or negative");
+   }
+   else
+   {
+      rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
    }
 
    std::string methodToAnalyze;
@@ -47,9 +60,6 @@ int main(int argc, char **argv)
 
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
-
-   inputYAMLResonance.OpenFile(argv[1]);
-   inputYAMLResonance.CheckStatus("resonance");
 
    runName = inputYAMLResonance["run_name"].as<std::string>();
 
@@ -159,6 +169,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
       const std::string centralityName = centrality["name"].as<std::string>();
 
+      SetMInvBGRescale("data/Parameters/MInvBGRescale/" + runName + "/" + 
+                       std::to_string(taxiNumber) + "/" + resonanceName + "_" + 
+                       methodName + "_" + centralityName + ".txt", pTNBins);
+
       TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
       TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
       TH1D distrRawYieldVsPTStatErr("raw yield vs pT with stat errors", 
@@ -233,7 +247,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                         0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                         pTBinRanges[i], pTBinRanges[i + 1],
                         distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR, 
-                        numberOfEvents);
+                        numberOfEvents, 0.95*rescalesMInvBG[i]);
 
          if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
              !inputYAMLResonance["separate_antiparticle"].as<bool>())
@@ -247,7 +261,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                        0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
                                        pTBinRanges[i], pTBinRanges[i + 1],
                                        distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR,
-                                       numberOfEvents));
+                                       numberOfEvents, 0.95*rescalesMInvBG[i]));
 
             numberOfEvents /= 2.;
          }
@@ -307,6 +321,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             distrMInv->Rebin(rebinX);
             distrMInvFG->Rebin(rebinX);
             distrMInvBG->Rebin(rebinX);
+         }
+
+         for (int j = distrMInvFGLR->GetXaxis()->GetNbins(); j >= 1; j--)
+         {
+            if (distrMInvFGLR->GetBinContent(j) > 1.) 
+            {
+               distrMInvFGLR->GetXaxis()->SetRange(1, j);
+               break;
+            }
          }
 
          // fit for resonance+bg approximation
@@ -450,6 +473,37 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                            massResonance + gammaResonance*3., 5);
                }
             }
+            else if (bgFitFunc == "gaus")
+            {
+               fit = new TF1("Default", &FitFunc::RBWConvGausBGGaus, 
+                             massResonance - gammaResonance*3., 
+                             massResonance + gammaResonance*3., 7);
+               fitBG = new TF1("Default BG", &FitFunc::Gaus, 
+                               massResonance - gammaResonance*3., 
+                               massResonance + gammaResonance*3., 3);
+
+               if (performAltFits)
+               {
+                  altFitAB = new TF1("AB", &FitFunc::RBWConvGausBGPol2, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 7);
+                  altFitBGAB = new TF1("AB BG", &FitFunc::Pol2, 
+                                       massResonance - gammaResonance*3., 
+                                       massResonance + gammaResonance*3., 3);
+                  altFitFreeG = new TF1("Free #Gamma", &FitFunc::RBWConvGausBGGaus, 
+                                        massResonance - gammaResonance*3.,
+                                        massResonance + gammaResonance*3., 7);
+                  altFitBGFreeG = new TF1("Free #Gamma BG", &FitFunc::Gaus,
+                                          massResonance - gammaResonance*3.,
+                                          massResonance + gammaResonance*3., 3);
+                  altFitFixedG = new TF1("Fixed #Gamma", &FitFunc::RBWConvGausBGGaus, 
+                                         massResonance - gammaResonance*3., 
+                                         massResonance + gammaResonance*3., 7);
+                  altFitBGFixedG = new TF1("Fixed #Gamma BG", &FitFunc::Gaus, 
+                                           massResonance - gammaResonance*3., 
+                                           massResonance + gammaResonance*3., 3);
+               }
+            }
             else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
             const std::string pTBinRangeName =  
@@ -473,6 +527,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             fit->SetParLimits(2, gammaResonance/1.10, gammaResonance*1.10);
             fit->SetParLimits(3, gaussianBroadeningSigma/1.10, gaussianBroadeningSigma*1.10);
 
+            if (!isBGFixedForThisPT && bgFitFunc == "gaus")
+            {
+               fit->SetParameter(4, maxBinVal/10.);
+               fit->SetParameter(5, 1.);
+               fit->SetParameter(6, 1.);
+               fit->SetParLimits(4, 0., maxBinVal);
+               fit->SetParLimits(5, 0., 10.);
+               fit->SetParLimits(6, gammaResonance*2., 10.);
+            }
+
             if (isBGFixedForThisPTAltFit)
             {
                altFitAB->SetParameters(maxBinVal, massResonance, 
@@ -487,7 +551,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                           gammaResonance, gaussianBroadeningSigma);
                altFitFreeG->SetParLimits(0, 1., maxBinVal - minBinVal);
                altFitFreeG->SetParLimits(1, massResonance/1.05, massResonance*1.05);
-               altFitFreeG->SetParLimits(2, gammaResonance/1.5, gammaResonance*1.5);
+               altFitFreeG->SetParLimits(2, gammaResonance/1.2, gammaResonance*1.2);
                altFitFreeG->SetParLimits(3, gaussianBroadeningSigma/100., gaussianBroadeningSigma*2.);
 
                altFitFixedG->SetParameters(maxBinVal, massResonance, 
@@ -1052,6 +1116,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             distrMInvFG->SetMaximum(distrMInvFG->GetMaximum()*1.15);
             distrMInvFGLR->SetMaximum(distrMInvFGLR->GetMaximum()*3.);
+            distrMInvFGLR->SetMinimum(0.99);
 
             canvMInvSummary.cd(2);
 
@@ -1093,6 +1158,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             canvMInvSummary.cd(3);
 
+            TH1D *distrMInvLR = static_cast<TH1D *>(distrMInvFGLR->Clone());
+            distrMInvLR->SetFillStyle(3003);
+            distrMInvLR->SetLineWidth(2);
+            distrMInvLR->SetLineColorAlpha(kRed + 2, 0.8);
+            distrMInvLR->Add(distrMInvBGLR, -1.);
+
+            distrMInvLR->Sumw2(false);
+
             gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
             gPad->SetLeftMargin(0.148); gPad->SetBottomMargin(0.112);
 
@@ -1109,10 +1182,11 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                if (distrMInvBGLR->GetEntries() > 1e-3) 
                {
-                  distrMInvBGLR->SetLineColorAlpha(kRed + 2, 0.8);
+                  distrMInvBGLR->SetLineColorAlpha(kGreen + 2, 0.8);
                   distrMInvBGLR->Draw("SAME PFC");
                }
                else text.DrawTextNDC(0.78, 0.9, "No data on background");
+               distrMInvLR->Draw("SAME PFC");
             }
             else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
 
@@ -1245,24 +1319,6 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       ROOTTools::PrintCanvas(&canvGammasVsPT, outputDir + "/" + resonanceName + 
                              "_gammas_" + centralityName);
 
-      TCanvas canvRawYieldVsPT("canv raw yield vs pT", "", 800, 800);
-
-      gPad->SetLogy();
-
-      gPad->SetRightMargin(0.03);
-      gPad->SetTopMargin(0.02);
-      gPad->SetLeftMargin(0.141);
-      gPad->SetBottomMargin(0.112);
-
-      ROOTTools::DrawFrame(&distrRawYieldVsPTStatErr, "", "#it{p}_{T} [GeV/#it{c}]", 
-                           "#it{dY}_{raw}/#it{dp}_{T} [(GeV/#it{c})^{-1}]", 1., 1.35);
-      distrRawYieldVsPTSysErr.Draw("SAME E2");
-
-      text.DrawTextNDC(0.9, 0.95, (methodName).c_str());
-
-      ROOTTools::PrintCanvas(&canvRawYieldVsPT, outputDir + "/" + resonanceName + 
-                             "_raw_yield_" + centralityName);
-
       parametersOutputFile->mkdir(centralityName.c_str());
       parametersOutputFile->cd(centralityName.c_str());
 
@@ -1271,7 +1327,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       distrRawYieldVsPTStatErr.Write();
       distrRawYieldVsPTSysErr.Write();
    }
-
+  
    parametersOutputFile->Close();
 }
 
@@ -1390,6 +1446,38 @@ bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string
    }
 
    return false;
+}
+
+void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
+{
+   rescalesMInvBG.clear();
+
+   if (!std::filesystem::exists(fileName))
+   {
+      CppTools::PrintWarning("File " + fileName + " could not be found; "\
+                             "MInv BG rescale will be disabled");
+
+      rescalesMInvBG.resize(nPar);
+      for (unsigned int i = 0; i < nPar; i++)
+      {
+         rescalesMInvBG[i] = 1.;
+      }
+
+      return;
+   }
+
+   std::ifstream file(fileName);
+
+   double val;
+   while (file >> val)
+   {
+      rescalesMInvBG.push_back(val);
+   }
+
+   if (nPar != rescalesMInvBG.size())
+   {
+      CppTools::PrintError("Number of parameters mismatch from file " + fileName);
+   }
 }
 
 #endif /* ANALYZE_REAL_M_INV_CPP */
