@@ -170,7 +170,7 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
                        TH1D*& distrMInvFGLR, TH1D*& distrMInvBGLR,
                        const double rescaleBG)
 {
-   const double integralMInvFGLR = distrMInvFGLR->Integral(1, distrMInvFGLR->GetXaxis()->GetNbins());
+   //const double integralMInvFGLR = distrMInvFGLR->Integral(1, distrMInvFGLR->GetXaxis()->GetNbins());
    const double integralMInvBGLR = distrMInvBGLR->Integral(1, distrMInvBGLR->GetXaxis()->GetNbins());
 
    double partIntegralMInvFGLR = 0.;
@@ -178,10 +178,7 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
 
    for (int i = distrMInvFGLR->GetXaxis()->GetNbins(); i >= 1; i--)
    {
-      if (partIntegralMInvFGLR > integralMInvFGLR*0.1 && 
-          partIntegralMInvBGLR > integralMInvBGLR*0.1) break;
-
-      if (distrMInvBGLR->GetBinContent(i) < 1e-6) continue;
+      if (partIntegralMInvBGLR > integralMInvBGLR*0.9) break;
 
       partIntegralMInvFGLR += distrMInvFGLR->GetBinContent(i);
       partIntegralMInvBGLR += distrMInvBGLR->GetBinContent(i);
