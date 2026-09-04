@@ -156,7 +156,7 @@ void AdjustMInvBGScale()
 
    pTNBins = inputYAMLResonance["pt_bins"].size();
 
-   for (unsigned int i = 0; i < pTNBins - 1; i++)
+   for (unsigned int i = 0; i < pTNBins; i++)
    {
       pTBinRanges.push_back(inputYAMLResonance["pt_bins"][i]["min"].as<double>());
    }
@@ -397,7 +397,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
    pBar.SetText("Preparing M_{inv}");
 
-   for (unsigned int i = 0; i < pTNBins - 1; i++)
+   for (unsigned int i = 0; i < pTNBins; i++)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
 
