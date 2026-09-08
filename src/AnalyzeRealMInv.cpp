@@ -128,6 +128,9 @@ int main(int argc, char **argv)
    parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
    std::filesystem::create_directories(parametersOutputDir);
 
+   sysOutputDir = "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
+   std::filesystem::create_directories(sysOutputDir);
+
    // performing fits for specified pair selection methods
    if (methodToAnalyze == "all")
    {
@@ -221,10 +224,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                              ["pt_bin_min"].as<int>();
       const unsigned int pTBinFitMax = method["centrality_bin_parameters"][centralityBin]
                                              ["pt_bin_max"].as<int>();
+      TH1D varRawYieldAltFitAB("Y var AB", "", pTNBins, &pTBinRanges[0]);
+      TH1D varRawYieldAltFitFreeG("Y var FreeG", "", pTNBins, &pTBinRanges[0]);
+      TH1D varRawYieldAltFitFixedG("Y var FixedG", "", pTNBins, &pTBinRanges[0]);
 
       for (unsigned int i = 0; i < pTNBins; i++)
       {
          pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
+
+         const double pT = (pTBinRanges[i] + pTBinRanges[i + 1])/2.;
 
          TH1D *distrMInvFG = nullptr;
          TH1D *distrMInvBG = nullptr;
@@ -347,8 +355,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          TF1 *altFitBGFixedG = nullptr;
 
          // sigma of a gaus that is convoluted with Breit-Wigner
-         const double gaussianBroadeningSigma = 
-            gaussianBroadeningEstimatorFunc->Eval((pTBinRanges[i] + pTBinRanges[i + 1])/2.);
+         const double gaussianBroadeningSigma = gaussianBroadeningEstimatorFunc->Eval(pT);
 
          double fitRangeMin = -1.;
          double fitRangeMax = -1.;
@@ -785,9 +792,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                                                 sigmalizedYieldExtractionRange;
             }
 
-            double rawYield = GetYield(distrMInv, fitBG, lowIntegrationRange, upIntegrationRange);
-            double rawYieldSysErr = 1e-15;
-
+            double rawYieldStatErr = 0.;
+            double rawYield = GetYieldAndStatErr(distrMInv, distrMInvFG, distrMInvBG, fitBG, 
+                                                 lowIntegrationRange, upIntegrationRange, 
+                                                 rawYieldStatErr);
             if (isBGFixedForThisPTAltFit)
             {
                const double rawYieldAltFitAB = GetYield(distrMInv, altFitBGAB, 
@@ -799,27 +807,27 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                const double rawYieldAltFitFixedG = GetYield(distrMInv, altFitBGFixedG, 
                                                             lowIntegrationRangeAltFitFixedG, 
                                                             upIntegrationRangeAltFitFixedG);
-               rawYieldSysErr = CppTools::RMS(rawYield - rawYieldAltFitAB,
-                                              rawYield - rawYieldAltFitFreeG,
-                                              rawYield - rawYieldAltFitFixedG);
+
+               varRawYieldAltFitAB.SetBinContent(i + 1, rawYieldAltFitAB/rawYield - 1.);
+               varRawYieldAltFitFreeG.SetBinContent(i + 1, rawYieldAltFitFreeG/rawYield - 1.);
+               varRawYieldAltFitFixedG.SetBinContent(i + 1, rawYieldAltFitFixedG/rawYield - 1.);
+
+               varRawYieldAltFitAB.SetBinError(i + 1, rawYieldStatErr/rawYield/sqrt(2.));
+               varRawYieldAltFitFreeG.SetBinError(i + 1, rawYieldStatErr/rawYield/sqrt(2.));
+               varRawYieldAltFitFixedG.SetBinError(i + 1, rawYieldStatErr/rawYield/sqrt(2.));
             }
 
-            double rawYieldStatErr = 
-               sqrt(distrMInvFG->Integral(distrMInvFG->GetXaxis()->FindBin(lowIntegrationRange),
-                                          distrMInvFG->GetXaxis()->FindBin(upIntegrationRange)));
-
             // 2*pi*pT*dpT*N_{evt}
-            const double rawYieldNorm = 2.*M_PI*(pTBinRanges[i] + pTBinRanges[i + 1])/2.*
+            const double rawYieldNorm = 2.*M_PI*pT*
                                         (pTBinRanges[i + 1] - pTBinRanges[i])*numberOfEvents;
             rawYield /= rawYieldNorm;
             rawYieldStatErr /= rawYieldNorm;
-            rawYieldSysErr /= rawYieldNorm;
 
             distrRawYieldVsPTStatErr.SetBinContent(i + 1, rawYield);
             distrRawYieldVsPTStatErr.SetBinError(i + 1, rawYieldStatErr);
 
             distrRawYieldVsPTSysErr.SetBinContent(i + 1, rawYield);
-            distrRawYieldVsPTSysErr.SetBinError(i + 1, rawYieldSysErr);
+            if (!isBGFixedForThisPTAltFit) distrRawYieldVsPTSysErr.SetBinError(i + 1, 1e-15);
 
             fit->SetLineWidth(4);
             fitBG->SetLineWidth(4);
@@ -1057,9 +1065,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                   upYieldExtrRangeLine.Clone()->Draw();
 
                   // graph that contains fit to correlated BG ratio
-                  TGraph fitToBGRatio;
+                  TGraphErrors fitToBGRatio;
                   // graph that contains background fit to correlated BG ratio
-                  TGraph fitBGToBGRatio;
+                  TGraphErrors fitBGToBGRatio;
 
                   for (int i = CppTools::Maximum(ratioFGBG->GetXaxis()->FindBin(fitRangeMin), 1);
                        i <= CppTools::Minimum(ratioFGBG->GetXaxis()->FindBin(fitRangeMax), 
@@ -1254,6 +1262,95 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
          numberOfCalls++;
       }
+      
+      // Drawing raw yield variations, estimating systematics, drawing systematics
+      if (performAltFits)
+      {
+         varRawYieldAltFitAB.GetXaxis()->SetRange(pTBinFitMin + 1, pTBinFitMax + 1);
+
+         varRawYieldAltFitAB.SetLineColorAlpha(kRed - 3, 0.8);
+         varRawYieldAltFitFreeG.SetLineColorAlpha(kAzure - 3, 0.8);
+         varRawYieldAltFitFixedG.SetLineColorAlpha(kGreen - 3, 0.8);
+
+         varRawYieldAltFitAB.SetLineWidth(4);
+         varRawYieldAltFitFreeG.SetLineWidth(3);
+         varRawYieldAltFitFixedG.SetLineWidth(3);
+
+         double yMin = CppTools::Minimum(varRawYieldAltFitAB.GetMinimum(),
+                                         varRawYieldAltFitFreeG.GetMinimum(),
+                                         varRawYieldAltFitFixedG.GetMinimum());
+         double yMax = CppTools::Maximum(varRawYieldAltFitAB.GetMaximum(),
+                                         varRawYieldAltFitFreeG.GetMaximum(),
+                                         varRawYieldAltFitFixedG.GetMaximum());
+         yMin = (yMin < 0 ? yMin*1.1 : yMin/1.1);
+         yMax = (yMax > 0 ? yMax*1.1 : yMax/1.1);
+
+         varRawYieldAltFitAB.SetMinimum(yMin);
+         varRawYieldAltFitAB.SetMaximum(yMax);
+
+         TCanvas canv("raw yield var canv", "", 800, 800);
+
+         canv.SetFillStyle(4000);
+         canv.SetFrameFillColor(0);
+         canv.SetFrameFillStyle(0);
+         canv.SetFrameBorderMode(0);
+
+         gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+         gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(&varRawYieldAltFitAB, "", 
+                              "#it{p}_{T} [GeV/#it{c}]", "Var(#it{Y})", 1., 1.5);
+
+         varRawYieldAltFitFreeG.Draw("SAME");
+         varRawYieldAltFitFixedG.Draw("SAME");
+
+         ROOTTools::PrintCanvas(&canv, sysOutputDir + "/FitVar_" + resonanceName + 
+                                "_" + methodName + "_" + centralityName);
+
+         canv.Clear();
+
+         TH1D sysRawYield("raw yield sys", "", pTNBins, &pTBinRanges[0]);
+
+         sysRawYield.SetLineWidth(2);
+         sysRawYield.SetLineColor(kBlack);
+
+         // calculating systematic uncertainty for each pT bin
+         for (unsigned int i = pTBinFitMin + 1; i <= pTBinFitMax + 1; i++)
+         {
+            // relative uncertainty
+            const double sys = CppTools::RMS(varRawYieldAltFitAB.GetBinContent(i),
+                                             varRawYieldAltFitFreeG.GetBinContent(i),
+                                             varRawYieldAltFitFixedG.GetBinContent(i));
+            sysRawYield.SetBinContent(i, sys);
+            sysRawYield.SetBinError(i, varRawYieldAltFitAB.GetBinError(i)/sqrt(3.));
+         }
+
+         sysRawYield.GetXaxis()->SetRange(pTBinFitMin + 1, pTBinFitMax + 1);
+
+         TF1 fit("sys fit", "pol2");
+         fit.SetRange(pTBinRanges[pTBinFitMin + 1]/1.05, pTBinRanges[pTBinFitMax + 1]*1.05);
+
+         fit.SetLineWidth(4);
+         fit.SetLineColor(kRed - 3);
+         fit.SetLineStyle(2);
+
+         sysRawYield.Fit(&fit, "RQMNB");
+
+         ROOTTools::DrawFrame(&sysRawYield, "", 
+                              "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.5);
+
+         fit.Draw("SAME");
+
+         ROOTTools::PrintCanvas(&canv, sysOutputDir + "/FitVarSys_" + resonanceName + 
+                                "_" + methodName + "_" + centralityName);
+
+         // setting resulting systematic uncertainty for each pT bin
+         for (unsigned int i = pTBinFitMin + 1; i <= pTBinFitMax + 1; i++)
+         {
+            const double sys = fit.Eval(distrRawYieldVsPTSysErr.GetXaxis()->GetBinCenter(i));
+            distrRawYieldVsPTSysErr.SetBinError(i, distrRawYieldVsPTSysErr.GetBinContent(i)*sys);
+         }
+      }
 
       distrMeansVsPT.SetLineColor(kRed - 2);
       distrMeansVsPT.SetMarkerColor(kRed - 2);
@@ -1387,7 +1484,26 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin
    // normalizing background integral by the number of integration steps
    integral -= integralBG/101.;
 
+
    return integral;
+}
+
+double AnalyzeRealMInv::GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, 
+                                           TF1 *funcBG, const double xMin, const double xMax, 
+                                           double &err)
+{
+   // resetting error (in case non-zero value was passed)
+   err = 0.;
+   for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
+        i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
+                               distrMInv->GetXaxis()->GetNbins()); i++)
+   {
+      err += pow(distrMInvFG->GetBinError(i), 2) + pow(distrMInvBG->GetBinError(i), 2);
+   }
+
+   err = sqrt(err);
+
+   return GetYield(distrMInv, funcBG, xMin, xMax);
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
