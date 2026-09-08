@@ -39,7 +39,6 @@ pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
   - {value: 4.75, min: 4.5, max: 5.0} # 13
   - {value: 5.75, min: 5.0, max: 6.5} # 14
   - {value: 7.50, min: 6.5, max: 8.5} # 15
-  - {value: 7.50, min: 8.5, max: 12.0} # 16
 sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange pT, hpt - high pt)
   - name: lpt
   - name: mpt
