@@ -407,27 +407,27 @@ int main(int argc, char **argv)
             {
                // relative variations of loosened and tightened cuts 
                // and their statistical uncertainties
-               const double varL = (rawYieldVsPTStatErr->GetBinContent(i) - 
-                                    rawYieldVsPTLoosenedCuts->GetBinContent(i))/
+               const double varL = (rawYieldVsPTLoosenedCuts->GetBinContent(i) - 
+                                    rawYieldVsPTStatErr->GetBinContent(i))/
                                    rawYieldVsPTStatErr->GetBinContent(i);
-               const double varT = (rawYieldVsPTStatErr->GetBinContent(i) - 
-                                    rawYieldVsPTTightenedCuts->GetBinContent(i))/
+               const double varT = (rawYieldVsPTTightenedCuts->GetBinContent(i) - 
+                                    rawYieldVsPTStatErr->GetBinContent(i))/
                                    rawYieldVsPTStatErr->GetBinContent(i);
                const double varLErr = 
                   CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
                                             rawYieldVsPTStatErr->GetBinContent(i),
                                             rawYieldVsPTLoosenedCuts->GetBinError(i)/
-                                            rawYieldVsPTLoosenedCuts->GetBinContent(i));
+                                            rawYieldVsPTLoosenedCuts->GetBinContent(i))/2.;
                const double varTErr = 
                   CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
                                             rawYieldVsPTStatErr->GetBinContent(i),
                                             rawYieldVsPTTightenedCuts->GetBinError(i)/
-                                            rawYieldVsPTTightenedCuts->GetBinContent(i));
+                                            rawYieldVsPTTightenedCuts->GetBinContent(i))/2.;
 
                cutsVarSys = CppTools::RMS(varL, varT);
 
                sysCutsVar.SetBinContent(i, cutsVarSys);
-               sysCutsVar.SetBinError(i, CppTools::UncertaintyProp(varLErr, varTErr));
+               sysCutsVar.SetBinError(i, CppTools::UncertaintyProp(varLErr, varTErr)/2.);
 
                resultVarCutsVarL.SetBinContent(i, varL);
                resultVarCutsVarT.SetBinContent(i, varT);
@@ -508,15 +508,15 @@ int main(int argc, char **argv)
 
             sysCutsVar.SetLineWidth(2);
 
-            sysCutsVar.SetLineColorAlpha(kRed - 3, 0.9);
+            sysCutsVar.SetLineColorAlpha(kBlack, 0.9);
 
             TF1 fit("cuts var sys fit", "pol2");
 
-            fit.SetLineColorAlpha(kBlack, 0.5);
+            fit.SetLineColor(kRed - 3);
             fit.SetLineWidth(4);
             fit.SetLineStyle(2);
 
-            fit.SetRange(methodPTMin, methodPTMax);
+            fit.SetRange(methodPTMin/1.05, methodPTMax*1.05);
 
             sysCutsVar.Fit(&fit, "QMN");
 
@@ -580,9 +580,9 @@ int main(int argc, char **argv)
             sysFull.SetMaximum(sysFull.GetMaximum()*1.2);
             sysFull.SetMinimum(0.001);
 
-            sysPTScale.SetLineColorAlpha(kP6Blue, 0.9);
+            sysPTScale.SetLineColorAlpha(kP6Yellow, 0.9);
             sysAccVar.SetLineColorAlpha(kP6Red, 0.9);
-            sysYieldExtr.SetLineColorAlpha(kP6Yellow, 0.9);
+            sysYieldExtr.SetLineColorAlpha(kP6Blue, 0.9);
             sysFull.SetLineColor(kP6Gray);
 
             sysPTScale.SetLineWidth(2);
@@ -714,7 +714,7 @@ int main(int argc, char **argv)
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
 
-      tsallisFit.SetRange(xMin + 0.1, xMax - 0.1);
+      tsallisFit.SetRange(xMin/1.05, xMax*1.05);
 
       tsallisFit.SetLineStyle(2);
       tsallisFit.SetLineWidth(4);
