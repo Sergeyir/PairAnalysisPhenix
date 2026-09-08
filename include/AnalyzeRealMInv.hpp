@@ -22,7 +22,7 @@
 #include "TLine.h"
 #include "TLegend.h"
 #include "TMath.h"
-#include "TGraph.h"
+#include "TGraphErrors.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
@@ -82,14 +82,26 @@ namespace AnalyzeRealMInv
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
-   /* Extracts the yield by integrating the distribution and subtracting the background in the specified range
+   /* Returns the raw yield by integrating the distribution and subtracting the background in the specified range
     *
     * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     */
-   double GetYield(TH1D *distr, TF1 *funcBG, const double xMin, const double xMax);
+   double GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin, const double xMax);
+   /* Same as GetYield but additionally calculates the statistica uncertainty 
+    *
+    * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
+    * @param[in] distrInvMFG foreground invariant mass distribution (before combinatorial BG subtraction)
+    * @param[in] distrInvMBG combinatorial background invariant mass distribution
+    * @param[in] funcBG function that approximates the background
+    * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
+    * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
+    * @param[in] err statistical uncertainty that will be calculated
+    */
+   double GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, TF1 *funcBG,
+                             const double xMin, const double xMax, double &err);
    /// Parser of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Parser of input .yaml file for the information about resonance
@@ -132,6 +144,8 @@ namespace AnalyzeRealMInv
    std::vector<double> pTBinRanges;
    /// rescales for invariant mass background rescale
    std::vector<double> rescalesMInvBG;
+   /// directory to which systematics will be written (if estimation is on)
+   std::string sysOutputDir;
    /// function for estimating width of gaus for convolution of Gaus and Breit-Wigner
    TF1 *gaussianBroadeningEstimatorFunc;
    /// TText object template for quick text insertions
