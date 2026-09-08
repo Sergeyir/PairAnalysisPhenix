@@ -163,8 +163,7 @@ void MInvFit()
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
 
-   /*
-   CppTools::Print("Choose whether you want to perform and save alternative fits "\
+   CppTools::Print("Choose whether you want to perform alternative fits "\
                    "(any number if yes, 0 if no);\n (typing in any text will exit the program)");
    std::cout << ">> ";
    if (!(std::cin >> performAltFits))
@@ -172,7 +171,6 @@ void MInvFit()
       CppTools::PrintInfo("Exiting the program");
       exit(1);
    }
-   */
 
    resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
@@ -673,12 +671,31 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          altFitsFreeG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFreeG.back()->SetParLimits(1, massResonance/1.05, massResonance*1.05);
          altFitsFreeG.back()->SetParLimits(2, gammaResonance/1.2, gammaResonance*1.2);
-         altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/100., gaussianBroadeningSigma*2.);
+         altFitsFreeG.back()->SetParLimits(3, gaussianBroadeningSigma/2., 
+                                           gaussianBroadeningSigma*2.);
 
          altFitsFixedG.back()->SetParLimits(0, 1., maxBinVal - minBinVal);
          altFitsFixedG.back()->SetParLimits(1, massResonance/1.1, massResonance*1.1);
          altFitsFixedG.back()->FixParameter(2, gammaResonance);
          altFitsFixedG.back()->FixParameter(3, gaussianBroadeningSigma);
+
+         if (bgFitFunc == "gaus")
+         {
+            altFitsFreeG.back()->SetParameter(4, maxBinVal/10.);
+            altFitsFreeG.back()->SetParameter(5, 1.);
+            altFitsFreeG.back()->SetParameter(6, 1.);
+            altFitsFreeG.back()->SetParLimits(4, 0., maxBinVal);
+            altFitsFreeG.back()->SetParLimits(5, 0., 10.);
+            altFitsFreeG.back()->SetParLimits(6, gammaResonance*5., 10.);
+
+            altFitsFixedG.back()->SetParameter(4, maxBinVal/10.);
+            altFitsFixedG.back()->SetParameter(5, 1.);
+            altFitsFixedG.back()->SetParameter(6, 1.);
+            altFitsFixedG.back()->SetParLimits(4, 0., maxBinVal);
+            altFitsFixedG.back()->SetParLimits(5, 0., 10.);
+            altFitsFixedG.back()->SetParLimits(6, gammaResonance*5., 10.);
+         }
+
       }
 
       if (isBGFixedForThisPT)
