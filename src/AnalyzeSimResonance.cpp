@@ -31,10 +31,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
    TFile simInputFile = TFile(simInputFileName.c_str());
 
    TH1D *origPTHist = static_cast<TH1D *>(simInputFile.Get("orig_pt"));
-
-   // weight function for spectra
-   std::unique_ptr<TF1> weightFunc;
-  
+ 
    // normalization of the number of particles to the number of events
    // this normalization is needed to seamlessly merge 2 files with 
    // flat pT distribution with different ranges
@@ -69,25 +66,6 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                      centrHist->Integral(1, centrHist->GetXaxis()->GetNbins());
 
    eventNormWeight *= (resonancePTMax - resonancePTMin)/(upPTBound - lowPTBound);
-
-   if (reweightForSpectra)
-   {
-      InputYAMLReader inputYAMLSpectraFit("data/Parameters/SpectraFit/" + collisionSystemName + 
-                                       "/" + particleName + ".yaml");
-      inputYAMLSpectraFit.CheckStatus("spectra_fit");
-
-      weightFunc = std::make_unique<TF1>
-         ("weightFunc", inputYAMLSpectraFit["fit_function"].as<std::string>().c_str());
-
-      for (unsigned int i = 0; i < inputYAMLSpectraFit["fit_parameters"].size(); i++)
-      {
-         weightFunc->SetParameter(i, inputYAMLSpectraFit["fit_parameters"][i].as<double>());
-      }
-   }
-   else
-   {
-      weightFunc = std::make_unique<TF1>("weightFunc", "exp(-x)");
-   }
 
    DetectorWeights reweights;
    DetectorWeights accVar;
@@ -819,17 +797,32 @@ int main(int argc, char **argv)
 
    simM2Id.Initialize(runName, useEMCalId);
 
-   if (std::filesystem::exists("data/Parameters/SpectraFit/" + collisionSystemName + 
-                               "/" + inputYAMLResonance["name"].as<std::string>() + ".yaml"))
+   const std::string resonanceName = inputYAMLResonance["name"].as<std::string>();
+
+   const std::string resultFileName = 
+      "data/Results/" + runName + "/" + inputYAMLResonance["taxi_job"].as<std::string>() + 
+      "_" + resonanceName + ".root";
+
+      CppTools::Print(resultFileName);
+   if (std::filesystem::exists(resultFileName))
    {
-      CppTools::PrintInfo("Fit parameters for spectra were found");
-      reweightForSpectra = true;
+      TFile resultFile(resultFileName.c_str());
+
+      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB spectra fit"));
+
+      if (spectraFit)
+      {
+         CppTools::PrintInfo("Fit parameters for spectra were found");
+         weightFunc = static_cast<TF1 *>(spectraFit->Clone());
+         reweightForSpectra = true;
+      }
    }
-   else 
+
+   if (!reweightForSpectra)
    {
       CppTools::PrintInfo("Fit parameters for spectra were not found; " \
                           "setting reweight to e^{-p_{T}}");
-      reweightForSpectra = false;
+      weightFunc = new TF1("weightFunc", "exp(-x)");
    }
  
    for (const auto& magneticField : inputYAMLMain["magnetic_field_configurations"])
@@ -839,8 +832,7 @@ int main(int argc, char **argv)
       for (const auto& pTRange : inputYAMLResonance["sim_pt_ranges"])
       {
          std::string simInputFileName = 
-            "data/SimTrees/" + runName + "/Resonance/" + 
-            inputYAMLResonance["name"].as<std::string>() + "_" + 
+            "data/SimTrees/" + runName + "/Resonance/" + resonanceName + "_" + 
             ParticleMap::name[inputYAMLResonance["daughter1_id"].as<int>()] + 
             ParticleMap::name[inputYAMLResonance["daughter2_id"].as<int>()] + 
             "_" + pTRange["name"].as<std::string>() + 
@@ -861,8 +853,7 @@ int main(int argc, char **argv)
          if (inputYAMLResonance["has_antiparticle"].as<bool>())
          {
             simInputFileName = 
-               "data/SimTrees/" + runName + "/Resonance/" + 
-               inputYAMLResonance["name"].as<std::string>() + "_" + 
+               "data/SimTrees/" + runName + "/Resonance/" + resonanceName + "_" + 
                ParticleMap::name[-1*inputYAMLResonance["daughter2_id"].as<int>()] + 
                ParticleMap::name[-1*inputYAMLResonance["daughter1_id"].as<int>()] + 
                "_" + pTRange["name"].as<std::string>() + 
@@ -898,7 +889,7 @@ int main(int argc, char **argv)
    CppTools::Box box{"Parameters"};
  
    box.AddEntry("Run name", runName);
-   box.AddEntry("Particle", inputYAMLResonance["name"].as<std::string>());
+   box.AddEntry("Particle", resonanceName);
    if (magneticFieldsList.size() == 1 && magneticFieldsList[0] == "")
    {
       box.AddEntry("Magnetic field", "run default");
@@ -947,14 +938,14 @@ int main(int argc, char **argv)
    {
       for (const auto& pTRange : inputYAMLResonance["sim_pt_ranges"])
       {
-         AnalyzeConfiguration(thrContainer, inputYAMLResonance["name"].as<std::string>(), 
+         AnalyzeConfiguration(thrContainer, resonanceName, 
                               inputYAMLResonance["daughter1_id"].as<int>(),
                               inputYAMLResonance["daughter2_id"].as<int>(),
                               magneticField["name"].as<std::string>(), 
                               pTRange["name"].as<std::string>());
          if (inputYAMLResonance["has_antiparticle"].as<bool>())
          {
-            AnalyzeConfiguration(thrContainer, inputYAMLResonance["name"].as<std::string>(), 
+            AnalyzeConfiguration(thrContainer, resonanceName, 
                                  -1*inputYAMLResonance["daughter2_id"].as<int>(),
                                  -1*inputYAMLResonance["daughter1_id"].as<int>(),
                                  magneticField["name"].as<std::string>(), 
@@ -968,8 +959,7 @@ int main(int argc, char **argv)
    pBarThread.join();
 
    // writing the result
-   std::string outputFileName = "data/PostSim/" + runName + "/Resonance/" + 
-                                inputYAMLResonance["name"].as<std::string>();
+   std::string outputFileName = "data/PostSim/" + runName + "/Resonance/" + resonanceName;
 
    if (fabs(pTScale - 1.) > 1e-15) 
    {

@@ -59,7 +59,7 @@ namespace AnalyzeSimResonance
    /// correction for TOFw due to ADC and efficiency correction
    double correctionTOFw;
    /// shows whether the  particles will be reweighted to the corresponding spectra
-   bool reweightForSpectra;
+   bool reweightForSpectra = false;
    /// file reader for all required parameters for the resonance and for its simulation processing
    InputYAMLReader inputYAMLResonance;
    /// file reader for all required parameters for the current run
@@ -111,6 +111,8 @@ namespace AnalyzeSimResonance
    bool cutsOffsetLoose;
    /// shows whether cuts are tight
    bool cutsOffsetTight;
+   // weight function for spectra
+   TF1 *weightFunc;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 
