@@ -547,8 +547,7 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                               upIntegrationRange, recYieldErr);
 
    distrRecEffVsPT.SetBinContent(pTBin + 1, recYield/numberOfGenerated);
-   distrRecEffVsPT.SetBinError(pTBin + 1, CppTools::UncertaintyProp(recYieldErr/recYield, 
-                                                                    numberOfGeneratedRelativeErr)*
+   distrRecEffVsPT.SetBinError(pTBin + 1, CppTools::UncertaintyProp(numberOfGeneratedRelativeErr)*
                                recYield/numberOfGenerated);
 
    if (outputFileNameWithoutExt != "")
