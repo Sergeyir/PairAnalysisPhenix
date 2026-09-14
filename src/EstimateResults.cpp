@@ -708,8 +708,9 @@ int main(int argc, char **argv)
          else break;
       }
 
-      TF1 tsallisFit("tsallis", "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
-                                "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
+      TF1 tsallisFit("MB spectra fit", 
+                     "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
+                     "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
       tsallisFit.SetParameters(1., 2.5, 10.);
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
@@ -1052,6 +1053,12 @@ int main(int argc, char **argv)
          distrResultingRABVsPTSysErr.Write("RAB vs pT with sys errors");
       }
       iC++;
+
+      if (centralityBin["is_mb"].as<bool>())
+      {
+         resultsOutputFile->cd();
+         tsallisFit.Write();
+      }
    }
 
    resultsOutputFile->Close();
