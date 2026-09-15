@@ -480,12 +480,24 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
    TF1 fitBG("bg fit", &FitFunc::Gaus, massResonance - gammaResonance*3., 
              massResonance + gammaResonance*3., 3);
 
+   distrMInv->GetXaxis()->
+      SetRange(CppTools::Maximum(distrMInv->GetXaxis()->FindBin(massResonance - gammaResonance*3. -
+                                                                gaussianBroadeningSigma*3.), 1), 
+               distrMInv->GetXaxis()->FindBin(massResonance + gammaResonance*3. +
+                                              gaussianBroadeningSigma*3.));
+
    const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
+
+   distrMInv->GetXaxis()->
+      SetRange(CppTools::Maximum(distrMInv->GetXaxis()->FindBin(massResonance - gammaResonance*5. -
+                                                                gaussianBroadeningSigma*5.), 1), 
+               distrMInv->GetXaxis()->FindBin(massResonance + gammaResonance*5. +
+                                              gaussianBroadeningSigma*5.));
 
    fit.SetParameters(maxBinVal, massResonance, gammaResonance, gaussianBroadeningSigma,
                      maxBinVal/20., massResonance, gammaResonance*4.);
 
-   fit.SetParLimits(0, maxBinVal/1.2, maxBinVal);
+   fit.SetParLimits(0, maxBinVal/2., maxBinVal);
    fit.SetParLimits(1, massResonance/1.1, massResonance*1.1);
    //fit.SetParLimits(2, gammaResonance/1.05, gammaResonance*1.05);
    fit.FixParameter(2, gammaResonance);
@@ -504,6 +516,8 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                        fit.GetParameter(0)*(1. + 0.05/static_cast<double>(j*j)));
       fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
                        fit.GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
+      fit.SetParLimits(1, fit.GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
+                       fit.GetParameter(0)*(1. + 0.05/static_cast<double>(j*j)));
       fit.SetParLimits(3, fit.GetParameter(3)/(1. + 0.05/static_cast<double>(j*j)),
                        fit.GetParameter(3)*(1. + 0.05/static_cast<double>(j*j)));
       fit.SetParLimits(5, fit.GetParameter(5)/(1. + 2./static_cast<double>(j*j)),
