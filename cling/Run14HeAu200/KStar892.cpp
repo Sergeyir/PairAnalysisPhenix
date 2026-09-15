@@ -15,7 +15,7 @@ const int taxiNumber = 20484;
 const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.6;
 const double pTMinRCP = 0.4;
-const double pTMaxRCP = 6.5;
+const double pTMaxRCP = 8.6;
 const double rMin = 0.;
 const double rMax = 1.999;
 
@@ -97,6 +97,11 @@ void KStar892()
                               "found in file " + resultsInputFileName);
       }
 
+      const double rcpScaling = central["bias_factor"].as<double>()/
+                                peripheral["bias_factor"].as<double>()*
+                                peripheral["N_coll"].as<double>()/
+                                central["N_coll"].as<double>();
+
       const double scalingUncertainty = 
          CppTools::UncertaintyProp(central["N_coll_uncertainty"].as<double>()/
                                    central["N_coll"].as<double>(),
@@ -106,6 +111,39 @@ void KStar892()
                                    peripheral["N_coll"].as<double>(),
                                    peripheral["bias_factor_uncertainty"].as<double>()/
                                    peripheral["bias_factor"].as<double>());
+
+      distrCentralSpectraVsPTStatErr->Divide(distrPeripheralSpectraVsPTStatErr);
+      distrCentralSpectraVsPTSysErr->Divide(distrPeripheralSpectraVsPTSysErr);
+
+      distrCentralSpectraVsPTStatErr->Scale(rcpScaling);
+      distrCentralSpectraVsPTSysErr->Scale(rcpScaling);
+
+      // Vlad results
+      TGraphErrors grRCPVladStatErr;
+      TGraphErrors grRCPVladSysErr;
+
+      CppTools::CheckInputFile("data/Spectra/HeAu200/KStar892_0-20_Vlad.txt");
+      CppTools::CheckInputFile("data/Spectra/HeAu200/KStar892_60-88_Vlad.txt");
+
+      std::ifstream inputFileCVlad("data/Spectra/HeAu200/KStar892_0-20_Vlad.txt");
+      std::ifstream inputFilePVlad("data/Spectra/HeAu200/KStar892_60-88_Vlad.txt");
+
+      double tmp[8];
+      while (inputFileCVlad >> tmp[0] >> tmp[1] >> tmp[2] >> tmp[3] && 
+             inputFilePVlad >> tmp[4] >> tmp[5] >> tmp[6] >> tmp[7])
+      {
+         if (tmp[0] != tmp[4]) CppTools::PrintError("Something wrong with pT bins of Vlad results");
+
+         const double valueRCP = tmp[1]/tmp[5]*rcpScaling;
+         const double statErrRCP = CppTools::UncertaintyProp(tmp[2]/tmp[1], tmp[6]/tmp[5])*valueRCP;
+         const double sysErrRCP = CppTools::UncertaintyProp(tmp[3]/tmp[1], tmp[7]/tmp[5])*valueRCP;
+
+         grRCPVladStatErr.AddPoint(tmp[0], valueRCP);
+         grRCPVladSysErr.AddPoint(tmp[0], valueRCP);
+
+         grRCPVladStatErr.SetPointError(grRCPVladStatErr.GetN() - 1, 0., statErrRCP);
+         grRCPVladSysErr.SetPointError(grRCPVladSysErr.GetN() - 1, 0.1, sysErrRCP);
+      }
 
       TCanvas canv("canv", "canv", 800, 800);
 
@@ -117,7 +155,8 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(pTMinRCP, rMin, pTMaxRCP, rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{CP}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRCP, rMin, pTMaxRCP, rMax, "", 
+                           "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{CP}", 1., 0.95);
 
       TLine line(pTMinRCP, 1., pTMaxRCP, 1.);
       line.SetLineColor(kGray + 1);
@@ -131,19 +170,11 @@ void KStar892()
       rcp.SetLineWidth(2);
       rcp.SetSysWidth(0.08);
 
-      distrCentralSpectraVsPTStatErr->Divide(distrPeripheralSpectraVsPTStatErr);
-      distrCentralSpectraVsPTSysErr->Divide(distrPeripheralSpectraVsPTSysErr);
+      rcp.DrawGraph(&grRCPVladStatErr, &grRCPVladSysErr, kBlack,
+                    0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
 
-      const double rcpScaling = central["bias_factor"].as<double>()/
-                                peripheral["bias_factor"].as<double>()*
-                                peripheral["N_coll"].as<double>()/
-                                central["N_coll"].as<double>();
-
-      distrCentralSpectraVsPTStatErr->Scale(rcpScaling);
-      distrCentralSpectraVsPTSysErr->Scale(rcpScaling);
-
-      rcp.DrawHistogram(distrCentralSpectraVsPTStatErr, distrCentralSpectraVsPTSysErr, kP6Red, 
-                        0.9, 72, "(K^{*0}(892) + #bar{K}^{*0}(892))/2");
+      rcp.DrawHistogram(distrCentralSpectraVsPTStatErr, distrCentralSpectraVsPTSysErr, kP6Red,
+                        0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
 
       rcp.DrawLegend();
 
@@ -216,19 +247,19 @@ void KStar892()
       rab.SetSysWidth(0.08);
 
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
-                               kBlack, 0.9, 75, "K_{Vlad}^{*0}");
+                               kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}");
 
       //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
       //                         kBlack, 0.4, 75, "(p+#bar{p})/2, PRC109, 054910");
 
       rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/phi1020PHENIX.yaml", centralityName, 
-                                kP6Blue, 0.9, 74, "#varphi(1020), PRC106, 014982");
+                                kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106, 014982");
 
       rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/pi0PHENIX.yaml", centralityName, 
-                                kP6Violet, 0.9, 77, "#pi^{0}, PRC105 064902");
+                                kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902");
 
       rab.DrawHistogram(distrRABVsPTStatErr, distrRABVsPTSysErr, kP6Red, 
-                        0.9, 72, "(K^{*0}(892) + #bar{K}^{*0}(892))/2");
+                        0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
 
       rab.DrawLegend();
 
