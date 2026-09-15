@@ -97,7 +97,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + 
                                         pow(simCNT.mom_orig(1), 2))*pTScale;
 
-         double eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
+         double eventWeight = weightFunc->Eval(origPT)/weightFunc->Eval(0.5)/eventNormWeight;
  
          histContainer.distrOrigUnscaledPT->Fill(origPT);
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
