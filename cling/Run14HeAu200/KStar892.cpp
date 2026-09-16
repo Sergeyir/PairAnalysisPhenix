@@ -142,7 +142,7 @@ void KStar892()
          grRCPVladSysErr.AddPoint(tmp[0], valueRCP);
 
          grRCPVladStatErr.SetPointError(grRCPVladStatErr.GetN() - 1, 0., statErrRCP);
-         grRCPVladSysErr.SetPointError(grRCPVladSysErr.GetN() - 1, 0.1, sysErrRCP);
+         grRCPVladSysErr.SetPointError(grRCPVladSysErr.GetN() - 1, 0.08, sysErrRCP);
       }
 
       TCanvas canv("canv", "canv", 800, 800);
@@ -168,7 +168,7 @@ void KStar892()
       PainterHelper rcp(&rabLegend);
       rcp.SetMarkerSize(1.5);
       rcp.SetLineWidth(2);
-      rcp.SetSysWidth(0.08);
+      rcp.SetDefaultSysWidth(0.1);
 
       rcp.DrawGraph(&grRCPVladStatErr, &grRCPVladSysErr, kBlack,
                     0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
@@ -232,7 +232,8 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, 
+                           "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
       line.SetLineColor(kGray + 1);
@@ -244,10 +245,10 @@ void KStar892()
       PainterHelper rab(&rabLegend);
       rab.SetMarkerSize(1.5);
       rab.SetLineWidth(2);
-      rab.SetSysWidth(0.08);
+      rab.SetDefaultSysWidth(0.08);
 
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
-                               kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}");
+                               kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}", false, true, 0.06);
 
       //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
       //                         kBlack, 0.4, 75, "(p+#bar{p})/2, PRC109, 054910");
