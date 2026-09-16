@@ -63,11 +63,10 @@ class PainterHelper
     * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current graph
     * @param[in] legendEntry legend entry for the current graph
-    * @param[in] sysWidth widht of systematic error box of each point (if negative value is specified boxes will have width equal to defaulsSysWidth)
     */
    void DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *graphWithSysErrors, 
                   const Color_t color, const double alpha, 
-                  const Style_t markerStyle, const std::string& legendEntry, double sysWidth = -1.);
+                  const Style_t markerStyle, const std::string& legendEntry);
    /*! @brief Draws the graph obtained from the data read from the spcified .yaml file
     * @param[in] fileName name of the file from which the data will be read
     * @param[in] qualifier string qualifier to find the needed data. This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.

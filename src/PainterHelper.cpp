@@ -92,8 +92,7 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
 
 void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *graphWithSysErrors, 
                               const Color_t color, const double alpha, 
-                              const Style_t markerStyle, const std::string& legendEntry,
-                              double sysWidth)
+                              const Style_t markerStyle, const std::string& legendEntry)
 {
    bool disableSysErrors = false;
 
@@ -122,8 +121,6 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
          graphWithSysErrors->SetPointY(i, graphWithStatErrors->GetPointY(i));
       }
    }
-
-   if (sysWidth < 0.) sysWidth = defaultSysWidth;
 
    graphWithStatErrors->SetMarkerStyle(markerStyle);
    graphWithStatErrors->SetMarkerSize(markerSize);
@@ -157,7 +154,7 @@ void PainterHelper::DrawGraphFromYAMLFile(const std::string& fileName, const std
                                                             relativeUncertainties, readSysErrors,
                                                             sysWidth);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
-             alpha, markerStyle, legendEntry, sysWidth);
+             alpha, markerStyle, legendEntry);
 }
 
 void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName, 
@@ -171,7 +168,7 @@ void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName,
                                                            relativeUncertainties, readSysErrors, 
                                                            sysWidth);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
-             alpha, markerStyle, legendEntry, sysWidth);
+             alpha, markerStyle, legendEntry);
 }
 
 TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, 
