@@ -13,19 +13,20 @@
 
 
 PainterHelper::PainterHelper(TLegend *legend, const double markerSize, 
-                             const int lineWidth, const double sysWidth)
+                             const int lineWidth, const double defaultSysWidth)
 {
    if (!legend) CppTools::PrintError("PainterHelper: legend pointer is nullptr");
 
    this->legend = legend;
    this->markerSize = markerSize;
    this->lineWidth = lineWidth;
-   this->sysWidth = sysWidth;
+   this->defaultSysWidth = defaultSysWidth;
 }
 
 void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
                                   const Color_t color, const double alpha, 
-                                  const Style_t markerStyle, const std::string& legendEntry)
+                                  const Style_t markerStyle, const std::string& legendEntry,
+                                  double sysWidth)
 {
    bool disableSysErrors = false;
 
@@ -58,6 +59,8 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
       disableSysErrors = true;
    }
 
+   if (sysWidth < 0.) sysWidth = defaultSysWidth;
+
    histogramWithStatErrors->SetMarkerStyle(markerStyle);
    histogramWithStatErrors->SetMarkerSize(markerSize);
 
@@ -89,7 +92,8 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
 
 void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *graphWithSysErrors, 
                               const Color_t color, const double alpha, 
-                              const Style_t markerStyle, const std::string& legendEntry)
+                              const Style_t markerStyle, const std::string& legendEntry,
+                              double sysWidth)
 {
    bool disableSysErrors = false;
 
@@ -119,6 +123,8 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
       }
    }
 
+   if (sysWidth < 0.) sysWidth = defaultSysWidth;
+
    graphWithStatErrors->SetMarkerStyle(markerStyle);
    graphWithStatErrors->SetMarkerSize(markerSize);
 
@@ -143,33 +149,39 @@ void PainterHelper::DrawGraph(TGraphErrors *graphWithStatErrors, TGraphErrors *g
 void PainterHelper::DrawGraphFromYAMLFile(const std::string& fileName, const std::string& qualifier, 
                                           const Color_t color, const double alpha, 
                                           const Style_t markerStyle, const std::string& legendEntry,
-                                          const bool relativeUncertainties, const bool readSysErrors)
+                                          const bool relativeUncertainties, const bool readSysErrors,
+                                          double sysWidth)
 {
    TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromYAMLFile(fileName, qualifier, graphWithSysErrors, 
-                                                            relativeUncertainties, readSysErrors);
+                                                            relativeUncertainties, readSysErrors,
+                                                            sysWidth);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
-             alpha, markerStyle, legendEntry);
+             alpha, markerStyle, legendEntry, sysWidth);
 }
 
 void PainterHelper::DrawGraphFromTXTFile(const std::string& fileName, 
                                          const Color_t color, const double alpha,
                                          const Style_t markerStyle, const std::string& legendEntry,
-                                         const bool relativeUncertainties, const bool readSysErrors)
+                                         const bool relativeUncertainties, const bool readSysErrors,
+                                         double sysWidth)
 {
    TGraphErrors *graphWithSysErrors = nullptr;
    TGraphErrors *graphWithStatErrors = GetGraphFromTXTFile(fileName, graphWithSysErrors, 
-                                                           relativeUncertainties, readSysErrors);
+                                                           relativeUncertainties, readSysErrors, 
+                                                           sysWidth);
    DrawGraph(graphWithStatErrors, graphWithSysErrors, color, 
-             alpha, markerStyle, legendEntry);
+             alpha, markerStyle, legendEntry, sysWidth);
 }
 
 TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName, 
                                                   const std::string& qualifier, 
                                                   TGraphErrors *&graphWithSysErrors, 
                                                   const bool relativeUncertainties, 
-                                                  const bool readSysErrors)
+                                                  const bool readSysErrors,
+                                                  double sysWidth)
 {
+   if (sysWidth < 0.) sysWidth = defaultSysWidth;
    InputYAMLReader yamlFileContents(fileName);
 
    for (const auto& dependentVariableEntry: yamlFileContents["dependent_variables"])
@@ -220,7 +232,8 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
                {
                   graphWithSysErrors->AddPoint(xVal, y[i]["value"].as<double>());
                   graphWithSysErrors->SetPointError(graphWithSysErrors->GetN() - 1, 
-                                                    sysWidth, graphWithSysErrors->GetErrorY(i)*
+                                                    sysWidth, 
+                                                    graphWithSysErrors->GetErrorY(i)*
                                                     graphWithSysErrors->GetPointY(i));
                }
             }
@@ -247,10 +260,13 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
 TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, 
                                                  TGraphErrors *&graphWithSysErrors, 
                                                  const bool relativeUncertainties, 
-                                                 const bool readSysErrors)
+                                                 const bool readSysErrors,
+                                                 double sysWidth)
 {
    CppTools::CheckInputFile(fileName);
    std::ifstream inputFile(fileName);
+
+   if (sysWidth < 0.) sysWidth = defaultSysWidth;
 
    TGraphErrors *graphWithStatErrors = new TGraphErrors();
    if (!graphWithSysErrors) graphWithSysErrors = new TGraphErrors();
@@ -286,10 +302,13 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName,
    return graphWithStatErrors;
 }
 
-void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos, 
-                                         const double yPos, const Color_t color, 
-                                         const double alpha, const std::string& text)
+void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos,
+                                         const double yPos, const Color_t color,
+                                         const double alpha, const std::string& text,
+                                         double sysWidth)
 {
+   if (sysWidth < 0.) sysWidth = defaultSysWidth;
+
    TGraphErrors gr;
    gr.AddPoint(xPos - sysWidth, yPos);
    gr.SetPointError(0, sysWidth, value);
@@ -328,9 +347,9 @@ void PainterHelper::SetLineWidth(const int lineWidth)
    this->lineWidth = lineWidth;
 }
 
-void PainterHelper::SetSysWidth(const double sysWidth)
+void PainterHelper::SetDefaultSysWidth(const double defaultSysWidth)
 {
-   this->sysWidth = sysWidth;
+   this->defaultSysWidth = defaultSysWidth;
 }
 
 PainterHelper::~PainterHelper() {}
