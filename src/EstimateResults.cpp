@@ -814,8 +814,7 @@ int main(int argc, char **argv)
          spectraRatiosVsPTSysErr.
             emplace_back(static_cast<TH1D *>(spectrasVsPTSysErr[i]->Clone()));
 
-         spectraRatiosVsPTStatErr[i]->SetLineWidth(4);
-         spectraRatiosVsPTSysErr[i]->SetLineWidth(4);
+         spectraRatiosVsPTStatErr[i]->SetLineWidth(2 + spectrasVsPTStatErr.size() - i);
 
          spectraRatiosVsPTStatErr[i]->Divide(&tsallisFit);
          spectraRatiosVsPTSysErr[i]->Divide(&tsallisFit);
@@ -839,7 +838,7 @@ int main(int argc, char **argv)
 
       TCanvas canvAllSpectra("all spectra canv", "", 800, 1000);
 
-      canvAllSpectra.SetFillStyle(4000);
+      canvAllSpectra.SetFillStyle(0);
       canvAllSpectra.SetFrameFillColor(0);
       canvAllSpectra.SetFrameFillStyle(0);
       canvAllSpectra.SetFrameBorderMode(0);
@@ -868,10 +867,10 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
-         spectrasVsPTStatErr[i]->SetLineColor(methodColors[i]);
+         spectrasVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
          spectrasVsPTStatErr[i]->Draw("SAME");
 
-         spectrasVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+         spectrasVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.25);
          spectrasVsPTSysErr[i]->SetFillStyle(1001);
          spectrasVsPTSysErr[i]->Draw("SAME E2");
 
@@ -903,10 +902,10 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 0; i < spectraRatiosVsPTStatErr.size(); i++)
       {
-         spectraRatiosVsPTStatErr[i]->SetLineColor(methodColors[i]);
+         spectraRatiosVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
          spectraRatiosVsPTStatErr[i]->Draw("SAME");
 
-         spectraRatiosVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+         spectraRatiosVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.25);
          spectraRatiosVsPTSysErr[i]->SetFillStyle(1001);
          spectraRatiosVsPTSysErr[i]->Draw("SAME E2");
       }
@@ -990,10 +989,11 @@ int main(int argc, char **argv)
 
          for (unsigned int i = 0; i < distrRABsVsPTStatErr.size(); i++)
          {
-            distrRABsVsPTStatErr[i]->SetLineColor(methodColors[i]);
+            distrRABsVsPTStatErr[i]->SetLineWidth(2 + distrRABsVsPTStatErr.size() - i);
+            distrRABsVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
             distrRABsVsPTStatErr[i]->Draw("SAME");
 
-            distrRABsVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.3);
+            distrRABsVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.2);
             distrRABsVsPTSysErr[i]->SetFillStyle(1001);
             distrRABsVsPTSysErr[i]->Draw("SAME E2");
 
