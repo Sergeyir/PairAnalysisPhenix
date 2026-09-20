@@ -1282,8 +1282,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          double yMax = CppTools::Maximum(varRawYieldAltFitAB.GetMaximum(),
                                          varRawYieldAltFitFreeG.GetMaximum(),
                                          varRawYieldAltFitFixedG.GetMaximum());
-         yMin = (yMin < 0 ? yMin*1.1 : yMin/1.1);
-         yMax = (yMax > 0 ? yMax*1.1 : yMax/1.1);
+         yMin = (yMin < 0 ? yMin*2. : yMin/2.);
+         yMax = (yMax > 0 ? yMax*2. : yMax/2.);
 
          varRawYieldAltFitAB.SetMinimum(yMin);
          varRawYieldAltFitAB.SetMaximum(yMax);
@@ -1298,11 +1298,22 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
          gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
 
+         TLegend legend(0.7, 0.75, 0.95, 0.95);
+
+         legend.SetLineColorAlpha(0, 0.);
+         legend.SetFillColorAlpha(0, 0.);
+
          ROOTTools::DrawFrame(&varRawYieldAltFitAB, "", 
                               "#it{p}_{T} [GeV/#it{c}]", "Var(#it{Y})", 1., 1.5);
 
          varRawYieldAltFitFreeG.Draw("SAME");
          varRawYieldAltFitFixedG.Draw("SAME");
+
+         legend.AddEntry(&varRawYieldAltFitAB, "Alt BG", "L");
+         legend.AddEntry(&varRawYieldAltFitFreeG, "Free #Gamma", "L");
+         legend.AddEntry(&varRawYieldAltFitFixedG, "Fixed #Gamma", "L");
+
+         legend.Draw();
 
          ROOTTools::PrintCanvas(&canv, sysOutputDir + "/FitVar_" + resonanceName + 
                                 "_" + methodName + "_" + centralityName);
@@ -1328,7 +1339,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          sysRawYield.GetXaxis()->SetRange(pTBinFitMin + 1, pTBinFitMax + 1);
 
          TF1 fit("sys fit", "pol2");
-         fit.SetRange(pTBinRanges[pTBinFitMin + 1]/1.05, pTBinRanges[pTBinFitMax + 1]*1.05);
+         fit.SetRange(pTBinRanges[pTBinFitMin]/1.05, pTBinRanges[pTBinFitMax + 1]*1.05);
 
          fit.SetLineWidth(4);
          fit.SetLineColor(kRed - 3);
