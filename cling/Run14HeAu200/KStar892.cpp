@@ -46,6 +46,193 @@ void KStar892()
    const std::string outputDir = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDir);
 
+   // Spectra (old and new)
+   {
+      TLegend spectraLegend(0.6, 0.7, 0.95, 0.95);
+      spectraLegend.SetLineColorAlpha(0, 0.);
+      spectraLegend.SetFillColorAlpha(0, 0.);
+
+      PainterHelper spectra(&spectraLegend);
+      spectra.SetMarkerSize(1.4);
+      spectra.SetLineWidth(2);
+      spectra.SetDefaultSysWidth(0.1);
+
+      std::vector<TH1D *> histsSpectraVsPTStatErr;
+      std::vector<TH1D *> histsSpectraVsPTSysErr;
+      std::vector<TGraphErrors *> graphsVladSpectraVsPTStatErr;
+      std::vector<TGraphErrors *> graphsVladSpectraVsPTSysErr;
+
+      std::vector<TF1 *> tsallisFits;
+
+      double xMin = 1e31;
+      double xMax = -1e31;
+      double yMin = 1e31;
+      double yMax = -1e31;
+
+      TCanvas canv("canv", "canv", 800, 800);
+
+      canv.SetFillStyle(4000);
+      canv.SetFrameFillColor(0);
+      canv.SetFrameFillStyle(0);
+      canv.SetFrameBorderMode(0);
+
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+
+      gPad->SetLogy();
+
+      for (unsigned int i = 0; i < inputYAMLResonance["centrality_bins"].size(); i++)
+      {
+         const std::string centralityName = 
+            inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
+
+         const std::string inputVladSpectraFileName = "data/Spectra/pp200/KStar892.root";
+         CppTools::CheckInputFile(inputVladSpectraFileName);
+
+         TFile *inputVladSpectraFile = TFile::Open(inputVladSpectraFileName.c_str());
+
+         histsSpectraVsPTStatErr.push_back(static_cast<TH1D *>(resultsInputFile->
+            Get((centralityName + "/spectra vs pT with stat errors").c_str())->Clone()));
+         histsSpectraVsPTSysErr.push_back(static_cast<TH1D *>(resultsInputFile->
+            Get((centralityName + "/spectra vs pT with sys errors").c_str())->Clone()));
+
+         graphsVladSpectraVsPTSysErr.push_back(nullptr);
+
+         graphsVladSpectraVsPTStatErr.push_back(spectra.
+               GetGraphFromTXTFile("data/Spectra/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
+                                   graphsVladSpectraVsPTSysErr.back(), false, true, 0.08));
+
+         tsallisFits.push_back(static_cast<TF1 *>(resultsInputFile->
+                               Get((centralityName + "/tsallis fit").c_str())->Clone()));
+
+         const double mult = 10./pow(10., i);
+
+         tsallisFits.back()->SetParameter(0, tsallisFits.back()->GetParameter(0)*mult);
+         histsSpectraVsPTStatErr.back()->Scale(mult);
+         histsSpectraVsPTSysErr.back()->Scale(mult);
+
+         for (int j = 0; j < graphsVladSpectraVsPTStatErr.back()->GetN(); j++)
+         {
+            graphsVladSpectraVsPTStatErr.back()->
+               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult);
+            graphsVladSpectraVsPTStatErr.back()->
+               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult);
+            graphsVladSpectraVsPTSysErr.back()->
+               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult);
+            graphsVladSpectraVsPTSysErr.back()->
+               SetPointError(j, graphsVladSpectraVsPTSysErr.back()->GetErrorX(j),
+                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult);
+         }
+
+         xMin = CppTools::Minimum(xMin, histsSpectraVsPTStatErr.back()->GetBinLowEdge(1));
+         xMax = CppTools::Maximum(xMax, histsSpectraVsPTStatErr.back()->GetXaxis()->
+                                  GetBinUpEdge(histsSpectraVsPTStatErr.back()->
+                                  GetXaxis()->GetNbins()));
+
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum());
+         yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
+
+         tsallisFits[i]->SetLineWidth(2);
+         tsallisFits[i]->SetLineStyle(2);
+
+         tsallisFits[i]->SetLineColor(kGray + 1);
+      }
+
+      ROOTTools::
+         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
+                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
+
+      for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
+      {
+         const double mult = 10./pow(10., i);
+
+         const std::string centralityNameTex = 
+            inputYAMLResonance["centrality_bins"][i]["name_tex"].as<std::string>();
+         const std::string multName = 
+            (i == 1) ? "" : 
+            "#times10^{" + std::to_string(1 - i) + "}";
+
+         const int color = TColor::
+            GetColor(inputYAMLResonance["centrality_bins"][i]["color"].as<std::string>().c_str());
+         const int markerStyle = 
+            inputYAMLResonance["centrality_bins"][i]["marker_style"].as<int>();
+
+         tsallisFits[i]->Draw("SAME");
+
+         spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], color,
+                               0.9, markerStyle, centralityNameTex + multName);
+      }
+
+      spectraLegend.AddEntry(tsallisFits.back(), "Tsallis fit", "L");
+
+      spectraLegend.Draw();
+
+      ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_spectra");
+
+      canv.Clear();
+
+      for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
+      {
+         const std::string centralityName = 
+            inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
+
+         yMin = 1e31;
+         yMax = 1e31;
+
+         spectraLegend.Clear();
+
+         histsSpectraVsPTStatErr[i]->Divide(tsallisFits[i]);
+         histsSpectraVsPTSysErr[i]->Divide(tsallisFits[i]);
+
+         for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
+         {
+            const double div = tsallisFits[i]->Eval(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
+
+            graphsVladSpectraVsPTStatErr[i]->
+               SetPointY(j, graphsVladSpectraVsPTStatErr[i]->GetPointY(j)/div);
+            graphsVladSpectraVsPTStatErr[i]->
+               SetPointError(j, 0., graphsVladSpectraVsPTStatErr[i]->GetErrorY(j)/div);
+            graphsVladSpectraVsPTSysErr[i]->
+               SetPointY(j, graphsVladSpectraVsPTSysErr[i]->GetPointY(j)/div);
+            graphsVladSpectraVsPTSysErr[i]->
+               SetPointError(j, graphsVladSpectraVsPTSysErr[i]->GetErrorX(j),
+                             graphsVladSpectraVsPTSysErr[i]->GetErrorY(j)/div);
+
+            yMin = CppTools::Minimum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+            yMax = CppTools::Maximum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+         }
+
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr[i]->GetMinimum());
+         yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr[i]->GetMaximum());
+
+         gPad->SetLogy(false);
+         gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+         gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.3, xMax + 0.1, yMax*1.3, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.95, 0.07, 0.07);
+
+         if (yMin/1.1 < 1. && yMax*1.1 > 1.)
+         {
+            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            line.SetLineColorAlpha(kBlack, 0.5);
+            line.SetLineStyle(2);
+            line.SetLineWidth(4);
+            line.Clone()->Draw();
+         }
+
+         spectra.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
+                           kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
+         spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], kRed - 3,
+                               0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
+
+         spectraLegend.Draw();
+
+         ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
+                                 + "_spectra_ratio_comp_" + centralityName);
+      }
+   }
+
    TLegend rabLegend(0.4, 0.8, 0.95, 0.95);
    rabLegend.SetLineColorAlpha(0, 0.);
    rabLegend.SetFillColorAlpha(0, 0.);
