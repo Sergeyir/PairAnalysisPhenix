@@ -443,11 +443,11 @@ int main(int argc, char **argv)
             double maxY = CppTools::Maximum(resultVarCutsVarL.GetMaximum(),
                                             resultVarCutsVarT.GetMaximum());
 
-            if (minY > 0) minY /= 1.3;
-            else (minY) *= 1.3;
+            if (minY > 0) minY /= 2.;
+            else (minY) *= 2.;
 
-            if (maxY > 0) maxY *= 1.3;
-            else maxY /= 1.3;
+            if (maxY > 0) maxY *= 2.;
+            else maxY /= 2.;
             
             resultVarCutsVarL.SetMinimum(minY);
             resultVarCutsVarL.SetMaximum(maxY);
@@ -604,11 +604,12 @@ int main(int argc, char **argv)
             gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
             gPad->SetLeftMargin(0.15); gPad->SetBottomMargin(0.112);
 
-            ROOTTools::DrawFrame(&sysFull, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.5);
+            ROOTTools::DrawFrame(&sysFull, "", "#it{p}_{T} [GeV/#it{c}]", 
+                                 "Relative uncertainty", 1., 1.5);
 
-            sysPTScale.Draw("SAME");
-            sysAccVar.Draw("SAME");
-            sysYieldExtr.Draw("SAME");
+            sysPTScale.Draw("SAME ][");
+            sysAccVar.Draw("SAME ][");
+            sysYieldExtr.Draw("SAME ][");
 
             if (doCutsVarSys)
             {
@@ -616,7 +617,7 @@ int main(int argc, char **argv)
                sysCutsVar.SetLineStyle(7);
                sysCutsVar.SetLineColorAlpha(kP6Violet, 0.9);
                sysCutsVar.SetLineWidth(2);
-               sysCutsVar.Draw("SAME");
+               sysCutsVar.Draw("SAME ][");
             }
 
             TLegend legend(0.15, 0.85, 0.9, 0.95);
@@ -708,7 +709,7 @@ int main(int argc, char **argv)
          else break;
       }
 
-      TF1 tsallisFit("MB spectra fit", 
+      TF1 tsallisFit((centralityName + " spectra fit").c_str(), 
                      "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
       tsallisFit.SetParameters(1., 2.5, 10.);
@@ -855,7 +856,8 @@ int main(int argc, char **argv)
 
       ROOTTools::
          DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
-                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]", 0., 0.95, 0.07, 0.07);
+                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]", 
+                   0., 0.95, 0.07, 0.07);
 
       tsallisFit.Draw("SAME");
 
