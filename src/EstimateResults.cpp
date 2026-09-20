@@ -709,7 +709,7 @@ int main(int argc, char **argv)
          else break;
       }
 
-      TF1 tsallisFit((centralityName + " spectra fit").c_str(), 
+      TF1 tsallisFit("tsallis fit", 
                      "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
       tsallisFit.SetParameters(1., 2.5, 10.);
@@ -1056,11 +1056,7 @@ int main(int argc, char **argv)
       }
       iC++;
 
-      if (centralityBin["is_mb"].as<bool>())
-      {
-         resultsOutputFile->cd();
-         tsallisFit.Write();
-      }
+      tsallisFit.Write();
    }
 
    resultsOutputFile->Close();
