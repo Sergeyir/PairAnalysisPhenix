@@ -48,7 +48,7 @@ void KStar892()
 
    // Spectra (old and new)
    {
-      TLegend spectraLegend(0.6, 0.7, 0.95, 0.95);
+      TLegend spectraLegend(0.65, 0.6, 0.95, 0.95);
       spectraLegend.SetLineColorAlpha(0, 0.);
       spectraLegend.SetFillColorAlpha(0, 0.);
 
@@ -71,13 +71,13 @@ void KStar892()
 
       TCanvas canv("canv", "canv", 800, 800);
 
-      canv.SetFillStyle(4000);
+      canv.SetFillStyle(0);
       canv.SetFrameFillColor(0);
       canv.SetFrameFillStyle(0);
       canv.SetFrameBorderMode(0);
 
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-      gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+      gPad->SetLeftMargin(0.204); gPad->SetBottomMargin(0.105);
 
       gPad->SetLogy();
 
@@ -132,15 +132,15 @@ void KStar892()
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum());
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
 
-         tsallisFits[i]->SetLineWidth(2);
+         tsallisFits[i]->SetLineWidth(3);
          tsallisFits[i]->SetLineStyle(2);
 
          tsallisFits[i]->SetLineColor(kGray + 1);
       }
 
-      ROOTTools::
-         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
-                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
+      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
+                           "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
+                           "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
       for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
       {
@@ -160,16 +160,25 @@ void KStar892()
          tsallisFits[i]->Draw("SAME");
 
          spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], color,
-                               0.9, markerStyle, centralityNameTex + multName);
+                               0.9, markerStyle, centralityNameTex + multName, 0.05, false, true);
       }
 
-      spectraLegend.AddEntry(tsallisFits.back(), "Tsallis fit", "L");
+      spectraLegend.AddEntry(tsallisFits.back(), "Scaled Tsallis fit", "L");
 
       spectraLegend.Draw();
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_spectra");
 
       canv.Clear();
+
+      TLegend ratioLegend(0.4, 0.8, 0.95, 0.95);
+      ratioLegend.SetLineColorAlpha(0, 0.);
+      ratioLegend.SetFillColorAlpha(0, 0.);
+
+      PainterHelper ratio(&ratioLegend);
+      ratio.SetMarkerSize(1.4);
+      ratio.SetLineWidth(2);
+      ratio.SetDefaultSysWidth(0.1);
 
       for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
       {
@@ -178,8 +187,6 @@ void KStar892()
 
          yMin = 1e31;
          yMax = 1e31;
-
-         spectraLegend.Clear();
 
          histsSpectraVsPTStatErr[i]->Divide(tsallisFits[i]);
          histsSpectraVsPTSysErr[i]->Divide(tsallisFits[i]);
@@ -207,10 +214,10 @@ void KStar892()
 
          gPad->SetLogy(false);
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-         gPad->SetLeftMargin(0.155); gPad->SetBottomMargin(0.112);
+         gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.3, xMax + 0.1, yMax*1.3, 
-                              "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.95, 0.07, 0.07);
+         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
@@ -221,15 +228,16 @@ void KStar892()
             line.Clone()->Draw();
          }
 
-         spectra.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
+         ratio.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
                            kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
-         spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], kRed - 3,
+         ratio.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], kRed - 3,
                                0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
 
-         spectraLegend.Draw();
+         ratioLegend.Draw();
 
          ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
                                  + "_spectra_ratio_comp_" + centralityName);
+         ratioLegend.Clear();
       }
    }
 

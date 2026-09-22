@@ -709,9 +709,14 @@ int main(int argc, char **argv)
          else break;
       }
 
+      /*
       TF1 tsallisFit("tsallis fit", 
-                     "0.5/pi*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
+                     "0.5/(pi*sqrt(x^2 + [3]^2)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
+                     */
+      TF1 tsallisFit("tsallis fit", 
+                     "0.5/(pi*x)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
+                     "([2] + [3])*(([2] + x)/(([2] + [3])))^(-[1])");
       tsallisFit.SetParameters(1., 2.5, 10.);
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
@@ -719,7 +724,7 @@ int main(int argc, char **argv)
       tsallisFit.SetRange(xMin/1.05, xMax*1.05);
 
       tsallisFit.SetLineStyle(2);
-      tsallisFit.SetLineWidth(4);
+      tsallisFit.SetLineWidth(3);
       tsallisFit.SetLineColorAlpha(kBlack, 0.5);
 
       for (unsigned int i = 0; i < fitNTries; i++)
@@ -776,31 +781,8 @@ int main(int argc, char **argv)
          }
       }
 
-      TCanvas canvSpectra("resulting spectra canv", "", 800, 800);
-
-      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-      gPad->SetLeftMargin(0.152); gPad->SetBottomMargin(0.112);
-
-      gPad->SetLogy();
-
-      ROOTTools::
-         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]", 
-                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]");
-
-      canvSpectra.SetFillStyle(4000);
-      canvSpectra.SetFrameFillColor(0);
-      canvSpectra.SetFrameFillStyle(0);
-      canvSpectra.SetFrameBorderMode(0);
-
-      tsallisFit.Draw("SAME");
-      distrResultingSpectraVsPTStatErr.Draw("SAME");
-      distrResultingSpectraVsPTSysErr.Draw("SAME E2");
-
       distrResultingSpectraVsPTStatErr.Clone()->Write();
       distrResultingSpectraVsPTSysErr.Clone()->Write();
-
-      ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
-                             "_spectra_" + centralityName);
 
       std::vector<TH1D *> spectraRatiosVsPTStatErr;
       std::vector<TH1D *> spectraRatiosVsPTSysErr;
@@ -835,37 +817,31 @@ int main(int argc, char **argv)
          }
       }
 
-      tsallisFit.SetLineColor(kRed - 3);
+      tsallisFit.SetLineColor(kGray + 1);
 
-      TCanvas canvAllSpectra("all spectra canv", "", 800, 1000);
+      TCanvas canvSpectra("spectra canv", "", 800, 800);
 
-      canvAllSpectra.SetFillStyle(0);
-      canvAllSpectra.SetFrameFillColor(0);
-      canvAllSpectra.SetFrameFillStyle(0);
-      canvAllSpectra.SetFrameBorderMode(0);
+      canvSpectra.SetFillStyle(0);
+      canvSpectra.SetFrameFillColor(0);
+      canvSpectra.SetFrameFillStyle(0);
+      canvSpectra.SetFrameBorderMode(0);
 
-      canvAllSpectra.Divide(1, 2, 0., 0.);
-
-      canvAllSpectra.cd(1);
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.204); gPad->SetBottomMargin(0.105);
 
       gPad->SetLogy();
 
-      gPad->SetPad(0., 0.5, 1., 1.);
-      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-      gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.);
-
-      ROOTTools::
-         DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "", 
-                   "1/(2#pi#it{p}_{T}) #it{d}^{2} #it{N}/#it{dp}_{T}/#it{dy} [(GeV/#it{c})^{-2}]", 
-                   0., 0.95, 0.07, 0.07);
+      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
+                           "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
+                           "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
       tsallisFit.Draw("SAME");
 
       TLatex tlText;
 
       tlText.SetTextFont(52);
-      tlText.SetTextSize(0.1);
-      tlText.DrawLatexNDC(0.2, 0.1, centralityNameTex.c_str());
+      tlText.SetTextSize(0.07);
+      tlText.DrawLatexNDC(0.25, 0.15, centralityNameTex.c_str());
 
       for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
@@ -882,16 +858,23 @@ int main(int argc, char **argv)
          legend.AddEntry(spectrasVsPTStatErr[i], methodName.c_str(), "L");
       }
 
+      legend.AddEntry(&tsallisFit, "Tsallis fit", "L");
+
       legend.Draw();
 
-      canvAllSpectra.cd(2);
+      ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
+                             "_spectra_" + centralityName + "_all_methods");
 
-      gPad->SetPad(0., 0., 1., 0.5);
-      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.); 
-      gPad->SetLeftMargin(0.14); gPad->SetBottomMargin(0.16);
+      legend.Clear();
 
-      ROOTTools::DrawFrame(xMin - 0.1, ratioMin/1.1, xMax + 0.1, ratioMax*1.1, 
-                           "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 0.95, 0.07, 0.07);
+      canvSpectra.Clear();
+
+      gPad->SetLogy(false);
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(xMin - 0.1, ratioMin/1.3, xMax + 0.1, ratioMax*1.3, 
+                           "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
       if (ratioMin/1.1 < 1. && ratioMax*1.1 > 1.)
       {
@@ -912,10 +895,10 @@ int main(int argc, char **argv)
          spectraRatiosVsPTSysErr[i]->Draw("SAME E2");
       }
 
-      ROOTTools::PrintCanvas(&canvAllSpectra, outputDirResults + "/" + resonanceName + 
-                             "_spectra_" + centralityName + "_all");
+      legend.Draw();
 
-      legend.Clear();
+      ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
+                              + "_spectra_ratio_all_methods_comp_" + centralityName);
 
       if (estimateFactors)
       {
