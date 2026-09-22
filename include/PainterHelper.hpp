@@ -50,12 +50,15 @@ class PainterHelper
     * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
     * @param[in] markerStyle marker style to be set for the current histogram
     * @param[in] legendEntry legend entry for the current histogram
-    * @param[in] sysWidth widht of systematic error box of each point (if negative value is specified boxes will have width equal to defaulsSysWidth)
+    * @param[in] sysWidth width of systematic error box of each point (if negative value is specified boxes will have width equal to defaulsSysWidth)
+    * @param[in] drawSysOutline shows whether systematic boxes outlines will be drawn
+    * @param[in] fillSysBox shows whether systematic boxes will be filled
     */
    void DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
                       const Color_t color, const double alpha, 
                       const Style_t markerStyle, const std::string& legendEntry, 
-                      double sysWidth = -1.);
+                      double sysWidth = -1., const bool drawSysOutline = true, 
+                      const bool fillSysBox = false);
    /*! @brief Draws the specified graph
     * @param[in] graphWithStatErrors graph containing values with statistical uncertainties
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties

@@ -26,7 +26,7 @@ PainterHelper::PainterHelper(TLegend *legend, const double markerSize,
 void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogramWithSysErrors, 
                                   const Color_t color, const double alpha, 
                                   const Style_t markerStyle, const std::string& legendEntry,
-                                  double sysWidth)
+                                  double sysWidth, const bool drawSysOutline, const bool fillSysBox)
 {
    bool disableSysErrors = false;
 
@@ -80,9 +80,26 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
                         histogramWithSysErrors->GetBinContent(i));
          sysGr.SetPointError(i - 1, sysWidth, histogramWithSysErrors->GetBinError(i));
       }
-      sysGr.SetLineWidth(lineWidth);
-      sysGr.SetLineColorAlpha(color, alpha);
-      sysGr.SetFillColorAlpha(0, 0.);
+
+      if (drawSysOutline)
+      {
+         sysGr.SetLineWidth(lineWidth);
+         sysGr.SetLineColorAlpha(color, alpha);
+      }
+      else
+      {
+         sysGr.SetLineColorAlpha(0, 0.);
+      }
+
+      if (fillSysBox)
+      {
+         sysGr.SetFillStyle(1001);
+         sysGr.SetFillColorAlpha(color, alpha/2.);
+      }
+      else
+      {
+         sysGr.SetFillColorAlpha(0, 0.);
+      }
 
       sysGr.Clone()->Draw("5");
    }
