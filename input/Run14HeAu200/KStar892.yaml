@@ -83,8 +83,9 @@ centrality_bins:
   value_max: 88
   cb_c_min: 0 # CabanaBoy minimum c value
   cb_c_max: 8 # CabanaBoy maximum c value
-  color: "#5790fc"
-  marker_style: 33
+#  color: "#7a21dd"
+  color: "#333333"
+  marker_style: 52
   N_coll: 10.4
   N_coll_uncertainty: 0.7
   bias_factor: 0.89
@@ -97,6 +98,7 @@ centrality_bins:
   value_max: 20
   cb_c_min: 0
   cb_c_max: 1
+#  color: "#964a8b"
   color: "#7a21dd"
   marker_style: 20
   N_coll: 22.3
@@ -111,8 +113,8 @@ centrality_bins:
   value_max: 40
   cb_c_min: 2
   cb_c_max: 3
-  color: "#964a8b"
-  marker_style: 21
+  color: "#5790fc"
+  marker_style: 33
   N_coll: 14.8
   N_coll_uncertainty: 1.1
   bias_factor: 1.01
@@ -125,7 +127,7 @@ centrality_bins:
   value_max: 60
   cb_c_min: 4
   cb_c_max: 5
-  color: "#e42536"
+  color: "#f89c20"
   marker_style: 22
   N_coll: 8.4
   N_coll_uncertainty: 0.6
@@ -139,7 +141,7 @@ centrality_bins:
   value_max: 88
   cb_c_min: 6
   cb_c_max: 8
-  color: "#f89c20"
+  color: "#e42536"
   marker_style: 23
   N_coll: 3.4
   N_coll_uncertainty: 0.3
