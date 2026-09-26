@@ -60,7 +60,7 @@ pair_selection_methods:
     - {pt_bin_min: 9, pt_bin_max: 15} # 60-88
   color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
-    - {func: pol2, pt_bins: [15]} # 6.5-8.5
+    - {func: , pt_bins: []}
 - 
   name: 1K1TOF1PID
   bg_default_fit_func: pol3
@@ -73,8 +73,8 @@ pair_selection_methods:
     - {pt_bin_min: 0, pt_bin_max: 10} # 60-88
   color: "#5790fc"
   custom_bg_fit:
-    - {func: gaus, pt_bins: [0, 1]} # 0.9-1.9
-    - {func: pol2, pt_bins: [6, 7, 9, 12, 13, 14]} # 1.9-2.3, 2.6-2.9, 4.0-6.5
+    - {func: "gaus", pt_bins: [0, 1]} # 0.9-1.9
+    - {func: "pol2", pt_bins: [6, 7, 9, 12, 13, 14]} # 1.9-2.3, 2.6-2.9, 4.0-6.5
 centrality_bins:
 - 
   name: "0-88"
