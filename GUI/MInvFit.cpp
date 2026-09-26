@@ -257,14 +257,16 @@ void MInvFit()
    {
       GUIFit::AddHistogram(distrsMInv[i], CppTools::DtoStr(pTsDistrMInv[i], 2), distrMInvNames[i]);
 
-      if (fitNamesBG[i] != "gaus")
+      //if (fitNamesBG[i] != "gaus")
       {
          GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
       }
+      /*
       else
       {
          GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar(), -1, 4);
       }
+      */
 
       if (performAltFits)
       {
