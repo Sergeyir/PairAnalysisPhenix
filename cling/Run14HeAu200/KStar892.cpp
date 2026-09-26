@@ -259,13 +259,13 @@ void KStar892()
       const std::string peripheralName = peripheral["name"].as<std::string>();
 
       TH1D *distrCentralSpectraVsPTStatErr = static_cast<TH1D *>
-         (resultsInputFile->Get((centralName + "/spectra vs pT with stat errors").c_str()));
+         (resultsInputFile->Get((centralName + "/spectra vs pT with stat errors").c_str())->Clone());
       TH1D *distrCentralSpectraVsPTSysErr = static_cast<TH1D *>
-         (resultsInputFile->Get((centralName + "/spectra vs pT with sys errors").c_str()));
+         (resultsInputFile->Get((centralName + "/spectra vs pT with sys errors").c_str())->Clone());
       TH1D *distrPeripheralSpectraVsPTStatErr = static_cast<TH1D *>
-         (resultsInputFile->Get((peripheralName + "/spectra vs pT with stat errors").c_str()));
+         (resultsInputFile->Get((peripheralName + "/spectra vs pT with stat errors").c_str())->Clone());
       TH1D *distrPeripheralSpectraVsPTSysErr = static_cast<TH1D *>
-         (resultsInputFile->Get((peripheralName + "/spectra vs pT with sys errors").c_str()));
+         (resultsInputFile->Get((peripheralName + "/spectra vs pT with sys errors").c_str())->Clone());
 
       if (!distrCentralSpectraVsPTStatErr) 
       {
@@ -474,4 +474,92 @@ void KStar892()
 
       rabLegend.Clear();
    }
+
+   // RAB for new pp200 spectra
+   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20488_KStar892.root";
+
+   if (std::filesystem::exists(spectraPPNewFileName))
+   {
+      TFile *resultsInputFilePP = TFile::Open(spectraPPNewFileName.c_str());
+
+      TH1D *distrSpectraVsPTStatErrPP = static_cast<TH1D *>
+         (resultsInputFilePP->Get("MB/spectra vs pT with stat errors"));
+      TH1D *distrSpectraVsPTSysErrPP = static_cast<TH1D *>
+         (resultsInputFilePP->Get("MB/spectra vs pT with sys errors"));
+
+      TCanvas canv("canv", "canv", 800, 800);
+
+      canv.SetFillStyle(4000);
+      canv.SetFrameFillColor(0);
+      canv.SetFrameFillStyle(0);
+      canv.SetFrameBorderMode(0);
+
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
+
+      ROOTTools::DrawFrame(0.49, rMin, pTMaxRAB, rMax, 
+                           "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+
+      TLine line(0.49, 1., pTMaxRAB, 1.);
+      line.SetLineColor(kGray + 1);
+      line.SetLineWidth(3);
+      line.SetLineStyle(2);
+
+      line.Draw();
+
+      PainterHelper rab(&rabLegend);
+      rab.SetMarkerSize(1.5);
+      rab.SetLineWidth(2);
+      rab.SetDefaultSysWidth(0.08);
+
+      TLatex tlText;
+
+      tlText.SetTextFont(52);
+      tlText.SetTextSize(0.05);
+
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
+      tlText.DrawLatexNDC(0.12, 0.15, inputYAMLMain["collision_system_name_tex"].as<std::string>().c_str());
+
+      for (const auto& centrality : inputYAMLResonance["centrality_bins"])
+      {
+         const std::string centralityName = centrality["name"].as<std::string>();
+         const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
+
+         const double scaleRAB = centrality["bias_factor"].as<double>()/
+                                 centrality["N_coll"].as<double>();
+
+         /*
+         const double scalingUncertainty = 
+            CppTools::UncertaintyProp(centrality["N_coll_uncertainty"].as<double>()/
+                                      centrality["N_coll"].as<double>(),
+                                      centrality["bias_factor_uncertainty"].as<double>()/
+                                      centrality["bias_factor"].as<double>());
+                                      */
+
+         TH1D *distrSpectraVsPTStatErr = static_cast<TH1D *>
+            (resultsInputFile->Get((centralityName + "/spectra vs pT with stat errors").c_str()));
+         TH1D *distrSpectraVsPTSysErr = static_cast<TH1D *>
+            (resultsInputFile->Get((centralityName + "/spectra vs pT with sys errors").c_str()));
+
+         distrSpectraVsPTStatErr->Divide(distrSpectraVsPTStatErrPP);
+         distrSpectraVsPTSysErr->Divide(distrSpectraVsPTSysErrPP);
+
+         distrSpectraVsPTStatErr->Scale(scaleRAB);
+         distrSpectraVsPTSysErr->Scale(scaleRAB);
+
+         const Color_t color = TColor::GetColor(centrality["color"].as<std::string>().c_str()); 
+
+         rab.DrawHistogram(static_cast<TH1D *>(distrSpectraVsPTStatErr->Clone()), 
+                           static_cast<TH1D *>(distrSpectraVsPTSysErr->Clone()), color,
+                           0.8, centrality["marker_style"].as<int>(), centralityNameTex.c_str());
+      }
+
+      rab.DrawLegend();
+      //rab.DrawTypeCUncertainty(scalingUncertainty, 8.5, 1., kBlack, 0.3);
+
+      ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_all_new_pp");
+
+      rabLegend.Clear();
+   }
+   else CppTools::PrintWarning("File " + spectraPPNewFileName + " does not exists");
 }
