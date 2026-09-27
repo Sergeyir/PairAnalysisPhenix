@@ -149,7 +149,7 @@ int main(int argc, char **argv)
    // performing fits for each pair selection method
    for (const auto& method : inputYAMLResonance["pair_selection_methods"])
    {
-      PerformMInvFitsForMethod(method["name"].as<std::string>());
+      PerformMInvFitsForMethod(method);
    }
 
    outputFile->Close();
@@ -160,10 +160,12 @@ int main(int argc, char **argv)
    return 0;
 }
 
-void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& methodName)
+void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const YAML::Node& method)
 {
+   const std::string methodName = method["name"].as<std::string>();
    const std::string outputDir = "output/RecEffResonance/" + runName + "/" + methodName;
    std::filesystem::create_directories(outputDir);
+   std::filesystem::create_directories("output/Systematics/" + runName);
 
    if (altPTScaleSimInputFiles.size() != 0) 
    {
@@ -252,6 +254,15 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
                                           "", pTNBins, &pTBinRanges[0]);
    }
 
+   TH1D sysAltPT("sys alt pt", "", pTNBins, &pTBinRanges[0]);
+   TH1D sysAccVar("sys acc", "", pTNBins, &pTBinRanges[0]);
+
+   sysAltPT.SetLineWidth(2);
+   sysAltPT.SetLineColor(kBlack);
+
+   sysAccVar.SetLineWidth(2);
+   sysAccVar.SetLineColor(kBlack);
+
    for (unsigned int i = 0; i < pTNBins; i++)
    {
       pBar.Print(static_cast<double>(numberOfCalls)/static_cast<double>(numberOfIterations));
@@ -262,6 +273,7 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
                      CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
                      CppTools::DtoStr(pTBinRanges[i + 1], 1));
 
+      
       double recEffSysErrAltPT = 0.;
 
       for (unsigned j = 0; j < altPTScaleSimInputFiles.size(); j++)
@@ -314,20 +326,83 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
                         CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
       }
 
-      const double resultingSysErr = 
-         distrRecEffVsPTStatErr.GetBinContent(i + 1)*
-         CppTools::UncertaintyProp(recEffSysErrAltPT/distrRecEffVsPTStatErr.GetBinContent(i + 1),
-                                   recEffSysErrAccVar/distrRecEffVsPTStatErr.GetBinContent(i + 1));
+
+      sysAltPT.SetBinContent(i + 1, recEffSysErrAltPT/distrRecEffVsPTStatErr.GetBinContent(i + 1));
+      sysAltPT.SetBinError(i + 1, distrRecEffVsPTStatErr.GetBinError(i + 1)/
+                           distrRecEffVsPTStatErr.GetBinContent(i + 1));
+
+      sysAccVar.SetBinContent(i + 1, recEffSysErrAccVar/distrRecEffVsPTStatErr.GetBinContent(i + 1));
+      sysAccVar.SetBinError(i + 1, distrRecEffVsPTStatErr.GetBinError(i + 1)/
+                                  distrRecEffVsPTStatErr.GetBinContent(i + 1));
 
       distrRecEffVsPTSysErr.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
       distrRecEffVsPTSysErrAltPT.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
       distrRecEffVsPTSysErrAccVar.SetBinContent(i + 1, distrRecEffVsPTStatErr.GetBinContent(i + 1));
 
-      distrRecEffVsPTSysErr.SetBinError(i + 1, resultingSysErr);
-      distrRecEffVsPTSysErrAltPT.SetBinError(i + 1, recEffSysErrAltPT);
-      distrRecEffVsPTSysErrAccVar.SetBinError(i + 1, recEffSysErrAccVar);
-
       numberOfCalls++;
+   }
+
+   TCanvas sysCanv("alt pT sys canv", "", 800, 800);
+
+   sysCanv.SetFillStyle(4000);
+   sysCanv.SetFrameFillColor(0);
+   sysCanv.SetFrameFillStyle(0);
+   sysCanv.SetFrameBorderMode(0);
+
+   gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+   gPad->SetLeftMargin(0.165); gPad->SetBottomMargin(0.112);
+
+   TF1 sysAltPTFit("sys sysAltPTFit", "pol1");
+   sysAltPTFit.SetRange(pTBinRanges[0]/1.05, pTBinRanges[pTNBins]*1.05);
+
+   sysAltPTFit.SetLineWidth(4);
+   sysAltPTFit.SetLineColor(kRed - 3);
+   sysAltPTFit.SetLineStyle(2);
+
+   sysAltPT.Fit(&sysAltPTFit, "RQMNB");
+
+   ROOTTools::DrawFrame(&sysAltPT, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.75);
+
+   sysAltPTFit.Draw("SAME");
+
+   ROOTTools::PrintCanvas(&sysCanv, "output/Systematics/" + runName + "/AltPTSys_" + 
+                          resonanceName + "_" + methodName);
+
+   sysCanv.Clear();
+
+   gPad->SetRightMargin(0.035); gPad->SetTopMargin(0.03); 
+   gPad->SetLeftMargin(0.165); gPad->SetBottomMargin(0.112);
+
+   TF1 sysAccVarFit("sys sysAccVarFit", "pol3");
+   sysAccVarFit.SetRange(pTBinRanges[0]/1.05, pTBinRanges[pTNBins]*1.05);
+
+   sysAccVarFit.SetLineWidth(4);
+   sysAccVarFit.SetLineColor(kRed - 3);
+   sysAccVarFit.SetLineStyle(2);
+
+   sysAccVar.Fit(&sysAccVarFit, "RQMNB");
+
+   ROOTTools::DrawFrame(&sysAccVar, "", "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.75);
+
+   sysAccVarFit.Draw("SAME");
+
+   ROOTTools::PrintCanvas(&sysCanv, "output/Systematics/" + runName + "/AccVarSys_" + 
+                          resonanceName + "_" + methodName);
+
+   for (unsigned int i = 0; i < pTNBins; i++)
+   {
+      const double pT = (pTBinRanges[i] + pTBinRanges[i + 1])/2.;
+
+      const double resultingSysErr = 
+         distrRecEffVsPTStatErr.GetBinContent(i + 1)*
+         CppTools::UncertaintyProp(sysAltPTFit.Eval(pT),
+                                   sysAccVarFit.Eval(pT));
+
+      distrRecEffVsPTSysErrAltPT.SetBinError(i + 1, sysAltPTFit.Eval(pT)*
+                                             distrRecEffVsPTSysErrAltPT.GetBinContent(i + 1));
+      distrRecEffVsPTSysErrAccVar.SetBinError(i + 1, sysAccVar.GetBinContent(i + 1)*
+                                              distrRecEffVsPTSysErrAccVar.GetBinContent(i + 1));
+      distrRecEffVsPTSysErr.SetBinError(i + 1, resultingSysErr);
    }
 
    text.SetTextAngle(0.);
@@ -414,7 +489,6 @@ void EstimateRecEffOfResonance::PerformMInvFitsForMethod(const std::string& meth
    distrMeansVsPT.Write();
    distrGammasVsPT.Write();
    distrRecEffVsPTStatErr.Write();
-   distrRecEffVsPTSysErr.Write();
    distrRecEffVsPTSysErrAltPT.Write();
    distrRecEffVsPTSysErrAccVar.Write();
 
@@ -561,8 +635,7 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                               upIntegrationRange, recYieldErr);
 
    distrRecEffVsPT.SetBinContent(pTBin + 1, recYield/numberOfGenerated);
-   distrRecEffVsPT.SetBinError(pTBin + 1, CppTools::UncertaintyProp(numberOfGeneratedRelativeErr)*
-                               recYield/numberOfGenerated);
+   distrRecEffVsPT.SetBinError(pTBin + 1, numberOfGeneratedRelativeErr*recYield/numberOfGenerated);
 
    if (outputFileNameWithoutExt != "")
    {
