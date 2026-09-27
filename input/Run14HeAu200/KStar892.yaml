@@ -61,6 +61,7 @@ pair_selection_methods:
   color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: , pt_bins: []}
+  raw_yield_sys_fit_func: "pol2"
 - 
   name: 1K1TOF1PID
   bg_default_fit_func: pol3
@@ -75,6 +76,7 @@ pair_selection_methods:
   custom_bg_fit:
     - {func: "gaus", pt_bins: [0, 1]} # 0.9-1.9
     - {func: "pol2", pt_bins: [6, 7, 9, 12, 13, 14]} # 1.9-2.3, 2.6-2.9, 4.0-6.5
+  raw_yield_sys_fit_func: "pol1"
 centrality_bins:
 - 
   name: "0-88"
