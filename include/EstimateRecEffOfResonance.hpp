@@ -41,9 +41,9 @@ namespace EstimateRecEffOfResonance
 {
    /*! Performs approximations of invariant mass distributions for all pT ranges for the given method
     *
-    * @param[in] methodName name of the method that was used to extract pairs of charged tracks
+    * @param[in] method method that was used to extract pairs of charged tracks
     */
-   void PerformMInvFitsForMethod(const std::string& methodName);
+   void PerformMInvFitsForMethod(const YAML::Node& method);
    /*! Performs approximations of invariant mass distributions for the given histogram
     *
     * @param[in] pTBin pT bin index
