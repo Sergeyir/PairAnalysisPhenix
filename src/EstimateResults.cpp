@@ -321,18 +321,10 @@ int main(int argc, char **argv)
          TH1D *recEffVsPTSysErrAccVar = static_cast<TH1D *>
             (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
                                    "vs pT with sys errors, acceptance variation").c_str()));
-         TH1D *recEffVsPTSysErr = static_cast<TH1D *>
-            (inputRecEffFile->Get((methodName + "/reconstruction efficiency "\
-                                   "vs pT with sys errors").c_str()));
 
          if (!recEffVsPTStatErr)
          {
             CppTools::PrintError("No reconstruction efficiency with statistical errors was "\
-                                 "found in file " + inputRecEffFileName + " for " + methodName);
-         }
-         if (!recEffVsPTSysErr)
-         {
-            CppTools::PrintError("No reconstruction efficiency with systematic errors was "\
                                  "found in file " + inputRecEffFileName + " for " + methodName);
          }
          if (!recEffVsPTSysErrAltPT)
