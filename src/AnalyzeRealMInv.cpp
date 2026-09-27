@@ -1367,7 +1367,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
          sysRawYield.GetXaxis()->SetRange(pTBinFitMin + 1, pTBinFitMax + 1);
 
-         TF1 fit("sys fit", "pol2");
+         TF1 fit("sys fit", method["raw_yield_sys_fit_func"].as<std::string>().c_str());
          fit.SetRange(pTBinRanges[pTBinFitMin]/1.05, pTBinRanges[pTBinFitMax + 1]*1.05);
 
          fit.SetLineWidth(4);
