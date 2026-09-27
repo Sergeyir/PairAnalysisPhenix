@@ -257,35 +257,16 @@ void MInvFit()
    {
       GUIFit::AddHistogram(distrsMInv[i], CppTools::DtoStr(pTsDistrMInv[i], 2), distrMInvNames[i]);
 
-      //if (fitNamesBG[i] != "gaus")
-      {
-         GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
-      }
-      /*
-      else
-      {
-         GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar(), -1, 4);
-      }
-      */
+      GUIFit::AddFit(fits[i], fitsBG[i], 0, fits[i]->GetNpar() - fitsBG[i]->GetNpar());
 
       if (performAltFits)
       {
          GUIFit::AddFit(altFitsAB[i], altFitsBGAB[i], 1, 
                         altFitsAB[i]->GetNpar() - altFitsBGAB[i]->GetNpar());
-         if (fitNamesBG[i] != "gaus")
-         {
-            GUIFit::AddFit(altFitsFreeG[i], altFitsBGFreeG[i], 2, 
-                           altFitsFreeG[i]->GetNpar() - altFitsBGFreeG[i]->GetNpar());
-            GUIFit::AddFit(altFitsFixedG[i], altFitsBGFixedG[i], 3, 
-                           altFitsFixedG[i]->GetNpar() - altFitsBGFixedG[i]->GetNpar());
-         }
-         else
-         {
-            GUIFit::AddFit(altFitsFreeG[i], altFitsBGFreeG[i], 2, 
-                           altFitsFreeG[i]->GetNpar() - altFitsBGFreeG[i]->GetNpar(), -1, 4);
-            GUIFit::AddFit(altFitsFixedG[i], altFitsBGFixedG[i], 3, 
-                           altFitsFixedG[i]->GetNpar() - altFitsBGFixedG[i]->GetNpar(), -1, 4);
-         }
+         GUIFit::AddFit(altFitsFreeG[i], altFitsBGFreeG[i], 2, 
+                        altFitsFreeG[i]->GetNpar() - altFitsBGFreeG[i]->GetNpar());
+         GUIFit::AddFit(altFitsFixedG[i], altFitsBGFixedG[i], 3, 
+                        altFitsFixedG[i]->GetNpar() - altFitsBGFixedG[i]->GetNpar());
       }
    }
 
