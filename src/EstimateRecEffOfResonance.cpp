@@ -557,7 +557,7 @@ void EstimateRecEffOfResonance::PerformMInvFit(const unsigned int pTBin,
                              sigmalizedYieldExtractionRange;
 
    double recYieldErr;
-   double recYield = GetYield(distrMInv, fitBG, lowIntegrationRange, 
+   double recYield = GetYield(distrMInv, fitResonance, fitBG, lowIntegrationRange, 
                               upIntegrationRange, recYieldErr);
 
    distrRecEffVsPT.SetBinContent(pTBin + 1, recYield/numberOfGenerated);
@@ -636,7 +636,7 @@ void EstimateRecEffOfResonance::SetGaussianBroadeningFunction()
       static_cast<TF1 *>(TFile::Open(inputFileName.c_str())->Get("gaussian broadening sigma fit"));
 }
 
-double EstimateRecEffOfResonance::GetYield(TH1D *distrMInv, const TF1& funcBG, 
+double EstimateRecEffOfResonance::GetYield(TH1D *distrMInv, TF1& funcFG, const TF1& funcBG, 
                                            const double xMin, const double xMax, double &err)
 {
    // integral over the signal
@@ -651,9 +651,11 @@ double EstimateRecEffOfResonance::GetYield(TH1D *distrMInv, const TF1& funcBG,
                              "outside the histogram range; ignoring underflow and overflow bins");
    }
 
-   for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
-        i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
-                               distrMInv->GetXaxis()->GetNbins()); i++)
+   const int binMin = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1);
+   const int binMax = CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
+                                        distrMInv->GetXaxis()->GetNbins());
+
+   for (int i = binMin; i <= binMax; i++)
    {
       integral += distrMInv->GetBinContent(i);
 
@@ -671,6 +673,12 @@ double EstimateRecEffOfResonance::GetYield(TH1D *distrMInv, const TF1& funcBG,
               distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()));
    // normalizing background integral by the number of integration steps
    integral -= integralBG/101.;
+
+   // due to discrete nature of the histogram actual extraction range may not lie within 
+   // xMin and xMax which can be accounted for by applying the following correction
+   integral *= funcFG.Integral(xMin, xMax)/
+               funcFG.Integral(distrMInv->GetXaxis()->GetBinLowEdge(binMin), 
+                               distrMInv->GetXaxis()->GetBinUpEdge(binMax));
 
    return integral;
 }

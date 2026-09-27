@@ -340,18 +340,21 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             }
          }
 
-         // fit for resonance+bg approximation
+         // fit for default resonance+BG, FG, BG approximations
          TF1 *fit = nullptr;
-         // fit for bg approximation
+         TF1 *fitFG = nullptr;
          TF1 *fitBG = nullptr;
-         // alternatice fit for resonance+bg approximation with alternative BG
+         // alternative fit for resonance+BG, FG, and BG approximations with alternative BG
          TF1 *altFitAB = nullptr;
+         TF1 *altFitFGAB = nullptr;
          TF1 *altFitBGAB = nullptr;
-         // alternatice fit for resonance+bg approximation with free Gamma
+         // alternative fit for resonance+BG, FG, and BG approximations with free Gamma
          TF1 *altFitFreeG = nullptr;
+         TF1 *altFitFGFreeG = nullptr;
          TF1 *altFitBGFreeG = nullptr;
-         // alternatice fit for resonance+bg approximation with fixed Gamma
+         // alternative fit for resonance+BG, FG, and BG approximations with fixed Gamma
          TF1 *altFitFixedG = nullptr;
+         TF1 *altFitFGFixedG = nullptr;
          TF1 *altFitBGFixedG = nullptr;
 
          // sigma of a gaus that is convoluted with Breit-Wigner
@@ -513,6 +516,19 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             }
             else CppTools::PrintError("Unknown fit function specified in input file: " + bgFitFunc);
 
+            fitFG = new TF1("Default FG", &FitFunc::RBWConvGaus, 
+                            massResonance - gammaResonance*3., 
+                            massResonance + gammaResonance*3., 4);
+            altFitFGAB = new TF1("AB FG", &FitFunc::RBWConvGaus, 
+                                 massResonance - gammaResonance*3., 
+                                 massResonance + gammaResonance*3., 4);
+            altFitFGFreeG = new TF1("Free #Gamma FG", &FitFunc::RBWConvGaus, 
+                                    massResonance - gammaResonance*3., 
+                                    massResonance + gammaResonance*3., 4);
+            altFitFGFixedG = new TF1("Fixed #Gamma FG", &FitFunc::RBWConvGaus, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 4);
+
             const std::string pTBinRangeName =  
                CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
                CppTools::DtoStr(pTBinRanges[i + 1], 2);
@@ -559,7 +575,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                altFitFreeG->SetParLimits(0, 1., maxBinVal - minBinVal);
                altFitFreeG->SetParLimits(1, massResonance/1.05, massResonance*1.05);
                altFitFreeG->SetParLimits(2, gammaResonance/1.2, gammaResonance*1.2);
-               altFitFreeG->SetParLimits(3, gaussianBroadeningSigma/100., gaussianBroadeningSigma*2.);
+               altFitFreeG->SetParLimits(3, gaussianBroadeningSigma/100., 
+                                         gaussianBroadeningSigma*2.);
 
                altFitFixedG->SetParameters(maxBinVal, massResonance, 
                                            gammaResonance, gaussianBroadeningSigma);
@@ -718,6 +735,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             distrGammasVsPT.SetBinContent(i + 1, fit->GetParameter(2));
             distrGammasVsPT.SetBinError(i + 1, fit->GetParError(2));
 
+            for (int j = 0; j < fitFG->GetNpar(); j++)
+            {
+               fitFG->SetParameter(j, fit->GetParameter(j));
+               if (performAltFits)
+               {
+                  altFitFGAB->SetParameter(j, altFitAB->GetParameter(j));
+                  altFitFGFreeG->SetParameter(j, altFitFreeG->GetParameter(j));
+                  altFitFGFixedG->SetParameter(j, altFitFixedG->GetParameter(j));
+               }
+            }
+
             if (!isBGFixedForThisPT)
             {
                for (int j = 0; j < fitBG->GetNpar(); j++)
@@ -793,18 +821,19 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             }
 
             double rawYieldStatErr = 0.;
-            double rawYield = GetYieldAndStatErr(distrMInv, distrMInvFG, distrMInvBG, fitBG, 
+            double rawYield = GetYieldAndStatErr(distrMInv, distrMInvFG, distrMInvBG, fitFG, fitBG, 
                                                  lowIntegrationRange, upIntegrationRange, 
                                                  rawYieldStatErr);
             if (isBGFixedForThisPTAltFit)
             {
-               const double rawYieldAltFitAB = GetYield(distrMInv, altFitBGAB, 
+               const double rawYieldAltFitAB = GetYield(distrMInv, altFitFGAB, altFitBGAB, 
                                                         lowIntegrationRangeAltFitAB, 
                                                         upIntegrationRangeAltFitAB);
-               const double rawYieldAltFitFreeG = GetYield(distrMInv, altFitBGFreeG, 
+               const double rawYieldAltFitFreeG = GetYield(distrMInv, altFitFGFreeG, altFitBGFreeG, 
                                                            lowIntegrationRangeAltFitFreeG, 
                                                            upIntegrationRangeAltFitFreeG);
-               const double rawYieldAltFitFixedG = GetYield(distrMInv, altFitBGFixedG, 
+               const double rawYieldAltFitFixedG = GetYield(distrMInv, altFitFGFixedG, 
+                                                            altFitBGFixedG,
                                                             lowIntegrationRangeAltFitFixedG, 
                                                             upIntegrationRangeAltFitFixedG);
 
@@ -1461,7 +1490,8 @@ void AnalyzeRealMInv::SetGaussianBroadeningFunction()
    }
 }
 
-double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin, const double xMax)
+double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG, 
+                                 const double xMin, const double xMax)
 {
    // integral over the signal
    double integral = 0.;
@@ -1477,9 +1507,11 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin
       pBar.RePrint();
    }
 
-   for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
-        i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
-                               distrMInv->GetXaxis()->GetNbins()); i++)
+   const int binMin = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1);
+   const int binMax = CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
+                                        distrMInv->GetXaxis()->GetNbins());
+
+   for (int i = binMin; i <= binMax; i++)
    {
       integral += distrMInv->GetBinContent(i);
 
@@ -1495,13 +1527,18 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin
    // normalizing background integral by the number of integration steps
    integral -= integralBG/101.;
 
+   // due to discrete nature of the histogram actual extraction range may not lie within 
+   // xMin and xMax which can be accounted for by applying the following correction
+   integral *= funcFG->Integral(xMin, xMax)/
+               funcFG->Integral(distrMInv->GetXaxis()->GetBinLowEdge(binMin), 
+                                distrMInv->GetXaxis()->GetBinUpEdge(binMax));
 
    return integral;
 }
 
 double AnalyzeRealMInv::GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, 
-                                           TF1 *funcBG, const double xMin, const double xMax, 
-                                           double &err)
+                                           TF1 *funcFG, TF1 *funcBG, const double xMin, 
+                                           const double xMax, double &err)
 {
    // resetting error (in case non-zero value was passed)
    err = 0.;
@@ -1514,7 +1551,7 @@ double AnalyzeRealMInv::GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, T
 
    err = sqrt(err);
 
-   return GetYield(distrMInv, funcBG, xMin, xMax);
+   return GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 

@@ -65,12 +65,13 @@ namespace EstimateRecEffOfResonance
    /* Extracts the yield by integrating the distribution and subtracting the background in the specified range
     *
     * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
+    * @param[in] funcFG function that approximates the signal
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] err yield statistical uncertainty
     */
-   double GetYield(TH1D *distr, const TF1& funcBG, 
+   double GetYield(TH1D *distr, TF1& funcFG, const TF1& funcBG, 
                    const double xMin, const double xMax, double &err);
    /// Contents of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;

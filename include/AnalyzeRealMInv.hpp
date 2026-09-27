@@ -85,23 +85,25 @@ namespace AnalyzeRealMInv
    /* Returns the raw yield by integrating the distribution and subtracting the background in the specified range
     *
     * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
+    * @param[in] funcBG function that approximates the signal
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     */
-   double GetYield(TH1D *distrMInv, TF1 *funcBG, const double xMin, const double xMax);
+   double GetYield(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG, const double xMin, const double xMax);
    /* Same as GetYield but additionally calculates the statistica uncertainty 
     *
     * @param[in] distrInvM invariant mass distribution from which the yield will be calculated
     * @param[in] distrInvMFG foreground invariant mass distribution (before combinatorial BG subtraction)
     * @param[in] distrInvMBG combinatorial background invariant mass distribution
+    * @param[in] funcFG function that approximates the signal
     * @param[in] funcBG function that approximates the background
     * @param[in] xMin minimum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] err statistical uncertainty that will be calculated
     */
-   double GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, TF1 *funcBG,
-                             const double xMin, const double xMax, double &err);
+   double GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, TF1 *funcFG, 
+                             TF1 *funcBG, const double xMin, const double xMax, double &err);
    /// Parser of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Parser of input .yaml file for the information about resonance
