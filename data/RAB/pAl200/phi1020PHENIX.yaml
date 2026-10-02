@@ -1,0 +1,135 @@
+source: 'PRC106, 014908'
+hepdata_link: 'https://www.hepdata.net/record/ins2050486'
+independent_variables:
+- header: {name: '$p_T$'}
+  values:
+  - {low: 0.8, high: 1.0}
+  - {low: 1.0, high: 1.275}
+  - {low: 1.275, high: 1.7}
+  - {low: 1.7, high: 2.2}
+  - {low: 2.2, high: 2.7}
+  - {low: 2.7, high: 3.2}
+  - {low: 3.2, high: 3.7}
+  - {low: 3.7, high: 4.2}
+  - {low: 4.2, high: 4.975}
+  - {low: 4.975, high: 6.25}
+  - {low: 6.25, high: 7.75}
+dependent_variables:
+- header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '0-20'}
+  - {name: '$p_T$', value: '$p+Al$ $0\%-20\%$'}
+  values:
+  - value: --
+  - value: --
+  - value: 0.89793
+    errors:
+    - {symerror: 0.21447, label: 'stat.'}
+    - {symerror: 0.14239, label: 'sys.'}
+  - value: 1.07157
+    errors:
+    - {symerror: 0.15334, label: 'stat.'}
+    - {symerror: 0.17038, label: 'sys.'}
+  - value: 1.09691
+    errors:
+    - {symerror: 0.17221, label: 'stat.'}
+    - {symerror: 0.16568, label: 'sys.'}
+  - value: 1.03551
+    errors:
+    - {symerror: 0.21273, label: 'stat.'}
+    - {symerror: 0.14951, label: 'sys.'}
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+- header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '20-40'}
+  - {name: '$p_T$', value: '$p+Al$ $20\%-40\%$'}
+  values:
+  - value: --
+  - value: --
+  - value: 1.03313
+    errors:
+    - {symerror: 0.24183, label: 'stat.'}
+    - {symerror: 0.18586, label: 'sys.'}
+  - value: 1.19629
+    errors:
+    - {symerror: 0.17101, label: 'stat.'}
+    - {symerror: 0.17701, label: 'sys.'}
+  - value: 1.02529
+    errors:
+    - {symerror: 0.18984, label: 'stat.'}
+    - {symerror: 0.13869, label: 'sys.'}
+  - value: 0.9731
+    errors:
+    - {symerror: 0.2393, label: 'stat.'}
+    - {symerror: 0.14497, label: 'sys.'}
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+- header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '40-72'}
+  - {name: '$p_T$', value: '$p+Al$ $40\%-72\%$'}
+  values:
+  - value: --
+  - value: --
+  - value: 0.98189
+    errors:
+    - {symerror: 0.22416, label: 'stat.'}
+    - {symerror: 0.20788, label: 'sys.'}
+  - value: 0.94331
+    errors:
+    - {symerror: 0.15225, label: 'stat.'}
+    - {symerror: 0.16214, label: 'sys.'}
+  - value: 1.24078
+    errors:
+    - {symerror: 0.17567, label: 'stat.'}
+    - {symerror: 0.19007, label: 'sys.'}
+  - value: 0.86103
+    errors:
+    - {symerror: 0.2172, label: 'stat.'}
+    - {symerror: 0.13902, label: 'sys.'}
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+  - value: --
+- header: {name: 'Nuclear modification factor $R_{xA}$ of $\phi$'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '0-72'}
+  - {name: '$p_T$', value: '$p+Al$ $0\%-100\%$'}
+  values:
+  - value: --
+  - value: --
+  - value: 0.94562
+    errors:
+    - {symerror: 0.13333, label: 'stat.'}
+    - {symerror: 0.15314, label: 'sys.'}
+  - value: 1.09805
+    errors:
+    - {symerror: 0.09501, label: 'stat.'}
+    - {symerror: 0.16567, label: 'sys.'}
+  - value: 1.08983
+    errors:
+    - {symerror: 0.10999, label: 'stat.'}
+    - {symerror: 0.1531, label: 'sys.'}
+  - value: 0.98787
+    errors:
+    - {symerror: 0.13408, label: 'stat.'}
+    - {symerror: 0.13863, label: 'sys.'}
+  - value: 1.19668
+    errors:
+    - {symerror: 0.19253, label: 'stat.'}
+    - {symerror: 0.17381, label: 'sys.'}
+  - value: 1.11595
+    errors:
+    - {symerror: 0.26505, label: 'stat.'}
+    - {symerror: 0.17356, label: 'sys.'}
+  - value: --
+  - value: --
+  - value: --

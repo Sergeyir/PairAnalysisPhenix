@@ -1,4 +1,5 @@
 source: "PRC105, 064902"
+hepdata_link: 'https://www.hepdata.net/record/ins1965617'
 independent_variables:
 - header: {name: '$p_T$'}
   values:

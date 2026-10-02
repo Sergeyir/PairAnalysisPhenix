@@ -1,5 +1,6 @@
 source: 'PRC106, 014908'
-comments: 'in the HepMC publication d+Au and ^3He+Au values seemed to be mistakenly switched between each other'
+hepdata_link: 'https://www.hepdata.net/record/ins2050486'
+comments: 'in the HepMC publication d+Au and ^3He+Au values seemed to be mistakenly muxed up between each other'
 independent_variables:
 - header: {name: '$p_T$'}
   values:
