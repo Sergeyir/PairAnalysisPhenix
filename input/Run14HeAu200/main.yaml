@@ -17,4 +17,4 @@ addit_mc_cuts_detectors_configuration: '0101000'
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0.1
 sim_board_offset_dcw: 0
-correction_tofw: 0.842 # correction to TOFw due to ADC cut and efficiency correction
+correction_tofw: 0.635 # correction to TOFw due to ADC cut and efficiency correction
