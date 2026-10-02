@@ -803,7 +803,6 @@ int main(int argc, char **argv)
       "data/Results/" + runName + "/" + inputYAMLResonance["taxi_job"].as<std::string>() + 
       "_" + resonanceName + ".root";
 
-      CppTools::Print(resultFileName);
    if (std::filesystem::exists(resultFileName))
    {
       TFile resultFile(resultFileName.c_str());
@@ -816,12 +815,13 @@ int main(int argc, char **argv)
          weightFunc = static_cast<TF1 *>(spectraFit->Clone());
          reweightForSpectra = true;
       }
+      else CppTools::PrintInfo("Spectra fit was not found in file " + resultFileName);
    }
+   else CppTools::PrintInfo("File " + resultFileName + " was not found for obtaining spectra fit");
 
    if (!reweightForSpectra)
    {
-      CppTools::PrintInfo("Fit parameters for spectra were not found; " \
-                          "setting reweight to e^{-p_{T}}");
+      CppTools::PrintInfo("Setting reweight to e^{-p_{T}}");
       weightFunc = new TF1("weightFunc", "exp(-x)");
    }
  
