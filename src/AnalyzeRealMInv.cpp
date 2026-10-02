@@ -1277,9 +1277,65 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             legend.SetFillColorAlpha(0, 0.);
             legend.SetNColumns(3);
 
-            legend.AddEntry(distrMInvFG, "FG", "PFC");
-            legend.AddEntry(distrMInvBG, "BG", "PFC");
-            legend.AddEntry(distrMInv, "FG-BG", "PFC");
+            legend.AddEntry(distrMInvFG, "FG", "F");
+            legend.AddEntry(distrMInvBG, "BG", "F");
+            legend.AddEntry(distrMInv, "FG-BG", "F");
+
+            legend.Draw();
+
+            ROOTTools::PrintCanvas(&canvMInvFGBG, outputDir + "/FGBG_" + resonanceName + "_" + 
+                                   centrality["name"].as<std::string>() + "_" +
+                                   CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
+         } /* FG, BG, and signal on the same canvas */
+
+         { /* FG, BG, and signal on the same canvas */
+            TCanvas canvMInvFGBG("canv MInv FGBG", "", 800, 800);
+
+            gPad->SetRightMargin(0.03); gPad->SetTopMargin(0.05); 
+            gPad->SetLeftMargin(0.173); gPad->SetBottomMargin(0.112);
+
+            distrMInv->Sumw2(false);
+            distrMInvBG->Sumw2(false);
+            distrMInvFG->Sumw2(false);
+
+            if (distrMInvFG->GetEntries() > distrMInv->GetEntries())
+            {
+               distrMInvFG->SetMinimum(0.);
+               ROOTTools::DrawFrame(distrMInvFG, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
+            }
+            else
+            {
+               ROOTTools::DrawFrame(distrMInv, "", "#it{M}_{inv} [GeV/#it{c}^{2}]", 
+                                    "Counts", 1., 1.7, 0.05, 0.05, true, false);
+            }
+
+            if (distrMInvFG->GetEntries() > 1e-3) 
+            {
+               distrMInvFG->SetLineColorAlpha(kAzure + 2, 0.8);
+               distrMInvFG->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.88, 0.9, "No data on foreground");
+
+            if (distrMInvBG->GetEntries() > 1e-3) 
+            {
+               distrMInvBG->SetLineColorAlpha(kGreen + 2, 0.8);
+               distrMInvBG->Draw("SAME PFC");
+            }
+            else text.DrawTextNDC(0.78, 0.9, "No data on background");
+
+            distrMInv->SetLineColorAlpha(kRed + 2, 0.8);
+            distrMInv->Draw("SAME PFC");
+
+            TLegend legend(0.3, 0.86, 0.98, 0.94);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
+            legend.SetNColumns(3);
+
+            legend.AddEntry(distrMInvFG, "FG", "F");
+            legend.AddEntry(distrMInvBG, "BG", "F");
+            legend.AddEntry(distrMInv, "FG-BG", "F");
 
             legend.Draw();
 
