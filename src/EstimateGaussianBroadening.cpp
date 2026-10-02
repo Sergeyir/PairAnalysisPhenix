@@ -160,7 +160,7 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
 
-      distrMInv->Fit(&fit, "RQMNB");
+      distrMInv->Fit(&fit, "RQMNBL");
       if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
    }
 
