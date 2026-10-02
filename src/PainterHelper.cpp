@@ -277,7 +277,12 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName,
                                                  const bool readSysErrors,
                                                  double sysWidth)
 {
-   CppTools::CheckInputFile(fileName);
+   if (!std::filesystem::exists(fileName))
+   {
+      CppTools::PrintWarning("File " + fileName + " was not found");
+      return nullptr;
+   }
+
    std::ifstream inputFile(fileName);
 
    if (sysWidth < 0.) sysWidth = defaultSysWidth;
