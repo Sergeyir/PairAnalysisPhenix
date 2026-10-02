@@ -3,7 +3,7 @@
 status: main # required field for checking the file application
 run_name: Run15pAu200
 collision_system_name: pAu200
-collision_system_name_tex: 'p+Au, #sqrt{s_NN}} = 200 GeV'
+collision_system_name_tex: '#it{p}+Au@200'
 is_pp: false # shows whether the collision is p+p; if false centrality_min and centrality_max will not be used
 centrality_min: 0
 centrality_max: 72
@@ -15,4 +15,4 @@ detectors_configuration: '1111111'
 # board offset to align simulated DC with real one
 sim_board_offset_dce: 0.5
 sim_board_offset_dcw: 0.5
-correction_tofw: 0.7796 # correction to TOFw due to ADC cut and efficiency correction
+correction_tofw: 0.619 # correction to TOFw due to ADC cut and efficiency correction
