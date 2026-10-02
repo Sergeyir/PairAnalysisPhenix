@@ -143,6 +143,7 @@ int main(int argc, char **argv)
    numberOfIterations = pTNBins*inputYAMLResonance["pair_selection_methods"].size();
 
    const std::string parametersOutputDir = "data/Parameters/RecEffResonance/" + runName;
+   std::filesystem::create_directories(parametersOutputDir);
    outputFile = TFile::Open((parametersOutputDir + "/" + resonanceName + ".root").c_str(), 
                             "RECREATE");
 
