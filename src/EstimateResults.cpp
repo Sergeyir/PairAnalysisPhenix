@@ -570,7 +570,7 @@ int main(int argc, char **argv)
                         sysFull.GetXaxis()->FindBin(methodPTMax - 1e-7));
 
             sysFull.SetMaximum(sysFull.GetMaximum()*1.2);
-            sysFull.SetMinimum(0.001);
+            sysFull.SetMinimum(CppTools::Minimum(0.001, sysFull.GetMinimum()));
 
             sysPTScale.SetLineColorAlpha(kP6Yellow, 0.9);
             sysAccVar.SetLineColorAlpha(kP6Red, 0.9);
@@ -837,9 +837,11 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 0; i < spectrasVsPTStatErr.size(); i++)
       {
+         spectrasVsPTStatErr[i]->SetMarkerStyle(0);
          spectrasVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
          spectrasVsPTStatErr[i]->Draw("SAME");
 
+         spectrasVsPTSysErr[i]->SetMarkerStyle(0);
          spectrasVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.25);
          spectrasVsPTSysErr[i]->SetFillStyle(1001);
          spectrasVsPTSysErr[i]->Draw("SAME E2");
@@ -879,9 +881,11 @@ int main(int argc, char **argv)
 
       for (unsigned int i = 0; i < spectraRatiosVsPTStatErr.size(); i++)
       {
+         spectraRatiosVsPTStatErr[i]->SetMarkerStyle(0);
          spectraRatiosVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
          spectraRatiosVsPTStatErr[i]->Draw("SAME");
 
+         spectraRatiosVsPTSysErr[i]->SetMarkerStyle(0);
          spectraRatiosVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.25);
          spectraRatiosVsPTSysErr[i]->SetFillStyle(1001);
          spectraRatiosVsPTSysErr[i]->Draw("SAME E2");
@@ -966,10 +970,14 @@ int main(int argc, char **argv)
 
          for (unsigned int i = 0; i < distrRABsVsPTStatErr.size(); i++)
          {
+            distrRABsVsPTStatErr[i]->SetMarkerStyle(0);
+            distrRABsVsPTStatErr[i]->SetMarkerColorAlpha(0, 0.);
             distrRABsVsPTStatErr[i]->SetLineWidth(2 + distrRABsVsPTStatErr.size() - i);
             distrRABsVsPTStatErr[i]->SetLineColorAlpha(methodColors[i], 0.8);
             distrRABsVsPTStatErr[i]->Draw("SAME");
 
+            distrRABsVsPTSysErr[i]->SetMarkerStyle(0);
+            distrRABsVsPTSysErr[i]->SetMarkerColorAlpha(0, 0.);
             distrRABsVsPTSysErr[i]->SetFillColorAlpha(methodColors[i], 0.2);
             distrRABsVsPTSysErr[i]->SetFillStyle(1001);
             distrRABsVsPTSysErr[i]->Draw("SAME E2");
