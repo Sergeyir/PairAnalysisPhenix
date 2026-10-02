@@ -48,11 +48,11 @@ void KStar892()
 
    // Spectra (old and new)
    {
-      TLegend spectraLegend(0.65, 0.6, 0.95, 0.95);
-      spectraLegend.SetLineColorAlpha(0, 0.);
-      spectraLegend.SetFillColorAlpha(0, 0.);
+      TLegend legend(0.65, 0.6, 0.95, 0.95);
+      legend.SetLineColorAlpha(0, 0.);
+      legend.SetFillColorAlpha(0, 0.);
 
-      PainterHelper spectra(&spectraLegend);
+      PainterHelper spectra(&legend);
       spectra.SetMarkerSize(1.4);
       spectra.SetLineWidth(2);
       spectra.SetDefaultSysWidth(0.1);
@@ -129,7 +129,7 @@ void KStar892()
                                   GetBinUpEdge(histsSpectraVsPTStatErr.back()->
                                   GetXaxis()->GetNbins()));
 
-         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum());
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
 
          tsallisFits[i]->SetLineWidth(3);
@@ -163,9 +163,9 @@ void KStar892()
                                0.9, markerStyle, centralityNameTex + multName, 0.05, false, true);
       }
 
-      spectraLegend.AddEntry(tsallisFits.back(), "Scaled Tsallis fit", "L");
+      legend.AddEntry(tsallisFits.back(), "Scaled Tsallis fit", "L");
 
-      spectraLegend.Draw();
+      legend.Draw();
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_spectra");
 
@@ -241,12 +241,100 @@ void KStar892()
       }
    }
 
-   TLegend rabLegend(0.4, 0.8, 0.95, 0.95);
-   rabLegend.SetLineColorAlpha(0, 0.);
-   rabLegend.SetFillColorAlpha(0, 0.);
+   // RAB for K*
+   {
+      TLegend legend(0.7, 0.7, 0.95, 0.95);
+      legend.SetLineColorAlpha(0, 0.);
+      legend.SetFillColorAlpha(0, 0.);
+
+      TCanvas canv("canv", "canv", 800, 800);
+
+      canv.SetFillStyle(4000);
+      canv.SetFrameFillColor(0);
+      canv.SetFrameFillStyle(0);
+      canv.SetFrameBorderMode(0);
+
+      gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+      gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
+
+      const unsigned int nCentralityBins = inputYAMLResonance["centrality_bins"].size();
+
+      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB + static_cast<double>(nCentralityBins)/2.*0.2, 
+                           rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+
+      TLine line(pTMinRAB, 1., pTMaxRAB + static_cast<double>(nCentralityBins)/2.*0.2, 1.);
+      line.SetLineColor(kGray + 1);
+      line.SetLineWidth(3);
+      line.SetLineStyle(2);
+
+      line.Draw();
+
+      PainterHelper rab(&legend);
+      rab.SetLineWidth(2);
+      rab.SetDefaultSysWidth(0.08);
+
+      TLatex tlText;
+
+      tlText.SetTextFont(42);
+      tlText.SetTextSize(0.05);
+
+      tlText.DrawLatexNDC(0.15, 0.9, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
+      tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>()).c_str());
+
+      for (int i = static_cast<int>(nCentralityBins) - 1; i >= 0; i--)
+      {
+         YAML::Node centrality = inputYAMLResonance["centrality_bins"][i];
+         const std::string centralityName = centrality["name"].as<std::string>();
+         const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
+         const Color_t color = TColor::GetColor(centrality["color"].as<std::string>().c_str()); 
+
+         const double scalingUncertainty = 
+            CppTools::UncertaintyProp(centrality["N_coll_uncertainty"].as<double>()/
+                                      centrality["N_coll"].as<double>(),
+                                      centrality["bias_factor_uncertainty"].as<double>()/
+                                      centrality["bias_factor"].as<double>());
+
+         TH1D *distrRABVsPTStatErr = static_cast<TH1D *>
+            (resultsInputFile->Get((centralityName + "/RAB vs pT with stat errors").c_str()));
+         TH1D *distrRABVsPTSysErr = static_cast<TH1D *>
+            (resultsInputFile->Get((centralityName + "/RAB vs pT with sys errors").c_str()));
+
+         if (!distrRABVsPTStatErr) 
+         {
+            CppTools::PrintError("RAB distribution with statistical errors was not "\
+                                 "found in file " + resultsInputFileName);
+         }
+         if (!distrRABVsPTSysErr) 
+         {
+            CppTools::PrintError("RAB distribution with systematic errors was not "\
+                                 "found in file " + resultsInputFileName);
+         }
+         rab.SetMarkerSize(1.5 + static_cast<double>(i)*0.1);
+
+         rab.DrawHistogram(distrRABVsPTStatErr, distrRABVsPTSysErr, color, 
+                           0.6 + static_cast<double>(i)*0.1, 
+                           centrality["marker_style"].as<int>(), centralityNameTex,
+                           0.04 + static_cast<double>(i)*0.015);
+
+         rab.DrawTypeCUncertainty(scalingUncertainty, pTMaxRAB - 
+                                  static_cast<double>(nCentralityBins)/2.*0.2 + 
+                                  0.2*static_cast<double>(i), 1., color, 0.5);
+ 
+      }
+
+      rab.DrawLegend();
+      ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_all");
+
+      legend.Clear();
+   }
 
    // RCP for K*
    {
+      TLegend legend(0.4, 0.8, 0.95, 0.95);
+      legend.SetLineColorAlpha(0, 0.);
+      legend.SetFillColorAlpha(0, 0.);
+
       const unsigned int centralIndex = 1;
       const unsigned int peripheralIndex = inputYAMLResonance["centrality_bins"].size() - 1;
 
@@ -360,7 +448,7 @@ void KStar892()
 
       line.Draw();
 
-      PainterHelper rcp(&rabLegend);
+      PainterHelper rcp(&legend);
       rcp.SetMarkerSize(1.5);
       rcp.SetLineWidth(2);
       rcp.SetDefaultSysWidth(0.1);
@@ -377,21 +465,25 @@ void KStar892()
 
       TLatex tlText;
 
-      tlText.SetTextFont(52);
+      tlText.SetTextFont(42);
       tlText.SetTextSize(0.05);
 
-      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralName + "/" + peripheralName).c_str());
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RCP");
 
-      rabLegend.Clear();
+      legend.Clear();
    }
 
    // RAB for all particles
    for (const auto& centrality : inputYAMLResonance["centrality_bins"])
    {
+      TLegend legend(0.4, 0.8, 0.95, 0.95);
+      legend.SetLineColorAlpha(0, 0.);
+      legend.SetFillColorAlpha(0, 0.);
+
       const std::string centralityName = centrality["name"].as<std::string>();
       const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
 
@@ -437,22 +529,26 @@ void KStar892()
 
       line.Draw();
 
-      PainterHelper rab(&rabLegend);
+      PainterHelper rab(&legend);
       rab.SetMarkerSize(1.5);
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
 
+      /*
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}", false, true, 0.06);
+                               */
 
-      //rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
-      //                         kBlack, 0.4, 75, "(p+#bar{p})/2, PRC109, 054910");
-
-      rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/phi1020PHENIX.yaml", centralityName, 
-                                kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106, 014982");
+      rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
+                               kBlack, 0.9, 75, "(p+#bar{p})/2, PRC109, 054910", false, true, 0.05);
 
       rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/pi0PHENIX.yaml", centralityName, 
-                                kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902");
+                                kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902", 
+                                false, true, 0.07);
+
+      rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/phi1020PHENIX.yaml", centralityName, 
+                                kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106, 014982", 
+                                false, true, 0.105);
 
       rab.DrawHistogram(distrRABVsPTStatErr, distrRABVsPTSysErr, kP6Red, 
                         0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
@@ -463,16 +559,16 @@ void KStar892()
 
       TLatex tlText;
 
-      tlText.SetTextFont(52);
+      tlText.SetTextFont(42);
       tlText.SetTextSize(0.05);
 
-      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralityNameTex).c_str());
  
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_comp_" + centralityName);
 
-      rabLegend.Clear();
+      legend.Clear();
    }
 
    // RAB for new pp200 spectra
@@ -480,6 +576,10 @@ void KStar892()
 
    if (std::filesystem::exists(spectraPPNewFileName))
    {
+      TLegend legend(0.7, 0.7, 0.95, 0.95);
+      legend.SetLineColorAlpha(0, 0.);
+      legend.SetFillColorAlpha(0, 0.);
+
       TFile *resultsInputFilePP = TFile::Open(spectraPPNewFileName.c_str());
 
       TH1D *distrSpectraVsPTStatErrPP = static_cast<TH1D *>
@@ -507,17 +607,17 @@ void KStar892()
 
       line.Draw();
 
-      PainterHelper rab(&rabLegend);
+      PainterHelper rab(&legend);
       rab.SetMarkerSize(1.5);
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
 
       TLatex tlText;
 
-      tlText.SetTextFont(52);
+      tlText.SetTextFont(42);
       tlText.SetTextSize(0.05);
 
-      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#eta#cbar < 0.5");
+      tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, inputYAMLMain["collision_system_name_tex"].as<std::string>().c_str());
 
       for (const auto& centrality : inputYAMLResonance["centrality_bins"])
@@ -559,7 +659,7 @@ void KStar892()
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_all_new_pp");
 
-      rabLegend.Clear();
+      legend.Clear();
    }
    else CppTools::PrintWarning("File " + spectraPPNewFileName + " does not exists");
 }
