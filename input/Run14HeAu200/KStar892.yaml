@@ -85,7 +85,6 @@ centrality_bins:
   value_max: 88
   cb_c_min: 0 # CabanaBoy minimum c value
   cb_c_max: 8 # CabanaBoy maximum c value
-#  color: "#7a21dd"
   color: "#333333"
   marker_style: 52
   N_coll: 10.4
@@ -100,7 +99,6 @@ centrality_bins:
   value_max: 20
   cb_c_min: 0
   cb_c_max: 1
-#  color: "#964a8b"
   color: "#7a21dd"
   marker_style: 20
   N_coll: 22.3
