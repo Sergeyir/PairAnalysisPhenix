@@ -18,19 +18,20 @@ if(${ROOT_FOUND}) # checking via cmake
    message(STATUS "ROOT package found: ${ROOT_USE_FILE}")
    link_libraries(${ROOT_LIBRARIES})
    set(CMAKE_CXX_STANDARD ${ROOT_CXX_STANTARD})
-elseif(EXISTS "$ENV{ROOT_PATH}/bin/root") #checking via ROOT_PATH
+elseif(DEFINED ENV{ROOT_PATH} AND EXISTS "$ENV{ROOT_PATH}/bin/root") #checking via ROOT_PATH
    message(STATUS "ROOT path found: $ENV{ROOT_PATH}")
    set(ROOT_PATH $ENV{ROOT_PATH})
 else()
-   execute_process(COMMAND root-config --prefix OUTPUT_VARIABLE ROOT_PATH)
-   string(STRIP ${ROOT_PATH} ROOT_PATH)
-   if(EXISTS "${ROOT_PATH}/bin/root")
-      message(STATUS "ROOT was found via root-config: ${ROOT_PATH}")
+   find_program(ROOT_CONFIG NAMES root-config)
+   if(ROOT_CONFIG)
+      execute_process(COMMAND ${ROOT_CONFIG} --prefix OUTPUT_VARIABLE ROOT_PATH)
+      string(STRIP ${ROOT_PATH} ROOT_PATH)
+      message(STATUS "ROOT found via root-config in ${ROOT_PATH}")
    else()
-      message(FATAL_ERROR "ROOT not found: install it via package manager, or source /path/to/root/bin/thisroot.sh in your profile if you installed it manually, or set ROOT_PATH")
+      message(FATAL_ERROR "ROOT not found: install it via package manager, or source /path/to/root/bin/thisroot.sh in your profile if you installed it manually and set ROOT_PATH")
    endif()
 endif()
-if (${ROOT_PATH}) # for manually installed ROOT
+if (DEFINED ROOT_PATH) # for manually installed ROOT
    set(ROOT_INCLUDE_DIRS "${ROOT_PATH}/include")
    set(ROOT_root_CMD "${ROOT_PATH}/bin/root")
    execute_process(COMMAND ${ROOT_root_CMD}-config --glibs OUTPUT_VARIABLE ROOT_LIB_FLAGS)
