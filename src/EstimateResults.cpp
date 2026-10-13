@@ -502,7 +502,7 @@ int main(int argc, char **argv)
 
             sysCutsVar.SetLineColorAlpha(kBlack, 0.9);
 
-            TF1 fit("cuts var sys fit", "pol2");
+            TF1 fit("cuts var sys fit", method["cuts_var_sys_fit_func"].as<std::string>().c_str());
 
             fit.SetLineColor(kRed - 3);
             fit.SetLineWidth(4);
@@ -703,7 +703,7 @@ int main(int argc, char **argv)
 
       /*
       TF1 tsallisFit("tsallis fit", 
-                     "0.5/(pi*sqrt(x^2 + [3]^2)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
+                     "0.5/(pi*sqrt(x^2 + [3]^2))*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
                      */
       TF1 tsallisFit("tsallis fit", 
