@@ -13,9 +13,9 @@ const std::string resonanceName = "KStar892";
 const int taxiNumber = 20489;
 
 const double pTMinRAB = 0.8;
-const double pTMaxRAB = 8.6;
+const double pTMaxRAB = 8.7;
 const double pTMinRCP = 0.4;
-const double pTMaxRCP = 8.6;
+const double pTMaxRCP = 6.7;
 const double rMin = 0.;
 const double rMax = 1.999;
 
@@ -210,7 +210,7 @@ void KStar892()
             yMax = CppTools::Maximum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
          }
 
-         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr[i]->GetMinimum());
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr[i]->GetMinimum(1e-31));
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr[i]->GetMaximum());
 
          gPad->SetLogy(false);
@@ -330,7 +330,7 @@ void KStar892()
       legend.Clear();
    }
 
-   // RCP for K*
+   // RCP
    {
       TLegend legend(0.4, 0.8, 0.95, 0.95);
       legend.SetLineColorAlpha(0, 0.);
@@ -452,17 +452,29 @@ void KStar892()
       PainterHelper rcp(&legend);
       rcp.SetMarkerSize(1.5);
       rcp.SetLineWidth(2);
-      rcp.SetDefaultSysWidth(0.1);
+      rcp.SetDefaultSysWidth(0.08);
 
       rcp.DrawGraph(&grRCPVladStatErr, &grRCPVladSysErr, kBlack,
                     0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
 
+      rcp.DrawRatioFromYAMLFiles("data/Spectra/pAu200/pi0PHENIX.yaml", "0-20", 
+                                 "data/Spectra/pAu200/pi0PHENIX.yaml", "60-84", 0.2854,
+                                 kP6Violet, 0.9, 77, "#it{#pi}^{0} 0-20/60-84%, PRC105 064902", 
+                                 false, true, 0.06);
+      rcp.DrawRatioFromYAMLFiles("data/Spectra/pAu200/phi1020PHENIX.yaml", "0-20", 
+                                 "data/Spectra/pAu200/phi1020PHENIX.yaml", "40-84", rcpScaling,
+                                 kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106 014908", 
+                                 false, true, 0.105);
+
       rcp.DrawHistogram(distrCentralSpectraVsPTStatErr, distrCentralSpectraVsPTSysErr, kP6Red,
-                        0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
+                        0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2", 0.09);
 
       rcp.DrawLegend();
 
-      rcp.DrawTypeCUncertainty(scalingUncertainty, pTMinRCP - 0.1, 1., kBlack, 0.3);
+      //rcp.DrawTypeCUncertainty(scalingUncertainty, pTMaxRCP - 0.25, 1., kBlack, 0.3, 0.075, "0-20/40-84", 0.025, -0.02);
+      //rcp.DrawTypeCUncertainty(0.1439, pTMaxRCP - 0.1, 1., kP6Violet, 0.3, 0.075, "0-20/60-84", 0.025, -0.02);
+      rcp.DrawTypeCUncertainty(scalingUncertainty, pTMaxRCP - 0.25, 1., kBlack, 0.3, 0.075);
+      rcp.DrawTypeCUncertainty(0.1439, pTMaxRCP - 0.1, 1., kP6Violet, 0.3, 0.075);
 
       TLatex tlText;
 
@@ -520,8 +532,16 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, 
-                           "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+      if (centrality["is_mb"].as<bool>())
+      {
+         ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+      }
+      else
+      {
+         ROOTTools::DrawFrame(pTMinRAB, rMin, 6.7, rMax, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+      }
 
       TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
       line.SetLineColor(kGray + 1);
@@ -543,9 +563,18 @@ void KStar892()
       rab.DrawGraphFromTXTFile("data/RAB/pAu200/ppbar" + centralityName + "PHENIX.txt", 
                                kBlack, 0.9, 75, "(p+#bar{p})/2, PRC109, 054910", false, true, 0.05);
 
-      rab.DrawGraphFromYAMLFile("data/RAB/pAu200/pi0PHENIX.yaml", centralityName, 
-                                kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902", 
-                                false, true, 0.07);
+      if (centralityName == "40-84")
+      {
+         rab.DrawGraphFromYAMLFile("data/RAB/pAu200/pi0PHENIX.yaml", "60-84", 
+                                   kP6Violet, 0.9, 77, "#it{#pi}^{0} 60-84%, PRC105 064902", 
+                                   false, true, 0.07);
+      }
+      else
+      {
+         rab.DrawGraphFromYAMLFile("data/RAB/pAu200/pi0PHENIX.yaml", centralityName, 
+                                   kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902", 
+                                   false, true, 0.07);
+      }
 
       rab.DrawGraphFromYAMLFile("data/RAB/pAu200/phi1020PHENIX.yaml", centralityName, 
                                 kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106, 014982", 
@@ -556,7 +585,15 @@ void KStar892()
 
       rab.DrawLegend();
 
-      rab.DrawTypeCUncertainty(scalingUncertainty, 8.5, 1., kBlack, 0.3);
+      if (centralityName == "40-84")
+      {
+         rab.DrawTypeCUncertainty(0.126, pTMaxRAB - 0.1, 1., kP6Violet, 0.3, 0.075);
+         rab.DrawTypeCUncertainty(scalingUncertainty, pTMaxRAB - 0.25, 1., kBlack, 0.3, 0.075);
+      }
+      else
+      {
+         rab.DrawTypeCUncertainty(scalingUncertainty, pTMaxRAB - 0.2, 1., kBlack, 0.3);
+      }
 
       TLatex tlText;
 
