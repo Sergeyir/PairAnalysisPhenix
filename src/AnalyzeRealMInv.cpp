@@ -209,7 +209,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
       TFile *inputFileFitsBGFixedG = 
          SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
                         std::to_string(taxiNumber) + "/" + methodName + "_" + 
-                        centralityName + "_FixedG.root", "fixed BG " + 
+                        centralityName + "_FixedG.root", "fixed G " + 
                         methodName + " " + centralityName, false); 
 
       // only performing alternative fits if all parameters were found:
@@ -1602,12 +1602,15 @@ double AnalyzeRealMInv::GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, T
         i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
                                distrMInv->GetXaxis()->GetNbins()); i++)
    {
-      err += pow(distrMInvFG->GetBinError(i), 2) + pow(distrMInvBG->GetBinError(i), 2);
+      const double statErrFG = distrMInvFG->GetBinError(i)/distrMInvFG->GetBinContent(i);
+      const double statErrBG = distrMInvBG->GetBinError(i)/distrMInvBG->GetBinContent(i);
+      err += statErrFG*statErrFG + statErrBG*statErrBG;
    }
 
-   err = sqrt(err);
+   const double yield = GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
+   err = sqrt(err)*yield;
 
-   return GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
+   return yield;
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
