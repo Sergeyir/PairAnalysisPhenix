@@ -21,6 +21,7 @@
 #include "TText.h"
 
 #include "ErrorHandler.hpp"
+#include "MathTools.hpp"
 #include "IOTools.hpp"
 
 #include "InputYAMLReader.hpp"
@@ -100,7 +101,7 @@ class PainterHelper
                              const Color_t color, const double alpha, const Style_t markerStyle, 
                              const std::string& legendEntry, const bool relativeUncertainties = false,
                              const bool readSysErrors = true, double sysWidth = -1.);
-   /*! @brief Draws the legend of already painted graphs
+   /*! @brief Returns the legend of already painted graphs
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
     * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
@@ -112,7 +113,7 @@ class PainterHelper
                                       const bool relativeUncertainties = false,
                                       const bool readSysErrors = true,
                                       double sysWidth = -1.);
-   /*! @brief Draws the graph read from the specified .txt file to the object list to draw
+   /*! @brief Returns the graph read from the specified .txt file to the object list to draw
     * @param[in] fileName name of the .root file from which graph will be read
     * @param[in] graphWithSysErrors graph containing values with systematic uncertainties
     * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
@@ -121,6 +122,47 @@ class PainterHelper
    TGraphErrors *GetGraphFromTXTFile(const std::string& fileName, TGraphErrors *&graphWithSysErrors, 
                                      const bool relativeUncertainties = false, 
                                      const bool readSysErrors = true, double sysWidth = -1.);
+   /// @brief Returns ratio of graphs calculated as graphA/graphB*scale. This method is used to quickly obtain R_{AB} and R_{CP}. Prints error if points do not align along X axis. Reuslt is written in graphA
+   void GetGraphRatio(TGraphErrors *graphA, TGraphErrors *graphB, const double scale);
+   /*! @brief Returns ratio of graphs calculated as graphA/graphB*scale. This method is used to quickly obtain R_{AB} and R_{CP}
+    * @param[in] inputFileNameA file name from which graph_a will be read
+    * @param[in] qualifierA string qualifier to find the needed data (graph_a). This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
+    * @param[in] inputFileNameB file name from which graph_b will be read
+    * @param[in] qualifierB string qualifier to find the needed data (graph_b). This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
+    * @param[in] scale constant scale of the ratio
+    * @param[in] ratioSys graph ratio containing values with systematic uncertainties (values will be written automaticaly)
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
+    * @param[in] sysWidth widht of systematic error box of each point (if negative value is specified boxes will have width equal to defaulsSysWidth)
+    */
+   TGraphErrors *GetRatioFromYAMLFiles(const std::string& inputFileNameA,
+                                       const std::string& qualifierA,
+                                       const std::string& inputFileNameB,
+                                       const std::string& fieldNameB,
+                                       const double scale, TGraphErrors *&ratioSys,
+                                       const bool relativeUncertainties = false,
+                                       const bool readSysErrors = true,
+                                       const double sysWidth = -1.);
+   /*! @brief Returns ratio of graphs calculated as graphA/graphB*scale. This method is used to quickly obtain R_{AB} and R_{CP}
+    * @param[in] inputFileNameA file name from which graph_a will be read
+    * @param[in] qualifierA string qualifier to find the needed data (graph_a). This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
+    * @param[in] inputFileNameB file name from which graph_b will be read
+    * @param[in] qualifierB string qualifier to find the needed data (graph_b). This qualifier must be the field value of "[dependent_variables][i][qualifiers][0][value]", where i - arbitrary integer.
+    * @param[in] scale constant scale of the ratio
+    * @param[in] color color of markers and error boxes to be set for the current graph
+    * @param[in] alpha alpha (opacity) for the color of markers and lines of each point
+    * @param[in] markerStyle marker style to be set for the current graph
+    * @param[in] legendEntry legend entry for the current graph. If emtpy legendEntry is specified (by default) the legend entry will be read from "[source]" field from the specified .yaml file
+    * @param[in] relativeUncertainties shows whether uncertainties will be read as absolute or relative values. By default absolute values will be read
+    * @param[in] readSysErrors shows whether systematica uncertainties are written in the file 
+    * @param[in] sysWidth widht of systematic error box of each point (if negative value is specified boxes will have width equal to defaulsSysWidth)
+    */
+   void DrawRatioFromYAMLFiles(const std::string& inputFileNameA, const std::string& qualifierA,
+                               const std::string& inputFileNameB, const std::string& fieldNameB,
+                               const double scale, const Color_t color, const double alpha, 
+                               const Style_t markerStyle, const std::string& legendEntry,
+                               const bool relativeUncertainties = false,
+                               const bool readSysErrors = true, double sysWidth = -1.);
    /*! @brief Draws the graph containing type c systematic uncertainty box
     * @param[in] value absolute value of the uncertainty
     * @param[in] xPos x position of the center of uncertainty box
@@ -132,7 +174,8 @@ class PainterHelper
     */
    void DrawTypeCUncertainty(const double value, const double xPos, const double yPos,
                              const Color_t color, const double alpha, 
-                             const std::string& text = "", double sysWidth = -1.);
+                             double sysWidth = -1., const std::string& text = "", 
+                             const double textSize = 0.05, const double textXAdjustment = 0.);
    /// Draws the legend containing all previously drawn histograms and graphs
    void DrawLegend();
    /// Sets the size of the marker that will be set for all points of graphs and hisotgrams. By default this value is set to 1.

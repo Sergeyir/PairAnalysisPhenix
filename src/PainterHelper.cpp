@@ -271,6 +271,74 @@ TGraphErrors *PainterHelper::GetGraphFromYAMLFile(const std::string& fileName,
    return nullptr;
 }
 
+
+void PainterHelper::GetGraphRatio(TGraphErrors *graphA, TGraphErrors *graphB, const double scale)
+{
+   for (int i = 0; i < graphA->GetN(); i++)
+   {
+      for (int j = 0; j < graphB->GetN(); j++)
+      {
+         if (std::abs(graphA->GetPointX(i) - graphB->GetPointX(j)) < 1e-15)
+         {
+            const double yValA = graphA->GetPointY(i);
+            graphA->SetPointY(i, graphA->GetPointY(i)/graphB->GetPointY(j)*scale);
+            graphA->SetPointError(i, graphA->GetErrorX(i), 
+                                  CppTools::UncertaintyProp(graphA->GetErrorY(i)/yValA, 
+                                                            graphB->GetErrorY(j)/
+                                                            graphB->GetPointY(i))*
+                                  graphA->GetPointY(i));
+         }
+      }
+   }
+}
+
+TGraphErrors *PainterHelper::GetRatioFromYAMLFiles(const std::string& inputFileNameA,
+                                                   const std::string& qualifierA,
+                                                   const std::string& inputFileNameB,
+                                                   const std::string& qualifierB,
+                                                   const double scale, TGraphErrors *&ratioSys,
+                                                   const bool relativeUncertanties,
+                                                   const bool readSysErrors,
+                                                   const double sysWidth)
+{
+   TGraphErrors *graphBSys = nullptr;
+
+   TGraphErrors *graphA = 
+      GetGraphFromYAMLFile(inputFileNameA, qualifierA, ratioSys,
+                           relativeUncertanties, readSysErrors, sysWidth);
+   TGraphErrors *graphB = 
+      GetGraphFromYAMLFile(inputFileNameB, qualifierB, graphBSys,
+                           relativeUncertanties, readSysErrors, sysWidth);
+
+   GetGraphRatio(graphA, graphB, scale);
+   GetGraphRatio(ratioSys, graphBSys, scale);
+
+   if (graphA->GetN() == 0) CppTools::PrintWarning("Ratio graph is empty for qualifiers " + 
+                                                   qualifierA + " and " + qualifierB);
+
+   return graphA;
+}
+
+void PainterHelper::DrawRatioFromYAMLFiles(const std::string& inputFileNameA,
+                                           const std::string& qualifierA,
+                                           const std::string& inputFileNameB,
+                                           const std::string& qualifierB,
+                                           const double scale,
+                                           const Color_t color, const double alpha, 
+                                           const Style_t markerStyle, const std::string& legendEntry,
+                                           const bool relativeUncertanties, const bool readSysErrors,
+                                           double sysWidth)
+{
+   TGraphErrors *ratioSys = nullptr;
+   TGraphErrors *ratioStat = 
+      GetRatioFromYAMLFiles(inputFileNameA, qualifierA, inputFileNameB, qualifierB,
+                            scale, ratioSys, relativeUncertanties, readSysErrors, sysWidth);
+   if (ratioStat->GetN() == 0) CppTools::PrintWarning("Graph will not be drawn");
+
+   DrawGraph(ratioStat, ratioSys, color, alpha, markerStyle, legendEntry);
+}
+
+
 TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName, 
                                                  TGraphErrors *&graphWithSysErrors, 
                                                  const bool relativeUncertainties, 
@@ -323,8 +391,9 @@ TGraphErrors *PainterHelper::GetGraphFromTXTFile(const std::string& fileName,
 
 void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos,
                                          const double yPos, const Color_t color,
-                                         const double alpha, const std::string& text,
-                                         double sysWidth)
+                                         const double alpha, double sysWidth,
+                                         const std::string& text, const double textSize,
+                                         const double textXAdjustment)
 {
    if (sysWidth < 0.) sysWidth = defaultSysWidth;
 
@@ -342,11 +411,11 @@ void PainterHelper::DrawTypeCUncertainty(const double value, const double xPos,
    {
       TText ttext;
 
-      ttext.SetTextFont(52);
-      ttext.SetTextSize(0.05);
+      ttext.SetTextFont(42);
+      ttext.SetTextSize(textSize);
       ttext.SetTextAngle(90);
 
-      ttext.DrawText(xPos, yPos + value, text.c_str());
+      ttext.DrawText(xPos + textXAdjustment, yPos + value, text.c_str());
    }
 }
 
