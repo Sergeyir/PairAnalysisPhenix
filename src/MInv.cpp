@@ -45,7 +45,7 @@ TH1D *MInv::Merge(TFile *inputFile, const std::string& methodName,
             if (!distrMInvVsPTFG)
             {
                CppTools::PrintError("Histogram named \"" + distrMInvVsPTFGName + 
-                                    "\" does not exist in file" + 
+                                    "\" does not exist in file " + 
                                     static_cast<std::string>(inputFile->GetName()));
             }
 
