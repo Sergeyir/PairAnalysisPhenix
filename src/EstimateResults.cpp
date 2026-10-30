@@ -219,7 +219,7 @@ int main(int argc, char **argv)
       double yMax = 1e-31;
 
       TLegend legend(0.6, 0.7, 0.95, 0.95);
-      legend.SetLineColorAlpha(kGray, 0.3);
+      legend.SetLineColorAlpha(kWhite, 0.6);
       legend.SetFillColorAlpha(kWhite, 0.5);
 
       std::vector<int> methodColors;
