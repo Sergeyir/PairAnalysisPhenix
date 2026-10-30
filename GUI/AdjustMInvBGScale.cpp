@@ -389,6 +389,7 @@ void Exec()
 
 void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned int centralityBinIndex)
 {
+   const std::string histPrefix = method["hist_prefix"].as<std::string>();
    const std::string methodName = method["name"].as<std::string>();
 
    const YAML::Node centrality = inputYAMLResonance["centrality_bins"][centralityBinIndex];
@@ -412,7 +413,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       double numberOfEvents = 0.;
 
       TH1D *distrMInv = 
-         MInv::Merge(inputFile, methodName, decayMode, 
+         MInv::Merge(inputFile, histPrefix, decayMode, 
                      centrality["cb_c_min"].as<int>(), centrality["cb_c_max"].as<int>(),
                      0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                      0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
@@ -425,7 +426,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       {
          decayMode = ParticleMap::nameShort[daughter2Id] +
                      ParticleMap::nameShort[daughter1Id];
-         distrMInv->Add(MInv::Merge(inputFile, methodName, decayMode, 
+         distrMInv->Add(MInv::Merge(inputFile, histPrefix, decayMode, 
                                     centrality["cb_c_min"].as<int>(), 
                                     centrality["cb_c_max"].as<int>(),
                                     0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 

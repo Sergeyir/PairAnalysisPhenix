@@ -154,6 +154,7 @@ int main(int argc, char **argv)
 void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 {
    const std::string methodName = method["name"].as<std::string>();
+   const std::string histPrefix = method["hist_prefix"].as<std::string>();
 
    parametersOutputFile = TFile::Open((parametersOutputDir + "/" + std::to_string(taxiNumber) + 
                                        "_" + resonanceName + "_" + methodName + 
@@ -249,7 +250,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          double numberOfEvents = 0.;
 
          TH1D *distrMInv = 
-            MInv::Merge(inputFile, methodName, decayMode, 
+            MInv::Merge(inputFile, histPrefix, decayMode, 
                         centrality["cb_c_min"].as<int>(), centrality["cb_c_max"].as<int>(),
                         0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
                         0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
@@ -262,7 +263,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          {
             decayMode = ParticleMap::nameShort[daughter2Id] +
                         ParticleMap::nameShort[daughter1Id];
-            distrMInv->Add(MInv::Merge(inputFile, methodName, decayMode, 
+            distrMInv->Add(MInv::Merge(inputFile, histPrefix, decayMode, 
                                        centrality["cb_c_min"].as<int>(), 
                                        centrality["cb_c_max"].as<int>(),
                                        0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
@@ -821,9 +822,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             }
 
             double rawYieldStatErr = 0.;
-            double rawYield = GetYieldAndStatErr(distrMInv, distrMInvFG, distrMInvBG, fitFG, fitBG, 
-                                                 lowIntegrationRange, upIntegrationRange, 
-                                                 rawYieldStatErr);
+            double rawYield = GetYieldAndErr(distrMInv, fitFG, fitBG, 
+                                             lowIntegrationRange, upIntegrationRange, 
+                                             rawYieldStatErr);
             if (isBGFixedForThisPTAltFit)
             {
                const double rawYieldAltFitAB = GetYield(distrMInv, altFitFGAB, altFitBGAB, 
@@ -1592,25 +1593,21 @@ double AnalyzeRealMInv::GetYield(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG,
    return integral;
 }
 
-double AnalyzeRealMInv::GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, 
-                                           TF1 *funcFG, TF1 *funcBG, const double xMin, 
-                                           const double xMax, double &err)
+double AnalyzeRealMInv::GetYieldAndErr(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG, 
+                                       const double xMin, const double xMax, double &err)
 {
    // resetting error (in case non-zero value was passed)
    err = 0.;
+
    for (int i = CppTools::Maximum(distrMInv->GetXaxis()->FindBin(xMin), 1); 
         i <= CppTools::Minimum(distrMInv->GetXaxis()->FindBin(xMax), 
                                distrMInv->GetXaxis()->GetNbins()); i++)
    {
-      const double statErrFG = distrMInvFG->GetBinError(i)/distrMInvFG->GetBinContent(i);
-      const double statErrBG = distrMInvBG->GetBinError(i)/distrMInvBG->GetBinContent(i);
-      err += statErrFG*statErrFG + statErrBG*statErrBG;
+      err += distrMInv->GetBinError(i)*distrMInv->GetBinError(i);
    }
+   err = std::sqrt(err);
 
-   const double yield = GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
-   err = sqrt(err)*yield;
-
-   return yield;
+   return GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
