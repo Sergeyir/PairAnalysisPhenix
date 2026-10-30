@@ -54,8 +54,6 @@ void PainterHelper::DrawHistogram(TH1D *histogramWithStatErrors, TH1D *histogram
                              "and systematic uncertanities axis is different from the histogram "\
                              "containing statistical uncertainties; "\
                              "No systematic uncertainties will be drawn for this histogram");
-      CppTools::Print(histogramWithStatErrors->GetXaxis()->GetNbins(),
-        histogramWithSysErrors->GetXaxis()->GetNbins());
       disableSysErrors = true;
    }
 
@@ -310,11 +308,24 @@ TGraphErrors *PainterHelper::GetRatioFromYAMLFiles(const std::string& inputFileN
       GetGraphFromYAMLFile(inputFileNameB, qualifierB, graphBSys,
                            relativeUncertanties, readSysErrors, sysWidth);
 
-   GetGraphRatio(graphA, graphB, scale);
-   GetGraphRatio(ratioSys, graphBSys, scale);
+   if (!graphA || !graphB) 
+   {
+      return nullptr;
+   }
 
-   if (graphA->GetN() == 0) CppTools::PrintWarning("Ratio graph is empty for qualifiers " + 
-                                                   qualifierA + " and " + qualifierB);
+   if (graphA->GetN() == 0) 
+   {
+      CppTools::PrintWarning("Ratio graph is empty for qualifier " + qualifierA);
+   }
+   else if (graphB->GetN() == 0)
+   {
+      CppTools::PrintWarning("Ratio graph is empty for qualifier " + qualifierB);
+   }
+   else
+   {
+      GetGraphRatio(graphA, graphB, scale);
+      GetGraphRatio(ratioSys, graphBSys, scale);
+   }
 
    return graphA;
 }
@@ -333,7 +344,7 @@ void PainterHelper::DrawRatioFromYAMLFiles(const std::string& inputFileNameA,
    TGraphErrors *ratioStat = 
       GetRatioFromYAMLFiles(inputFileNameA, qualifierA, inputFileNameB, qualifierB,
                             scale, ratioSys, relativeUncertanties, readSysErrors, sysWidth);
-   if (ratioStat->GetN() == 0) CppTools::PrintWarning("Graph will not be drawn");
+   if (ratioStat && ratioStat->GetN() == 0) CppTools::PrintWarning("Graph will not be drawn");
 
    DrawGraph(ratioStat, ratioSys, color, alpha, markerStyle, legendEntry);
 }
