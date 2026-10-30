@@ -19,7 +19,15 @@ const double pTMaxRCP = 6.7;
 const double rMin = 0.;
 const double rMax = 1.999;
 
+TLatex tlText;
+
 TFile *resultsInputFile;
+
+TH1D *distrSpectraVsPTStatErrPP;
+TH1D *distrSpectraVsPTSysErrPP;
+
+std::vector<TGraphErrors *> graphsVladRABVsPTStatErr;
+std::vector<TGraphErrors *> graphsVladRABVsPTSysErr;
 
 void KStar892()
 {
@@ -28,6 +36,9 @@ void KStar892()
 
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
+
+   tlText.SetTextFont(42);
+   tlText.SetTextSize(0.05);
 
    InputYAMLReader inputYAMLResonance("input/" + runName + "/" + resonanceName + ".yaml");
    inputYAMLResonance.CheckStatus("resonance");
@@ -46,6 +57,13 @@ void KStar892()
    const std::string outputDir = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDir);
 
+   TFile *spectraPPFile = TFile::Open("data/Spectra/pp200/KStar892.root");
+
+   distrSpectraVsPTStatErrPP =
+            static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with stat err"));
+   distrSpectraVsPTSysErrPP =
+            static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with sys err"));
+
    // Spectra (old and new)
    {
       TLegend legend(0.65, 0.6, 0.95, 0.95);
@@ -59,8 +77,6 @@ void KStar892()
 
       std::vector<TH1D *> histsSpectraVsPTStatErr;
       std::vector<TH1D *> histsSpectraVsPTSysErr;
-      std::vector<TGraphErrors *> graphsVladSpectraVsPTStatErr;
-      std::vector<TGraphErrors *> graphsVladSpectraVsPTSysErr;
 
       std::vector<TF1 *> tsallisFits;
 
@@ -80,6 +96,9 @@ void KStar892()
       gPad->SetLeftMargin(0.204); gPad->SetBottomMargin(0.105);
 
       gPad->SetLogy();
+
+      std::vector<TGraphErrors *> graphsVladSpectraVsPTStatErr;
+      std::vector<TGraphErrors *> graphsVladSpectraVsPTSysErr;
 
       for (unsigned int i = 0; i < inputYAMLResonance["centrality_bins"].size(); i++)
       {
@@ -101,6 +120,9 @@ void KStar892()
          graphsVladSpectraVsPTStatErr.push_back(spectra.
                GetGraphFromTXTFile("data/Spectra/pAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                    graphsVladSpectraVsPTSysErr.back(), false, true, 0.08));
+
+         graphsVladRABVsPTStatErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTStatErr.back()->Clone())); 
+         graphsVladRABVsPTSysErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTSysErr.back()->Clone())); 
 
          tsallisFits.push_back(static_cast<TF1 *>(resultsInputFile->
                                Get((centralityName + "/tsallis fit").c_str())->Clone()));
@@ -137,7 +159,6 @@ void KStar892()
 
          tsallisFits[i]->SetLineColor(kGray + 1);
       }
-      CppTools::Print(yMin, yMax);
 
       ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
                            "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
@@ -185,6 +206,8 @@ void KStar892()
       {
          const std::string centralityName = 
             inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
+         const std::string centralityNameTex = 
+            inputYAMLResonance["centrality_bins"][i]["name_tex"].as<std::string>();
 
          yMin = 1e31;
          yMax = 1e31;
@@ -220,6 +243,9 @@ void KStar892()
          ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
+         tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+                                          + "  " + centralityNameTex).c_str());
+
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
             TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
@@ -233,6 +259,73 @@ void KStar892()
                            kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
          ratio.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], kRed - 3,
                                0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
+
+         ratioLegend.Draw();
+
+         ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
+                                 + "_spectra_fit_ratio_comp_" + centralityName);
+         ratioLegend.Clear();
+      }
+      for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
+      {
+         const std::string centralityName = 
+            inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
+
+         const std::string centralityNameTex = 
+            inputYAMLResonance["centrality_bins"][i]["name_tex"].as<std::string>();
+
+         yMin = 1e31;
+         yMax = 1e31;
+
+         for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
+         {
+            const int xBin = histsSpectraVsPTStatErr[i]->GetXaxis()->
+               FindBin(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
+            const double yVal = graphsVladSpectraVsPTStatErr[i]->GetPointY(j)/
+                                histsSpectraVsPTStatErr[i]->GetBinContent(xBin);
+            const double yValStat = 
+               CppTools::UncertaintyProp(graphsVladSpectraVsPTStatErr[i]->GetErrorY(j)/
+                                         graphsVladSpectraVsPTStatErr[i]->GetPointY(j),
+                                         histsSpectraVsPTStatErr[i]->GetBinError(xBin)/
+                                         histsSpectraVsPTStatErr[i]->GetBinContent(xBin))*yVal;
+            const double yValSys = 
+               CppTools::UncertaintyProp(graphsVladSpectraVsPTSysErr[i]->GetErrorY(j)/
+                                         graphsVladSpectraVsPTSysErr[i]->GetPointY(j),
+                                         histsSpectraVsPTSysErr[i]->GetBinError(xBin)/
+                                         histsSpectraVsPTSysErr[i]->GetBinContent(xBin))*yVal;
+
+            graphsVladSpectraVsPTStatErr[i]->SetPointY(j, yVal);
+            graphsVladSpectraVsPTSysErr[i]->SetPointY(j, yVal);
+            graphsVladSpectraVsPTStatErr[i]->SetPointError(j, 0., yValStat);
+            graphsVladSpectraVsPTSysErr[i]->SetPointError(j, graphsVladSpectraVsPTSysErr[i]->GetErrorX(j), yValSys);
+
+            yMin = CppTools::Minimum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+            yMax = CppTools::Maximum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+         }
+
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr[i]->GetMinimum());
+         yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr[i]->GetMaximum());
+
+         gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+         gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "Ratio", 1., 1.2);
+
+         tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+                                          + "  " + centralityNameTex).c_str());
+
+         if (yMin/1.1 < 1. && yMax*1.1 > 1.)
+         {
+            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            line.SetLineColorAlpha(kBlack, 0.5);
+            line.SetLineStyle(2);
+            line.SetLineWidth(4);
+            line.Clone()->Draw();
+         }
+
+         ratio.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
+                         kBlack, 0.9, 75, "K^{Vlad}/K^{*0}(892)");
 
          ratioLegend.Draw();
 
@@ -273,11 +366,6 @@ void KStar892()
       PainterHelper rab(&legend);
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
-
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
 
       tlText.DrawLatexNDC(0.15, 0.9, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
@@ -476,11 +564,6 @@ void KStar892()
       rcp.DrawTypeCUncertainty(scalingUncertainty, pTMaxRCP - 0.25, 1., kBlack, 0.3, 0.075);
       rcp.DrawTypeCUncertainty(0.1439, pTMaxRCP - 0.1, 1., kP6Violet, 0.3, 0.075);
 
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
-
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralName + "/" + peripheralName).c_str());
@@ -490,6 +573,7 @@ void KStar892()
       legend.Clear();
    }
 
+   int i = 0;
    // RAB for all particles
    for (const auto& centrality : inputYAMLResonance["centrality_bins"])
    {
@@ -520,6 +604,35 @@ void KStar892()
       {
          CppTools::PrintError("RAB distribution with systematic errors was not "\
                               "found in file " + resultsInputFileName);
+      }
+
+      for (int j = 0; j < graphsVladRABVsPTStatErr[i]->GetN(); j++)
+      {
+         const int spectraPPBin = distrSpectraVsPTStatErrPP->GetXaxis()->
+            FindBin(graphsVladRABVsPTStatErr[i]->GetPointX(j));
+         const double spectraPPVal = distrSpectraVsPTStatErrPP->GetBinContent(spectraPPBin);
+         const double spectraPPStat = distrSpectraVsPTStatErrPP->GetBinError(spectraPPBin);
+         const double spectraPPSys = distrSpectraVsPTSysErrPP->GetBinError(spectraPPBin);
+
+         const double rabScale = centrality["bias_factor"].as<double>()/
+                                 centrality["N_coll"].as<double>()*42.2;
+
+         const double rabVal = graphsVladRABVsPTStatErr[i]->GetPointY(j)/spectraPPVal*rabScale;
+         const double rabStat = 
+            CppTools::UncertaintyProp(graphsVladRABVsPTStatErr[i]->GetErrorY(j)/
+                                      graphsVladRABVsPTStatErr[i]->GetPointY(j), 
+                                      spectraPPStat/spectraPPVal)*rabVal;
+         const double rabSys = 
+            CppTools::UncertaintyProp(graphsVladRABVsPTSysErr[i]->GetErrorY(j)/
+                                      graphsVladRABVsPTSysErr[i]->GetPointY(j), 
+                                      spectraPPSys/spectraPPVal)*rabVal;
+
+         graphsVladRABVsPTStatErr[i]->SetPointY(j, rabVal);
+         graphsVladRABVsPTSysErr[i]->SetPointY(j, rabVal);
+         graphsVladRABVsPTStatErr[i]->
+            SetPointError(j, graphsVladRABVsPTStatErr[i]->GetErrorX(j), rabStat);
+         graphsVladRABVsPTSysErr[i]->
+            SetPointError(j, graphsVladRABVsPTSysErr[i]->GetErrorX(j), rabSys);
       }
 
       TCanvas canv("canv", "canv", 800, 800);
@@ -555,13 +668,15 @@ void KStar892()
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
 
+      rab.DrawGraph(graphsVladRABVsPTStatErr[i], graphsVladRABVsPTSysErr[i], kBlack, 0.9,
+                    75, "#it{K}_{Vlad}^{*0}");
       /*
       rab.DrawGraphFromTXTFile("data/RAB/pAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}", false, true, 0.06);
-                               */
 
       rab.DrawGraphFromTXTFile("data/RAB/pAu200/ppbar" + centralityName + "PHENIX.txt", 
                                kBlack, 0.9, 75, "(p+#bar{p})/2, PRC109, 054910", false, true, 0.05);
+                               */
 
       if (centralityName == "40-84")
       {
@@ -595,11 +710,6 @@ void KStar892()
          rab.DrawTypeCUncertainty(scalingUncertainty, pTMaxRAB - 0.2, 1., kBlack, 0.3);
       }
 
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
-
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralityNameTex).c_str());
@@ -607,6 +717,7 @@ void KStar892()
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_comp_" + centralityName);
 
       legend.Clear();
+      i++;
    }
 
    // RAB for new pp200 spectra
@@ -620,9 +731,9 @@ void KStar892()
 
       TFile *resultsInputFilePP = TFile::Open(spectraPPNewFileName.c_str());
 
-      TH1D *distrSpectraVsPTStatErrPP = static_cast<TH1D *>
+      TH1D *distrNewSpectraVsPTStatErrPP = static_cast<TH1D *>
          (resultsInputFilePP->Get("MB/spectra vs pT with stat errors"));
-      TH1D *distrSpectraVsPTSysErrPP = static_cast<TH1D *>
+      TH1D *distrNewSpectraVsPTSysErrPP = static_cast<TH1D *>
          (resultsInputFilePP->Get("MB/spectra vs pT with sys errors"));
 
       TCanvas canv("canv", "canv", 800, 800);
@@ -650,11 +761,6 @@ void KStar892()
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
 
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
-
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, inputYAMLMain["collision_system_name_tex"].as<std::string>().c_str());
 
@@ -674,21 +780,21 @@ void KStar892()
                                       centrality["bias_factor"].as<double>());
                                       */
 
-         TH1D *distrSpectraVsPTStatErr = static_cast<TH1D *>
+         TH1D *distrNewSpectraVsPTStatErr = static_cast<TH1D *>
             (resultsInputFile->Get((centralityName + "/spectra vs pT with stat errors").c_str()));
-         TH1D *distrSpectraVsPTSysErr = static_cast<TH1D *>
+         TH1D *distrNewSpectraVsPTSysErr = static_cast<TH1D *>
             (resultsInputFile->Get((centralityName + "/spectra vs pT with sys errors").c_str()));
 
-         distrSpectraVsPTStatErr->Divide(distrSpectraVsPTStatErrPP);
-         distrSpectraVsPTSysErr->Divide(distrSpectraVsPTSysErrPP);
+         distrNewSpectraVsPTStatErr->Divide(distrNewSpectraVsPTStatErrPP);
+         distrNewSpectraVsPTSysErr->Divide(distrNewSpectraVsPTSysErrPP);
 
-         distrSpectraVsPTStatErr->Scale(scaleRAB);
-         distrSpectraVsPTSysErr->Scale(scaleRAB);
+         distrNewSpectraVsPTStatErr->Scale(scaleRAB);
+         distrNewSpectraVsPTSysErr->Scale(scaleRAB);
 
          const Color_t color = TColor::GetColor(centrality["color"].as<std::string>().c_str()); 
 
-         rab.DrawHistogram(static_cast<TH1D *>(distrSpectraVsPTStatErr->Clone()), 
-                           static_cast<TH1D *>(distrSpectraVsPTSysErr->Clone()), color,
+         rab.DrawHistogram(static_cast<TH1D *>(distrNewSpectraVsPTStatErr->Clone()), 
+                           static_cast<TH1D *>(distrNewSpectraVsPTSysErr->Clone()), color,
                            0.8, centrality["marker_style"].as<int>(), centralityNameTex.c_str());
       }
 

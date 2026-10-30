@@ -10,7 +10,7 @@
 
 const std::string runName = "Run14HeAu200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20484;
+const int taxiNumber = 20511;
 
 const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.6;
@@ -18,6 +18,8 @@ const double pTMinRCP = 0.4;
 const double pTMaxRCP = 8.6;
 const double rMin = 0.;
 const double rMax = 1.999;
+
+TLatex tlText;
 
 TFile *resultsInputFile;
 
@@ -28,6 +30,9 @@ void KStar892()
 
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
+
+   tlText.SetTextFont(42);
+   tlText.SetTextSize(0.05);
 
    InputYAMLReader inputYAMLResonance("input/" + runName + "/" + resonanceName + ".yaml");
    inputYAMLResonance.CheckStatus("resonance");
@@ -185,11 +190,20 @@ void KStar892()
          const std::string centralityName = 
             inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
 
+         const std::string centralityNameTex = 
+            inputYAMLResonance["centrality_bins"][i]["name_tex"].as<std::string>();
+
          yMin = 1e31;
          yMax = 1e31;
 
          histsSpectraVsPTStatErr[i]->Divide(tsallisFits[i]);
          histsSpectraVsPTSysErr[i]->Divide(tsallisFits[i]);
+
+         // simple estimate for systematics for comparison; needs to be improved later
+         for (int j = 0; j < histsSpectraVsPTSysErr[i]->GetXaxis()->GetNbins(); j++)
+         {
+            histsSpectraVsPTSysErr[i]->SetBinError(j, histsSpectraVsPTSysErr[i]->GetBinError(j)/1.3);
+         }
 
          for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
          {
@@ -219,6 +233,9 @@ void KStar892()
          ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
+         tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+                                          + "  " + centralityNameTex).c_str());
+
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
             TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
@@ -232,6 +249,74 @@ void KStar892()
                            kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
          ratio.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], kRed - 3,
                                0.9, 72, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
+
+         ratioLegend.Draw();
+
+         ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
+                                 + "_spectra_fit_ratio_comp_" + centralityName);
+         ratioLegend.Clear();
+      }
+
+      for (int i = 0; i < static_cast<int>(inputYAMLResonance["centrality_bins"].size()); i++)
+      {
+         const std::string centralityName = 
+            inputYAMLResonance["centrality_bins"][i]["name"].as<std::string>();
+
+         const std::string centralityNameTex = 
+            inputYAMLResonance["centrality_bins"][i]["name_tex"].as<std::string>();
+
+         yMin = 1e31;
+         yMax = 1e31;
+
+         for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
+         {
+            const int xBin = histsSpectraVsPTStatErr[i]->GetXaxis()->
+               FindBin(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
+            const double yVal = graphsVladSpectraVsPTStatErr[i]->GetPointY(j)/
+                                histsSpectraVsPTStatErr[i]->GetBinContent(xBin);
+            const double yValStat = 
+               CppTools::UncertaintyProp(graphsVladSpectraVsPTStatErr[i]->GetErrorY(j)/
+                                         graphsVladSpectraVsPTStatErr[i]->GetPointY(j),
+                                         histsSpectraVsPTStatErr[i]->GetBinError(xBin)/
+                                         histsSpectraVsPTStatErr[i]->GetBinContent(xBin))*yVal;
+            const double yValSys = 
+               CppTools::UncertaintyProp(graphsVladSpectraVsPTSysErr[i]->GetErrorY(j)/
+                                         graphsVladSpectraVsPTSysErr[i]->GetPointY(j),
+                                         histsSpectraVsPTSysErr[i]->GetBinError(xBin)/
+                                         histsSpectraVsPTSysErr[i]->GetBinContent(xBin))*yVal;
+
+            graphsVladSpectraVsPTStatErr[i]->SetPointY(j, yVal);
+            graphsVladSpectraVsPTSysErr[i]->SetPointY(j, yVal);
+            graphsVladSpectraVsPTStatErr[i]->SetPointError(j, 0., yValStat);
+            graphsVladSpectraVsPTSysErr[i]->SetPointError(j, graphsVladSpectraVsPTSysErr[i]->GetErrorX(j), yValSys);
+
+            yMin = CppTools::Minimum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+            yMax = CppTools::Maximum(yMin, graphsVladSpectraVsPTStatErr[i]->GetPointY(j));
+         }
+
+         yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr[i]->GetMinimum());
+         yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr[i]->GetMaximum());
+
+         gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
+         gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
+
+         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "Ratio", 1., 1.2);
+
+         tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+                                          + "  " + centralityNameTex).c_str());
+
+         if (yMin/1.1 < 1. && yMax*1.1 > 1.)
+         {
+            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            line.SetLineColorAlpha(kBlack, 0.5);
+            line.SetLineStyle(2);
+            line.SetLineWidth(4);
+            line.Clone()->Draw();
+         }
+
+         ratio.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
+                         kBlack, 0.9, 75, "K^{Vlad}/K^{*0}(892)");
 
          ratioLegend.Draw();
 
@@ -272,11 +357,6 @@ void KStar892()
       PainterHelper rab(&legend);
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
-
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
 
       tlText.DrawLatexNDC(0.15, 0.9, "(#it{K}^{*0}(892) + #bar{#it{K}}^{*0}(892))/2");
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
@@ -463,11 +543,6 @@ void KStar892()
 
       rcp.DrawTypeCUncertainty(scalingUncertainty, pTMinRCP - 0.1, 1., kBlack, 0.3);
 
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
-
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralName + "/" + peripheralName).c_str());
@@ -557,11 +632,6 @@ void KStar892()
 
       rab.DrawTypeCUncertainty(scalingUncertainty, 8.5, 1., kBlack, 0.3);
 
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
-
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                        + "  " + centralityNameTex).c_str());
@@ -611,11 +681,6 @@ void KStar892()
       rab.SetMarkerSize(1.5);
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
-
-      TLatex tlText;
-
-      tlText.SetTextFont(42);
-      tlText.SetTextSize(0.05);
 
       tlText.DrawLatexNDC(0.8, 0.15, "#cbar#it{#eta}#cbar < 0.5");
       tlText.DrawLatexNDC(0.12, 0.15, inputYAMLMain["collision_system_name_tex"].as<std::string>().c_str());
