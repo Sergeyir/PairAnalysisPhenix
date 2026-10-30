@@ -1,0 +1,192 @@
+source: 'PRC106, 014908'
+hepdata_link: 'https://www.hepdata.net/record/ins2050486'
+independent_variables:
+- header: {name: '$p_T$'}
+  values:
+  - {low: 0.8, high: 1.0}
+  - {low: 1.0, high: 1.275}
+  - {low: 1.275, high: 1.7}
+  - {low: 1.7, high: 2.2}
+  - {low: 2.2, high: 2.7}
+  - {low: 2.7, high: 3.2}
+  - {low: 3.2, high: 3.7}
+  - {low: 3.7, high: 4.2}
+  - {low: 4.2, high: 4.975}
+  - {low: 4.975, high: 6.25}
+  - {low: 6.25, high: 7.75}
+dependent_variables:
+- header: {name: 'Invariant $p_T$ spectra measured for $\phi$ mesons'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '0-20'}
+  - {name: '$p_T$', value: '$p+Au$ $0-20\%$'}
+  values:
+  - value: --
+  - value: 0.00643712
+    errors:
+    - {symerror: 0.000924945, label: 'stat.'}
+    - {symerror: 0.000399972, label: 'sys.'}
+  - value: 0.00212188
+    errors:
+    - {symerror: 0.00012604, label: 'stat.'}
+    - {symerror: 0.000124391, label: 'sys.'}
+  - value: 0.000675456
+    errors:
+    - {symerror: 3.10821e-05, label: 'stat.'}
+    - {symerror: 3.66877e-05, label: 'sys.'}
+  - value: 0.000228108
+    errors:
+    - {symerror: 1.36157e-05, label: 'stat.'}
+    - {symerror: 1.15979e-05, label: 'sys.'}
+  - value: 7.79919e-05
+    errors:
+    - {symerror: 5.43734e-06, label: 'stat.'}
+    - {symerror: 3.75985e-06, label: 'sys.'}
+  - value: 2.79597e-05
+    errors:
+    - {symerror: 2.38222e-06, label: 'stat.'}
+    - {symerror: 1.29756e-06, label: 'sys.'}
+  - value: 1.03395e-05
+    errors:
+    - {symerror: 1.18815e-06, label: 'stat.'}
+    - {symerror: 4.69871e-07, label: 'sys.'}
+  - value: 4.0391e-06
+    errors:
+    - {symerror: 7.21268e-07, label: 'stat.'}
+    - {symerror: 1.83036e-07, label: 'sys.'}
+  - value: 5.84397e-07
+    errors:
+    - {symerror: 1.51256e-07, label: 'stat.'}
+    - {symerror: 2.7915e-08, label: 'sys.'}
+  - value: --
+- header: {name: 'Invariant $p_T$ spectra measured for $\phi$ mesons'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '20-40'}
+  - {name: '$p_T$', value: '$p+Au$ $20-40\%$'}
+  values:
+  - value: --
+  - value: 0.00447378
+    errors:
+    - {symerror: 0.000754779, label: 'stat.'}
+    - {symerror: 0.00027798, label: 'sys.'}
+  - value: 0.00137347
+    errors:
+    - {symerror: 0.000100204, label: 'stat.'}
+    - {symerror: 8.05167e-05, label: 'sys.'}
+  - value: 0.000441297
+    errors:
+    - {symerror: 2.48833e-05, label: 'stat.'}
+    - {symerror: 2.39693e-05, label: 'sys.'}
+  - value: 0.000134126
+    errors:
+    - {symerror: 1.07932e-05, label: 'stat.'}
+    - {symerror: 6.81949e-06, label: 'sys.'}
+  - value: 4.66874e-05
+    errors:
+    - {symerror: 4.34193e-06, label: 'stat.'}
+    - {symerror: 2.25072e-06, label: 'sys.'}
+  - value: 1.8589e-05
+    errors:
+    - {symerror: 1.93133e-06, label: 'stat.'}
+    - {symerror: 8.62684e-07, label: 'sys.'}
+  - value: 6.4296e-06
+    errors:
+    - {symerror: 1.00202e-06, label: 'stat.'}
+    - {symerror: 2.92189e-07, label: 'sys.'}
+  - value: 2.65576e-06
+    errors:
+    - {symerror: 6.12867e-07, label: 'stat.'}
+    - {symerror: 1.20348e-07, label: 'sys.'}
+  - value: 4.11781e-07
+    errors:
+    - {symerror: 1.22009e-07, label: 'stat.'}
+    - {symerror: 1.96696e-08, label: 'sys.'}
+  - value: --
+- header: {name: 'Invariant $p_T$ spectra measured for $\phi$ mesons'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '40-84'}
+  - {name: '$p_T$', value: '$p+Au$ $40-84\%$'}
+  values:
+  - value: --
+  - value: 0.00194876
+    errors:
+    - {symerror: 0.000324793, label: 'stat.'}
+    - {symerror: 0.000121087, label: 'sys.'}
+  - value: 0.000612768
+    errors:
+    - {symerror: 4.4266e-05, label: 'stat.'}
+    - {symerror: 3.59222e-05, label: 'sys.'}
+  - value: 0.000194589
+    errors:
+    - {symerror: 1.10644e-05, label: 'stat.'}
+    - {symerror: 1.05692e-05, label: 'sys.'}
+  - value: 6.31534e-05
+    errors:
+    - {symerror: 4.70921e-06, label: 'stat.'}
+    - {symerror: 3.21097e-06, label: 'sys.'}
+  - value: 2.23949e-05
+    errors:
+    - {symerror: 1.90312e-06, label: 'stat.'}
+    - {symerror: 1.07962e-06, label: 'sys.'}
+  - value: 7.89634e-06
+    errors:
+    - {symerror: 8.50124e-07, label: 'stat.'}
+    - {symerror: 3.66456e-07, label: 'sys.'}
+  - value: 2.87637e-06
+    errors:
+    - {symerror: 4.48608e-07, label: 'stat.'}
+    - {symerror: 1.30715e-07, label: 'sys.'}
+  - value: 1.30193e-06
+    errors:
+    - {symerror: 2.79754e-07, label: 'stat.'}
+    - {symerror: 5.89983e-08, label: 'sys.'}
+  - value: 2.13972e-07
+    errors:
+    - {symerror: 5.80264e-08, label: 'stat.'}
+    - {symerror: 1.02208e-08, label: 'sys.'}
+  - value: --
+- header: {name: 'Invariant $p_T$ spectra measured for $\phi$ mesons'}
+  qualifiers:
+  - {name: '#varphi(1020)', value: '0-84'}
+  - {name: '$p_T$', value: '$p+Au$ $0-100\%$'}
+  values:
+  - value: 0.00610861
+    errors:
+    - {symerror: 0.000635867, label: 'stat.'}
+    - {symerror: 0.000392944, label: 'sys.'}
+  - value: 0.00378258
+    errors:
+    - {symerror: 0.000300659, label: 'stat.'}
+    - {symerror: 0.000235032, label: 'sys.'}
+  - value: 0.001156
+    errors:
+    - {symerror: 4.04001e-05, label: 'stat.'}
+    - {symerror: 6.7768e-05, label: 'sys.'}
+  - value: 0.00036068
+    errors:
+    - {symerror: 1.01511e-05, label: 'stat.'}
+    - {symerror: 1.95905e-05, label: 'sys.'}
+  - value: 0.00011682
+    errors:
+    - {symerror: 4.36721e-06, label: 'stat.'}
+    - {symerror: 5.93958e-06, label: 'sys.'}
+  - value: 3.81296e-05
+    errors:
+    - {symerror: 1.74728e-06, label: 'stat.'}
+    - {symerror: 1.83816e-06, label: 'sys.'}
+  - value: 1.30554e-05
+    errors:
+    - {symerror: 7.74293e-07, label: 'stat.'}
+    - {symerror: 6.05879e-07, label: 'sys.'}
+  - value: 4.76779e-06
+    errors:
+    - {symerror: 3.93458e-07, label: 'stat.'}
+    - {symerror: 2.16669e-07, label: 'sys.'}
+  - value: 1.76498e-06
+    errors:
+    - {symerror: 2.45398e-07, label: 'stat.'}
+    - {symerror: 7.99818e-08, label: 'sys.'}
+  - value: 2.64041e-07
+    errors:
+    - {symerror: 5.02935e-08, label: 'stat.'}
+    - {symerror: 1.26125e-08, label: 'sys.'}
+  - value: --

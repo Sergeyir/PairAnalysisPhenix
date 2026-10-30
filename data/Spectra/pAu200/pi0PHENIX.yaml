@@ -1,0 +1,661 @@
+source: "PRC105, 064902"
+hepdata_link: 'https://www.hepdata.net/record/ins1965617'
+independent_variables:
+- header: {name: '$p_T$'}
+  values:
+  - {low: 1.0, high: 1.5}
+  - {low: 1.5, high: 2.0}
+  - {low: 2.0, high: 2.5}
+  - {low: 2.5, high: 3.0}
+  - {low: 3.0, high: 3.5}
+  - {low: 3.5, high: 4.0}
+  - {low: 4.0, high: 4.5}
+  - {low: 4.5, high: 5.0}
+  - {low: 5.0, high: 5.5}
+  - {low: 5.5, high: 6.0}
+  - {low: 6.0, high: 6.5}
+  - {low: 6.5, high: 7.0}
+  - {low: 7.0, high: 7.5}
+  - {low: 7.5, high: 8.0}
+  - {low: 8.0, high: 8.5}
+  - {low: 8.5, high: 9.0}
+  - {low: 9.0, high: 9.5}
+  - {low: 9.5, high: 10.0}
+  - {low: 10.0, high: 12.0}
+  - {low: 12.0, high: 14.0}
+  - {low: 14.0, high: 16.0}
+  - {low: 16.0, high: 18.0}
+  - {low: 18.0, high: 20.0}
+  - {low: 20.0, high: 22.0}
+  - {low: 22.0, high: 25.0}
+dependent_variables:
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '0-84'}
+  - {name: '$p_T$', value: '$p+Au$ $0-100\%$'}
+  values:
+  - value: 3.017e-02
+    errors:
+    - {symerror: 2.212e-05, label: 'stat.'}
+    - {symerror: 2.715e-03, label: 'sys.'}
+  - value: 5.147e-03
+    errors:
+    - {symerror: 4.750e-06, label: 'stat.'}
+    - {symerror: 4.923e-04, label: 'sys.'}
+  - value: 1.250e-03
+    errors:
+    - {symerror: 1.697e-06, label: 'stat.'}
+    - {symerror: 1.208e-04, label: 'sys.'}
+  - value: 3.475e-04
+    errors:
+    - {symerror: 7.220e-07, label: 'stat.'}
+    - {symerror: 3.391e-05, label: 'sys.'}
+  - value: 1.094e-04
+    errors:
+    - {symerror: 3.469e-07, label: 'stat.'}
+    - {symerror: 1.078e-05, label: 'sys.'}
+  - value: 3.831e-05
+    errors:
+    - {symerror: 1.833e-07, label: 'stat.'}
+    - {symerror: 3.777e-06, label: 'sys.'}
+  - value: 1.457e-05
+    errors:
+    - {symerror: 1.038e-07, label: 'stat.'}
+    - {symerror: 1.450e-06, label: 'sys.'}
+  - value: 5.920e-06
+    errors:
+    - {symerror: 6.148e-08, label: 'stat.'}
+    - {symerror: 5.892e-07, label: 'sys.'}
+  - value: 2.565e-06
+    errors:
+    - {symerror: 3.827e-08, label: 'stat.'}
+    - {symerror: 2.578e-07, label: 'sys.'}
+  - value: 1.171e-06
+    errors:
+    - {symerror: 2.482e-09, label: 'stat.'}
+    - {symerror: 1.177e-07, label: 'sys.'}
+  - value: 5.899e-07
+    errors:
+    - {symerror: 1.677e-09, label: 'stat.'}
+    - {symerror: 5.987e-08, label: 'sys.'}
+  - value: 3.120e-07
+    errors:
+    - {symerror: 1.161e-09, label: 'stat.'}
+    - {symerror: 3.167e-08, label: 'sys.'}
+  - value: 1.707e-07
+    errors:
+    - {symerror: 8.195e-10, label: 'stat.'}
+    - {symerror: 1.733e-08, label: 'sys.'}
+  - value: 9.750e-08
+    errors:
+    - {symerror: 5.960e-10, label: 'stat.'}
+    - {symerror: 9.896e-09, label: 'sys.'}
+  - value: 5.766e-08
+    errors:
+    - {symerror: 4.387e-10, label: 'stat.'}
+    - {symerror: 5.853e-09, label: 'sys.'}
+  - value: 3.564e-08
+    errors:
+    - {symerror: 3.320e-10, label: 'stat.'}
+    - {symerror: 3.617e-09, label: 'sys.'}
+  - value: 2.231e-08
+    errors:
+    - {symerror: 2.538e-10, label: 'stat.'}
+    - {symerror: 2.209e-09, label: 'sys.'}
+  - value: 1.407e-08
+    errors:
+    - {symerror: 1.980e-10, label: 'stat.'}
+    - {symerror: 1.393e-09, label: 'sys.'}
+  - value: 5.495e-09
+    errors:
+    - {symerror: 5.472e-11, label: 'stat.'}
+    - {symerror: 5.440e-10, label: 'sys.'}
+  - value: 1.318e-09
+    errors:
+    - {symerror: 1.812e-11, label: 'stat.'}
+    - {symerror: 1.354e-10, label: 'sys.'}
+  - value: 3.972e-10
+    errors:
+    - {symerror: 1.035e-11, label: 'stat.'}
+    - {symerror: 4.518e-11, label: 'sys.'}
+  - value: 1.279e-10
+    errors:
+    - {symerror: 6.526e-12, label: 'stat.'}
+    - {symerror: 1.579e-11, label: 'sys.'}
+  - value: 4.824e-11
+    errors:
+    - {symerror: 4.214e-12, label: 'stat.'}
+    - {symerror: 6.537e-12, label: 'sys.'}
+  - value: 1.661e-11
+    errors:
+    - {symerror: 2.660e-12, label: 'stat.'}
+    - {symerror: 2.364e-12, label: 'sys.'}
+  - value: 7.392e-12
+    errors:
+    - {symerror: 1.848e-12, label: 'stat.'}
+    - {symerror: 1.242e-12, label: 'sys.'}
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '0-5'}
+  - {name: '$p_T$', value: '$p+Au$ $0-5\%$'}
+  values:
+  - value: 7.027e-02
+    errors:
+    - {symerror: 3.135e-05, label: 'stat.'}
+    - {symerror: 6.323e-03, label: 'sys.'}
+  - value: 1.132e-02
+    errors:
+    - {symerror: 5.887e-06, label: 'stat.'}
+    - {symerror: 1.083e-03, label: 'sys.'}
+  - value: 2.720e-03
+    errors:
+    - {symerror: 2.000e-06, label: 'stat.'}
+    - {symerror: 2.628e-04, label: 'sys.'}
+  - value: 7.873e-04
+    errors:
+    - {symerror: 8.643e-07, label: 'stat.'}
+    - {symerror: 7.683e-05, label: 'sys.'}
+  - value: 2.480e-04
+    errors:
+    - {symerror: 4.113e-07, label: 'stat.'}
+    - {symerror: 2.445e-05, label: 'sys.'}
+  - value: 8.543e-05
+    errors:
+    - {symerror: 2.147e-07, label: 'stat.'}
+    - {symerror: 8.422e-06, label: 'sys.'}
+  - value: 3.223e-05
+    errors:
+    - {symerror: 1.207e-07, label: 'stat.'}
+    - {symerror: 3.207e-06, label: 'sys.'}
+  - value: 1.278e-05
+    errors:
+    - {symerror: 6.968e-08, label: 'stat.'}
+    - {symerror: 1.272e-06, label: 'sys.'}
+  - value: 5.409e-06
+    errors:
+    - {symerror: 4.265e-08, label: 'stat.'}
+    - {symerror: 5.436e-07, label: 'sys.'}
+  - value: 2.448e-06
+    errors:
+    - {symerror: 2.693e-08, label: 'stat.'}
+    - {symerror: 2.461e-07, label: 'sys.'}
+  - value: 1.152e-06
+    errors:
+    - {symerror: 1.743e-08, label: 'stat.'}
+    - {symerror: 1.169e-07, label: 'sys.'}
+  - value: 6.072e-07
+    errors:
+    - {symerror: 1.196e-08, label: 'stat.'}
+    - {symerror: 6.164e-08, label: 'sys.'}
+  - value: 3.172e-07
+    errors:
+    - {symerror: 8.320e-09, label: 'stat.'}
+    - {symerror: 3.220e-08, label: 'sys.'}
+  - value: 1.793e-07
+    errors:
+    - {symerror: 5.986e-09, label: 'stat.'}
+    - {symerror: 1.820e-08, label: 'sys.'}
+  - value: 1.062e-07
+    errors:
+    - {symerror: 4.288e-09, label: 'stat.'}
+    - {symerror: 1.078e-08, label: 'sys.'}
+  - value: 6.342e-08
+    errors:
+    - {symerror: 3.240e-09, label: 'stat.'}
+    - {symerror: 6.437e-09, label: 'sys.'}
+  - value: 3.894e-08
+    errors:
+    - {symerror: 2.424e-09, label: 'stat.'}
+    - {symerror: 3.855e-09, label: 'sys.'}
+  - value: 2.623e-08
+    errors:
+    - {symerror: 1.944e-09, label: 'stat.'}
+    - {symerror: 2.597e-09, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '0-20'}
+  - {name: '$p_T$', value: '$p+Au$ $0-20\%$'}
+  values:
+  - value: 5.415e-02
+    errors:
+    - {symerror: 6.589e-05, label: 'stat.'}
+    - {symerror: 4.873e-03, label: 'sys.'}
+  - value: 9.491e-03
+    errors:
+    - {symerror: 1.394e-05, label: 'stat.'}
+    - {symerror: 9.078e-04, label: 'sys.'}
+  - value: 2.324e-03
+    errors:
+    - {symerror: 4.930e-06, label: 'stat.'}
+    - {symerror: 2.246e-04, label: 'sys.'}
+  - value: 6.502e-04
+    errors:
+    - {symerror: 2.079e-06, label: 'stat.'}
+    - {symerror: 6.345e-05, label: 'sys.'}
+  - value: 2.037e-04
+    errors:
+    - {symerror: 9.924e-07, label: 'stat.'}
+    - {symerror: 2.008e-05, label: 'sys.'}
+  - value: 7.071e-05
+    errors:
+    - {symerror: 5.193e-07, label: 'stat.'}
+    - {symerror: 6.970e-06, label: 'sys.'}
+  - value: 2.649e-05
+    errors:
+    - {symerror: 2.909e-07, label: 'stat.'}
+    - {symerror: 2.636e-06, label: 'sys.'}
+  - value: 1.096e-05
+    errors:
+    - {symerror: 1.736e-07, label: 'stat.'}
+    - {symerror: 1.091e-06, label: 'sys.'}
+  - value: 4.532e-06
+    errors:
+    - {symerror: 1.057e-07, label: 'stat.'}
+    - {symerror: 4.555e-07, label: 'sys.'}
+  - value: 2.090e-06
+    errors:
+    - {symerror: 6.943e-09, label: 'stat.'}
+    - {symerror: 2.101e-07, label: 'sys.'}
+  - value: 1.033e-06
+    errors:
+    - {symerror: 4.645e-09, label: 'stat.'}
+    - {symerror: 1.048e-07, label: 'sys.'}
+  - value: 5.357e-07
+    errors:
+    - {symerror: 3.185e-09, label: 'stat.'}
+    - {symerror: 5.438e-08, label: 'sys.'}
+  - value: 2.881e-07
+    errors:
+    - {symerror: 2.230e-09, label: 'stat.'}
+    - {symerror: 2.925e-08, label: 'sys.'}
+  - value: 1.620e-07
+    errors:
+    - {symerror: 1.611e-09, label: 'stat.'}
+    - {symerror: 1.644e-08, label: 'sys.'}
+  - value: 9.265e-08
+    errors:
+    - {symerror: 1.164e-09, label: 'stat.'}
+    - {symerror: 9.405e-09, label: 'sys.'}
+  - value: 5.715e-08
+    errors:
+    - {symerror: 8.807e-10, label: 'stat.'}
+    - {symerror: 5.800e-09, label: 'sys.'}
+  - value: 3.506e-08
+    errors:
+    - {symerror: 6.691e-10, label: 'stat.'}
+    - {symerror: 3.471e-09, label: 'sys.'}
+  - value: 2.176e-08
+    errors:
+    - {symerror: 5.162e-10, label: 'stat.'}
+    - {symerror: 2.155e-09, label: 'sys.'}
+  - value: 8.492e-09
+    errors:
+    - {symerror: 1.422e-10, label: 'stat.'}
+    - {symerror: 8.407e-10, label: 'sys.'}
+  - value: 2.101e-09
+    errors:
+    - {symerror: 5.254e-11, label: 'stat.'}
+    - {symerror: 2.158e-10, label: 'sys.'}
+  - value: 6.471e-10
+    errors:
+    - {symerror: 3.375e-11, label: 'stat.'}
+    - {symerror: 7.361e-11, label: 'sys.'}
+  - value: 2.124e-10
+    errors:
+    - {symerror: 2.098e-11, label: 'stat.'}
+    - {symerror: 2.622e-11, label: 'sys.'}
+  - value: 8.178e-11
+    errors:
+    - {symerror: 1.345e-11, label: 'stat.'}
+    - {symerror: 1.108e-11, label: 'sys.'}
+  - value: 2.800e-11
+    errors:
+    - {symerror: 8.085e-12, label: 'stat.'}
+    - {symerror: 3.986e-12, label: 'sys.'}
+  - value: --
+    errors:
+    - {symerror: --, label: 'stat.'}
+    - {symerror: --, label: 'sys.'}
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '20-40'}
+  - {name: '$p_T$', value: '$p+Au$ $20\%-40\%$'}
+  values:
+  - value: 3.962e-02
+    errors:
+    - {symerror: 5.460e-05, label: 'stat.'}
+    - {symerror: 3.565e-03, label: 'sys.'}
+  - value: 6.821e-03
+    errors:
+    - {symerror: 1.182e-05, label: 'stat.'}
+    - {symerror: 6.524e-04, label: 'sys.'}
+  - value: 1.664e-03
+    errors:
+    - {symerror: 4.243e-06, label: 'stat.'}
+    - {symerror: 1.608e-04, label: 'sys.'}
+  - value: 4.638e-04
+    errors:
+    - {symerror: 1.815e-06, label: 'stat.'}
+    - {symerror: 4.526e-05, label: 'sys.'}
+  - value: 1.459e-04
+    errors:
+    - {symerror: 8.724e-07, label: 'stat.'}
+    - {symerror: 1.438e-05, label: 'sys.'}
+  - value: 5.128e-05
+    errors:
+    - {symerror: 4.624e-07, label: 'stat.'}
+    - {symerror: 5.055e-06, label: 'sys.'}
+  - value: 1.951e-05
+    errors:
+    - {symerror: 2.615e-07, label: 'stat.'}
+    - {symerror: 1.941e-06, label: 'sys.'}
+  - value: 8.009e-06
+    errors:
+    - {symerror: 1.603e-07, label: 'stat.'}
+    - {symerror: 7.971e-07, label: 'sys.'}
+  - value: 3.373e-06
+    errors:
+    - {symerror: 9.627e-08, label: 'stat.'}
+    - {symerror: 3.390e-07, label: 'sys.'}
+  - value: 1.627e-06
+    errors:
+    - {symerror: 6.481e-09, label: 'stat.'}
+    - {symerror: 1.636e-07, label: 'sys.'}
+  - value: 8.245e-07
+    errors:
+    - {symerror: 4.392e-09, label: 'stat.'}
+    - {symerror: 8.367e-08, label: 'sys.'}
+  - value: 4.369e-07
+    errors:
+    - {symerror: 3.042e-09, label: 'stat.'}
+    - {symerror: 4.435e-08, label: 'sys.'}
+  - value: 2.381e-07
+    errors:
+    - {symerror: 2.142e-09, label: 'stat.'}
+    - {symerror: 2.417e-08, label: 'sys.'}
+  - value: 1.358e-07
+    errors:
+    - {symerror: 1.558e-09, label: 'stat.'}
+    - {symerror: 1.378e-08, label: 'sys.'}
+  - value: 8.101e-08
+    errors:
+    - {symerror: 1.154e-09, label: 'stat.'}
+    - {symerror: 8.223e-09, label: 'sys.'}
+  - value: 4.963e-08
+    errors:
+    - {symerror: 8.692e-10, label: 'stat.'}
+    - {symerror: 5.037e-09, label: 'sys.'}
+  - value: 3.028e-08
+    errors:
+    - {symerror: 6.543e-10, label: 'stat.'}
+    - {symerror: 2.998e-09, label: 'sys.'}
+  - value: 1.959e-08
+    errors:
+    - {symerror: 5.226e-10, label: 'stat.'}
+    - {symerror: 1.940e-09, label: 'sys.'}
+  - value: 7.465e-09
+    errors:
+    - {symerror: 1.421e-10, label: 'stat.'}
+    - {symerror: 7.390e-10, label: 'sys.'}
+  - value: 1.885e-09
+    errors:
+    - {symerror: 4.644e-11, label: 'stat.'}
+    - {symerror: 1.936e-10, label: 'sys.'}
+  - value: 5.427e-10
+    errors:
+    - {symerror: 2.700e-11, label: 'stat.'}
+    - {symerror: 6.174e-11, label: 'sys.'}
+  - value: 1.645e-10
+    errors:
+    - {symerror: 1.683e-11, label: 'stat.'}
+    - {symerror: 2.031e-11, label: 'sys.'}
+  - value: 5.360e-11
+    errors:
+    - {symerror: 9.319e-12, label: 'stat.'}
+    - {symerror: 7.263e-12, label: 'sys.'}
+  - value: 2.382e-11
+    errors:
+    - {symerror: 7.533e-12, label: 'stat.'}
+    - {symerror: 3.391e-12, label: 'sys.'}
+  - value: 8.915e-12
+    errors:
+    - {symerror: 4.457e-12, label: 'stat.'}
+    - {symerror: 1.498e-12, label: 'sys.'}
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '40-60'}
+  - {name: '$p_T$', value: '$p+Au$ $40\%-60\%$'}
+  values:
+  - value: 3.102e-02
+    errors:
+    - {symerror: 4.905e-05, label: 'stat.'}
+    - {symerror: 2.791e-03, label: 'sys.'}
+  - value: 5.141e-03
+    errors:
+    - {symerror: 1.070e-05, label: 'stat.'}
+    - {symerror: 4.917e-04, label: 'sys.'}
+  - value: 1.239e-03
+    errors:
+    - {symerror: 3.870e-06, label: 'stat.'}
+    - {symerror: 1.197e-04, label: 'sys.'}
+  - value: 3.412e-04
+    errors:
+    - {symerror: 1.660e-06, label: 'stat.'}
+    - {symerror: 3.330e-05, label: 'sys.'}
+  - value: 1.085e-04
+    errors:
+    - {symerror: 8.024e-07, label: 'stat.'}
+    - {symerror: 1.070e-05, label: 'sys.'}
+  - value: 3.865e-05
+    errors:
+    - {symerror: 4.287e-07, label: 'stat.'}
+    - {symerror: 3.810e-06, label: 'sys.'}
+  - value: 1.471e-05
+    errors:
+    - {symerror: 2.453e-07, label: 'stat.'}
+    - {symerror: 1.464e-06, label: 'sys.'}
+  - value: 5.903e-06
+    errors:
+    - {symerror: 1.458e-07, label: 'stat.'}
+    - {symerror: 5.875e-07, label: 'sys.'}
+  - value: 2.494e-06
+    errors:
+    - {symerror: 8.525e-08, label: 'stat.'}
+    - {symerror: 2.507e-07, label: 'sys.'}
+  - value: 1.171e-06
+    errors:
+    - {symerror: 5.719e-09, label: 'stat.'}
+    - {symerror: 1.177e-07, label: 'sys.'}
+  - value: 5.945e-07
+    errors:
+    - {symerror: 3.887e-09, label: 'stat.'}
+    - {symerror: 6.033e-08, label: 'sys.'}
+  - value: 3.219e-07
+    errors:
+    - {symerror: 2.713e-09, label: 'stat.'}
+    - {symerror: 3.268e-08, label: 'sys.'}
+  - value: 1.774e-07
+    errors:
+    - {symerror: 1.926e-09, label: 'stat.'}
+    - {symerror: 1.801e-08, label: 'sys.'}
+  - value: 1.017e-07
+    errors:
+    - {symerror: 1.401e-09, label: 'stat.'}
+    - {symerror: 1.032e-08, label: 'sys.'}
+  - value: 6.212e-08
+    errors:
+    - {symerror: 1.047e-09, label: 'stat.'}
+    - {symerror: 6.306e-09, label: 'sys.'}
+  - value: 3.769e-08
+    errors:
+    - {symerror: 7.932e-10, label: 'stat.'}
+    - {symerror: 3.825e-09, label: 'sys.'}
+  - value: 2.476e-08
+    errors:
+    - {symerror: 6.203e-10, label: 'stat.'}
+    - {symerror: 2.451e-09, label: 'sys.'}
+  - value: 1.516e-08
+    errors:
+    - {symerror: 4.738e-10, label: 'stat.'}
+    - {symerror: 1.501e-09, label: 'sys.'}
+  - value: 6.015e-09
+    errors:
+    - {symerror: 1.330e-10, label: 'stat.'}
+    - {symerror: 5.955e-10, label: 'sys.'}
+  - value: 1.587e-09
+    errors:
+    - {symerror: 3.492e-11, label: 'stat.'}
+    - {symerror: 1.630e-10, label: 'sys.'}
+  - value: 4.778e-10
+    errors:
+    - {symerror: 1.978e-11, label: 'stat.'}
+    - {symerror: 5.435e-11, label: 'sys.'}
+  - value: 1.524e-10
+    errors:
+    - {symerror: 1.278e-11, label: 'stat.'}
+    - {symerror: 1.881e-11, label: 'sys.'}
+  - value: 5.563e-11
+    errors:
+    - {symerror: 6.953e-12, label: 'stat.'}
+    - {symerror: 7.538e-12, label: 'sys.'}
+  - value: 1.841e-11
+    errors:
+    - {symerror: 4.465e-12, label: 'stat.'}
+    - {symerror: 2.621e-12, label: 'sys.'}
+  - value: 8.728e-12
+    errors:
+    - {symerror: 2.761e-12, label: 'stat.'}
+    - {symerror: 1.467e-12, label: 'sys.'}
+- header: {name: 'Invariant yield of $\pi^{0}$'}
+  qualifiers:
+  - {name: '#pi^{0}$', value: '60-84'}
+  - {name: '$p_T$', value: '$p+Au$ $60\%-84\%$'}
+  values:
+  - value: 1.717e-02
+    errors:
+    - {symerror: 3.146e-05, label: 'stat.'}
+    - {symerror: 1.545e-03, label: 'sys.'}
+  - value: 2.723e-03
+    errors:
+    - {symerror: 6.909e-06, label: 'stat.'}
+    - {symerror: 2.604e-04, label: 'sys.'}
+  - value: 6.369e-04
+    errors:
+    - {symerror: 2.505e-06, label: 'stat.'}
+    - {symerror: 6.154e-05, label: 'sys.'}
+  - value: 1.755e-04
+    errors:
+    - {symerror: 1.080e-06, label: 'stat.'}
+    - {symerror: 1.713e-05, label: 'sys.'}
+  - value: 5.519e-05
+    errors:
+    - {symerror: 5.268e-07, label: 'stat.'}
+    - {symerror: 5.440e-06, label: 'sys.'}
+  - value: 1.928e-05
+    errors:
+    - {symerror: 2.807e-07, label: 'stat.'}
+    - {symerror: 1.901e-06, label: 'sys.'}
+  - value: 7.175e-06
+    errors:
+    - {symerror: 1.531e-07, label: 'stat.'}
+    - {symerror: 7.140e-07, label: 'sys.'}
+  - value: 3.070e-06
+    errors:
+    - {symerror: 9.508e-08, label: 'stat.'}
+    - {symerror: 3.056e-07, label: 'sys.'}
+  - value: 1.366e-06
+    errors:
+    - {symerror: 6.120e-08, label: 'stat.'}
+    - {symerror: 1.373e-07, label: 'sys.'}
+  - value: 6.632e-07
+    errors:
+    - {symerror: 4.047e-09, label: 'stat.'}
+    - {symerror: 6.667e-08, label: 'sys.'}
+  - value: 3.454e-07
+    errors:
+    - {symerror: 2.775e-09, label: 'stat.'}
+    - {symerror: 3.505e-08, label: 'sys.'}
+  - value: 1.866e-07
+    errors:
+    - {symerror: 1.950e-09, label: 'stat.'}
+    - {symerror: 1.894e-08, label: 'sys.'}
+  - value: 1.072e-07
+    errors:
+    - {symerror: 1.406e-09, label: 'stat.'}
+    - {symerror: 1.088e-08, label: 'sys.'}
+  - value: 6.389e-08
+    errors:
+    - {symerror: 1.041e-09, label: 'stat.'}
+    - {symerror: 6.485e-09, label: 'sys.'}
+  - value: 3.862e-08
+    errors:
+    - {symerror: 7.787e-10, label: 'stat.'}
+    - {symerror: 3.920e-09, label: 'sys.'}
+  - value: 2.451e-08
+    errors:
+    - {symerror: 5.929e-10, label: 'stat.'}
+    - {symerror: 2.488e-09, label: 'sys.'}
+  - value: 1.561e-08
+    errors:
+    - {symerror: 4.585e-10, label: 'stat.'}
+    - {symerror: 1.545e-09, label: 'sys.'}
+  - value: 1.010e-08
+    errors:
+    - {symerror: 3.615e-10, label: 'stat.'}
+    - {symerror: 1.000e-09, label: 'sys.'}
+  - value: 4.008e-09
+    errors:
+    - {symerror: 1.017e-10, label: 'stat.'}
+    - {symerror: 3.968e-10, label: 'sys.'}
+  - value: 1.045e-09
+    errors:
+    - {symerror: 2.853e-11, label: 'stat.'}
+    - {symerror: 1.073e-10, label: 'sys.'}
+  - value: 2.950e-10
+    errors:
+    - {symerror: 1.610e-11, label: 'stat.'}
+    - {symerror: 3.356e-11, label: 'sys.'}
+  - value: 9.222e-11
+    errors:
+    - {symerror: 9.965e-12, label: 'stat.'}
+    - {symerror: 1.138e-11, label: 'sys.'}
+  - value: 3.372e-11
+    errors:
+    - {symerror: 5.399e-12, label: 'stat.'}
+    - {symerror: 4.569e-12, label: 'sys.'}
+  - value: 1.175e-11
+    errors:
+    - {symerror: 4.154e-12, label: 'stat.'}
+    - {symerror: 1.673e-12, label: 'sys.'}
+  - value: 5.547e-12
+    errors:
+    - {symerror: 2.774e-12, label: 'stat.'}
+    - {symerror: 9.323e-13, label: 'sys.'}
