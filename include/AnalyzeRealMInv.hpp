@@ -102,8 +102,8 @@ namespace AnalyzeRealMInv
     * @param[in] xMax maximum M_{inv} value of an extraction range [GeV/c^2]
     * @param[in] err statistical uncertainty that will be calculated
     */
-   double GetYieldAndStatErr(TH1D *distrMInv, TH1D *distrMInvFG, TH1D *distrMInvBG, TF1 *funcFG, 
-                             TF1 *funcBG, const double xMin, const double xMax, double &err);
+   double GetYieldAndErr(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG, 
+                         const double xMin, const double xMax, double &err);
    /// Parser of input .yaml file for run configuration
    InputYAMLReader inputYAMLMain;
    /// Parser of input .yaml file for the information about resonance

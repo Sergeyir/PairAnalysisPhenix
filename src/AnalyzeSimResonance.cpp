@@ -21,7 +21,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                                                const int daughter1Id,
                                                const int daughter2Id,
                                                const std::string& magneticFieldName, 
-                                               const std::string &pTRangeName)
+                                               const std::string &pTRangeName,
+                                               double daughter1Mass, double daughter2Mass)
 { 
    std::string simInputFileName = "data/SimTrees/" + runName + "/Resonance/" + 
                                   particleName + "_" + ParticleMap::name[daughter1Id] + 
@@ -80,11 +81,11 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();
    const double resonanceGamma = inputYAMLResonance["gamma"].as<double>();
 
-   const double daughter1Mass = ParticleMap::mass[daughter1Id];
-   const double daughter2Mass = ParticleMap::mass[daughter2Id];
+   if (daughter1Mass < 0.) daughter1Mass = ParticleMap::mass[daughter1Id];
+   if (daughter2Mass < 0.) daughter2Mass = ParticleMap::mass[daughter2Id];
 
    ROOT::TTreeProcessorMT tp(simInputFileName.c_str());
-  
+ 
    auto ProcessMP = [&](TTreeReader &reader)
    { 
       ThrContainerCopy histContainer = thrContainer.GetCopy();
@@ -699,19 +700,23 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if ((argc != 2 && argc < 4) || argc > 5) 
+   if ((argc != 2 && argc < 4) || argc > 7) 
    {
       std::string errMsg = 
          "Expected 1 or 3 parameters while " + std::to_string(argc - 1) + " "\
          "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance "\
          "inputYAMLName variation_name=""* variation_value=0** "\
+         "daugher1id=original*** daughet2id=original"\
          "numberOfThreads=std::thread::hardware_concurrency()\n"\
          "*variation_name can have 3 different values: ptscale, acceptance, or cuts\n"\
          "**variation_value for ptscale represents the value of pTScale parameter\n"\
          "**variation_value for acceptance and cut variations can have "\
          "3 different values: negative, 0, and positive integer\n"\
          "  which represent decreased, default, and increased variation for acceptance variation\n"\
-         "  and loosened, default, and tightened cuts for cuts variation";
+         "  and loosened, default, and tightened cuts for cuts variation\n"\
+         "*** daugher1id and daugher2id show which particle mass will be used for "\
+         "calculation of invariant mass (for example 211 -321 for pi+ k-); "\
+         "original (by default) is assigned from inputYAMLName respective entries";
       CppTools::PrintError(errMsg);
    }
  
@@ -733,13 +738,19 @@ int main(int argc, char **argv)
       {
          cutsVar = std::atoi(argv[3]);
       }
-      else
+      else if (variation != "none")
       {
          CppTools::PrintError("Unknown variation " + variation);
       }
    }
 
-   if (argc == 5) numberOfThreads = std::stoi(argv[4]);
+   double daughter1Mass = -9999.;
+   double daughter2Mass = -9999.;
+
+   if (argc >= 5) daughter1Mass = ParticleMap::mass[std::stoi(argv[4])];
+   if (argc >= 6) daughter2Mass = ParticleMap::mass[std::stoi(argv[5])];
+
+   if (argc == 7) numberOfThreads = std::stoi(argv[6]);
    else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
@@ -817,7 +828,7 @@ int main(int argc, char **argv)
       }
       else CppTools::PrintInfo("Spectra fit was not found in file " + resultFileName);
    }
-   else CppTools::PrintInfo("File " + resultFileName + " was not found for obtaining spectra fit");
+   else CppTools::PrintInfo("File " + resultFileName + " was not found for obtaining reweight");
 
    if (!reweightForSpectra)
    {
@@ -942,14 +953,14 @@ int main(int argc, char **argv)
                               inputYAMLResonance["daughter1_id"].as<int>(),
                               inputYAMLResonance["daughter2_id"].as<int>(),
                               magneticField["name"].as<std::string>(), 
-                              pTRange["name"].as<std::string>());
+                              pTRange["name"].as<std::string>(), daughter1Mass, daughter2Mass);
          if (inputYAMLResonance["has_antiparticle"].as<bool>())
          {
             AnalyzeConfiguration(thrContainer, resonanceName, 
                                  -1*inputYAMLResonance["daughter2_id"].as<int>(),
                                  -1*inputYAMLResonance["daughter1_id"].as<int>(),
                                  magneticField["name"].as<std::string>(), 
-                                 pTRange["name"].as<std::string>());
+                                 pTRange["name"].as<std::string>(), daughter2Mass, daughter1Mass);
          }
       }
    }
@@ -975,6 +986,17 @@ int main(int argc, char **argv)
    if (cutsVar != 0) 
    {
       outputFileName += std::string("_cuts_var_") + (cutsVar < 0 ? "loosened" : "tightened");
+   }
+
+   if (argc >= 5)
+   {
+      outputFileName += "_";
+      outputFileName += argv[4];
+   }
+   if (argc >= 6)
+   {
+      outputFileName += "_";
+      outputFileName += argv[5];
    }
 
    outputFileName += ".root";
