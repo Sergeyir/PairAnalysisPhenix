@@ -343,11 +343,17 @@ namespace AnalyzeSimResonance
     *
     * @param[in] thrContainer the current ThrContainer in which the data will be written to 
     * @param[in] particleName name of the particle to be analyzed 
-    * @param[in] pTRangeName name of the pT range to be analyzed 
+    * @param[in] daughter1Id id of a 1st decay product
+    * @param[in] daughter2Id id of a 2nd decay product
+    * @param[in] dmagneticFieldName name of a magnetic field
+    * @param[in] pTRangeName name of a pT range (as is in the name of a file containing a tree)
+    * @param[in] daughter1Mass mass of a 1st decay product. Mass may differ from the PDG value of a particle with daughter1Id in order to study contamination of particles in different channels. If the passed value is smaller than 0, it will be assigned the mass of particle with the daughter1Id
+    * @param[in] daughter2Mass mass of a 2nd decay product. Mass may differ from the PDG value of a particle with daughter2Id in order to study contamination of particles in different channels. If the passed value is smaller than 0, it will be assigned the mass of particle with the daughter1Id
     */
    void AnalyzeConfiguration(ThrContainer& thrContainer, const std::string& particleName,
                              const int daughter1Id, const int daugther2Id,
-                             const std::string& magneticFieldName, const std::string& pTRangeName);
+                             const std::string& magneticFieldName, const std::string& pTRangeName,
+                             double daughter1Mass = -9999., double daughter2Mass = -9999);
    /* @struct DetectorWeights
     * @brief Container for storinga detector weights or weight variations 
     */
