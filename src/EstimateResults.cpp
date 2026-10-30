@@ -99,10 +99,12 @@ int main(int argc, char **argv)
    const std::string resultsOutputDir = "data/Results/" + runName;
    std::filesystem::create_directories(resultsOutputDir);
 
-   const std::string outputDirResults = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
+   const std::string outputDirResults = 
+      "output/Results/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDirResults);
 
-   const std::string outputDirSys = "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
+   const std::string outputDirSys = 
+      "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDirSys);
 
    double spectraNorm = inputYAMLResonance["branching_ratio"].as<double>();
@@ -110,8 +112,8 @@ int main(int argc, char **argv)
    if (inputYAMLResonance["has_antiparticle"] && 
        inputYAMLResonance["separate_antiparticle"]) spectraNorm *= 2.;
 
-   const std::string resultsOutputFileName = resultsOutputDir + "/" + std::to_string(taxiNumber) + 
-                                             "_" + resonanceName + ".root";
+   const std::string resultsOutputFileName = 
+      resultsOutputDir + "/" + std::to_string(taxiNumber) + "_" + resonanceName + ".root";
 
    TFile *resultsOutputFile = TFile::Open(resultsOutputFileName.c_str(), "RECREATE");
 
@@ -217,8 +219,8 @@ int main(int argc, char **argv)
       double yMax = 1e-31;
 
       TLegend legend(0.6, 0.7, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
-      legend.SetFillColorAlpha(0, 0.);
+      legend.SetLineColorAlpha(kGray, 0.3);
+      legend.SetFillColorAlpha(kWhite, 0.5);
 
       std::vector<int> methodColors;
 
@@ -227,8 +229,10 @@ int main(int argc, char **argv)
          const std::string methodName = method["name"].as<std::string>();
          methodColors.emplace_back(TColor::GetColor(method["color"].as<std::string>().c_str()));
 
-         const double methodPTMin = pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_min"].as<int>()];
-         const double methodPTMax = pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_max"].as<int>() + 1];
+         const double methodPTMin = 
+            pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_min"].as<int>()];
+         const double methodPTMax = 
+            pTBinRanges[method["centrality_bin_parameters"][iC]["pt_bin_max"].as<int>() + 1];
 
          const std::string inputFileName = 
             "data/RawYields/" + runName + "/Resonance/" + std::to_string(taxiNumber) + 
@@ -470,8 +474,8 @@ int main(int argc, char **argv)
             resultVarCutsVarT.Draw("SAME");
 
             TLegend legend(0.15, 0.85, 0.9, 0.95);
-            legend.SetLineColorAlpha(0, 0.);
-            legend.SetFillColorAlpha(0, 0.);
+            legend.SetLineColorAlpha(kGray, 0.3);
+            legend.SetFillColorAlpha(kWhite, 0.5);
             legend.SetNColumns(2);
 
             legend.AddEntry(&resultVarCutsVarL, "Loosened cuts");
@@ -613,8 +617,8 @@ int main(int argc, char **argv)
             }
 
             TLegend legend(0.15, 0.85, 0.9, 0.95);
-            legend.SetLineColorAlpha(0, 0.);
-            legend.SetFillColorAlpha(0, 0.);
+            legend.SetLineColorAlpha(kGray, 0.3);
+            legend.SetFillColorAlpha(kWhite, 0.5);
             legend.SetNColumns(3);
 
             legend.AddEntry(&sysPTScale, "#it{p}_{T} scale");
@@ -629,9 +633,6 @@ int main(int argc, char **argv)
                                    "_" + methodName + "_" + centralityName);
          }
       }
-
-      resultsOutputFile->mkdir(centralityName.c_str());
-      resultsOutputFile->cd(centralityName.c_str());
 
       TH1D distrResultingSpectraVsPTStatErr("spectra vs pT with stat errors", "", 
                                             pTNBins, &pTBinRanges[0]);
@@ -712,6 +713,11 @@ int main(int argc, char **argv)
       tsallisFit.SetParameters(1., 2.5, 10.);
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
+      /*
+      // source: https://arxiv.org/pdf/1302.1970
+      // To do: finish the equation
+      TF1 tsallisFit("tsallis fit", "");
+                     */
 
       tsallisFit.SetRange(xMin/1.05, xMax*1.05);
 
@@ -772,6 +778,9 @@ int main(int argc, char **argv)
             }
          }
       }
+
+      resultsOutputFile->mkdir(centralityName.c_str());
+      resultsOutputFile->cd(centralityName.c_str());
 
       distrResultingSpectraVsPTStatErr.Clone()->Write();
       distrResultingSpectraVsPTSysErr.Clone()->Write();
@@ -859,8 +868,6 @@ int main(int argc, char **argv)
       ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
                              "_spectra_" + centralityName + "_all_methods");
 
-      legend.Clear();
-
       canvSpectra.Clear();
 
       gPad->SetLogy(false);
@@ -895,6 +902,8 @@ int main(int argc, char **argv)
 
       ROOTTools::PrintCanvas(&canvSpectra, outputDirResults + "/" + resonanceName + 
                               + "_spectra_ratio_all_methods_comp_" + centralityName);
+
+      legend.Clear();
 
       if (estimateFactors)
       {
@@ -956,7 +965,7 @@ int main(int argc, char **argv)
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
          gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, 0., xMax + 0.1, maxRAB, 
+         ROOTTools::DrawFrame(xMin - 0.1, 0.01, xMax + 0.1, CppTools::Maximum(maxRAB, 1.99), 
                               "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
          if (maxRAB > 1.)
@@ -985,7 +994,7 @@ int main(int argc, char **argv)
             const std::string methodName = 
                inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>();
 
-            legend.AddEntry(distrRABsVsPTStatErr[i], methodName.c_str(), "PLC");
+            legend.AddEntry(distrRABsVsPTStatErr[i], methodName.c_str(), "L");
          }
 
          legend.Draw();
