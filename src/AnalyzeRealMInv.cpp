@@ -15,43 +15,76 @@ using namespace AnalyzeRealMInv;
 
 int main(int argc, char **argv)
 {
-   if (argc < 3 || argc > 7)
+   argparse::ArgumentParser parser("AnalyzeRealMInv");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name of the input .yaml file containing information about the resonance");
+   parser.add_argument("taxiNumber").
+          help("taxi number").
+          scan<'i', int>();
+
+   parser.add_argument("-m", "--method").
+          help("method(s) to analyze (i.e. NoPID, TOF2PID, etc.)").
+          default_value("all").
+          nargs(argparse::nargs_pattern::at_least_one);
+   parser.add_argument("-j").
+          help("number of threads").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      CppTools::PrintError("Expected 2-5 parameters while " + std::to_string(argc - 1) + " "\
-                           "parameter(s) were provided \n Usage: bin/AnalyzeRealMInv "\
-                           "inputYAMLName taxiNumber methodName=all rescaleBG=1 rebinX=1"\
-                           "numberOfThreads=std::thread::hardware_concurrency()");
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
  
-   CppTools::CheckInputFile(argv[1]);
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
 
-   taxiNumber = std::stoi(argv[2]);
- 
-   if (argc == 7) ROOT::EnableImplicitMT(std::stoi(argv[5]));
-   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-
-   if (argc >= 5) 
-   {
-      rescaleBG = std::stoi(argv[4]);
-      if (rescaleBG <= 0) CppTools::PrintError("Rescale value cannot be 0 or negative");
-   }
-
-   inputYAMLResonance.OpenFile(argv[1]);
+   inputYAMLResonance.OpenFile(parser.get<std::string>("inputYAMLFileName"));
    inputYAMLResonance.CheckStatus("resonance");
 
-   if (argc >= 6) 
+   taxiNumber = parser.get<int>("taxiNumber");
+ 
+   if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
+
+   std::vector<std::string> methodsToAnalyze;
+   if (parser.is_used("-m")) methodsToAnalyze = parser.get<std::vector<std::string>>("--method");
+   else methodsToAnalyze.emplace_back("all");
+
+   std::vector<int> methodIndices;
+   if (methodsToAnalyze.front() == "all")
    {
-      rebinX = std::stoi(argv[5]);
-      if (rebinX <= 0) CppTools::PrintError("Rebin value cannot be 0 or negative");
+      for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
+      {
+         numberOfIterations += pTNBins*inputYAMLResonance["centrality_bins"].size();
+      }
    }
    else
    {
-      rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
-   }
+      for (const std::string& method : methodsToAnalyze)
+      {
+         for (int i = 0; i < static_cast<int>(inputYAMLResonance["pair_selection_methods"].size()); 
+              i++)
+         {
+            if (inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>() ==
+                method) 
+            {
+               methodIndices.push_back(i);
+               break;
+            }
+         }
+         if (methodIndices.back() == -1)
+         {
+            CppTools::PrintError("No method named " + method + " in input file");
+         }
 
-   std::string methodToAnalyze;
-   if (argc >= 4) methodToAnalyze = argv[3];
-   else methodToAnalyze = "all";
+         numberOfIterations += pTNBins*inputYAMLResonance["centrality_bins"].size();
+      }
+   }
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
@@ -92,6 +125,7 @@ int main(int argc, char **argv)
    text.SetTextAngle(270.);
 
    pTNBins = inputYAMLResonance["pt_bins"].size();
+   rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
 
    for (unsigned int i = 0; i < pTNBins; i++)
    {
@@ -102,29 +136,6 @@ int main(int argc, char **argv)
    sigmalizedYieldExtractionRange = 
       inputYAMLResonance["sigmalized_yield_extraction_range"].as<double>();
 
-   int methodIndex = -1;
-   if (methodToAnalyze == "all")
-   {
-      for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
-      {
-         numberOfIterations += pTNBins*inputYAMLResonance["centrality_bins"].size();
-      }
-   }
-   else
-   {
-      for (int i = 0; i < static_cast<int>(inputYAMLResonance["pair_selection_methods"].size()); i++)
-      {
-         if (inputYAMLResonance["pair_selection_methods"][i]["name"].as<std::string>() ==
-             methodToAnalyze) methodIndex = i;
-      }
-      if (methodIndex == -1)
-      {
-         CppTools::PrintError("No method named " + methodToAnalyze + " in input file");
-      }
-
-      numberOfIterations = pTNBins*inputYAMLResonance["centrality_bins"].size();
-   }
-
    parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
    std::filesystem::create_directories(parametersOutputDir);
 
@@ -132,7 +143,7 @@ int main(int argc, char **argv)
    std::filesystem::create_directories(sysOutputDir);
 
    // performing fits for specified pair selection methods
-   if (methodToAnalyze == "all")
+   if (methodsToAnalyze.front() == "all")
    {
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
       {
@@ -141,7 +152,10 @@ int main(int argc, char **argv)
    }
    else 
    {
-      PerformMInvFits(inputYAMLResonance["pair_selection_methods"][methodIndex]);
+      for (const int& i : methodIndices)
+      {
+         PerformMInvFits(inputYAMLResonance["pair_selection_methods"][i]);
+      }
    }
 
    parametersOutputFile->Close();

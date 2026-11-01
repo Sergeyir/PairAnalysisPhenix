@@ -375,11 +375,6 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                }
             }
 
-            /*
-            if (idPC2 == PART_ID::JUNK && idPC3 == PART_ID::JUNK && idEMCal == PART_ID::JUNK && 
-                idTOFe == PART_ID::JUNK && idTOFw == PART_ID::JUNK) continue;
-                */
-
             histContainer.distrOrigPTVsDecayRecPT->Fill(origPT, pT, eventWeight*weightDCPC1);
 
             switch (charge)
@@ -700,63 +695,93 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if ((argc != 2 && argc < 4) || argc > 7) 
+   argparse::ArgumentParser parser("AnalyzeRealMInv");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name of the input .yaml file containing information about the resonance");
+
+   parser.add_argument("-j").
+          help("number of threads").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   parser.add_argument("-s", "--svariation").
+          help("systematic variation (ptscale, acceptance, cuts) and value for the variation. "\
+               "ptscale will scale the resonance and decay product pT by its value. acceptance "\
+               "will decrease or increase (negative and positive values respectively) the "\
+               "detector system acceptance by its uncertainty. cuts will loosed or tighten "\
+               "(negative and positive values respectively) the cuts applied in the analysis").
+          default_value(std::vector<std::string>{"none", "0"}).
+          nargs(2);
+
+   parser.add_argument("-d", "--daughters").
+          help("Defines daugher ids for the decay channel (211, 321, etc.). For the reconstruction "\
+               "algorithm nothing changes apart from the mass of daughters. This option is "\
+               "useful to investigate resonances contamination in different decay channels. "\
+               "By default daughers are defined in inputYAMLFile").
+          nargs(2);
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      std::string errMsg = 
-         "Expected 1 or 3 parameters while " + std::to_string(argc - 1) + " "\
-         "parameter(s) were provided \n Usage: bin/AnalyzeSimResonance "\
-         "inputYAMLName variation_name=""* variation_value=0** "\
-         "daugher1id=original*** daughet2id=original"\
-         "numberOfThreads=std::thread::hardware_concurrency()\n"\
-         "*variation_name can have 3 different values: ptscale, acceptance, or cuts\n"\
-         "**variation_value for ptscale represents the value of pTScale parameter\n"\
-         "**variation_value for acceptance and cut variations can have "\
-         "3 different values: negative, 0, and positive integer\n"\
-         "  which represent decreased, default, and increased variation for acceptance variation\n"\
-         "  and loosened, default, and tightened cuts for cuts variation\n"\
-         "*** daugher1id and daugher2id show which particle mass will be used for "\
-         "calculation of invariant mass (for example 211 -321 for pi+ k-); "\
-         "original (by default) is assigned from inputYAMLName respective entries";
-      CppTools::PrintError(errMsg);
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
- 
-   CppTools::CheckInputFile(argv[1]);
 
-   if (argc > 3)
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLResonance.OpenFile(parser.get<std::string>("inputYAMLFileName"));
+   inputYAMLResonance.CheckStatus("resonance");
+
+   if (parser.is_used("--svariation"))
    {
-      const std::string variation = static_cast<std::string>(argv[2]);
+      const std::vector<std::string> variation = 
+         parser.get<std::vector<std::string>>("--svariation");
 
-      if (variation == "ptscale")
+      if (variation[0] == "ptscale")
       {
-         pTScale = std::atof(argv[3]);
+         pTScale = std::stod(variation[1]);
       }
-      else if (variation == "acceptance")
+      else if (variation[0] == "acceptance")
       {
-         acceptanceVar = std::atoi(argv[3]);
+         acceptanceVar = std::stoi(variation[1]);
       }
-      else if (variation == "cuts")
+      else if (variation[0] == "cuts")
       {
-         cutsVar = std::atoi(argv[3]);
+         cutsVar = std::stoi(variation[1]);
       }
-      else if (variation != "none")
+      else if (variation[0] != "none")
       {
-         CppTools::PrintError("Unknown variation " + variation);
+         CppTools::PrintError("Unknown variation " + variation[0]);
       }
    }
 
    double daughter1Mass = -9999.;
    double daughter2Mass = -9999.;
+   if (parser.is_used("--daughters"))
+   {
+      const std::vector<std::string> daughters = 
+         parser.get<std::vector<std::string>>("--daughters");
 
-   if (argc >= 5) daughter1Mass = ParticleMap::mass[std::stoi(argv[4])];
-   if (argc >= 6) daughter2Mass = ParticleMap::mass[std::stoi(argv[5])];
+      if (ParticleMap::mass.find(std::stoi(daughters[0])) == ParticleMap::mass.end())
+      {
+         CppTools::PrintError("Particle id " + daughters[0] + " is not defined in ParticleMap");
+      }
+      if (ParticleMap::mass.find(std::stoi(daughters[1])) == ParticleMap::mass.end())
+      {
+         CppTools::PrintError("Particle id " + daughters[1] + " is not defined in ParticleMap");
+      }
 
-   if (argc == 7) numberOfThreads = std::stoi(argv[6]);
+      daughter1Mass = ParticleMap::mass[std::stoi(daughters[0])];
+      daughter2Mass = ParticleMap::mass[std::stoi(daughters[1])];
+   }
+
+   if (parser.is_used("-j")) numberOfThreads = parser.get<int>("-j");
    else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
-
-   inputYAMLResonance.OpenFile(argv[1]);
-   inputYAMLResonance.CheckStatus("resonance");
 
    runName = inputYAMLResonance["run_name"].as<std::string>();
 
@@ -818,7 +843,7 @@ int main(int argc, char **argv)
    {
       TFile resultFile(resultFileName.c_str());
 
-      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB spectra fit"));
+      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB/tsallis fit"));
 
       if (spectraFit)
       {
