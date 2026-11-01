@@ -13,3 +13,6 @@
 [submodule "PHENIXTools"]
 	path = PHENIXTools
 	url = git@github.com:Sergeyir/PHENIXTools
+[submodule "argparse"]
+	path = argparse
+	url = https://github.com/p-ranav/argparse
