@@ -50,23 +50,24 @@ sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange 
 pair_selection_methods:
 - 
   name: NoPID
+  hist_prefix: NoPID
   bg_default_fit_func: pol3
   sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
   centrality_bin_parameters:
     - {pt_bin_min: 7, pt_bin_max: 15}
   color: "#7a21dd"
   custom_bg_fit: # per bin custom bg fit to account for different background
-    - {func: pol2, pt_bins: [15]} # 6.5-8.5
+    - {func: "", pt_bins: []}
 - 
   name: 1K1TOF1PID
+  hist_prefix: 1K1TOF1PID
   bg_default_fit_func: pol3
   sigmalized_fit_range: 2.5
   centrality_bin_parameters:
     - {pt_bin_min: 0, pt_bin_max: 9}
   color: "#e42536"
   custom_bg_fit:
-    - {func: gaus, pt_bins: [0, 1]} # 0.9-1.9
-    - {func: pol2, pt_bins: [6, 7, 9]} # 1.9-2.3, 2.6-2.9
+    - {func: "", pt_bins: []}
 centrality_bins:
 - 
   name: "MB"
