@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.14.0...4.0.0 FATAL_ERROR)
 
 project(PairAnalysisPhenix)
 
-set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -pipe -O2 -g")
+set(CMAKE_CXX_FLAGS "-Wall -Werror -Wpedantic -pipe -O2")
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
