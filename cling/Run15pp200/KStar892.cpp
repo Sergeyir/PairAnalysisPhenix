@@ -52,7 +52,7 @@ void KStar892()
       spectra.SetLineWidth(2);
       spectra.SetDefaultSysWidth(0.1);
 
-      const std::string oldSpectraFileName = "data/Spectra/pp200/KStar892_averaged.root";
+      const std::string oldSpectraFileName = "data/Spectra/pp200/KStar892.root";
       CppTools::CheckInputFile(oldSpectraFileName);
 
       TFile *oldSpectraFile = TFile::Open(oldSpectraFileName.c_str());
