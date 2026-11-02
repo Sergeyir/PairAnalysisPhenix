@@ -695,7 +695,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   argparse::ArgumentParser parser("AnalyzeRealMInv");
+   argparse::ArgumentParser parser("AnalyzeSimResonance");
 
    parser.add_argument("inputYAMLFileName").
           help("name of the input .yaml file containing information about the resonance");
@@ -760,10 +760,11 @@ int main(int argc, char **argv)
 
    double daughter1Mass = -9999.;
    double daughter2Mass = -9999.;
+   std::vector<std::string> daughters;
+
    if (parser.is_used("--daughters"))
    {
-      const std::vector<std::string> daughters = 
-         parser.get<std::vector<std::string>>("--daughters");
+      daughters = parser.get<std::vector<std::string>>("--daughters");
 
       if (ParticleMap::mass.find(std::stoi(daughters[0])) == ParticleMap::mass.end())
       {
@@ -1013,15 +1014,9 @@ int main(int argc, char **argv)
       outputFileName += std::string("_cuts_var_") + (cutsVar < 0 ? "loosened" : "tightened");
    }
 
-   if (argc >= 5)
+   if (daughters.size() != 0)
    {
-      outputFileName += "_";
-      outputFileName += argv[4];
-   }
-   if (argc >= 6)
-   {
-      outputFileName += "_";
-      outputFileName += argv[5];
+      outputFileName += "_" + daughters[0] + "_" + daughters[1];
    }
 
    outputFileName += ".root";

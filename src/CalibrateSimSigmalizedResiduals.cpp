@@ -18,40 +18,44 @@ using namespace CalibrateSimSigmalizedResiduals;
 
 int main(int argc, char **argv)
 {
-   using namespace CalibrateSimSigmalizedResiduals;
+   argparse::ArgumentParser parser("CalibrateSimSigmalizedResiduals");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information about the run (main)");
+
+   parser.add_argument("-j").
+          help("number of threads (only for fits)").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
+   {
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
+   }
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLMain.OpenFile(parser.get<std::string>("inputYAMLFileName"), "main");
+   inputYAMLMain.CheckStatus("main");
 
    TH1::AddDirectory(false);
    TH2::AddDirectory(false);
    TH3::AddDirectory(false);
 
-   if (argc < 2 || argc > 3) 
-   {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + 
-                           " parameter(s) were provided \n";
-      errMsg += "Usage: bin/CalibrateSimSigmalizedResiduals inputFile numberOfThreads=" + 
-                std::to_string(std::thread::hardware_concurrency()) + "*\n";
-      errMsg += "*: default argument is the number of threads on the current machine \n";
-      CppTools::PrintError(errMsg);
-   }
-
-   // initializing this program parameters
-   inputYAMLMain.OpenFile(argv[1], "main");
-   inputYAMLMain.CheckStatus("main");
-
    runName = inputYAMLMain["run_name"].as<std::string>();
 
-   unsigned int numberOfThreads;
-   if (argc > 2) numberOfThreads = std::stoi(argv[2]);
-   else numberOfThreads = std::thread::hardware_concurrency();
-   if (numberOfThreads == 0) CppTools::PrintError("Number of threads must be bigger than 0");
+   if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
    // initializing ROOT parameters
    ROOT::EnableThreadSafety();
    gErrorIgnoreLevel = kWarning;
    gStyle->SetOptStat(0);
    gStyle->SetOptFit(0);
-
-   ROOT::EnableImplicitMT(numberOfThreads);
 
    outputDir = "output/CalibrateSimSigmalizedResiduals/" + runName + "/";
    std::filesystem::create_directories(outputDir);

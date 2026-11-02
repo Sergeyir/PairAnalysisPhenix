@@ -28,7 +28,7 @@ int main(int argc, char **argv)
           default_value("all").
           nargs(argparse::nargs_pattern::at_least_one);
    parser.add_argument("-j").
-          help("number of threads").
+          help("number of threads (only for fits)").
           default_value(std::thread::hardware_concurrency()).
           nargs(1).
           scan<'i', int>();
@@ -55,7 +55,10 @@ int main(int argc, char **argv)
    if (parser.is_used("-m")) methodsToAnalyze = parser.get<std::vector<std::string>>("--method");
    else methodsToAnalyze.emplace_back("all");
 
+   pTNBins = inputYAMLResonance["pt_bins"].size();
+
    std::vector<int> methodIndices;
+
    if (methodsToAnalyze.front() == "all")
    {
       for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
@@ -124,7 +127,6 @@ int main(int argc, char **argv)
 
    text.SetTextAngle(270.);
 
-   pTNBins = inputYAMLResonance["pt_bins"].size();
    rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
 
    for (unsigned int i = 0; i < pTNBins; i++)

@@ -15,38 +15,59 @@ using namespace EstimateResults;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 5) 
+   argparse::ArgumentParser parser("EstimateResults");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name of the input .yaml file containing information about the resonance");
+
+   parser.add_argument("-n", "--ntaxi").
+          help("taxi job number (default value is stored in inputYAMLFileName").
+          nargs(1).
+          scan<'i', int>();
+   parser.add_argument("-l", "--ltaxi").
+          help("taxi job number with loosened cut variations "\
+               "(default value is stored in inputYAMLFileName").
+          nargs(1).
+          scan<'i', int>();
+   parser.add_argument("-t", "--ttaxi").
+          help("taxi job number with tightened cut variations "\
+               "(default value is stored in inputYAMLFileName").
+          nargs(1).
+          scan<'i', int>();
+   parser.add_argument("-m", "--method").
+          help("method(s) to analyze (i.e. NoPID, TOF2PID, etc.)").
+          default_value("all").
+          nargs(argparse::nargs_pattern::at_least_one);
+   parser.add_argument("-j").
+          help("number of threads (only for fits)").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      CppTools::PrintError("Expected 2 parameters while " + std::to_string(argc - 1) + " "\
-                           "parameter(s) were provided \n Usage: bin/EstimateResults "\
-                           "inputYAMLName taxiNumber=default* taxiNumberWithLoosenedCuts=default*"\
-                           "taxiNumberWithTightenedCuts=default*"\
-                           "* default taxi job numbers are defined in inputYAMLName; "\
-                           "if default value in inputYAMLName is -9999 then you have to provide the "\
-                           "taxi number manually or change the default value\n"\
-                           "  default value of -9999 for cut variations will make the program skip "\
-                           "cut variation analysis and systematics");
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
+ 
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
 
-   gStyle->SetPalette(kSouthWest);
-
-   CppTools::CheckInputFile(argv[1]);
-
-   inputYAMLResonance.OpenFile(argv[1]);
+   inputYAMLResonance.OpenFile(parser.get<std::string>("inputYAMLFileName"));
    inputYAMLResonance.CheckStatus("resonance");
 
-   if (argc > 2) taxiNumber = std::stoi(argv[2]);
+   if (parser.is_used("--ntaxi")) taxiNumber = parser.get<int>("--ntaxi");
    else taxiNumber = inputYAMLResonance["taxi_job"].as<int>();
-   if (argc > 4) 
-   {
-      taxiNumberLoosenedCuts = std::stoi(argv[3]);
-      taxiNumberTightenedCuts = std::stoi(argv[4]);
-   }
-   else 
-   {
-      taxiNumberLoosenedCuts = inputYAMLResonance["taxi_job_loosened_cuts"].as<int>();
-      taxiNumberTightenedCuts = inputYAMLResonance["taxi_job_tightened_cuts"].as<int>();
-   }
+
+   if (parser.is_used("--ltaxi")) taxiNumberLoosenedCuts = parser.get<int>("--ltaxi");
+   else taxiNumberLoosenedCuts = inputYAMLResonance["taxi_job_loosened_cuts"].as<int>();
+
+   if (parser.is_used("--ttaxi")) taxiNumberTightenedCuts = parser.get<int>("--ttaxi");
+   else taxiNumberTightenedCuts = inputYAMLResonance["taxi_job_tightened_cuts"].as<int>();
+ 
+   if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
    if (taxiNumber == -9999) CppTools::PrintError("Taxi job number was not defined");
 
@@ -78,7 +99,6 @@ int main(int argc, char **argv)
    gStyle->SetOptStat(kFALSE);
 
    TH1::AddDirectory(kFALSE);
-   ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
 
    const std::string resonanceName = inputYAMLResonance["name"].as<std::string>();
    const double resonanceMass = inputYAMLResonance["mass"].as<double>();

@@ -18,36 +18,78 @@ using namespace SplitSimTree;
 
 int main(int argc, char **argv)
 {
-   if (argc < 4 || argc > 5) 
+   argparse::ArgumentParser parser("AnalyzeRealMInv");
+
+   parser.add_argument("inputFile.root").
+          help("input file name");
+   parser.add_argument("outputFile.root").
+          help("output file name");
+
+   parser.add_argument("--ptrange").
+          help("pT range cut (min and max). By default no restriction is applied").
+          nargs(2).
+          scan<'g', double>();
+   parser.add_argument("--itname").
+          help("Name of the TTree in input file").
+          default_value("Tree").
+          nargs(1);
+   parser.add_argument("--otname").
+          help("Name of the TTree in output file the data will be written into").
+          default_value("Tree").
+          nargs(1);
+   parser.add_argument("--nevents").
+          help("Number of events that will be written in outputFile.root. By default all "\
+               "events in inputFile.root will be processed").
+          nargs(1).
+          scan<'i', unsigned long>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      std::string errMsg = "Expected 3-4 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/SplitSimTree ";
-      errMsg += "treeFileName.root pTMin pTMax numberOfEvents=all";
-      CppTools::PrintError(errMsg);
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputFile.root"));
  
-   CppTools::CheckInputFile(argv[1]);
- 
-   std::filesystem::create_directories("tmp");
+   TFile *inputFile = TFile::Open(parser.get<std::string>("inputFile.root").c_str());
 
-   pTMin = std::stod(argv[2]);
-   pTMax = std::stod(argv[3]);
+   std::vector<double> pTRange;
+   if (parser.is_used("--ptrange")) pTRange = parser.get<std::vector<double>>("--ptrange");
+   else pTRange = std::vector<double>{-1e31, 1e31};
 
-   TFile *inputFile = TFile::Open(argv[1]);
+   if (parser.is_used("--itname")) 
+   {
+      inputTreeName = parser.get<std::string>("--itname");
+   }
+   else inputTreeName = "Tree";
 
-   numberOfEvents = ((static_cast<TTree *>(inputFile->Get("Tree"))->GetEntries()));
-   if (argc >= 5) numberOfEvents = CppTools::Minimum(std::stoul(argv[4]), numberOfEvents);
+   if (parser.is_used("--otname")) 
+   {
+      outputTreeName = parser.get<std::string>("--otname");
+   }
+   else outputTreeName = "Tree";
+
+   if (!inputFile->Get(inputTreeName.c_str())) 
+   {
+      CppTools::PrintError("No tree named " + inputTreeName + 
+                           " in file " + parser.get<std::string>("inputFile.root"));
+   }
+
+   numberOfEvents = ((static_cast<TTree *>(inputFile->Get(inputTreeName.c_str()))->GetEntries()));
+   if (parser.is_used("--nevents")) numberOfEvents = 
+      CppTools::Minimum(parser.get<unsigned long>("--nevents"), numberOfEvents);
 
    ProgressBar pBar{"BLOCK"};
 
-   TTreeReader reader("Tree", inputFile);
+   TTreeReader reader(inputTreeName.c_str(), inputFile);
    SimTreeReader simCNT(reader);
 
-   const std::string outputFileName = "tmp/split_tree_" + std::string(argv[2]) + "-" + 
-                                      std::string(argv[3]) + ".root";
-
-   TFile outputFile(outputFileName.c_str(), "RECREATE");
+   TFile outputFile(parser.get<std::string>("outputFile.root").c_str(), "RECREATE");
    outputFile.SetCompressionLevel(6);
+
+   tree.SetName(outputTreeName.c_str());
 
    while (reader.Next() && numberOfProcessedEvents < numberOfEvents)
    {
@@ -57,7 +99,7 @@ int main(int argc, char **argv)
       numberOfCalls++;
       const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + pow(simCNT.mom_orig(1), 2));
 
-      if (origPT < pTMin || origPT > pTMax) continue;
+      if (origPT < pTRange[0] || origPT > pTRange[1]) continue;
 
       numberOfProcessedEvents++;
 
@@ -190,8 +232,8 @@ int main(int argc, char **argv)
    outputFile.Close();
  
    pBar.Finish();
-   CppTools::PrintInfo("SplitSimTree has finished running; "\
-                       "split tree was written as " + outputFileName);
+   CppTools::PrintInfo("SplitSimTree has finished running; split tree was written in " + 
+                       parser.get<std::string>("outputFile.root"));
 
    return 0;
 }

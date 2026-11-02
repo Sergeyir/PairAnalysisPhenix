@@ -11,6 +11,8 @@
 
 #include <array>
 
+#include "argparse/argparse.hpp"
+
 #include "TError.h"
 #include "TFile.h"
 #include "TH1.h"

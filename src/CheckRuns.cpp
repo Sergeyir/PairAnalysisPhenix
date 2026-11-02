@@ -15,29 +15,40 @@ using namespace CheckRuns;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 4) 
+   argparse::ArgumentParser parser("CheckRuns");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information about the run (main)");
+
+   parser.add_argument("-m", "--mthreshold").
+          help("multiplicity threshold").
+          default_value(1.2).
+          nargs(1).
+          scan<'g', double>();
+   parser.add_argument("-c", "--cnthreshold").
+          help("chi2/NDF threshold").
+          default_value(3.).
+          nargs(1).
+          scan<'g', double>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      CppTools::PrintError("Expected 1-3 parameters while " + std::to_string(argc - 1) + " "\
-                           "parameter(s) were provided \n Usage: bin/CheckRuns "\
-                           "inputYAMLMain multThreshold=2. chi2NDFThreshold=3.");
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
 
-   CppTools::CheckInputFile(argv[1]);
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
 
-   if (argc > 2) 
-   {
-      multThreshold = std::stof(argv[2]);
-      if (argc > 3) 
-      {
-         chi2NDFThreshold = std::stof(argv[3]);
-      }
-   }
+   inputYAMLMain.OpenFile(parser.get<std::string>("inputYAMLFileName"), "main");
+   inputYAMLMain.CheckStatus("main");
+
+   if (parser.is_used("--mthreshold")) multThreshold = parser.get<double>("--mthrehshold");
+   if (parser.is_used("--cnthreshold")) chi2NDFThreshold = parser.get<double>("--cnthrehshold");
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
-
-   inputYAMLMain.OpenFile(argv[1], "main");
-   inputYAMLMain.CheckStatus("main");
 
    runName = inputYAMLMain["run_name"].as<std::string>();
 

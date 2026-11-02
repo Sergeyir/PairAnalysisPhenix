@@ -18,24 +18,42 @@ using namespace M2IdentFit;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
-   {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/M2IdentFit \
-                 inputYAMLName detectorName=all* \n\
-                 * you can specify the name of a detector you want for this program to run for or \
-                 to leave it empty for the program to run over all detectors that are specified in \
-                 the input file";
-      CppTools::PrintError(errMsg);
-   }
- 
-   CppTools::CheckInputFile(argv[1]);
- 
-   ROOT::EnableImplicitMT();
+   argparse::ArgumentParser parser("M2IdentFit");
 
-   inputYAMLM2Id.OpenFile(argv[1], "m2id");
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information about m2 identification");
+
+   parser.add_argument("-d", "--detector").
+          help("detector(s) that will be used in m2 identification study").
+          default_value("all").
+          nargs(argparse::nargs_pattern::at_least_one);
+   parser.add_argument("-j").
+          help("number of threads (only for fits)").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
+   {
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
+   }
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLM2Id.OpenFile(parser.get<std::string>("inputYAMLFileName"), "m2id");
    inputYAMLM2Id.CheckStatus("m2id");
 
+   std::vector<std::string> detectorsToAnalyze;
+   if (parser.is_used("--detector")) detectorsToAnalyze = 
+      parser.get<std::vector<std::string>>("--detector");
+   else detectorsToAnalyze.emplace_back("all");
+
+   if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
+ 
    runName = inputYAMLM2Id["run_name"].as<std::string>();
 
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
@@ -66,37 +84,46 @@ int main(int argc, char **argv)
 
    // calculating the number of iterations needed for this program
    // this step is needed by progress bar
-   for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
+   for (const std::string& detectorName : detectorsToAnalyze)
    {
-      if (argc == 3 && detector["name"].as<std::string>() != std::string(argv[2])) continue;
-
-      TH3F* m2DistrPos = static_cast<TH3F *>
-         (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + ", charge>0").c_str()));
-
-      for (const YAML::Node& pTBin : inputYAMLM2Id["pt_bins"])
+      bool detectorEntryValid = false;
+      for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
       {
-         if (pTBin["min"].as<double>() + 1e-3 < m2DistrPos->GetXaxis()->GetBinLowEdge(1)) continue;
-         if (pTBin["max"].as<double>() - 1e-3 > m2DistrPos->GetXaxis()->
-             GetBinUpEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
-         numberOfIterations++;
+         if (detectorsToAnalyze.front() != "all" && 
+             detectorName != detector["name"].as<std::string>()) continue;
+
+         detectorEntryValid = true;
+
+         TH3F* m2DistrPos = static_cast<TH3F *>
+            (inputDataFile->Get(("m2, " + detector["name"].as<std::string>() + 
+                                 ", charge>0").c_str()));
+
+         for (const YAML::Node& pTBin : inputYAMLM2Id["pt_bins"])
+         {
+            if (pTBin["min"].as<double>() + 1e-3 < m2DistrPos->GetXaxis()->GetBinLowEdge(1)) continue;
+            if (pTBin["max"].as<double>() - 1e-3 > m2DistrPos->GetXaxis()->
+                GetBinUpEdge(m2DistrPos->GetXaxis()->GetNbins())) break;
+            numberOfIterations++;
+         }
       }
+      if (!detectorEntryValid) CppTools::PrintError("No detector entry " + detectorName + " in "\
+                                                    "file " + inputYAMLM2Id.GetFileName());
    }
    numberOfIterations++;
 
-   if (numberOfIterations == 1) 
+   for (const std::string& detectorName : detectorsToAnalyze)
    {
-      CppTools::PrintError("No entry for \"" + std::string(argv[2]) + 
-                           "\" detector found in file " + std::string(argv[1]));
-   }
+      for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
+      {
+         if (detectorsToAnalyze.front() != "all" && 
+             detectorName != detector["name"].as<std::string>()) continue;
 
-   for (const YAML::Node& detector : inputYAMLM2Id["detectors"])
-   {
-      if (argc == 3 && detector["name"].as<std::string>() != std::string(argv[2])) continue;
-      std::filesystem::create_directories(outputDir + "/" + detector["name"].as<std::string>());
-      PerformFitsForDetector(detector);
-      pBar.Clear();
-      CppTools::PrintInfo(detector["name"].as<std::string>() + " done");
-      pBar.RePrint();
+         std::filesystem::create_directories(outputDir + "/" + detector["name"].as<std::string>());
+         PerformFitsForDetector(detector);
+         pBar.Clear();
+         CppTools::PrintInfo(detector["name"].as<std::string>() + " done");
+         pBar.RePrint();
+      }
    }
    pBar.Clear();
    CppTools::PrintInfo("M2IdentFit has finished running succesfully");

@@ -304,16 +304,22 @@ double DeadMapSys::GetUncertainty(TH2F *&realHeatmap, TH2F *&simHeatmap,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2) 
-   {
-      std::string errMsg = "Expected 1 parameter while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/DeadMapSys inputYAMLName";
-      CppTools::PrintError(errMsg);
-   }
- 
-   CppTools::CheckInputFile(argv[1]);
+   argparse::ArgumentParser parser("DeadMapSys");
 
-   inputYAMLMain.OpenFile(argv[1], "main");
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information about the run (main)");
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
+   {
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
+   }
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLMain.OpenFile(parser.get<std::string>("inputYAMLFileName"), "main");
    inputYAMLMain.CheckStatus("main");
 
    runName = inputYAMLMain["run_name"].as<std::string>();

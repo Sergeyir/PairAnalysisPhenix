@@ -11,6 +11,8 @@
 
 #include <thread>
 
+#include "argparse/argparse.hpp"
+
 #include "TF1.h"
 #include "TH1.h"
 #include "TH2.h"
@@ -34,10 +36,12 @@
  */
 namespace SplitSimTree
 {
-   /// minimum pT cut for smaller TTree
-   double pTMin;
-   /// maximum pT cut for smaller TTree
-   double pTMax;
+   /// pT range of original particle
+   std::vector<double> pTRange;
+   /// name of the tree in inputFile.root
+   std::string inputTreeName;
+   /// name of the tree in outputFile.root
+   std::string outputTreeName;
    /// number of events across all trees
    unsigned long numberOfEvents = 0;
    /// number of processed events
@@ -47,7 +51,7 @@ namespace SplitSimTree
 
    // the following code was copied from /gpfs/mnt/gpfs02/phenix/plhf/plhf1/dlario/sim/tree_maker/DataAnalyzer.C to avoid any possible mismatch
 
-   TTree tree("Tree", "Tree");
+   TTree tree("Tree", "");
 
    TH1D distrOrigPT = TH1D("orig_pt", "pt", 200, 0., 20);
    TH2D distrOrigPTVsPT = TH2D("distrOrigPTVsPT", "pt", 200, 0., 20, 200, 0., 20);;

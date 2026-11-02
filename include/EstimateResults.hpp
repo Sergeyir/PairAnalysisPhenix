@@ -11,6 +11,8 @@
 
 #include <thread>
 
+#include "argparse/argparse.hpp"
+
 #include "TFile.h"
 #include "TH1.h"
 #include "TF1.h"

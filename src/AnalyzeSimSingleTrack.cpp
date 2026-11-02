@@ -886,23 +886,35 @@ void AnalyzeSimSingleTrack::AnalyzeConfiguration(ThrContainer &thrContainer,
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
+   argparse::ArgumentParser parser("AnalyzeSimSingleTrack");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information "\
+               "about the MC single track analysis");
+
+   parser.add_argument("-j").
+          help("number of threads").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/AnalyzeSimSingleTrack ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
-      CppTools::PrintError(errMsg);
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLSim.OpenFile(parser.get<std::string>("inputYAMLFileName"), "single_track_sim");
+   inputYAMLSim.CheckStatus("single_track_sim");
  
-   CppTools::CheckInputFile(argv[1]);
- 
-   if (argc == 2) numberOfThreads = std::thread::hardware_concurrency();
-   else numberOfThreads = std::stoi(argv[2]);
+   if (parser.is_used("-j")) numberOfThreads = parser.get<int>("-j");
+   else numberOfThreads = std::thread::hardware_concurrency();
 
    ROOT::EnableImplicitMT(numberOfThreads);
-
-   inputYAMLSim.OpenFile(argv[1], "single_track_sim");
-   inputYAMLSim.CheckStatus("single_track_sim");
 
    runName = inputYAMLSim["run_name"].as<std::string>();
 

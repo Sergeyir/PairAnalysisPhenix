@@ -18,15 +18,23 @@ using namespace EstimateSingleTrackEff;
 
 int main(int argc, char **argv)
 {
-   if (argc != 2) 
+   argparse::ArgumentParser parser("EstimateSingleTrackEff");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name or path of the input .yaml file containing information "\
+               "about the MC single track analysis");
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      std::string errMsg = "Expected 1 parameter while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/EstimateSingleTrackEff ";
-      errMsg += "inputYAMLName/path to .yaml input";
-      CppTools::PrintError(errMsg);
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
- 
-   inputYAMLSim.OpenFile(argv[1], "single_track_sim");
+
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLSim.OpenFile(parser.get<std::string>("inputYAMLFileName"), "single_track_sim");
    inputYAMLSim.CheckStatus("single_track_sim");
  
    runName = inputYAMLSim["run_name"].as<std::string>();

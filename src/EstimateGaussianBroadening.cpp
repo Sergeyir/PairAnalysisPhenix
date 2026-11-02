@@ -15,24 +15,35 @@ using namespace EstimateGaussianBroadening;
 
 int main(int argc, char **argv)
 {
-   if (argc < 2 || argc > 3) 
+   argparse::ArgumentParser parser("EstimateGaussianBroadening");
+
+   parser.add_argument("inputYAMLFileName").
+          help("name of the input .yaml file containing information about the resonance");
+
+   parser.add_argument("-j").
+          help("number of threads (only for fits)").
+          default_value(std::thread::hardware_concurrency()).
+          nargs(1).
+          scan<'i', int>();
+
+   try {parser.parse_args(argc, argv);}
+   catch (const std::exception& err) 
    {
-      std::string errMsg = "Expected 1-2 parameters while " + std::to_string(argc - 1) + " ";
-      errMsg += "parameter(s) were provided \n Usage: bin/EstimateGaussianBroadening ";
-      errMsg += "inputYAMLName numberOfThreads=std::thread::hardware_concurrency()";
-      CppTools::PrintError(errMsg);
+     std::cerr << err.what() << std::endl;
+     std::cerr << parser;
+     std::exit(1);
    }
+
+   if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
+   else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
  
-   CppTools::CheckInputFile(argv[1]);
- 
-   if (argc == 2) ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
-   else ROOT::EnableImplicitMT(std::stoi(argv[2]));
+   CppTools::CheckInputFile(parser.get<std::string>("inputYAMLFileName"));
+
+   inputYAMLResonance.OpenFile(parser.get<std::string>("inputYAMLFileName"));
+   inputYAMLResonance.CheckStatus("resonance");
 
    gStyle->SetOptStat(0);
    gErrorIgnoreLevel = kWarning;
-
-   inputYAMLResonance.OpenFile(argv[1]);
-   inputYAMLResonance.CheckStatus("resonance");
 
    runName = inputYAMLResonance["run_name"].as<std::string>();
 
