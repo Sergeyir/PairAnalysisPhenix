@@ -16,4 +16,5 @@
 --exclude=*.log
 --exclude=Makefile
 --exclude=yaml-cpp
+--exclude=argparse
 --exclude=.ctags*
