@@ -357,7 +357,7 @@ void KStar892()
                            rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(pTMinRAB, 1., pTMaxRAB + static_cast<double>(nCentralityBins)/2.*0.2, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -531,7 +531,7 @@ void KStar892()
                            "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{CP}", 1., 0.95);
 
       TLine line(pTMinRCP, 1., pTMaxRCP, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -657,7 +657,7 @@ void KStar892()
       }
 
       TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -750,7 +750,7 @@ void KStar892()
                            "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(0.49, 1., pTMaxRAB, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 

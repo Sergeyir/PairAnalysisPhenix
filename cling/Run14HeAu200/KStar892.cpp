@@ -10,7 +10,7 @@
 
 const std::string runName = "Run14HeAu200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20511;
+const int taxiNumber = 20527;
 
 const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.6;
@@ -111,6 +111,9 @@ void KStar892()
                                Get((centralityName + "/tsallis fit").c_str())->Clone()));
 
          const double mult = 10./pow(10., i);
+         // multiplying by bias factor since Vlad did not account for it
+         const double biasFactor = 
+            inputYAMLResonance["centrality_bins"][i]["bias_factor"].as<double>();
 
          tsallisFits.back()->SetParameter(0, tsallisFits.back()->GetParameter(0)*mult);
          histsSpectraVsPTStatErr.back()->Scale(mult);
@@ -119,14 +122,14 @@ void KStar892()
          for (int j = 0; j < graphsVladSpectraVsPTStatErr.back()->GetN(); j++)
          {
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult*biasFactor);
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult);
+               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult*biasFactor);
             graphsVladSpectraVsPTSysErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult*biasFactor);
             graphsVladSpectraVsPTSysErr.back()->
                SetPointError(j, graphsVladSpectraVsPTSysErr.back()->GetErrorX(j),
-                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult);
+                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult*biasFactor);
          }
 
          xMin = CppTools::Minimum(xMin, histsSpectraVsPTStatErr.back()->GetBinLowEdge(1));
@@ -348,7 +351,7 @@ void KStar892()
                            rMax, "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(pTMinRAB, 1., pTMaxRAB + static_cast<double>(nCentralityBins)/2.*0.2, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -522,7 +525,7 @@ void KStar892()
                            "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{CP}", 1., 0.95);
 
       TLine line(pTMinRCP, 1., pTMaxRCP, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -598,7 +601,7 @@ void KStar892()
                            "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(pTMinRAB, 1., pTMaxRAB, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 
@@ -642,7 +645,7 @@ void KStar892()
    }
 
    // RAB for new pp200 spectra
-   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20488_KStar892.root";
+   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20530_KStar892.root";
 
    if (std::filesystem::exists(spectraPPNewFileName))
    {
@@ -671,7 +674,7 @@ void KStar892()
                            "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
 
       TLine line(0.49, 1., pTMaxRAB, 1.);
-      line.SetLineColor(kGray + 1);
+      line.SetLineColorAlpha(kBlack, 0.5);
       line.SetLineWidth(3);
       line.SetLineStyle(2);
 

@@ -10,7 +10,7 @@
 
 const std::string runName = "Run15pp200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20488;
+const int taxiNumber = 20530;
 
 TFile *resultsInputFile;
 
@@ -62,16 +62,21 @@ void KStar892()
       TH1D *distrSpectraVsPTSysErr = static_cast<TH1D *>
          (resultsInputFile->Get("MB/spectra vs pT with sys errors"));
 
+      distrSpectraVsPTStatErr->Scale();
+
       TH1D *distrOldSpectraVsPTStatErr = static_cast<TH1D *>
          (oldSpectraFile->Get("spectra vs pT with stat err"));
       TH1D *distrOldSpectraVsPTSysErr = static_cast<TH1D *>
          (oldSpectraFile->Get("spectra vs pT with sys err"));
 
+      TGraphErrors *spectraSTARSysErr = nullptr;
+      TGraphErrors *spectraSTARStatErr = 
+         spectra.GetGraphFromYAMLFile("data/Spectra/pp200/KStar892_STAR.yaml", "MB",
+                                      spectraSTARSysErr, false, false);
+
       distrOldSpectraVsPTStatErr->Scale(1./42.2);
       distrOldSpectraVsPTSysErr->Scale(1./42.2);
 
-      const double xMin = CppTools::Minimum(distrOldSpectraVsPTStatErr->GetBinLowEdge(1),
-                                            distrSpectraVsPTStatErr->GetBinLowEdge(1));
       const double xMax = 
          CppTools::Maximum(distrOldSpectraVsPTStatErr->GetXaxis()->
                            GetBinUpEdge(distrOldSpectraVsPTStatErr->GetXaxis()->GetNbins()),
@@ -80,8 +85,6 @@ void KStar892()
 
       double yMin = CppTools::Minimum(distrOldSpectraVsPTStatErr->GetMinimum(), 
                                       distrSpectraVsPTStatErr->GetMinimum());
-      double yMax = CppTools::Maximum(distrOldSpectraVsPTStatErr->GetMaximum(), 
-                                      distrSpectraVsPTStatErr->GetMaximum());
 
       TF1 *tsallisFit = static_cast<TF1 *>(resultsInputFile->Get("MB/tsallis fit"));
 
@@ -97,16 +100,17 @@ void KStar892()
 
       gPad->SetLogy();
 
-      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
+      ROOTTools::DrawFrame(0., yMin/5., xMax + 0.1, 1e-1, "", "#it{p}_{T} [GeV/#it{c}]",
                            "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
                            "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
       tsallisFit->Draw("SAME");
 
+      spectra.DrawGraph(spectraSTARStatErr, spectraSTARSysErr, kAzure - 3, 0.9, 29, "STAR");
       spectra.DrawHistogram(distrOldSpectraVsPTStatErr, distrOldSpectraVsPTSysErr, kBlack,
-                            0.9, 21, "old");
+                            0.9, 21, "PHENIX old");
       spectra.DrawHistogram(distrSpectraVsPTStatErr, distrSpectraVsPTSysErr, kRed - 3,
-                            0.9, 20, "new");
+                            0.9, 20, "PHENIX new");
 
       legend.Draw();
 
@@ -126,25 +130,40 @@ void KStar892()
 
       yMin = CppTools::Minimum(distrOldSpectraVsPTStatErr->GetMinimum(), 
                                distrSpectraVsPTStatErr->GetMinimum());
-      yMax = CppTools::Maximum(distrOldSpectraVsPTStatErr->GetMaximum(), 
-                               distrSpectraVsPTStatErr->GetMaximum());
+      double yMax = CppTools::Maximum(distrOldSpectraVsPTStatErr->GetMaximum(), 
+                                      distrSpectraVsPTStatErr->GetMaximum());
 
-      ROOTTools::DrawFrame(xMin - 0.1, yMin/1.3, xMax + 0.1, yMax*1.3, 
+      for (int i = 0; i < spectraSTARStatErr->GetN(); i++)
+      {
+         const double tsallisFitVal = tsallisFit->Eval(spectraSTARStatErr->GetPointX(i));
+         spectraSTARStatErr->SetPointY(i, spectraSTARStatErr->GetPointY(i)/tsallisFitVal);
+         spectraSTARStatErr->SetPointError(i, 0., spectraSTARStatErr->GetErrorY(i)/tsallisFitVal);
+
+         yMin = CppTools::Minimum(yMin, spectraSTARStatErr->GetPointY(i));
+         yMax = CppTools::Maximum(yMax, spectraSTARStatErr->GetPointY(i));
+      }
+
+      gPad->SetGrid();
+
+      ROOTTools::DrawFrame(0., yMin/1.3, xMax + 0.1, yMax*1.3, 
                            "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
       if (yMin/1.1 < 1. && yMax*1.1 > 1.)
       {
-         TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+         TLine line(0., 1., xMax + 0.1, 1.);
          line.SetLineColorAlpha(kBlack, 0.5);
          line.SetLineStyle(2);
          line.SetLineWidth(4);
          line.Clone()->Draw();
       }
 
+      spectra.DrawGraph(spectraSTARStatErr, spectraSTARSysErr, kAzure - 3, 0.9, 29, "STAR");
       spectra.DrawHistogram(distrOldSpectraVsPTStatErr, distrOldSpectraVsPTSysErr, kBlack,
-                            0.9, 21, "old");
+                            0.9, 21, "PHENIX old");
       spectra.DrawHistogram(distrSpectraVsPTStatErr, distrSpectraVsPTSysErr, kRed - 3,
-                            0.9, 20, "new");
+                            0.9, 20, "PHENIX new");
+
+      legend.Draw();
 
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
                               + "_spectra_ratio_comp");
