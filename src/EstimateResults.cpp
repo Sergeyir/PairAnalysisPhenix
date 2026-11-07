@@ -132,6 +132,8 @@ int main(int argc, char **argv)
    if (inputYAMLResonance["has_antiparticle"] && 
        inputYAMLResonance["separate_antiparticle"]) spectraNorm *= 2.;
 
+   spectraNorm /= inputYAMLResonance["centrality_bins"][0]["bias_factor"].as<double>();
+
    const std::string resultsOutputFileName = 
       resultsOutputDir + "/" + std::to_string(taxiNumber) + "_" + resonanceName + ".root";
 
@@ -722,14 +724,19 @@ int main(int argc, char **argv)
          else break;
       }
 
-      /*
       TF1 tsallisFit("tsallis fit", 
                      "0.5/(pi*sqrt(x^2 + [3]^2))*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
-                     */
+      /*
       TF1 tsallisFit("tsallis fit", 
                      "0.5/(pi*x)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*(([2] + x)/(([2] + [3])))^(-[1])");
+                     */
+      /*
+      TF1 tsallisFit("tsallis fit", 
+                     "0.5/(pi)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
+                     "([2] + [3])*(([2] + sqrt(x^2 + [3]^2))/(([2] + [3])))^(-[1])");
+                     */
       tsallisFit.SetParameters(1., 2.5, 10.);
       tsallisFit.SetParLimits(1, 2., 30.);
       tsallisFit.FixParameter(3, resonanceMass);
@@ -850,6 +857,8 @@ int main(int argc, char **argv)
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.204); gPad->SetBottomMargin(0.105);
 
+      gPad->SetGrid();
+
       gPad->SetLogy();
 
       ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
@@ -930,9 +939,8 @@ int main(int argc, char **argv)
          std::vector<TH1D *> distrRABsVsPTStatErr;
          std::vector<TH1D *> distrRABsVsPTSysErr;
 
-         // scale for R_{AB} = c_{bias}/N_{coll}
-         const double scaleRAB = centralityBin["bias_factor"].as<double>()/
-                                 centralityBin["N_coll"].as<double>()*42.2;
+         // scale for R_{AB} = 1./N_{coll}
+         const double scaleRAB = 1./centralityBin["N_coll"].as<double>()*42.2;
 
          double maxRAB = 1e-31;
 
@@ -987,6 +995,8 @@ int main(int argc, char **argv)
 
          ROOTTools::DrawFrame(xMin - 0.1, 0.01, xMax + 0.1, CppTools::Maximum(maxRAB, 1.99), 
                               "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
+
+         gPad->SetGrid();
 
          if (maxRAB > 1.)
          {
