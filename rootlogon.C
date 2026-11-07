@@ -4,6 +4,7 @@
    gInterpreter->AddIncludePath("ROOTTools/include");
    gInterpreter->AddIncludePath("ProgressBar/include");
    gInterpreter->AddIncludePath("yaml-cpp/include");
+   gInterpreter->AddIncludePath("argparse/include");
    
    gSystem->Load("lib/libErrorHandler.so");
    gSystem->Load("lib/libStrTools.so");
