@@ -12,6 +12,7 @@ independent_variables:
 dependent_variables:
 - header: {name: '$\frac{d^2N}{2\pi p_{T}dp_{T}dy} (c^2/GeV^2)$'}
   qualifiers:
+  - {name: 'K^{*0}(892)', value: 'MB'}
   - {name: '$p_{T} (GeV/c)$', value: '$K^{*0}$ Inv. Yield in p+p $(c^2/GeV^2)$'}
   values:
   - value: 3.50e-2
