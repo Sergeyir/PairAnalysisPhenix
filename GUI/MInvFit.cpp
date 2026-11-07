@@ -61,6 +61,10 @@ std::vector<TF1 *> altFitsBGFixedG;
 // for systematic uncertainty evaluation
 bool performAltFits = false;
 
+// parameter limits from the default fit for alternative fits when parameters are not 
+// provided in advance (makes fits more predictable and fine-tuning easier)
+const double altFitParLim = 1.05;
+
 using namespace AnalyzeRealMInv;
 
 void MInvFit()
@@ -71,7 +75,7 @@ void MInvFit()
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
 
-   ROOT::EnableImplicitMT(4);
+   ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
    gROOT->SetBatch(true);
 
    CppTools::PrintInfo("List of directories in data/Real directory that contain "\
@@ -692,6 +696,8 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          }
       }
 
+      distrMInv->Fit(fits.back(), "RQMNBLC");
+
       if (isBGFixedForThisPTAltFitAB)
       {
          for (int i = altFitsAB.back()->GetNpar() - altFitsBGAB.back()->GetNpar(); 
@@ -700,6 +706,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
             altFitsAB.back()->FixParameter(i, altFitsBGAB.back()->
                                            GetParameter(i - altFitsAB.back()->GetNpar() + 
                                                         altFitsBGAB.back()->GetNpar()));
+         }
+      }
+      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      {
+         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+              (i < fits.back()->GetNpar()) && (i < altFitsAB.back()->GetNpar()); i++)
+         {
+            const double par = fits.back()->GetParameter(i);
+            if (par < 0.) altFitsAB.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
+            else altFitsAB.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
          }
       }
 
@@ -713,6 +729,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                            altFitsBGFreeG.back()->GetNpar()));
          }
       }
+      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      {
+         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+              (i < fits.back()->GetNpar()) && (i < altFitsFreeG.back()->GetNpar()); i++)
+         {
+            const double par = fits.back()->GetParameter(i);
+            if (par < 0.) altFitsFreeG.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
+            else altFitsFreeG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+         }
+      }
 
       if (isBGFixedForThisPTAltFitFixedG)
       {
@@ -724,8 +750,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                             altFitsBGFixedG.back()->GetNpar()));
          }
       }
-
-      distrMInv->Fit(fits.back(), "RQMNBLC");
+      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      {
+         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+              (i < fits.back()->GetNpar()) && (i < altFitsFixedG.back()->GetNpar()); i++)
+         {
+            const double par = fits.back()->GetParameter(i);
+            if (par < 0.) altFitsFixedG.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
+            else altFitsFixedG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+         }
+      }
 
       if (performAltFits)
       {
