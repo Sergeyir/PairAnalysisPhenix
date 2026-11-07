@@ -20,7 +20,7 @@ default_rebin_x: 1 # rebin of MInv 1D distributions (i.e. X axis)
 m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + sigma)*sigmalized_yield_extraction_range from mean
-taxi_job: 20488 # default taxi job number for estimating results
+taxi_job: 20530 # default taxi job number for estimating results
 taxi_job_loosened_cuts: -9999 # default taxi job number for loosened cuts variation analysis for systematics
 taxi_job_tightened_cuts: -9999 # default taxi job number for tightened cuts variation analysis for systematics
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
@@ -49,15 +49,39 @@ sim_pt_ranges: # pT ranges of simulated particles (lpt - low pT, mpt - midrange 
   - name: '5.0-12.0'
 pair_selection_methods:
 - 
+  name: DCPC1NoPID
+  hist_prefix: DCPC1NoPID # prefix of a histogram name from taxi files; needed in case histogram name has typos or name needs to be changed
+  bg_default_fit_func: pol3
+  sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
+  centrality_bin_parameters:
+    - {pt_bin_min: 11, pt_bin_max: 14, excuded_bins: []}
+  color: "#7a21dd"
+  custom_bg_fit: # per bin custom bg fit to account for different background
+    - {func: , pt_bins: []}
+  cuts_var_sys_fit_func: "pol1"
+  raw_yield_sys_fit_func: "pol2"
+- 
   name: NoPID
   hist_prefix: NoPID
   bg_default_fit_func: pol3
   sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
   centrality_bin_parameters:
     - {pt_bin_min: 7, pt_bin_max: 15}
-  color: "#7a21dd"
+  color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: "", pt_bins: []}
+#- 
+#  name: 1K1TOFDCPC11PID
+#  hist_prefix: 1K1TOFDCPC11PID
+#  bg_default_fit_func: pol3
+#  sigmalized_fit_range: 2.5
+#  centrality_bin_parameters:
+#    - {pt_bin_min: 0, pt_bin_max: 10, excuded_bins: []}
+#  color: "#f89c20"
+#  custom_bg_fit:
+#    - {func: "", pt_bins: []}
+#  cuts_var_sys_fit_func: "pol2"
+#  raw_yield_sys_fit_func: "pol1"
 - 
   name: 1K1TOF1PID
   hist_prefix: 1K1TOF1PID
@@ -65,7 +89,7 @@ pair_selection_methods:
   sigmalized_fit_range: 2.5
   centrality_bin_parameters:
     - {pt_bin_min: 0, pt_bin_max: 9}
-  color: "#e42536"
+  color: "#5790fc"
   custom_bg_fit:
     - {func: "", pt_bins: []}
 centrality_bins:
