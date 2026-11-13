@@ -64,6 +64,12 @@ bool performAltFits = false;
 // parameter limits from the default fit for alternative fits when parameters are not 
 // provided in advance (makes fits more predictable and fine-tuning easier)
 const double altFitParLim = 1.05;
+// same as above but used for fits of distributions with different cut variations
+const double cutVarFitParLim = 1.1;
+// shows whether the taxi job matches with loosened or tightened cut variation taxi job
+bool isCutVarJob;
+// job number for a default taxi (i.e. no cut variations)
+int taxiNumberDefault = -9999;
 
 using namespace AnalyzeRealMInv;
 
@@ -95,8 +101,6 @@ void MInvFit()
                    "from the above directory list and type it in");
    std::cout << ">> ";
    std::cin >> taxiNumber;
-
-   //taxiNumber = 20025; // temporary for testing
 
    inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
    CppTools::CheckInputFile(inputFileName);
@@ -206,6 +210,11 @@ void MInvFit()
                                           ["pt_bin_max"].as<int>();
 
    numberOfIterations = pTBinFitMax - pTBinFitMin + 1;
+
+   taxiNumberDefault = inputYAMLResonance["taxi_job"].as<int>();
+
+   isCutVarJob = (taxiNumber == inputYAMLResonance["taxi_job_loosened_cuts"].as<int>() ||
+                  taxiNumber == inputYAMLResonance["taxi_job_tightened_cuts"].as<int>());
 
    const std::string parametersOutputDir = "data/Parameters/BGFitResonance/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
@@ -436,6 +445,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
       fitNamesBG.emplace_back(bgFitFunc);
 
+      // default fits for default taxi (used only for cut variation jobs)
+      TF1 *fitTaxiDefault;
+      TF1 *fitBGTaxiDefault;
+
       if (bgFitFunc == "pol2")
       {
          fits.push_back(new TF1(("Default" + std::to_string(i)).c_str(), 
@@ -446,6 +459,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   &FitFunc::Pol2, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 3));
+         if (isCutVarJob)
+         {
+            fitTaxiDefault = new TF1("Default taxi", &FitFunc::RBWConvGausBGPol2, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 7);
+            fitBGTaxiDefault = new TF1("Default taxi BG", &FitFunc::Pol2, 
+                                       massResonance - gammaResonance*3., 
+                                       massResonance + gammaResonance*3., 3);
+         }
 
          if (performAltFits)
          {
@@ -487,6 +509,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   &FitFunc::Pol3, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 4));
+
+         if (isCutVarJob)
+         {
+            fitTaxiDefault = new TF1("Default taxi", &FitFunc::RBWConvGausBGPol3, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 8);
+            fitBGTaxiDefault = new TF1("Default taxi BG", &FitFunc::Pol3, 
+                                       massResonance - gammaResonance*3., 
+                                       massResonance + gammaResonance*3., 4);
+         }
+
          if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
@@ -527,6 +560,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   &FitFunc::Pol4, 
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 5));
+
+         if (isCutVarJob)
+         {
+            fitTaxiDefault = new TF1("Default taxi", &FitFunc::RBWConvGausBGPol4, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 9);
+            fitBGTaxiDefault = new TF1("Default taxi BG", &FitFunc::Pol4, 
+                                       massResonance - gammaResonance*3., 
+                                       massResonance + gammaResonance*3., 5);
+         }
+
          if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
@@ -568,6 +612,16 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                   massResonance - gammaResonance*3., 
                                   massResonance + gammaResonance*3., 3));
 
+         if (isCutVarJob)
+         {
+            fitTaxiDefault = new TF1("Default taxi", &FitFunc::RBWConvGausBGGaus, 
+                                     massResonance - gammaResonance*3., 
+                                     massResonance + gammaResonance*3., 7);
+            fitBGTaxiDefault = new TF1("Default taxi BG", &FitFunc::Gaus, 
+                                       massResonance - gammaResonance*3., 
+                                       massResonance + gammaResonance*3., 3);
+         }
+
          if (performAltFits)
          {
             altFitsAB.push_back(new TF1(("AB" + std::to_string(i)).c_str(), 
@@ -608,6 +662,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       bool isBGFixedForThisPTAltFitAB = false;
       bool isBGFixedForThisPTAltFitFreeG = false;
       bool isBGFixedForThisPTAltFitFixedG = false;
+      bool isBGFixedForThisPTDefaultTaxi = false;
+
+      if (isCutVarJob) 
+      {
+         TFile *inputFileFitsBGTaxiDefault = 
+            SetFixedBGFile("data/Parameters/BGFitResonance/" + runName + "/" + 
+                           std::to_string(taxiNumberDefault) + "/" + methodName + "_" + 
+                           centralityName + ".root", "default");
+         isBGFixedForThisPTDefaultTaxi = 
+            SetBGFit(inputFileFitsBGTaxiDefault, fitBGTaxiDefault, pTBinRangeName);
+      }
 
       if (performAltFits)
       {
@@ -695,6 +760,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                                      fitsBG.back()->GetNpar()));
          }
       }
+      else if (isBGFixedForThisPTDefaultTaxi)
+      {
+         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+              i < fits.back()->GetNpar(); i++)
+         {
+            fits.back()->SetParLimits(i, fitBGTaxiDefault->GetParameter(i)/cutVarFitParLim,
+                                      fitBGTaxiDefault->GetParameter(i)*cutVarFitParLim);
+         }
+      }
 
       distrMInv->Fit(fits.back(), "RQMNBLC");
 
@@ -708,7 +782,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                         altFitsBGAB.back()->GetNpar()));
          }
       }
-      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
       {
          for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
               (i < fits.back()->GetNpar()) && (i < altFitsAB.back()->GetNpar()); i++)
@@ -729,7 +803,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                            altFitsBGFreeG.back()->GetNpar()));
          }
       }
-      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
       {
          for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
               (i < fits.back()->GetNpar()) && (i < altFitsFreeG.back()->GetNpar()); i++)
@@ -750,7 +824,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                             altFitsBGFixedG.back()->GetNpar()));
          }
       }
-      else if (isBGFixedForThisPT && bgFitFunc != "gaus")
+      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
       {
          for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
               (i < fits.back()->GetNpar()) && (i < altFitsFixedG.back()->GetNpar()); i++)
