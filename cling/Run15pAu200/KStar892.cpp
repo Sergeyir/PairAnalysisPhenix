@@ -10,7 +10,7 @@
 
 const std::string runName = "Run15pAu200";
 const std::string resonanceName = "KStar892";
-const int taxiNumber = 20489;
+const int taxiNumber = 20546;
 
 const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.7;
@@ -469,9 +469,7 @@ void KStar892()
                               "found in file " + resultsInputFileName);
       }
 
-      const double rcpScaling = central["bias_factor"].as<double>()/
-                                peripheral["bias_factor"].as<double>()*
-                                peripheral["N_coll"].as<double>()/
+      const double rcpScaling = peripheral["N_coll"].as<double>()/
                                 central["N_coll"].as<double>();
 
       const double scalingUncertainty = 
@@ -614,10 +612,9 @@ void KStar892()
          const double spectraPPStat = distrSpectraVsPTStatErrPP->GetBinError(spectraPPBin);
          const double spectraPPSys = distrSpectraVsPTSysErrPP->GetBinError(spectraPPBin);
 
-         const double rabScale = centrality["bias_factor"].as<double>()/
-                                 centrality["N_coll"].as<double>()*42.2;
+         const double scaleRAB = 1./centrality["N_coll"].as<double>()*42.2;
 
-         const double rabVal = graphsVladRABVsPTStatErr[i]->GetPointY(j)/spectraPPVal*rabScale;
+         const double rabVal = graphsVladRABVsPTStatErr[i]->GetPointY(j)/spectraPPVal*scaleRAB;
          const double rabStat = 
             CppTools::UncertaintyProp(graphsVladRABVsPTStatErr[i]->GetErrorY(j)/
                                       graphsVladRABVsPTStatErr[i]->GetPointY(j), 
@@ -721,7 +718,7 @@ void KStar892()
    }
 
    // RAB for new pp200 spectra
-   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20488_KStar892.root";
+   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20530_KStar892.root";
 
    if (std::filesystem::exists(spectraPPNewFileName))
    {
@@ -769,8 +766,7 @@ void KStar892()
          const std::string centralityName = centrality["name"].as<std::string>();
          const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
 
-         const double scaleRAB = centrality["bias_factor"].as<double>()/
-                                 centrality["N_coll"].as<double>();
+         const double scaleRAB = 1./centrality["N_coll"].as<double>();
 
          /*
          const double scalingUncertainty = 

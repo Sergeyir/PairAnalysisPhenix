@@ -721,7 +721,7 @@ void KStar892()
    }
 
    // RAB for new pp200 spectra
-   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20488_KStar892.root";
+   const std::string spectraPPNewFileName = "data/Results/Run15pp200/20530_KStar892.root";
 
    if (std::filesystem::exists(spectraPPNewFileName))
    {

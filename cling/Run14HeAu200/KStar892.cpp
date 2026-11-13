@@ -463,9 +463,7 @@ void KStar892()
                               "found in file " + resultsInputFileName);
       }
 
-      const double rcpScaling = central["bias_factor"].as<double>()/
-                                peripheral["bias_factor"].as<double>()*
-                                peripheral["N_coll"].as<double>()/
+      const double rcpScaling = peripheral["N_coll"].as<double>()/
                                 central["N_coll"].as<double>();
 
       const double scalingUncertainty = 
@@ -693,8 +691,7 @@ void KStar892()
          const std::string centralityName = centrality["name"].as<std::string>();
          const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
 
-         const double scaleRAB = centrality["bias_factor"].as<double>()/
-                                 centrality["N_coll"].as<double>();
+         const double scaleRAB = 1./centrality["N_coll"].as<double>();
 
          /*
          const double scalingUncertainty = 
