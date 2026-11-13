@@ -62,8 +62,6 @@ void KStar892()
       TH1D *distrSpectraVsPTSysErr = static_cast<TH1D *>
          (resultsInputFile->Get("MB/spectra vs pT with sys errors"));
 
-      distrSpectraVsPTStatErr->Scale();
-
       TH1D *distrOldSpectraVsPTStatErr = static_cast<TH1D *>
          (oldSpectraFile->Get("spectra vs pT with stat err"));
       TH1D *distrOldSpectraVsPTSysErr = static_cast<TH1D *>
