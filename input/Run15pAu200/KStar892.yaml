@@ -20,9 +20,9 @@ default_rebin_x: 2 # rebin of MInv 1D distributions (i.e. X axis)
 m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + sigma)*sigmalized_yield_extraction_range from mean
-taxi_job: 20489 # default taxi job number for estimating results
-taxi_job_loosened_cuts: 20494 # default taxi job number for loosened cuts variation analysis for systematics
-taxi_job_tightened_cuts: 20492 # default taxi job number for tightened cuts variation analysis for systematics
+taxi_job: 20546 # default taxi job number for estimating results
+taxi_job_loosened_cuts: -9999 #20494 # default taxi job number for loosened cuts variation analysis for systematics
+taxi_job_tightened_cuts: -9999 #20492 # default taxi job number for tightened cuts variation analysis for systematics
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
   - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
@@ -69,10 +69,10 @@ pair_selection_methods:
   bg_default_fit_func: pol3
   sigmalized_fit_range: 2. # fit range for approximation in +-(sigmalized_fit_range*(gamma + sigma)) from the mean
   centrality_bin_parameters:
-    - {pt_bin_min: 7, pt_bin_max: 15, excuded_bins: []} # 0-84
-    - {pt_bin_min: 8, pt_bin_max: 14, excuded_bins: []} # 0-20
-    - {pt_bin_min: 7, pt_bin_max: 14, excuded_bins: []} # 20-40
-    - {pt_bin_min: 7, pt_bin_max: 14, excuded_bins: []} # 40-84
+    - {pt_bin_min: 10, pt_bin_max: 15, excuded_bins: []} # 0-84
+    - {pt_bin_min: 10, pt_bin_max: 14, excuded_bins: []} # 0-20
+    - {pt_bin_min: 10, pt_bin_max: 14, excuded_bins: []} # 20-40
+    - {pt_bin_min: 10, pt_bin_max: 15, excuded_bins: []} # 40-84
   color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: , pt_bins: []}
@@ -84,9 +84,9 @@ pair_selection_methods:
   bg_default_fit_func: pol3
   sigmalized_fit_range: 2.5
   centrality_bin_parameters:
-    - {pt_bin_min: 2, pt_bin_max: 11, excuded_bins: []} # 0-84
-    - {pt_bin_min: 2, pt_bin_max: 10, excuded_bins: []} # 0-20
-    - {pt_bin_min: 2, pt_bin_max: 10, excuded_bins: []} # 20-40
+    - {pt_bin_min: 4, pt_bin_max: 11, excuded_bins: []} # 0-84
+    - {pt_bin_min: 4, pt_bin_max: 10, excuded_bins: []} # 0-20
+    - {pt_bin_min: 4, pt_bin_max: 10, excuded_bins: []} # 20-40
     - {pt_bin_min: 2, pt_bin_max: 10, excuded_bins: []} # 40-84
   color: "#f89c20"
   custom_bg_fit:
@@ -105,8 +105,7 @@ pair_selection_methods:
     - {pt_bin_min: 0, pt_bin_max: 10, excuded_bins: []} # 40-84
   color: "#5790fc"
   custom_bg_fit:
-    - {func: "gaus", pt_bins: [0]} # 0.5-0.7
-    - {func: "pol2", pt_bins: [7, 9, 12]} # 2.1-2.3, 2.6-2.9, 4.0-4.5
+    - {func: "", pt_bins: []}
   cuts_var_sys_fit_func: "pol2"
   raw_yield_sys_fit_func: "pol1"
 centrality_bins:
@@ -161,7 +160,7 @@ centrality_bins:
   cb_c_max: 8
   color: "#e42536"
   marker_style: 23
-  N_coll: 3.42
+  N_coll: 3.4182
   N_coll_uncertainty: 0.251
   bias_factor: 1.01
   bias_factor_uncertainty: 0.0614
