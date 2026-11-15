@@ -104,9 +104,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
          const double bbcz = simCNT.bbcz();
-         if ((cutsOffsetNone && fabs(bbcz) > 30.) ||
-             (cutsOffsetLoose && fabs(bbcz) > 31.) ||
-             (cutsOffsetTight && fabs(bbcz) > 29.)) continue;
+         if (fabs(bbcz) > 30.) continue;
 
          std::vector<ChargedTrack> positiveTracks;
          std::vector<ChargedTrack> negativeTracks;
@@ -127,9 +125,7 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
             const int dcarm = simCNT.dcarm(i);
 
             const double zed = simCNT.zed(i);
-            if ((cutsOffsetNone && fabs(zed) > 75. && fabs(zed) < 3.) ||
-                (cutsOffsetLoose && fabs(zed) > 78.) ||  
-                (cutsOffsetTight && fabs(zed) > 72. && fabs(zed) < 6.)) continue;
+            if (fabs(zed) > 75. && fabs(zed) < 3.) continue;
  
             const double alpha = simCNT.alpha(i);
             const double phi = simCNT.phi(i);
@@ -223,7 +219,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
                   if (weightEMCal > 1e-15)
                   {
                      if (useEMCalId && !(dcarm == 0 && simCNT.sect(i) < 2) &&
-                         !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), simCNT.ysect(i), simCNT.zsect(i)))
+                         !dmCutter.IsDeadTimingEMCal(dcarm, simCNT.sect(i), 
+                                                     simCNT.ysect(i), simCNT.zsect(i)))
                      {
                         switch (charge)
                         {
