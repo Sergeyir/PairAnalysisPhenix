@@ -664,6 +664,15 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       bool isBGFixedForThisPTAltFitFixedG = false;
       bool isBGFixedForThisPTDefaultTaxi = false;
 
+      double fitRangeMin = -1.;
+      double fitRangeMax = -1.;
+      double altFitABRangeMin = -1.;
+      double altFitABRangeMax = -1.;
+      double altFitFreeGRangeMin = -1.;
+      double altFitFreeGRangeMax = -1.;
+      double altFitFixedGRangeMin = -1.;
+      double altFitFixedGRangeMax = -1.;
+
       if (isCutVarJob) 
       {
          TFile *inputFileFitsBGTaxiDefault = 
@@ -759,18 +768,37 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
             fits.back()->FixParameter(i, fitsBG.back()->GetParameter(i - fits.back()->GetNpar() + 
                                                                      fitsBG.back()->GetNpar()));
          }
+         fitsBG.back()->GetRange(fitRangeMin, fitRangeMax);
       }
-      else if (isBGFixedForThisPTDefaultTaxi)
+      else 
       {
-         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
-              i < fits.back()->GetNpar(); i++)
+         if (isBGFixedForThisPTDefaultTaxi)
          {
-            fits.back()->SetParLimits(i, fitBGTaxiDefault->GetParameter(i)/cutVarFitParLim,
-                                      fitBGTaxiDefault->GetParameter(i)*cutVarFitParLim);
+            for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+                 i < fits.back()->GetNpar(); i++)
+            {
+               fits.back()->SetParLimits(i, fitBGTaxiDefault->GetParameter(i)/cutVarFitParLim,
+                                         fitBGTaxiDefault->GetParameter(i)*cutVarFitParLim);
+            }
          }
+         fitRangeMin = massResonance - sigmalizedFitRange*(gammaResonance + gaussianBroadeningSigma);
+         fitRangeMax = massResonance + sigmalizedFitRange*(gammaResonance + gaussianBroadeningSigma);
       }
 
+      fits.back()->SetRange(fitRangeMin, fitRangeMax);
+      fitsBG.back()->SetRange(fitRangeMin, fitRangeMax);
+
       distrMInv->Fit(fits.back(), "RQMNBLC");
+
+      if (!isBGFixedForThisPT)
+      {
+         for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
+         {
+            fitsBG.back()->SetParameter(j, fits.back()->
+                                        GetParameter(fits.back()->GetNpar() - 
+                                                     fitsBG.back()->GetNpar() + j));
+         }
+      }
 
       if (isBGFixedForThisPTAltFitAB)
       {
@@ -781,16 +809,24 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                            GetParameter(i - altFitsAB.back()->GetNpar() + 
                                                         altFitsBGAB.back()->GetNpar()));
          }
+         altFitsBGAB.back()->GetRange(altFitABRangeMin, altFitABRangeMax);
       }
-      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
+      else 
       {
-         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
-              (i < fits.back()->GetNpar()) && (i < altFitsAB.back()->GetNpar()); i++)
+         if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
          {
-            const double par = fits.back()->GetParameter(i);
-            if (par < 0.) altFitsAB.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
-            else altFitsAB.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+                 (i < fits.back()->GetNpar()) && (i < altFitsAB.back()->GetNpar()); i++)
+            {
+               const double par = fits.back()->GetParameter(i);
+               if (par < 0.) altFitsAB.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
+               else altFitsAB.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            }
          }
+         altFitABRangeMin = massResonance - sigmalizedFitRange*
+                            (gammaResonance + gaussianBroadeningSigma);
+         altFitABRangeMax = massResonance + sigmalizedFitRange*
+                            (gammaResonance + gaussianBroadeningSigma);
       }
 
       if (isBGFixedForThisPTAltFitFreeG)
@@ -802,16 +838,25 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                               GetParameter(i - altFitsFreeG.back()->GetNpar() + 
                                                            altFitsBGFreeG.back()->GetNpar()));
          }
+         altFitsBGFreeG.back()->GetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
       }
-      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
+      else 
       {
-         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
-              (i < fits.back()->GetNpar()) && (i < altFitsFreeG.back()->GetNpar()); i++)
+         if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
          {
-            const double par = fits.back()->GetParameter(i);
-            if (par < 0.) altFitsFreeG.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
-            else altFitsFreeG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+                 (i < fits.back()->GetNpar()) && (i < altFitsFreeG.back()->GetNpar()); i++)
+            {
+               const double par = fits.back()->GetParameter(i);
+               if (par < 0.) altFitsFreeG.back()->SetParLimits(i, par*altFitParLim, 
+                                                               par/altFitParLim);
+               else altFitsFreeG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            }
          }
+         altFitFreeGRangeMin = massResonance - sigmalizedFitRange*
+                               (gammaResonance + gaussianBroadeningSigma);
+         altFitFreeGRangeMax = massResonance + sigmalizedFitRange*
+                               (gammaResonance + gaussianBroadeningSigma);
       }
 
       if (isBGFixedForThisPTAltFitFixedG)
@@ -823,33 +868,36 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                                                GetParameter(i - altFitsFixedG.back()->GetNpar() + 
                                                             altFitsBGFixedG.back()->GetNpar()));
          }
+         altFitsBGFixedG.back()->GetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
       }
-      else if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
+      else 
       {
-         for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
-              (i < fits.back()->GetNpar()) && (i < altFitsFixedG.back()->GetNpar()); i++)
+         if (performAltFits && isBGFixedForThisPT && bgFitFunc != "gaus")
          {
-            const double par = fits.back()->GetParameter(i);
-            if (par < 0.) altFitsFixedG.back()->SetParLimits(i, par*altFitParLim, par/altFitParLim);
-            else altFitsFixedG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            for (int i = fits.back()->GetNpar() - fitsBG.back()->GetNpar(); 
+                 (i < fits.back()->GetNpar()) && (i < altFitsFixedG.back()->GetNpar()); i++)
+            {
+               const double par = fits.back()->GetParameter(i);
+               if (par < 0.) altFitsFixedG.back()->SetParLimits(i, par*altFitParLim, 
+                                                                par/altFitParLim);
+               else altFitsFixedG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
+            }
          }
+         altFitFixedGRangeMin = massResonance - sigmalizedFitRange*
+                                (gammaResonance + gaussianBroadeningSigma);
+         altFitFixedGRangeMax = massResonance + sigmalizedFitRange*
+                                (gammaResonance + gaussianBroadeningSigma);
       }
 
       if (performAltFits)
       {
+         altFitsAB.back()->SetRange(altFitABRangeMin, altFitABRangeMax);
+         altFitsFreeG.back()->SetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
+         altFitsFixedG.back()->SetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
+
          distrMInv->Fit(altFitsAB.back(), "RQNMBLC");
          distrMInv->Fit(altFitsFreeG.back(), "RQNMBLC");
          distrMInv->Fit(altFitsFixedG.back(), "RQNMBLC");
-      }
-
-      if (!isBGFixedForThisPT)
-      {
-         for (int j = 0; j < fitsBG.back()->GetNpar(); j++)
-         {
-            fitsBG.back()->SetParameter(j, fits.back()->
-                                        GetParameter(fits.back()->GetNpar() - 
-                                                     fitsBG.back()->GetNpar() + j));
-         }
       }
 
       if (performAltFits)
@@ -888,80 +936,12 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
          }
       }
 
-      fits.back()->SetRange(fits.back()->GetParameter(1) - 
-                            (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
-                            sigmalizedFitRange, 
-                            fits.back()->GetParameter(1) + 
-                            (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
-                            sigmalizedFitRange);
-
-      fitsBG.back()->SetRange(fits.back()->GetParameter(1) - 
-                              (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
-                              sigmalizedFitRange, 
-                              fits.back()->GetParameter(1) + 
-                              (fits.back()->GetParameter(2) + fits.back()->GetParameter(3))*
-                              sigmalizedFitRange);
-
       fits.back()->SetLineWidth(4);
       fitsBG.back()->SetLineWidth(4);
       fitsBG.back()->SetLineStyle(7);
 
       if (performAltFits)
       {
-         altFitsAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
-                                    (altFitsAB.back()->GetParameter(2) + 
-                                     altFitsAB.back()->GetParameter(3))*sigmalizedFitRange, 
-                                    altFitsAB.back()->GetParameter(1) + 
-                                    (altFitsAB.back()->GetParameter(2) + 
-                                     altFitsAB.back()->GetParameter(3))*
-                                    sigmalizedFitRange);
-
-         altFitsBGAB.back()->SetRange(altFitsAB.back()->GetParameter(1) - 
-                                      (altFitsAB.back()->GetParameter(2) + 
-                                       altFitsAB.back()->GetParameter(3))*sigmalizedFitRange, 
-                                      altFitsAB.back()->GetParameter(1) + 
-                                      (altFitsAB.back()->GetParameter(2) + 
-                                       altFitsAB.back()->GetParameter(3))*sigmalizedFitRange);
-
-         altFitsFreeG.back()->
-            SetRange(CppTools::Minimum(massResonance - (gammaResonance + gaussianBroadeningSigma)*
-                                       sigmalizedFitRange,
-                                       altFitsFreeG.back()->GetParameter(1) - 
-                                       (altFitsFreeG.back()->GetParameter(2) + 
-                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange),
-                     CppTools::Maximum(massResonance + (gammaResonance + gaussianBroadeningSigma)*
-                                       sigmalizedFitRange,
-                                       altFitsFreeG.back()->GetParameter(1) + 
-                                       (altFitsFreeG.back()->GetParameter(2) + 
-                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange));
-         altFitsBGFreeG.back()->
-            SetRange(CppTools::Minimum(massResonance - (gammaResonance + gaussianBroadeningSigma)*
-                                       sigmalizedFitRange,
-                                       altFitsFreeG.back()->GetParameter(1) - 
-                                       (altFitsFreeG.back()->GetParameter(2) + 
-                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange),
-                     CppTools::Maximum(massResonance + (gammaResonance + gaussianBroadeningSigma)*
-                                       sigmalizedFitRange,
-                                       altFitsFreeG.back()->GetParameter(1) + 
-                                       (altFitsFreeG.back()->GetParameter(2) + 
-                                        altFitsFreeG.back()->GetParameter(3))*sigmalizedFitRange));
-
-         altFitsFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
-                                        (altFitsFixedG.back()->GetParameter(2) + 
-                                         altFitsFixedG.back()->GetParameter(3))*sigmalizedFitRange, 
-                                        altFitsFixedG.back()->GetParameter(1) + 
-                                        (altFitsFixedG.back()->GetParameter(2) + 
-                                         altFitsFixedG.back()->GetParameter(3))*sigmalizedFitRange);
-
-         altFitsBGFixedG.back()->SetRange(altFitsFixedG.back()->GetParameter(1) - 
-                                          (altFitsFixedG.back()->GetParameter(2) + 
-                                           altFitsFixedG.back()->GetParameter(3))*
-                                          sigmalizedFitRange, 
-                                          altFitsFixedG.back()->GetParameter(1) + 
-                                          (altFitsFixedG.back()->GetParameter(2) + 
-                                           altFitsFixedG.back()->GetParameter(3))*
-                                          sigmalizedFitRange);
-
          altFitsAB.back()->SetLineWidth(4);
          altFitsFreeG.back()->SetLineWidth(4);
          altFitsFixedG.back()->SetLineWidth(4);
@@ -1072,6 +1052,9 @@ bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string
          {
             fitBG->SetParameter(i, fitBGTmp->GetParameter(i));
          }
+         double xMin, xMax;
+         fitBGTmp->GetRange(xMin, xMax);
+         fitBG->SetRange(xMin, xMax);
          return true;
       }
    }

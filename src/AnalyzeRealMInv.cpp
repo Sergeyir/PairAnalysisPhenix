@@ -650,10 +650,17 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
             for (unsigned int j = 1; j <= fitNTries; j++)
             {
-               fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
-                                                     fit->GetParameter(3))*sigmalizedFitRange;
-               fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
-                                                     fit->GetParameter(3))*sigmalizedFitRange;
+               if (isBGFixedForThisPT)
+               {
+                  fitBG->GetRange(fitRangeMin, fitRangeMax);
+               }
+               else
+               {
+                  fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                        fit->GetParameter(3))*sigmalizedFitRange;
+                  fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                        fit->GetParameter(3))*sigmalizedFitRange;
+               }
 
                fit->SetParLimits(1, fit->GetParameter(1)/(1. + 0.05/static_cast<double>(j*j)), 
                                  fit->GetParameter(1)*(1. + 0.05/static_cast<double>(j*j)));
@@ -666,24 +673,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                if (isBGFixedForThisPTAltFit)
                {
-                  altFitABRangeMin = altFitAB->GetParameter(1) - 
-                                     (altFitAB->GetParameter(2) + 
-                                      altFitAB->GetParameter(3))*sigmalizedFitRange;
-                  altFitABRangeMax = altFitAB->GetParameter(1) + 
-                                     (altFitAB->GetParameter(2) + 
-                                      altFitAB->GetParameter(3))*sigmalizedFitRange;
-                  altFitFreeGRangeMin = altFitFreeG->GetParameter(1) - 
-                                        (altFitFreeG->GetParameter(2) + 
-                                         altFitFreeG->GetParameter(3))*sigmalizedFitRange;
-                  altFitFreeGRangeMax = altFitFreeG->GetParameter(1) + 
-                                        (altFitFreeG->GetParameter(2) + 
-                                         altFitFreeG->GetParameter(3))*sigmalizedFitRange;
-                  altFitFixedGRangeMin = altFitFixedG->GetParameter(1) - 
-                                         (altFitFixedG->GetParameter(2) + 
-                                          altFitFixedG->GetParameter(3))*sigmalizedFitRange;
-                  altFitFixedGRangeMax = altFitFixedG->GetParameter(1) + 
-                                         (altFitFixedG->GetParameter(2) + 
-                                          altFitFixedG->GetParameter(3))*sigmalizedFitRange;
+                  altFitBGAB->GetRange(altFitABRangeMin, altFitABRangeMax);
+                  altFitBGFreeG->GetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
+                  altFitBGFixedG->GetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
 
                   altFitAB->SetParLimits(1, altFitAB->GetParameter(1)/
                                          (1. + 0.05/static_cast<double>(j*j)), 
@@ -719,13 +711,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                   distrMInv->Fit(altFitFixedG, "RQMNBLC");
                }
             }
-            //distrMInv->Fit(&fit, "RQMNBLE");
 
-
-            fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
-                                                  fit->GetParameter(3))*sigmalizedFitRange;
-            fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
-                                                  fit->GetParameter(3))*sigmalizedFitRange;
+            if (!isBGFixedForThisPT)
+            {
+               fitRangeMin = fit->GetParameter(1) - (fit->GetParameter(2) + 
+                                                     fit->GetParameter(3))*sigmalizedFitRange;
+               fitRangeMax = fit->GetParameter(1) + (fit->GetParameter(2) + 
+                                                     fit->GetParameter(3))*sigmalizedFitRange;
+            }
 
             if (isBGFixedForThisPTAltFit)
             {
@@ -796,14 +789,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
 
-            fitBG->SetRange(fitRangeMin, fitRangeMax);
-
-            if (isBGFixedForThisPTAltFit)
-            {
-               altFitBGAB->SetRange(altFitABRangeMin, altFitABRangeMax);
-               altFitBGFreeG->SetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
-               altFitBGFixedG->SetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
-            }
+            if (!isBGFixedForThisPT) fitBG->SetRange(fitRangeMin, fitRangeMax);
 
             lowIntegrationRange = fit->GetParameter(1) - 
                                   (fit->GetParameter(2) + 
@@ -971,7 +957,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             ROOTTools::PrintCanvas(&canvMInv, outputDir + "/" + resonanceName + "_" + 
                                    centrality["name"].as<std::string>() + "_" +
                                    CppTools::DtoStr(pTBinRanges[i], 1) + "-" + 
-                                   CppTools::DtoStr(pTBinRanges[i + 1], 1));
+                                   CppTools::DtoStr(pTBinRanges[i + 1], 1), false);
          } /* canvas with invariant mass distribution with subtracted background only */
 
 
@@ -1526,7 +1512,10 @@ double AnalyzeRealMInv::GetYieldAndErr(TH1D *distrMInv, TF1 *funcFG, TF1 *funcBG
    }
    err = std::sqrt(err);
 
-   return GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
+   const double yield = GetYield(distrMInv, funcFG, funcBG, xMin, xMax);
+   //err = sqrt(yield);
+
+   return yield;
 }
 
 TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName, 
@@ -1580,6 +1569,9 @@ bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string
          {
             fitBG->SetParameter(i, fitBGTmp->GetParameter(i));
          }
+         double xMin, xMax;
+         fitBGTmp->GetRange(xMin, xMax);
+         fitBG->SetRange(xMin, xMax);
          return true;
       }
    }
