@@ -236,6 +236,8 @@ void KStar892()
          ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
 
+         gPad->SetGrid();
+
          tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                           + "  " + centralityNameTex).c_str());
 
@@ -301,17 +303,19 @@ void KStar892()
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr[i]->GetMaximum());
 
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
-         gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
+         gPad->SetLeftMargin(0.125); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
-                              "", "#it{p}_{T} [GeV/#it{c}]", "Ratio", 1., 1.2);
+         ROOTTools::DrawFrame(1.4, CppTools::Maximum(yMin/1.5, 0.01), 6.5, yMax*1.5, 
+                              "", "#it{p}_{T} [GeV/#it{c}]", "K^{Vlad}/K^{*0}(892)", 1., 1.2);
 
-         tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
+         tlText.DrawLatexNDC(0.14, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                           + "  " + centralityNameTex).c_str());
+
+         gPad->SetGrid();
 
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
-            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            TLine line(1.4, 1., 6.6, 1.);
             line.SetLineColorAlpha(kBlack, 0.5);
             line.SetLineStyle(2);
             line.SetLineWidth(4);
@@ -321,11 +325,8 @@ void KStar892()
          ratio.DrawGraph(graphsVladSpectraVsPTStatErr[i], graphsVladSpectraVsPTSysErr[i], 
                          kBlack, 0.9, 75, "K^{Vlad}/K^{*0}(892)");
 
-         ratioLegend.Draw();
-
          ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + 
                                  + "_spectra_ratio_comp_" + centralityName);
-         ratioLegend.Clear();
       }
    }
 

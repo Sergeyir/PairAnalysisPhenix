@@ -80,8 +80,6 @@ void KStar892()
 
       std::vector<TF1 *> tsallisFits;
 
-      double xMin = 1e31;
-      double xMax = -1e31;
       double yMin = 1e31;
       double yMax = -1e31;
 
@@ -146,11 +144,6 @@ void KStar892()
                              graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult);
          }
 
-         xMin = CppTools::Minimum(xMin, histsSpectraVsPTStatErr.back()->GetBinLowEdge(1));
-         xMax = CppTools::Maximum(xMax, histsSpectraVsPTStatErr.back()->GetXaxis()->
-                                  GetBinUpEdge(histsSpectraVsPTStatErr.back()->
-                                  GetXaxis()->GetNbins()));
-
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
 
@@ -160,7 +153,7 @@ void KStar892()
          tsallisFits[i]->SetLineColor(kGray + 1);
       }
 
-      ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
+      ROOTTools::DrawFrame(0.4, yMin/5., 8.6, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
                            "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
                            "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
@@ -240,15 +233,20 @@ void KStar892()
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
          gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
+         double pTMax = 8.5;
+         if (i == 1 || i == 2) pTMax = 6.5;
+
+         ROOTTools::DrawFrame(0.4, yMin/1.5, pTMax + 0.1, yMax*1.5, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "Data/Fit", 1., 1.2);
+
+         gPad->SetGrid();
 
          tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                           + "  " + centralityNameTex).c_str());
 
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
-            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            TLine line(0.4, 1., pTMax + 0.1, 1.);
             line.SetLineColorAlpha(kBlack, 0.5);
             line.SetLineStyle(2);
             line.SetLineWidth(4);
@@ -309,15 +307,17 @@ void KStar892()
          gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
          gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
 
-         ROOTTools::DrawFrame(xMin - 0.1, yMin/1.5, xMax + 0.1, yMax*1.5, 
+         ROOTTools::DrawFrame(1.4, CppTools::Maximum(yMin/1.5, 0.01), 4.49, yMax*1.5, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "Ratio", 1., 1.2);
+
+         gPad->SetGrid();
 
          tlText.DrawLatexNDC(0.12, 0.15, (inputYAMLMain["collision_system_name_tex"].as<std::string>() 
                                           + "  " + centralityNameTex).c_str());
 
          if (yMin/1.1 < 1. && yMax*1.1 > 1.)
          {
-            TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
+            TLine line(1.4, 1., 4.49, 1.);
             line.SetLineColorAlpha(kBlack, 0.5);
             line.SetLineStyle(2);
             line.SetLineWidth(4);
