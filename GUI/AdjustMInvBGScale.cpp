@@ -52,7 +52,6 @@ void AdjustMInvBGScale()
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
 
-   ROOT::EnableImplicitMT(4);
    gROOT->SetBatch(true);
 
    CppTools::PrintInfo("List of directories in data/Real directory that contain "\
