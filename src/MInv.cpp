@@ -205,7 +205,6 @@ TH1D *MInv::SubtractBG(TH1D*& distrMInvFG, TH1D*& distrMInvBG,
    }
    */
 
-   // 0.95 is a rescale so that background is not overestimated
    distrMInvBG->Scale(scaleFactorBG*rescaleBG);
    distrMInvBGLR->Scale(scaleFactorBG*rescaleBG);
 
