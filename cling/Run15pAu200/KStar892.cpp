@@ -16,7 +16,7 @@ const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.7;
 const double pTMinRCP = 0.4;
 const double pTMaxRCP = 6.7;
-const double rMin = 0.;
+const double rMin = 0.01;
 const double rMax = 1.999;
 
 TLatex tlText;
@@ -78,7 +78,7 @@ void KStar892()
       std::vector<TH1D *> histsSpectraVsPTStatErr;
       std::vector<TH1D *> histsSpectraVsPTSysErr;
 
-      std::vector<TF1 *> tsallisFits;
+      std::vector<TF1 *> spectraFits;
 
       double yMin = 1e31;
       double yMax = -1e31;
@@ -122,12 +122,12 @@ void KStar892()
          graphsVladRABVsPTStatErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTStatErr.back()->Clone())); 
          graphsVladRABVsPTSysErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTSysErr.back()->Clone())); 
 
-         tsallisFits.push_back(static_cast<TF1 *>(resultsInputFile->
-                               Get((centralityName + "/tsallis fit").c_str())->Clone()));
+         spectraFits.push_back(static_cast<TF1 *>(resultsInputFile->
+                               Get((centralityName + "/spectra fit").c_str())->Clone()));
 
          const double mult = 10./pow(10., i);
 
-         tsallisFits.back()->SetParameter(0, tsallisFits.back()->GetParameter(0)*mult);
+         spectraFits.back()->SetParameter(0, spectraFits.back()->GetParameter(0)*mult);
          histsSpectraVsPTStatErr.back()->Scale(mult);
          histsSpectraVsPTSysErr.back()->Scale(mult);
 
@@ -147,10 +147,10 @@ void KStar892()
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
 
-         tsallisFits[i]->SetLineWidth(3);
-         tsallisFits[i]->SetLineStyle(2);
+         spectraFits[i]->SetLineWidth(3);
+         spectraFits[i]->SetLineStyle(2);
 
-         tsallisFits[i]->SetLineColor(kGray + 1);
+         spectraFits[i]->SetLineColor(kGray + 1);
       }
 
       ROOTTools::DrawFrame(0.4, yMin/5., 8.6, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
@@ -172,13 +172,13 @@ void KStar892()
          const int markerStyle = 
             inputYAMLResonance["centrality_bins"][i]["marker_style"].as<int>();
 
-         tsallisFits[i]->Draw("SAME");
+         spectraFits[i]->Draw("SAME");
 
          spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], color,
                                0.9, markerStyle, centralityNameTex + multName, 0.05, false, true);
       }
 
-      legend.AddEntry(tsallisFits.back(), "Scaled Tsallis fit", "L");
+      legend.AddEntry(spectraFits.back(), "Scaled Tsallis fit", "L");
 
       legend.Draw();
 
@@ -205,12 +205,12 @@ void KStar892()
          yMin = 1e31;
          yMax = 1e31;
 
-         histsSpectraVsPTStatErr[i]->Divide(tsallisFits[i]);
-         histsSpectraVsPTSysErr[i]->Divide(tsallisFits[i]);
+         histsSpectraVsPTStatErr[i]->Divide(spectraFits[i]);
+         histsSpectraVsPTSysErr[i]->Divide(spectraFits[i]);
 
          for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
          {
-            const double div = tsallisFits[i]->Eval(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
+            const double div = spectraFits[i]->Eval(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
 
             graphsVladSpectraVsPTStatErr[i]->
                SetPointY(j, graphsVladSpectraVsPTStatErr[i]->GetPointY(j)/div);

@@ -84,7 +84,8 @@ void KStar892()
       double yMin = CppTools::Minimum(distrOldSpectraVsPTStatErr->GetMinimum(), 
                                       distrSpectraVsPTStatErr->GetMinimum());
 
-      TF1 *tsallisFit = static_cast<TF1 *>(resultsInputFile->Get("MB/tsallis fit"));
+      TF1 *spectraFit = static_cast<TF1 *>(resultsInputFile->Get("MB/spectra fit"));
+      spectraFit->SetRange(0., 8.5);
 
       TCanvas canv("canv", "canv", 800, 800);
 
@@ -102,7 +103,7 @@ void KStar892()
                            "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
                            "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
-      tsallisFit->Draw("SAME");
+      spectraFit->Draw("SAME");
 
       spectra.DrawGraph(spectraSTARStatErr, spectraSTARSysErr, kAzure - 3, 0.9, 29, "STAR");
       spectra.DrawHistogram(distrOldSpectraVsPTStatErr, distrOldSpectraVsPTSysErr, kBlack,
@@ -121,10 +122,10 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
 
-      distrOldSpectraVsPTStatErr->Divide(tsallisFit);
-      distrOldSpectraVsPTSysErr->Divide(tsallisFit);
-      distrSpectraVsPTStatErr->Divide(tsallisFit);
-      distrSpectraVsPTSysErr->Divide(tsallisFit);
+      distrOldSpectraVsPTStatErr->Divide(spectraFit);
+      distrOldSpectraVsPTSysErr->Divide(spectraFit);
+      distrSpectraVsPTStatErr->Divide(spectraFit);
+      distrSpectraVsPTSysErr->Divide(spectraFit);
 
       yMin = CppTools::Minimum(distrOldSpectraVsPTStatErr->GetMinimum(), 
                                distrSpectraVsPTStatErr->GetMinimum());
@@ -133,9 +134,9 @@ void KStar892()
 
       for (int i = 0; i < spectraSTARStatErr->GetN(); i++)
       {
-         const double tsallisFitVal = tsallisFit->Eval(spectraSTARStatErr->GetPointX(i));
-         spectraSTARStatErr->SetPointY(i, spectraSTARStatErr->GetPointY(i)/tsallisFitVal);
-         spectraSTARStatErr->SetPointError(i, 0., spectraSTARStatErr->GetErrorY(i)/tsallisFitVal);
+         const double spectraFitVal = spectraFit->Eval(spectraSTARStatErr->GetPointX(i));
+         spectraSTARStatErr->SetPointY(i, spectraSTARStatErr->GetPointY(i)/spectraFitVal);
+         spectraSTARStatErr->SetPointError(i, 0., spectraSTARStatErr->GetErrorY(i)/spectraFitVal);
 
          yMin = CppTools::Minimum(yMin, spectraSTARStatErr->GetPointY(i));
          yMax = CppTools::Maximum(yMax, spectraSTARStatErr->GetPointY(i));
