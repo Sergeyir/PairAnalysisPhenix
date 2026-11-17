@@ -16,7 +16,7 @@ const double pTMinRAB = 0.8;
 const double pTMaxRAB = 8.6;
 const double pTMinRCP = 0.4;
 const double pTMaxRCP = 8.6;
-const double rMin = 0.;
+const double rMin = 0.01;
 const double rMax = 1.999;
 
 TLatex tlText;
@@ -67,7 +67,7 @@ void KStar892()
       std::vector<TGraphErrors *> graphsVladSpectraVsPTStatErr;
       std::vector<TGraphErrors *> graphsVladSpectraVsPTSysErr;
 
-      std::vector<TF1 *> tsallisFits;
+      std::vector<TF1 *> spectraFits;
 
       double xMin = 1e31;
       double xMax = -1e31;
@@ -107,15 +107,15 @@ void KStar892()
                GetGraphFromTXTFile("data/Spectra/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                    graphsVladSpectraVsPTSysErr.back(), false, true, 0.08));
 
-         tsallisFits.push_back(static_cast<TF1 *>(resultsInputFile->
-                               Get((centralityName + "/tsallis fit").c_str())->Clone()));
+         spectraFits.push_back(static_cast<TF1 *>(resultsInputFile->
+                               Get((centralityName + "/spectra fit").c_str())->Clone()));
 
          const double mult = 10./pow(10., i);
          // multiplying by bias factor since Vlad did not account for it
          const double biasFactor = 
             inputYAMLResonance["centrality_bins"][i]["bias_factor"].as<double>();
 
-         tsallisFits.back()->SetParameter(0, tsallisFits.back()->GetParameter(0)*mult);
+         spectraFits.back()->SetParameter(0, spectraFits.back()->GetParameter(0)*mult);
          histsSpectraVsPTStatErr.back()->Scale(mult);
          histsSpectraVsPTSysErr.back()->Scale(mult);
 
@@ -140,10 +140,10 @@ void KStar892()
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
          yMax = CppTools::Maximum(yMax, histsSpectraVsPTStatErr.back()->GetMaximum());
 
-         tsallisFits[i]->SetLineWidth(3);
-         tsallisFits[i]->SetLineStyle(2);
+         spectraFits[i]->SetLineWidth(3);
+         spectraFits[i]->SetLineStyle(2);
 
-         tsallisFits[i]->SetLineColor(kGray + 1);
+         spectraFits[i]->SetLineColor(kGray + 1);
       }
 
       ROOTTools::DrawFrame(xMin - 0.1, yMin/5., xMax + 0.1, yMax*5., "", "#it{p}_{T} [GeV/#it{c}]",
@@ -165,13 +165,13 @@ void KStar892()
          const int markerStyle = 
             inputYAMLResonance["centrality_bins"][i]["marker_style"].as<int>();
 
-         tsallisFits[i]->Draw("SAME");
+         spectraFits[i]->Draw("SAME");
 
          spectra.DrawHistogram(histsSpectraVsPTStatErr[i], histsSpectraVsPTSysErr[i], color,
                                0.9, markerStyle, centralityNameTex + multName, 0.05, false, true);
       }
 
-      legend.AddEntry(tsallisFits.back(), "Scaled Tsallis fit", "L");
+      legend.AddEntry(spectraFits.back(), "Scaled Tsallis fit", "L");
 
       legend.Draw();
 
@@ -199,8 +199,8 @@ void KStar892()
          yMin = 1e31;
          yMax = 1e31;
 
-         histsSpectraVsPTStatErr[i]->Divide(tsallisFits[i]);
-         histsSpectraVsPTSysErr[i]->Divide(tsallisFits[i]);
+         histsSpectraVsPTStatErr[i]->Divide(spectraFits[i]);
+         histsSpectraVsPTSysErr[i]->Divide(spectraFits[i]);
 
          // simple estimate for systematics for comparison; needs to be improved later
          for (int j = 0; j < histsSpectraVsPTSysErr[i]->GetXaxis()->GetNbins(); j++)
@@ -210,7 +210,7 @@ void KStar892()
 
          for (int j = 0; j < graphsVladSpectraVsPTStatErr[i]->GetN(); j++)
          {
-            const double div = tsallisFits[i]->Eval(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
+            const double div = spectraFits[i]->Eval(graphsVladSpectraVsPTStatErr[i]->GetPointX(j));
 
             graphsVladSpectraVsPTStatErr[i]->
                SetPointY(j, graphsVladSpectraVsPTStatErr[i]->GetPointY(j)/div);
@@ -534,6 +534,15 @@ void KStar892()
       rcp.SetMarkerSize(1.5);
       rcp.SetLineWidth(2);
       rcp.SetDefaultSysWidth(0.1);
+
+      rcp.DrawRatioFromYAMLFiles("data/Spectra/HeAu200/pi0PHENIX.yaml", "0-20", 
+                                 "data/Spectra/HeAu200/pi0PHENIX.yaml", "60-88", rcpScaling,
+                                 kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902", 
+                                 false, true, 0.06);
+      rcp.DrawRatioFromYAMLFiles("data/Spectra/HeAu200/phi1020PHENIX.yaml", "0-20", 
+                                 "data/Spectra/HeAu200/phi1020PHENIX.yaml", "60-88", rcpScaling,
+                                 kP6Blue, 0.9, 74, "#it{#varphi}(1020), PRC106 014908", 
+                                 false, true, 0.105);
 
       rcp.DrawGraph(&grRCPVladStatErr, &grRCPVladSysErr, kBlack,
                     0.9, 75, "#it{K}_{Vlad}^{*0}(892)");
