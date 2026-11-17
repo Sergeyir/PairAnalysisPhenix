@@ -682,8 +682,10 @@ int main(int argc, char **argv)
             if (spectrasVsPTStatErr[j]->GetBinContent(i) < 1e-31) continue;
 
             const double value = spectrasVsPTStatErr[j]->GetBinContent(i);
-            const double statErr = spectrasVsPTStatErr[j]->GetBinError(i);
-            const double sysErr = spectrasVsPTSysErr[j]->GetBinError(i);
+            const double statErr = spectrasVsPTStatErr[j]->GetBinError(i)/
+                                   spectrasVsPTStatErr[j]->GetBinContent(i);
+            const double sysErr = spectrasVsPTSysErr[j]->GetBinError(i)/
+                                  spectrasVsPTStatErr[j]->GetBinContent(i);
             const double fullErr = sqrt(statErr*statErr + sysErr*sysErr);
 
             if (fullErr < minErr)
@@ -697,7 +699,7 @@ int main(int argc, char **argv)
             graphSpectraVsPTForTsallisFit.
                AddPoint((pTBinRanges[i - 1] + pTBinRanges[i])/2., value);
             graphSpectraVsPTForTsallisFit.
-               SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0., fullErr);
+               SetPointError(graphSpectraVsPTForTsallisFit.GetN() - 1, 0., fullErr*value);
          }
 
          if (valueOfMinErrHist < 0.) continue;
@@ -705,8 +707,8 @@ int main(int argc, char **argv)
          distrResultingSpectraVsPTStatErr.SetBinContent(i, valueOfMinErrHist);
          distrResultingSpectraVsPTSysErr.SetBinContent(i, valueOfMinErrHist);
 
-         distrResultingSpectraVsPTStatErr.SetBinError(i, minStatErr);
-         distrResultingSpectraVsPTSysErr.SetBinError(i, minSysErr);
+         distrResultingSpectraVsPTStatErr.SetBinError(i, minStatErr*valueOfMinErrHist);
+         distrResultingSpectraVsPTSysErr.SetBinError(i, minSysErr*valueOfMinErrHist);
       }
 
       double xMin = pTBinRanges.front();
@@ -724,37 +726,50 @@ int main(int argc, char **argv)
          else break;
       }
 
-      TF1 tsallisFit("tsallis fit", 
+      /*
+      //old fit
+      TF1 spectraFit("spectra fit", 
                      "0.5/(pi*sqrt(x^2 + [3]^2))*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*([2] + sqrt(x^2 + [3]^2)/([2] + [3]))^(-[1])");
-      /*
-      TF1 tsallisFit("tsallis fit", 
-                     "0.5/(pi*x)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
-                     "([2] + [3])*(([2] + x)/(([2] + [3])))^(-[1])");
                      */
+      // PHENIX derived tsallis statistisc
+      // source: https://arxiv.org/abs/1005.3674
+      // also used in https://arxiv.org/pdf/1405.3628
+      // possible problems: derivation of dN/dpTdy from Ed^3sigma/dp^3 was not shown yet stated
+      TF1 spectraFit("spectra fit", 
+                     "1/(2*pi)*[0]*([1] - 1)*([1] - 2)/(([1]*[2] + [3]*([1] - 1))*([1]*[2] + [3]))*"\
+                     "(([1]*[2] + sqrt(x^2 + [3]^2))/([1]*[2] + [3]))^(-[1])");
+
+      // STAR derived tsallis statistics
+      // source: https://arxiv.org/pdf/nucl-ex/0412019
+      // possible problems: derivation is not present at all
       /*
-      TF1 tsallisFit("tsallis fit", 
+      TF1 spectraFit("spectra fit", 
+                     "[0]*([1] - 1)*([1] - 2)/(2*pi*[1]*[2]*([1]*[2] + [3]*([1] - 2)))*"\
+                     "(1 + (sqrt(x^2 + [3]^2) - [3])/([1]*[2]))^(-[1])");
+                     */
+      // more general form
+      // source: https://arxiv.org/pdf/1302.1970
+      /*
+      TF1 spectraFit("spectra fit", 
                      "0.5/(pi)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*(([2] + sqrt(x^2 + [3]^2))/(([2] + [3])))^(-[1])");
                      */
-      tsallisFit.SetParameters(1., 2.5, 10.);
-      tsallisFit.SetParLimits(1, 2., 30.);
-      tsallisFit.FixParameter(3, resonanceMass);
-      /*
-      // source: https://arxiv.org/pdf/1302.1970
-      // To do: finish the equation
-      TF1 tsallisFit("tsallis fit", "");
-                     */
 
-      tsallisFit.SetRange(xMin/1.05, xMax*1.05);
+      spectraFit.SetParameters(1., 12, 0.01);
+      spectraFit.SetParLimits(1, 8., 30.);
+      spectraFit.SetParLimits(2, 0.05, 1.);
+      spectraFit.FixParameter(3, resonanceMass);
 
-      tsallisFit.SetLineStyle(2);
-      tsallisFit.SetLineWidth(3);
-      tsallisFit.SetLineColorAlpha(kBlack, 0.5);
+      spectraFit.SetRange(xMin/1.05, xMax*1.05);
+
+      spectraFit.SetLineStyle(2);
+      spectraFit.SetLineWidth(3);
+      spectraFit.SetLineColorAlpha(kBlack, 0.5);
 
       for (unsigned int i = 0; i < fitNTries; i++)
       {
-         graphSpectraVsPTForTsallisFit.Fit(&tsallisFit, "RQMBN EX0");
+         graphSpectraVsPTForTsallisFit.Fit(&spectraFit, "RQMBN EX0");
 
          // clearing previous points so that corrected ones can be written
          for (int j = graphSpectraVsPTForTsallisFit.GetN() - 1; j >= 0; j--)
@@ -766,8 +781,8 @@ int main(int argc, char **argv)
          {
             if (distrResultingSpectraVsPTStatErr.GetBinContent(j + 1) < 1e-31) continue;
 
-            const double norm = tsallisFit.Integral(pTBinRanges[j], pTBinRanges[j + 1])/
-                                tsallisFit.Eval((pTBinRanges[j] + pTBinRanges[j + 1])/2.)/
+            const double norm = spectraFit.Integral(pTBinRanges[j], pTBinRanges[j + 1])/
+                                spectraFit.Eval((pTBinRanges[j] + pTBinRanges[j + 1])/2.)/
                                 (pTBinRanges[j + 1] - pTBinRanges[j]);
 
             distrResultingSpectraVsPTStatErr.
@@ -806,6 +821,12 @@ int main(int argc, char **argv)
          }
       }
 
+      graphSpectraVsPTForTsallisFit.Fit(&spectraFit, "RQMBN E EX0");
+
+      CppTools::Print(spectraFit.GetParameter(0), 
+                      spectraFit.GetParameter(1), 
+                      spectraFit.GetParameter(2));
+
       resultsOutputFile->mkdir(centralityName.c_str());
       resultsOutputFile->cd(centralityName.c_str());
 
@@ -827,8 +848,8 @@ int main(int argc, char **argv)
 
          spectraRatiosVsPTStatErr[i]->SetLineWidth(2 + spectrasVsPTStatErr.size() - i);
 
-         spectraRatiosVsPTStatErr[i]->Divide(&tsallisFit);
-         spectraRatiosVsPTSysErr[i]->Divide(&tsallisFit);
+         spectraRatiosVsPTStatErr[i]->Divide(&spectraFit);
+         spectraRatiosVsPTSysErr[i]->Divide(&spectraFit);
 
          for (unsigned int j = 1; j < pTNBins; j++)
          {
@@ -845,7 +866,7 @@ int main(int argc, char **argv)
          }
       }
 
-      tsallisFit.SetLineColor(kGray + 1);
+      spectraFit.SetLineColor(kGray + 1);
 
       TCanvas canvSpectra("spectra canv", "", 800, 800);
 
@@ -865,7 +886,7 @@ int main(int argc, char **argv)
                            "#frac{1}{2#pi#it{p}_{T}} #frac{#it{d}^{2}"\
                            "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
-      tsallisFit.Draw("SAME");
+      spectraFit.Draw("SAME");
 
       TLatex tlText;
 
@@ -890,7 +911,7 @@ int main(int argc, char **argv)
          legend.AddEntry(spectrasVsPTStatErr[i], methodName.c_str(), "L");
       }
 
-      legend.AddEntry(&tsallisFit, "Tsallis fit", "L");
+      legend.AddEntry(&spectraFit, "Tsallis fit", "L");
 
       legend.Draw();
 
@@ -1078,7 +1099,7 @@ int main(int argc, char **argv)
       }
       iC++;
 
-      tsallisFit.Write();
+      spectraFit.Write();
    }
 
    resultsOutputFile->Close();
