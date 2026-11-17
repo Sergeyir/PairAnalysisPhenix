@@ -841,7 +841,7 @@ int main(int argc, char **argv)
    {
       TFile resultFile(resultFileName.c_str());
 
-      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB/tsallis fit"));
+      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB/spectra fit"));
 
       if (spectraFit)
       {
