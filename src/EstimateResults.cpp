@@ -265,6 +265,8 @@ int main(int argc, char **argv)
          TFile *inputFileLoosenedCuts = nullptr;
          TFile *inputFileTightenedCuts = nullptr;
 
+         bool doCutsVarSysForCurrentMethod = false;
+
          if (doCutsVarSys)
          {
             const std::string inputFileLoosenedCutsName = 
@@ -276,11 +278,27 @@ int main(int argc, char **argv)
                std::to_string(taxiNumberTightenedCuts) +
                "_" + resonanceName + "_" + methodName + ".root";
 
-            CppTools::CheckInputFile(inputFileLoosenedCutsName);
-            CppTools::CheckInputFile(inputFileTightenedCutsName);
+            doCutsVarSysForCurrentMethod = std::filesystem::exists(inputFileLoosenedCutsName) &&
+                                           std::filesystem::exists(inputFileTightenedCutsName);
 
-            inputFileLoosenedCuts = TFile::Open(inputFileLoosenedCutsName.c_str());
-            inputFileTightenedCuts = TFile::Open(inputFileTightenedCutsName.c_str());
+            if (doCutsVarSysForCurrentMethod)
+            {
+               inputFileLoosenedCuts = TFile::Open(inputFileLoosenedCutsName.c_str());
+               inputFileTightenedCuts = TFile::Open(inputFileTightenedCutsName.c_str());
+            }
+            else
+            {
+               if (!std::filesystem::exists(inputFileLoosenedCutsName))
+               {
+                  CppTools::PrintWarning("File " + inputFileLoosenedCutsName + " is missing");
+               }
+               if (!std::filesystem::exists(inputFileTightenedCutsName))
+               {
+                  CppTools::PrintWarning("File " + inputFileTightenedCutsName + " is missing");
+               }
+               CppTools::PrintInfo("Cuts variation systematics will be disabled for " + 
+                                   methodName);
+            }
          }
 
          // contains systematic uncertainties of pT scale variation
@@ -317,7 +335,7 @@ int main(int argc, char **argv)
          TH1D *rawYieldVsPTLoosenedCuts = nullptr;
          TH1D *rawYieldVsPTTightenedCuts = nullptr;
 
-         if (doCutsVarSys)
+         if (doCutsVarSysForCurrentMethod)
          {
             rawYieldVsPTLoosenedCuts = static_cast<TH1D *>(inputFileLoosenedCuts->
                Get((centralityName + "/raw yield vs pT with stat errors").c_str()));
@@ -369,7 +387,7 @@ int main(int argc, char **argv)
          TH1D *recEffVsPTLoosenedCuts = nullptr;
          TH1D *recEffVsPTTightenedCuts = nullptr;
 
-         if (doCutsVarSys)
+         if (doCutsVarSysForCurrentMethod)
          {
             // no systematics needed for cut variations
             recEffVsPTLoosenedCuts = static_cast<TH1D *>
@@ -395,7 +413,7 @@ int main(int argc, char **argv)
          rawYieldVsPTStatErr->Divide(recEffVsPTStatErr);
          rawYieldVsPTStatErr->Scale(1./spectraNorm);
 
-         if (doCutsVarSys)
+         if (doCutsVarSysForCurrentMethod)
          {
             rawYieldVsPTLoosenedCuts->Divide(recEffVsPTLoosenedCuts);
             rawYieldVsPTTightenedCuts->Divide(recEffVsPTTightenedCuts);
@@ -421,7 +439,7 @@ int main(int argc, char **argv)
                                        rawYieldVsPTSysErr->GetBinContent(i));
 
             double cutsVarSys = 0.;
-            if (doCutsVarSys)
+            if (doCutsVarSysForCurrentMethod)
             {
                // relative variations of loosened and tightened cuts 
                // and their statistical uncertainties
@@ -432,26 +450,26 @@ int main(int argc, char **argv)
                                     rawYieldVsPTStatErr->GetBinContent(i))/
                                    rawYieldVsPTStatErr->GetBinContent(i);
                const double varLErr = 
-                  CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
-                                            rawYieldVsPTStatErr->GetBinContent(i),
-                                            rawYieldVsPTLoosenedCuts->GetBinError(i)/
-                                            rawYieldVsPTLoosenedCuts->GetBinContent(i))/2.;
+                  CppTools::RMS(rawYieldVsPTStatErr->GetBinError(i)/
+                                rawYieldVsPTStatErr->GetBinContent(i),
+                                rawYieldVsPTLoosenedCuts->GetBinError(i)/
+                                rawYieldVsPTLoosenedCuts->GetBinContent(i))/sqrt(2.);
                const double varTErr = 
-                  CppTools::UncertaintyProp(rawYieldVsPTStatErr->GetBinError(i)/
-                                            rawYieldVsPTStatErr->GetBinContent(i),
-                                            rawYieldVsPTTightenedCuts->GetBinError(i)/
-                                            rawYieldVsPTTightenedCuts->GetBinContent(i))/2.;
+                  CppTools::RMS(rawYieldVsPTStatErr->GetBinError(i)/
+                                rawYieldVsPTStatErr->GetBinContent(i),
+                                rawYieldVsPTTightenedCuts->GetBinError(i)/
+                                rawYieldVsPTTightenedCuts->GetBinContent(i))/sqrt(2.);
 
                cutsVarSys = CppTools::RMS(varL, varT);
 
                sysCutsVar.SetBinContent(i, cutsVarSys);
-               sysCutsVar.SetBinError(i, CppTools::UncertaintyProp(varLErr, varTErr)/2.);
+               sysCutsVar.SetBinError(i, CppTools::RMS(varLErr, varTErr)/sqrt(2.));
 
                resultVarCutsVarL.SetBinContent(i, varL);
                resultVarCutsVarT.SetBinContent(i, varT);
 
-               resultVarCutsVarL.SetBinError(i, varLErr*varL);
-               resultVarCutsVarT.SetBinError(i, varTErr*varT);
+               resultVarCutsVarL.SetBinError(i, varLErr);
+               resultVarCutsVarT.SetBinError(i, varTErr);
             }
          }
          // Cuts variations: setting histograms and drawing
@@ -518,7 +536,7 @@ int main(int argc, char **argv)
                                    "_" + methodName + "_" + centralityName);
          }
          // Systematics of cuts variation: correcting systematics, setting histograms, fits, and drawing
-         if (doCutsVarSys)
+         if (doCutsVarSysForCurrentMethod)
          { 
             sysCutsVar.GetXaxis()->
                SetRange(sysCutsVar.GetXaxis()->FindBin(methodPTMin + 1e-7),
@@ -556,7 +574,7 @@ int main(int argc, char **argv)
             ROOTTools::PrintCanvas(&canv, outputDirSys + "/CutsVarSys_" +  resonanceName + 
                                    "_" + methodName + "_" + centralityName);
 
-            for (int i = 1; i < sysCutsVar.GetXaxis()->GetNbins(); i++)
+            for (int i = 1; i <= sysCutsVar.GetXaxis()->GetNbins(); i++)
             {
                const double val = fit.Eval(sysCutsVar.GetXaxis()->GetBinCenter(i));
                if (val > 0.)
@@ -629,7 +647,7 @@ int main(int argc, char **argv)
             sysAccVar.Draw("SAME ][");
             sysYieldExtr.Draw("SAME ][");
 
-            if (doCutsVarSys)
+            if (doCutsVarSysForCurrentMethod)
             {
                sysCutsVar.Sumw2(false);
                sysCutsVar.SetLineStyle(7);
