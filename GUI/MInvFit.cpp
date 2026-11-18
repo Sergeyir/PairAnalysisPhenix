@@ -171,15 +171,6 @@ void MInvFit()
       else CppTools::PrintWarning("Chosen centrality bin is out of range");
    }
 
-   CppTools::Print("Choose whether you want to perform alternative fits "\
-                   "(any number if yes, 0 if no);\n (typing in any text will exit the program)");
-   std::cout << ">> ";
-   if (!(std::cin >> performAltFits))
-   {
-      CppTools::PrintInfo("Exiting the program");
-      exit(1);
-   }
-
    resonanceName = inputYAMLResonance["name"].as<std::string>();
    massResonance = inputYAMLResonance["mass"].as<double>();
    gammaResonance = inputYAMLResonance["gamma"].as<double>();
@@ -215,6 +206,18 @@ void MInvFit()
 
    isCutVarJob = (taxiNumber == inputYAMLResonance["taxi_job_loosened_cuts"].as<int>() ||
                   taxiNumber == inputYAMLResonance["taxi_job_tightened_cuts"].as<int>());
+
+   if (!isCutVarJob)
+   {
+      CppTools::Print("Choose whether you want to perform alternative fits "\
+                      "(any number if yes, 0 if no);\n (typing in any text will exit the program)");
+      std::cout << ">> ";
+      if (!(std::cin >> performAltFits))
+      {
+         CppTools::PrintInfo("Exiting the program");
+         exit(1);
+      }
+   }
 
    const std::string parametersOutputDir = "data/Parameters/BGFitResonance/" + runName;
    std::filesystem::create_directories(parametersOutputDir);
