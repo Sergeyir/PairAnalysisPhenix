@@ -826,10 +826,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                else altFitsAB.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
             }
          }
-         altFitABRangeMin = massResonance - sigmalizedFitRange*
-                            (gammaResonance + gaussianBroadeningSigma);
-         altFitABRangeMax = massResonance + sigmalizedFitRange*
-                            (gammaResonance + gaussianBroadeningSigma);
+         fitsBG.back()->GetRange(altFitABRangeMin, altFitABRangeMax);
       }
 
       if (isBGFixedForThisPTAltFitFreeG)
@@ -856,10 +853,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                else altFitsFreeG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
             }
          }
-         altFitFreeGRangeMin = massResonance - sigmalizedFitRange*
-                               (gammaResonance + gaussianBroadeningSigma);
-         altFitFreeGRangeMax = massResonance + sigmalizedFitRange*
-                               (gammaResonance + gaussianBroadeningSigma);
+         fitsBG.back()->GetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
       }
 
       if (isBGFixedForThisPTAltFitFixedG)
@@ -886,10 +880,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
                else altFitsFixedG.back()->SetParLimits(i, par/altFitParLim, par*altFitParLim);
             }
          }
-         altFitFixedGRangeMin = massResonance - sigmalizedFitRange*
-                                (gammaResonance + gaussianBroadeningSigma);
-         altFitFixedGRangeMax = massResonance + sigmalizedFitRange*
-                                (gammaResonance + gaussianBroadeningSigma);
+         fitsBG.back()->GetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
       }
 
       if (performAltFits)
