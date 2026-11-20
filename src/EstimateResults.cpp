@@ -657,15 +657,15 @@ int main(int argc, char **argv)
             }
 
             TLegend legend(0.15, 0.85, 0.9, 0.95);
-            legend.SetLineColorAlpha(kGray, 0.3);
-            legend.SetFillColorAlpha(kWhite, 0.5);
+            legend.SetLineColorAlpha(0, 0.);
+            legend.SetFillColorAlpha(0, 0.);
             legend.SetNColumns(3);
 
-            legend.AddEntry(&sysPTScale, "#it{p}_{T} scale");
-            legend.AddEntry(&sysAccVar, "Acceptance");
-            legend.AddEntry(&sysCutsVar, "Cuts");
-            legend.AddEntry(&sysYieldExtr, "Yield extraction");
-            legend.AddEntry(&sysFull, "Full");
+            legend.AddEntry(&sysPTScale, "#it{p}_{T} scale", "L");
+            legend.AddEntry(&sysAccVar, "Acceptance", "L");
+            legend.AddEntry(&sysCutsVar, "Cuts", "L");
+            legend.AddEntry(&sysYieldExtr, "Yield extraction", "L");
+            legend.AddEntry(&sysFull, "Full", "L");
 
             legend.Draw();
 
@@ -840,10 +840,6 @@ int main(int argc, char **argv)
       }
 
       graphSpectraVsPTForTsallisFit.Fit(&spectraFit, "RQMBN E EX0");
-
-      CppTools::Print(spectraFit.GetParameter(0), 
-                      spectraFit.GetParameter(1), 
-                      spectraFit.GetParameter(2));
 
       resultsOutputFile->mkdir(centralityName.c_str());
       resultsOutputFile->cd(centralityName.c_str());
