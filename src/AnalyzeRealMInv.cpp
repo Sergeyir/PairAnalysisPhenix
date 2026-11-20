@@ -1332,11 +1332,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
          TF1 fit("sys fit", method["raw_yield_sys_fit_func"].as<std::string>().c_str());
          fit.SetRange(pTBinRanges[pTBinFitMin]/1.05, pTBinRanges[pTBinFitMax + 1]*1.05);
 
+         fit.SetParameters(0.1, 0., 0., 0.);
+
          fit.SetLineWidth(4);
          fit.SetLineColor(kRed - 3);
          fit.SetLineStyle(2);
 
-         sysRawYield.Fit(&fit, "RQMNB");
+         sysRawYield.Fit(&fit, "RQMNC");
 
          ROOTTools::DrawFrame(&sysRawYield, "", 
                               "#it{p}_{T} [GeV/#it{c}]", "Relative uncertainty", 1., 1.5);
