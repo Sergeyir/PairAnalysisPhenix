@@ -23,6 +23,12 @@ TLatex tlText;
 
 TFile *resultsInputFile;
 
+TH1D *distrSpectraVsPTStatErrPP;
+TH1D *distrSpectraVsPTSysErrPP;
+
+std::vector<TGraphErrors *> graphsVladRABVsPTStatErr;
+std::vector<TGraphErrors *> graphsVladRABVsPTSysErr;
+
 void KStar892()
 {
    gROOT->SetBatch(kTRUE);
@@ -50,6 +56,13 @@ void KStar892()
 
    const std::string outputDir = "output/Results/" + runName + "/" + std::to_string(taxiNumber);
    std::filesystem::create_directories(outputDir);
+
+   TFile *spectraPPFile = TFile::Open("data/Spectra/pp200/KStar892.root");
+
+   distrSpectraVsPTStatErrPP =
+            static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with stat err"));
+   distrSpectraVsPTSysErrPP =
+            static_cast<TH1D *>(spectraPPFile->Get("spectra vs pT with sys err"));
 
    // Spectra (old and new)
    {
@@ -107,11 +120,14 @@ void KStar892()
                GetGraphFromTXTFile("data/Spectra/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                    graphsVladSpectraVsPTSysErr.back(), false, true, 0.08));
 
+         graphsVladRABVsPTStatErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTStatErr.back()->Clone())); 
+         graphsVladRABVsPTSysErr.push_back(static_cast<TGraphErrors *>(graphsVladSpectraVsPTSysErr.back()->Clone())); 
+
          spectraFits.push_back(static_cast<TF1 *>(resultsInputFile->
                                Get((centralityName + "/spectra fit").c_str())->Clone()));
 
          const double mult = 10./pow(10., i);
-         // multiplying by bias factor since Vlad did not account for it
+         // multiplying by bias factor since Vlad did not account for it for spectra calculation
          const double biasFactor = 
             inputYAMLResonance["centrality_bins"][i]["bias_factor"].as<double>();
 
@@ -499,7 +515,8 @@ void KStar892()
       {
          if (tmp[0] != tmp[4]) CppTools::PrintError("Something wrong with pT bins of Vlad results");
 
-         const double valueRCP = tmp[1]/tmp[5]*rcpScaling;
+         const double valueRCP = tmp[1]/tmp[5]*rcpScaling*central["bias_factor"].as<double>()/
+                                 peripheral["bias_factor"].as<double>();
          const double statErrRCP = CppTools::UncertaintyProp(tmp[2]/tmp[1], tmp[6]/tmp[5])*valueRCP;
          const double sysErrRCP = CppTools::UncertaintyProp(tmp[3]/tmp[1], tmp[7]/tmp[5])*valueRCP;
 
@@ -563,6 +580,7 @@ void KStar892()
       legend.Clear();
    }
 
+   int i = 0;
    // RAB for all particles
    for (const auto& centrality : inputYAMLResonance["centrality_bins"])
    {
@@ -595,6 +613,35 @@ void KStar892()
                               "found in file " + resultsInputFileName);
       }
 
+      for (int j = 0; j < graphsVladRABVsPTStatErr[i]->GetN(); j++)
+      {
+         const int spectraPPBin = distrSpectraVsPTStatErrPP->GetXaxis()->
+            FindBin(graphsVladRABVsPTStatErr[i]->GetPointX(j));
+         const double spectraPPVal = distrSpectraVsPTStatErrPP->GetBinContent(spectraPPBin);
+         const double spectraPPStat = distrSpectraVsPTStatErrPP->GetBinError(spectraPPBin);
+         const double spectraPPSys = distrSpectraVsPTSysErrPP->GetBinError(spectraPPBin);
+
+         const double scaleRAB = 1./centrality["N_coll"].as<double>()*42.2*
+                                 centrality["bias_factor"].as<double>();
+
+         const double rabVal = graphsVladRABVsPTStatErr[i]->GetPointY(j)/spectraPPVal*scaleRAB;
+         const double rabStat = 
+            CppTools::UncertaintyProp(graphsVladRABVsPTStatErr[i]->GetErrorY(j)/
+                                      graphsVladRABVsPTStatErr[i]->GetPointY(j), 
+                                      spectraPPStat/spectraPPVal)*rabVal;
+         const double rabSys = 
+            CppTools::UncertaintyProp(graphsVladRABVsPTSysErr[i]->GetErrorY(j)/
+                                      graphsVladRABVsPTSysErr[i]->GetPointY(j), 
+                                      spectraPPSys/spectraPPVal)*rabVal;
+
+         graphsVladRABVsPTStatErr[i]->SetPointY(j, rabVal);
+         graphsVladRABVsPTSysErr[i]->SetPointY(j, rabVal);
+         graphsVladRABVsPTStatErr[i]->
+            SetPointError(j, graphsVladRABVsPTStatErr[i]->GetErrorX(j), rabStat);
+         graphsVladRABVsPTSysErr[i]->
+            SetPointError(j, graphsVladRABVsPTSysErr[i]->GetErrorX(j), rabSys);
+      }
+
       TCanvas canv("canv", "canv", 800, 800);
 
       canv.SetFillStyle(4000);
@@ -620,13 +667,17 @@ void KStar892()
       rab.SetLineWidth(2);
       rab.SetDefaultSysWidth(0.08);
 
+      rab.DrawGraph(graphsVladRABVsPTStatErr[i], graphsVladRABVsPTSysErr[i], kBlack, 0.9,
+                    75, "#it{K}_{Vlad}^{*0}");
       /*
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/KStar892_" + centralityName + "_Vlad.txt", 
                                kBlack, 0.9, 75, "#it{K}_{Vlad}^{*0}", false, true, 0.06);
                                */
 
+      /*
       rab.DrawGraphFromTXTFile("data/RAB/HeAu200/ppbar" + centralityName + "PHENIX.txt", 
                                kBlack, 0.9, 75, "(p+#bar{p})/2, PRC109, 054910", false, true, 0.05);
+                               */
 
       rab.DrawGraphFromYAMLFile("data/RAB/HeAu200/pi0PHENIX.yaml", centralityName, 
                                 kP6Violet, 0.9, 77, "#it{#pi}^{0}, PRC105 064902", 
@@ -650,6 +701,7 @@ void KStar892()
       ROOTTools::PrintCanvas(&canv, outputDir + "/" + resonanceName + "_RAB_comp_" + centralityName);
 
       legend.Clear();
+      i++;
    }
 
    // RAB for new pp200 spectra

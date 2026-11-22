@@ -130,17 +130,20 @@ void KStar892()
          histsSpectraVsPTStatErr.back()->Scale(mult);
          histsSpectraVsPTSysErr.back()->Scale(mult);
 
+         // Vlad scaled the spectra by bias factor contrary to the formula in his AN
+         const double biasF = 1.; // inputYAMLResonance["centrality_bins"][i]["bias_factor"].as<double>();
+
          for (int j = 0; j < graphsVladSpectraVsPTStatErr.back()->GetN(); j++)
          {
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult*biasF);
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult);
+               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult*biasF);
             graphsVladSpectraVsPTSysErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult*biasF);
             graphsVladSpectraVsPTSysErr.back()->
                SetPointError(j, graphsVladSpectraVsPTSysErr.back()->GetErrorX(j),
-                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult);
+                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult*biasF);
          }
 
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
@@ -466,9 +469,7 @@ void KStar892()
                               "found in file " + resultsInputFileName);
       }
 
-      const double rcpScaling = central["bias_factor"].as<double>()/
-                                peripheral["bias_factor"].as<double>()*
-                                peripheral["N_coll"].as<double>()/
+      const double rcpScaling = peripheral["N_coll"].as<double>()/
                                 central["N_coll"].as<double>();
 
       const double scalingUncertainty = 
@@ -611,8 +612,7 @@ void KStar892()
          const double spectraPPStat = distrSpectraVsPTStatErrPP->GetBinError(spectraPPBin);
          const double spectraPPSys = distrSpectraVsPTSysErrPP->GetBinError(spectraPPBin);
 
-         const double rabScale = centrality["bias_factor"].as<double>()/
-                                 centrality["N_coll"].as<double>()*42.2;
+         const double rabScale = 1./centrality["N_coll"].as<double>()*42.2;
 
          const double rabVal = graphsVladRABVsPTStatErr[i]->GetPointY(j)/spectraPPVal*rabScale;
          const double rabStat = 
@@ -766,8 +766,7 @@ void KStar892()
          const std::string centralityName = centrality["name"].as<std::string>();
          const std::string centralityNameTex = centrality["name_tex"].as<std::string>();
 
-         const double scaleRAB = centrality["bias_factor"].as<double>()/
-                                 centrality["N_coll"].as<double>();
+         const double scaleRAB = 1./centrality["N_coll"].as<double>();
 
          /*
          const double scalingUncertainty = 

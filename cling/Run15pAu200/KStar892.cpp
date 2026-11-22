@@ -131,17 +131,20 @@ void KStar892()
          histsSpectraVsPTStatErr.back()->Scale(mult);
          histsSpectraVsPTSysErr.back()->Scale(mult);
 
+         // Vlad scaled the spectra by bias factor contrary to the formula in his AN
+         const double biasF = 1.; // inputYAMLResonance["centrality_bins"][i]["bias_factor"].as<double>();
+
          for (int j = 0; j < graphsVladSpectraVsPTStatErr.back()->GetN(); j++)
          {
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTStatErr.back()->GetPointY(j)*mult*biasF);
             graphsVladSpectraVsPTStatErr.back()->
-               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult);
+               SetPointError(j, 0., graphsVladSpectraVsPTStatErr.back()->GetErrorY(j)*mult*biasF);
             graphsVladSpectraVsPTSysErr.back()->
-               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult);
+               SetPointY(j, graphsVladSpectraVsPTSysErr.back()->GetPointY(j)*mult*biasF);
             graphsVladSpectraVsPTSysErr.back()->
                SetPointError(j, graphsVladSpectraVsPTSysErr.back()->GetErrorX(j),
-                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult);
+                             graphsVladSpectraVsPTSysErr.back()->GetErrorY(j)*mult*biasF);
          }
 
          yMin = CppTools::Minimum(yMin, histsSpectraVsPTStatErr.back()->GetMinimum(1e-31));
@@ -234,6 +237,7 @@ void KStar892()
          gPad->SetLeftMargin(0.115); gPad->SetBottomMargin(0.112);
 
          double pTMax = 8.5;
+
          if (i == 1 || i == 2) pTMax = 6.5;
 
          ROOTTools::DrawFrame(0.4, yMin/1.5, pTMax + 0.1, yMax*1.5, 
@@ -642,7 +646,8 @@ void KStar892()
       gPad->SetRightMargin(0.002); gPad->SetTopMargin(0.002); 
       gPad->SetLeftMargin(0.1); gPad->SetBottomMargin(0.112);
 
-      if (centrality["is_mb"].as<bool>())
+      if (centrality["name"].as<std::string>() == "0-84" || 
+          centrality["name"].as<std::string>() == "40-84")
       {
          ROOTTools::DrawFrame(pTMinRAB, rMin, pTMaxRAB, rMax, 
                               "", "#it{p}_{T} [GeV/#it{c}]", "#it{R}_{AB}", 1., 0.95);
