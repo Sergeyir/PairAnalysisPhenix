@@ -192,9 +192,14 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
       const std::string centralityName = centrality["name"].as<std::string>();
 
-      SetMInvBGRescale("data/Parameters/MInvBGRescale/" + runName + "/" + 
-                       std::to_string(taxiNumber) + "/" + resonanceName + "_" + 
-                       methodName + "_" + centralityName + ".txt", pTNBins);
+      if (!SetMInvBGRescale("data/Parameters/MInvBGRescale/" + runName + "/" + 
+                            std::to_string(taxiNumber) + "/" + resonanceName + "_" + 
+                            methodName + "_" + centralityName + ".txt", pTNBins)) 
+      {
+         CppTools::Print("Skipping " + methodName + " for " + centralityName);
+         numberOfCalls += pTNBins;
+         continue;
+      }
 
       TH1D distrMeansVsPT("means vs pT", "", pTNBins, &pTBinRanges[0]);
       TH1D distrGammasVsPT("gammas vs pT", "", pTNBins, &pTBinRanges[0]);
@@ -1581,14 +1586,13 @@ bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string
    return false;
 }
 
-void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
+bool AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
 {
    rescalesMInvBG.clear();
 
    if (!std::filesystem::exists(fileName))
    {
-      CppTools::PrintWarning("File " + fileName + " could not be found; "\
-                             "MInv BG rescale will be disabled");
+      CppTools::PrintWarning("File " + fileName + " could not be found;");
 
       rescalesMInvBG.resize(nPar);
       for (unsigned int i = 0; i < nPar; i++)
@@ -1596,7 +1600,7 @@ void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsign
          rescalesMInvBG[i] = 1.;
       }
 
-      return;
+      return false;
    }
 
    std::ifstream file(fileName);
@@ -1611,6 +1615,8 @@ void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsign
    {
       CppTools::PrintError("Number of parameters mismatch from file " + fileName);
    }
+
+   return true;
 }
 
 #endif /* ANALYZE_REAL_M_INV_CPP */

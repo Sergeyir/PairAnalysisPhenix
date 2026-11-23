@@ -66,12 +66,13 @@ namespace AnalyzeRealMInv
     */
    TFile *SetFixedBGFile(const std::string& inputFileName, const std::string& fitTypeName, 
                          const bool printFreeFitWarning = true);
-   /*! Set MInv BG rescale for the current method and centrality bin
+   /*! Set MInv BG rescale for the current method and centrality bin. 
+    * Returns true if rescale values were assigned succesfully
     *
     * @param[in] fileName name of the file from which approximation parameters will be written
     * @param[in] nPar number of parameters expected to be read
     */
-   void SetMInvBGRescale(const std::string& fileName, const unsigned int nPar);
+   bool SetMInvBGRescale(const std::string& fileName, const unsigned int nPar);
    /*! Set parameters of BG fit
     *
     * @param[in] inputFile file from which approximation parameters will be written

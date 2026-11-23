@@ -321,13 +321,13 @@ int main(int argc, char **argv)
 
          if (!rawYieldVsPTStatErr) 
          {
-            CppTools::PrintError("No raw yield distribution with statistical errors was "\
+            CppTools::PrintWarning("No raw yield distribution with statistical errors was "\
                                  "found in file " + inputFileName + " for " + methodName + 
                                  " in centrality " + centralityName);
          }
          if (!rawYieldVsPTSysErr) 
          {
-            CppTools::PrintError("No raw yield distribution with systematic errors "\
+            CppTools::PrintWarning("No raw yield distribution with systematic errors "\
                                  "was found in file " + inputFileName + " for " + methodName + 
                                  " in centrality " + centralityName);
          }
@@ -344,15 +344,21 @@ int main(int argc, char **argv)
 
             if (!rawYieldVsPTLoosenedCuts) 
             {
-               CppTools::PrintError("No raw yield distribution for loosened cuts "\
-                                    "was found in file " + inputFileName + " for " + methodName + 
-                                    " in centrality " + centralityName);
+               CppTools::PrintWarning("No raw yield distribution for loosened cuts "\
+                                      "was found in file " + inputFileName + " for " + methodName + 
+                                      " in centrality " + centralityName);
+               doCutsVarSysForCurrentMethod = false;
             }
             if (!rawYieldVsPTTightenedCuts) 
             {
-               CppTools::PrintError("No raw yield distribution for tightened cuts "\
-                                    "was found in file " + inputFileName + " for " + methodName + 
-                                    " in centrality " + centralityName);
+               CppTools::PrintWarning("No raw yield distribution for tightened cuts "\
+                                      "was found in file " + inputFileName + " for " + methodName + 
+                                      " in centrality " + centralityName);
+               doCutsVarSysForCurrentMethod = false;
+            }
+            if (!doCutsVarSysForCurrentMethod)
+            {
+               CppTools::PrintInfo("Disabling cut variation systematics for current method");
             }
          }
 
@@ -513,13 +519,13 @@ int main(int argc, char **argv)
 
             resultVarCutsVarT.Draw("SAME");
 
-            TLegend legend(0.15, 0.85, 0.9, 0.95);
+            TLegend legend(0.21, 0.85, 0.95, 0.95);
             legend.SetLineColorAlpha(kGray, 0.3);
             legend.SetFillColorAlpha(kWhite, 0.5);
             legend.SetNColumns(2);
 
-            legend.AddEntry(&resultVarCutsVarL, "Loosened cuts");
-            legend.AddEntry(&resultVarCutsVarT, "Tightened cuts");
+            legend.AddEntry(&resultVarCutsVarL, "Loosened cuts", "L");
+            legend.AddEntry(&resultVarCutsVarT, "Tightened cuts", "L");
 
             legend.Draw();
 
@@ -663,7 +669,7 @@ int main(int argc, char **argv)
 
             legend.AddEntry(&sysPTScale, "#it{p}_{T} scale", "L");
             legend.AddEntry(&sysAccVar, "Acceptance", "L");
-            legend.AddEntry(&sysCutsVar, "Cuts", "L");
+            if (doCutsVarSysForCurrentMethod) legend.AddEntry(&sysCutsVar, "Cuts", "L");
             legend.AddEntry(&sysYieldExtr, "Yield extraction", "L");
             legend.AddEntry(&sysFull, "Full", "L");
 
