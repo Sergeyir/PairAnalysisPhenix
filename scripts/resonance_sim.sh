@@ -1,11 +1,12 @@
 #!/bin/bash
 
-input_file=$1
-
-./bin/AnalyzeSimResonance $input_file
-./bin/AnalyzeSimResonance $input_file -s ptscale 0.995
-./bin/AnalyzeSimResonance $input_file -s ptscale 1.005
-./bin/AnalyzeSimResonance $input_file -s acceptance -1
-./bin/AnalyzeSimResonance $input_file -s acceptance 1
-./bin/AnalyzeSimResonance $input_file -s cuts -1
-./bin/AnalyzeSimResonance $input_file -s cuts 1
+for file in $@; do
+   ./bin/AnalyzeSimResonance $file
+   ./bin/AnalyzeSimResonance $file -s ptscale 0.995
+   ./bin/AnalyzeSimResonance $file -s ptscale 1.005
+   ./bin/AnalyzeSimResonance $file -s acceptance -1
+   ./bin/AnalyzeSimResonance $file -s acceptance 1
+   ./bin/AnalyzeSimResonance $file -s cuts -1
+   ./bin/AnalyzeSimResonance $file -s cuts 1
+   ./bin/EstimateRecEffOfResonance $file
+done
