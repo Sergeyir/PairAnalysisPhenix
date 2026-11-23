@@ -376,7 +376,9 @@ int main(int argc, char **argv)
    {
       TFile resultFile(resultFileName.c_str());
 
-      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get("MB spectra fit"));
+      const std::string spectraFitName = 
+         inputYAMLResonance["centrality_bins"][0]["name"].as<std::string>() + "/spectra fit";
+      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get(spectraFitName.c_str()));
 
       if (spectraFit)
       {
