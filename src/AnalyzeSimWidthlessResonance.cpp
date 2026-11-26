@@ -85,7 +85,7 @@ void AnalyzeSimWidthlessResonance::AnalyzeConfiguration(ThrContainer &thrContain
 
          double eventWeight;
  
-         eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
+         eventWeight = weightFunc->Eval(origPT)/eventNormWeight*origPT;
  
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
  
