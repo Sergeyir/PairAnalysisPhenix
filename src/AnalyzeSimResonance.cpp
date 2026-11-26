@@ -98,7 +98,9 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
          const double origPT = sqrt(pow(simCNT.mom_orig(0), 2) + 
                                         pow(simCNT.mom_orig(1), 2))*pTScale;
 
-         double eventWeight = weightFunc->Eval(origPT)/weightFunc->Eval(0.5)/eventNormWeight;
+         // since the spectra is of the form 1/(2 pi p_T) d^2N / d pT dy the fit must be
+         // multiplied by pT to account for pT in the denominator
+         double eventWeight = weightFunc->Eval(origPT)/eventNormWeight;
  
          histContainer.distrOrigUnscaledPT->Fill(origPT);
          histContainer.distrOrigPT->Fill(origPT, eventWeight);
@@ -275,8 +277,8 @@ void AnalyzeSimResonance::AnalyzeConfiguration(ThrContainer &thrContainer,
 
                if (!dmCutter.IsDeadTOFe(chamber, slat) &&
                    ((cutsOffsetNone && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.)) ||
-                    (cutsOffsetLoose && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 3.5)) ||
-                    (cutsOffsetTight && simCNT.etof(i) > eloss && IsMatch(sdphi, sdz, 2.5))))
+                    (cutsOffsetLoose && simCNT.etof(i) > eloss - 4e-4 && IsMatch(sdphi, sdz, 3.5)) ||
+                    (cutsOffsetTight && simCNT.etof(i) > eloss + 4e-4 && IsMatch(sdphi, sdz, 2.5))))
                {
                   weightTOFe = (1. + accVar.TOFe)*reweights.TOFe;
 
@@ -843,12 +845,20 @@ int main(int argc, char **argv)
 
       const std::string spectraFitName = 
          inputYAMLResonance["centrality_bins"][0]["name"].as<std::string>() + "/spectra fit";
-      TF1 *spectraFit = static_cast<TF1 *>(resultFile.Get(spectraFitName.c_str()));
+      const std::string spectraExtrapolationName = 
+         inputYAMLResonance["centrality_bins"][0]["name"].as<std::string>() + 
+         "/spectra extrapolation";
+      TF1 *spectraFit = 
+         static_cast<TF1 *>(resultFile.Get(spectraFitName.c_str()));
+      TGraph *spectraExtrapolation = 
+         static_cast<TGraph *>(resultFile.Get(spectraExtrapolationName.c_str()));
 
       if (spectraFit)
       {
          CppTools::PrintInfo("Fit parameters for spectra were found");
-         weightFunc = static_cast<TF1 *>(spectraFit->Clone());
+         //weightFunc = static_cast<TF1 *>(spectraFit->Clone());
+         weightFunc = new TF1("weightFunc", "exp(-x)");
+         weightExtrapolation = static_cast<TGraph *>(spectraExtrapolation->Clone());
          reweightForSpectra = true;
       }
       else CppTools::PrintInfo("Spectra fit was not found in file " + resultFileName);
