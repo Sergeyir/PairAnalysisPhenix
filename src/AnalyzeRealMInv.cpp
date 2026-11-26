@@ -20,7 +20,8 @@ int main(int argc, char **argv)
    parser.add_argument("inputYAMLFileName").
           help("name of the input .yaml file containing information about the resonance");
    parser.add_argument("taxiNumber").
-          help("taxi number").
+          help("taxi job number(s) to analyze").
+          nargs(argparse::nargs_pattern::at_least_one).
           scan<'i', int>();
 
    parser.add_argument("-m", "--method").
@@ -45,8 +46,6 @@ int main(int argc, char **argv)
 
    inputYAMLResonance.OpenFile(parser.get<std::string>("inputYAMLFileName"));
    inputYAMLResonance.CheckStatus("resonance");
-
-   taxiNumber = parser.get<int>("taxiNumber");
  
    if (parser.is_used("-j")) ROOT::EnableImplicitMT(parser.get<int>("-j"));
    else ROOT::EnableImplicitMT(std::thread::hardware_concurrency());
@@ -89,8 +88,10 @@ int main(int argc, char **argv)
       }
    }
 
+   numberOfIterations *= parser.get<std::vector<int>>("taxiNumber").size();
+
    gStyle->SetOptStat(0);
-   gErrorIgnoreLevel = kWarning;
+   gErrorIgnoreLevel = kError;
 
    gStyle->SetPalette(kRainbow);
 
@@ -114,10 +115,7 @@ int main(int argc, char **argv)
 
    SetGaussianBroadeningFunction();
 
-   inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
-
-   CppTools::CheckInputFile(inputFileName);
-   inputFile = TFile::Open(inputFileName.c_str(), "READ");
+   rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
 
    text.SetTextFont(43);
    text.SetTextSize(45);
@@ -129,8 +127,6 @@ int main(int argc, char **argv)
 
    text.SetTextAngle(270.);
    text.SetTextColorAlpha(kGray + 3, 0.8);
-
-   rebinX = inputYAMLResonance["default_rebin_x"].as<int>();
 
    for (unsigned int i = 0; i < pTNBins; i++)
    {
@@ -144,29 +140,42 @@ int main(int argc, char **argv)
    parametersOutputDir = "data/RawYields/" + runName + "/Resonance";
    std::filesystem::create_directories(parametersOutputDir);
 
-   sysOutputDir = "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
-   std::filesystem::create_directories(sysOutputDir);
-
-   // performing fits for specified pair selection methods
-   if (methodsToAnalyze.front() == "all")
+   for (const int taxiJob : parser.get<std::vector<int>>("taxiNumber"))
    {
-      for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
-      {
-         PerformMInvFits(method);
-      }
-   }
-   else 
-   {
-      for (const int& i : methodIndices)
-      {
-         PerformMInvFits(inputYAMLResonance["pair_selection_methods"][i]);
-      }
-   }
+      taxiNumber = taxiJob;
+      inputFileName = "data/Real/" + runName + "/Resonance/" + std::to_string(taxiNumber) + ".root";
 
-   parametersOutputFile->Close();
+      CppTools::CheckInputFile(inputFileName);
+      inputFile = TFile::Open(inputFileName.c_str(), "READ");
+
+      sysOutputDir = "output/Systematics/" + runName + "/" + std::to_string(taxiNumber);
+      std::filesystem::create_directories(sysOutputDir);
+
+      isVerbose = !(taxiNumber == inputYAMLResonance["taxi_job_loosened_cuts"].as<int>() || 
+                    taxiNumber == inputYAMLResonance["taxi_job_tightened_cuts"].as<int>());
+
+      // performing fits for specified pair selection methods
+      if (methodsToAnalyze.front() == "all")
+      {
+         for (const YAML::Node& method : inputYAMLResonance["pair_selection_methods"])
+         {
+            PerformMInvFits(method);
+         }
+      }
+      else 
+      {
+         for (const int& i : methodIndices)
+         {
+            PerformMInvFits(inputYAMLResonance["pair_selection_methods"][i]);
+         }
+      }
+
+      parametersOutputFile->Close();
+      inputFile->Close();
+      isVerbose = true;
+   }
 
    pBar.Finish();
-
    CppTools::PrintInfo("AnalyzeRealMInv executable has finished running succesfully");
 }
 
@@ -562,9 +571,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                SetBGFit(inputFileFitsBG, fitBG, pTBinRangeName);
             // only performing alternative fits if all parameters were succesfully read
             const bool isBGFixedForThisPTAltFit = 
-               (SetBGFit(inputFileFitsBGAB, altFitBGAB, pTBinRangeName) &&
-                SetBGFit(inputFileFitsBGFreeG, altFitBGFreeG, pTBinRangeName) &&
-                SetBGFit(inputFileFitsBGFixedG, altFitBGFixedG, pTBinRangeName));
+               (SetBGFit(inputFileFitsBGAB, altFitBGAB, pTBinRangeName, !isVerbose) &&
+                SetBGFit(inputFileFitsBGFreeG, altFitBGFreeG, pTBinRangeName, !isVerbose) &&
+                SetBGFit(inputFileFitsBGFixedG, altFitBGFixedG, pTBinRangeName, !isVerbose));
 
             const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
             const double minBinVal = distrMInv->GetBinContent(distrMInv->GetMinimumBin());
@@ -644,13 +653,13 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                }
             }
 
-            distrMInv->Fit(fit, "RQMNBLC");
+            distrMInv->Fit(fit, "RQMNBWLC");
 
             if (isBGFixedForThisPTAltFit)
             {
-               distrMInv->Fit(altFitAB, "RQMNBLC");
-               distrMInv->Fit(altFitFreeG, "RQMNBLC");
-               distrMInv->Fit(altFitFixedG, "RQMNBLC");
+               distrMInv->Fit(altFitAB, "RQMNBWLC");
+               distrMInv->Fit(altFitFreeG, "RQMNBWLC");
+               distrMInv->Fit(altFitFixedG, "RQMNBWLC");
             }
 
             for (unsigned int j = 1; j <= fitNTries; j++)
@@ -674,7 +683,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                fit->SetRange(fitRangeMin, fitRangeMax);
 
-               distrMInv->Fit(fit, "RQMNBLC");
+               distrMInv->Fit(fit, "RQMNBWLC");
 
                if (isBGFixedForThisPTAltFit)
                {
@@ -711,9 +720,9 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
                   altFitFreeG->SetRange(altFitFreeGRangeMin, altFitFreeGRangeMax);
                   altFitFixedG->SetRange(altFitFixedGRangeMin, altFitFixedGRangeMax);
 
-                  distrMInv->Fit(altFitAB, "RQMNBLC");
-                  distrMInv->Fit(altFitFreeG, "RQMNBLC");
-                  distrMInv->Fit(altFitFixedG, "RQMNBLC");
+                  distrMInv->Fit(altFitAB, "RQMNBWLC");
+                  distrMInv->Fit(altFitFreeG, "RQMNBWLC");
+                  distrMInv->Fit(altFitFixedG, "RQMNBWLC");
                }
             }
 
@@ -1056,7 +1065,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
                TLegend legend(0.75, 0.6, 0.95, 0.95);
 
-               legend.SetLineColorAlpha(0, 0.);
+               legend.SetBorderSize(0);
                legend.SetFillColorAlpha(0, 0.);
 
                legend.AddEntry(fit, "Default", "L");
@@ -1240,7 +1249,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
             distrMInv->Draw("SAME PFC");
 
             TLegend legend(0.3, 0.86, 0.98, 0.94);
-            legend.SetLineColorAlpha(0, 0.);
+            legend.SetBorderSize(0);
             legend.SetFillColorAlpha(0, 0.);
             legend.SetNColumns(3);
 
@@ -1296,7 +1305,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
 
          TLegend legend(0.7, 0.75, 0.95, 0.95);
 
-         legend.SetLineColorAlpha(0, 0.);
+         legend.SetBorderSize(0);
          legend.SetFillColorAlpha(0, 0.);
 
          ROOTTools::DrawFrame(&varRawYieldAltFitAB, "", 
@@ -1435,6 +1444,10 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method)
    }
   
    parametersOutputFile->Close();
+
+   pBar.Clear();
+   CppTools::PrintInfo(methodName + " for " + std::to_string(taxiNumber) + " done");
+   pBar.RePrint();
 }
 
 void AnalyzeRealMInv::SetGaussianBroadeningFunction()
@@ -1541,20 +1554,24 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
       pBar.RePrint();
       return nullptr;
    }
-   pBar.Clear();
-   CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits were not found; "\
-                          "no fits will be performed for this fit type");
-   pBar.RePrint();
+   else if (isVerbose)
+   {
+      pBar.Clear();
+      CppTools::PrintWarning("Fixed BG fits file for " + fitTypeName + " fits were not found; "\
+                             "no fits will be performed for this fit type");
+      pBar.RePrint();
+   }
    return nullptr;
 }
 
-bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier)
+bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier,
+                               const bool suppressWarning)
 {
    if (inputFile)
    {
       TF1 *fitBGTmp = static_cast<TF1 *>(inputFile->Get(identifier.c_str()));
 
-      if (!fitBGTmp)
+      if (!fitBGTmp && !suppressWarning)
       {
          pBar.Clear();
          CppTools::PrintWarning("Could not obtain BG approximation for + " + 
