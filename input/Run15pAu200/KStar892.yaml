@@ -21,8 +21,8 @@ m_inv_range_min: 0.75 # minimum value of a range of M_{inv} to be drawn
 m_inv_range_max: 1.1 # maximum value of a range of M_{inv} to be drawn
 sigmalized_yield_extraction_range: 1.5 # yield extraction range in +-(Gamma + sigma)*sigmalized_yield_extraction_range from mean
 taxi_job: 20546 # default taxi job number for estimating results
-taxi_job_loosened_cuts: -9999 #20494 # default taxi job number for loosened cuts variation analysis for systematics
-taxi_job_tightened_cuts: -9999 #20492 # default taxi job number for tightened cuts variation analysis for systematics
+taxi_job_loosened_cuts: 20566 # default taxi job number for loosened cuts variation analysis for systematics
+taxi_job_tightened_cuts: 20563 # default taxi job number for tightened cuts variation analysis for systematics
 magnetic_field_configurations: # configurations of magnetic field in this run (empty if only one is used)
   - name: ''
 pt_bins: # pT bins of invariant pT spectra, RAB, and RCP
@@ -61,7 +61,7 @@ pair_selection_methods:
   color: "#7a21dd"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: , pt_bins: []}
-  cuts_var_sys_fit_func: "pol1"
+  cuts_var_sys_fit_func: "pol0"
   raw_yield_sys_fit_func: "pol2"
 - 
   name: NoPID
@@ -76,7 +76,7 @@ pair_selection_methods:
   color: "#e42536"
   custom_bg_fit: # per bin custom bg fit to account for different background
     - {func: , pt_bins: []}
-  cuts_var_sys_fit_func: "pol2"
+  cuts_var_sys_fit_func: "pol0"
   raw_yield_sys_fit_func: "pol2"
 - 
   name: 1K1TOFDCPC11PID
@@ -106,7 +106,7 @@ pair_selection_methods:
   color: "#5790fc"
   custom_bg_fit:
     - {func: "", pt_bins: []}
-  cuts_var_sys_fit_func: "pol2"
+  cuts_var_sys_fit_func: "pol3"
   raw_yield_sys_fit_func: "pol1"
 centrality_bins:
 - 
