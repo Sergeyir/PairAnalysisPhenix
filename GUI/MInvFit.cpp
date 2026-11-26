@@ -76,7 +76,7 @@ using namespace AnalyzeRealMInv;
 void MInvFit()
 {
 	gStyle->SetOptStat(0);
-   gErrorIgnoreLevel = kWarning;
+   gErrorIgnoreLevel = kError;
 
    TH1::AddDirectory(kFALSE);
    TH2::AddDirectory(kFALSE);
@@ -791,7 +791,7 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
       fits.back()->SetRange(fitRangeMin, fitRangeMax);
       fitsBG.back()->SetRange(fitRangeMin, fitRangeMax);
 
-      distrMInv->Fit(fits.back(), "RQMNBLC");
+      distrMInv->Fit(fits.back(), "RQMNBWLC");
 
       if (!isBGFixedForThisPT)
       {
@@ -1018,7 +1018,8 @@ TFile *AnalyzeRealMInv::SetFixedBGFile(const std::string& inputFileName,
    return nullptr;
 }
 
-bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier)
+bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier,
+                               const bool suppressWarning)
 {
    if (inputFile)
    {
@@ -1056,7 +1057,7 @@ bool AnalyzeRealMInv::SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string
    return false;
 }
 
-void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
+bool AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
 {
    rescalesMInvBG.clear();
 
@@ -1078,5 +1079,6 @@ void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsign
    {
       CppTools::PrintError("Number of parameters mismatch from file " + fileName);
    }
+   return true;
 }
 
