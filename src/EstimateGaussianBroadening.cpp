@@ -64,9 +64,9 @@ int main(int argc, char **argv)
 
    distr2DMInv = static_cast<TH2F *>(inputFile->Get("M_inv: NoPID"));
 
-   const unsigned int pTNBins = inputYAMLResonance["pt_bins"].size() - 1;
-   const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>()/1.1;
-   const double pTMax = inputYAMLResonance["pt_bins"][pTNBins]["max"].as<double>()*1.1;
+   const unsigned int pTNBins = inputYAMLResonance["pt_bins"].size();
+   const double pTMin = inputYAMLResonance["pt_bins"][0]["min"].as<double>();
+   const double pTMax = inputYAMLResonance["pt_bins"][pTNBins - 1]["max"].as<double>();
 
    //text.SetTextFont(43);
    //text.SetTextSize(50);
@@ -75,18 +75,20 @@ int main(int argc, char **argv)
 
    ProgressBar pBar("FANCY", "", PBarColor::BOLD_CYAN);
 
-   for (int i = distr2DMInv->GetXaxis()->FindBin(pTMin); 
-        i < distr2DMInv->GetXaxis()->FindBin(pTMax); i += 2)
+   for (unsigned int i = 0; i < pTNBins; i++)
    {
-      pBar.Print(static_cast<double>(i)/
-                 static_cast<double>(distr2DMInv->GetXaxis()->FindBin(pTMax) - 
-                                     distr2DMInv->GetXaxis()->FindBin(pTMin)));
-      PerformMInvFit(i, i + 1);
+      pBar.Print(static_cast<double>(i)/static_cast<double>(pTNBins - 1));
+
+      const double pTMin = inputYAMLResonance["pt_bins"][i]["min"].as<double>();
+      const double pTMax = inputYAMLResonance["pt_bins"][i]["max"].as<double>();
+
+      PerformMInvFit(distr2DMInv->GetXaxis()->FindBin(pTMin + 1e-7), 
+                     distr2DMInv->GetXaxis()->FindBin(pTMax - 1e-7));
    }
 
    pBar.Finish();
 
-   TF1 fitSigmas("gaussian broadening sigma fit", fitSigmasFormula.c_str());
+   TF1 fitSigmas("gaussian broadening sigma fit", "pol3");
    fitSigmas.SetRange(pTMin, pTMax);
 
    fitSigmas.SetLineWidth(3);
@@ -109,7 +111,8 @@ int main(int argc, char **argv)
    gPad->SetLeftMargin(0.17);
    gPad->SetBottomMargin(0.112);
 
-   ROOTTools::DrawFrame(pTMin, 0., pTMax, TMath::MaxElement(grSigmas.GetN(), grSigmas.GetY())*1.2,
+   ROOTTools::DrawFrame(pTMin, TMath::MinElement(grSigmas.GetN(), grSigmas.GetY())/1.2, 
+                        pTMax, TMath::MaxElement(grSigmas.GetN(), grSigmas.GetY())*1.2,
                         "", "#it{p}_{T} [GeV/#it{c}]", "#it{#sigma} [GeV/#it{c}^{2}]", 1., 1.8);
 
    fitSigmas.Draw("SAME");
@@ -134,6 +137,20 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
 
    if (distrMInv->GetEntries() < 100.) return;
 
+   double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
+
+   for (int i = 1; i <= distrMInv->GetXaxis()->GetNbins(); i++)
+   {
+      if (distrMInv->GetBinError(i)/distrMInv->GetBinContent(i) > 0.5 && 
+          distrMInv->GetBinContent(i)/maxBinVal > 0.1)
+      {
+         distrMInv->SetBinContent(i, 0.);
+         distrMInv->SetBinError(i, 0.);
+      }
+   }
+
+   maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
+
    // fit for resonance+bg approximation
    TF1 fit("resonance + bg fit", "gaus(0) + gaus(3)");
    // fit for resonance approximation
@@ -141,37 +158,39 @@ void EstimateGaussianBroadening::PerformMInvFit(const int pTBinMin, const int pT
    // fit for bg approximation
    TF1 fitBG("bg fit", "gaus");
 
-   const double maxBinVal = distrMInv->GetBinContent(distrMInv->GetMaximumBin());
-
    fit.SetParameters(maxBinVal, massResonance, 5e-3, maxBinVal/20., massResonance, 0.2);
 
-   fit.SetParLimits(0, maxBinVal/3., maxBinVal);
+   fit.SetParLimits(0, 0., maxBinVal);
    fit.SetParLimits(1, massResonance/1.02, massResonance*1.02);
-   fit.SetParLimits(2, 1e-3, 2e-2);
-   fit.SetParLimits(3, 0., maxBinVal/5.);
+   fit.SetParLimits(2, 2e-3, 10e-3);
+   fit.SetParLimits(3, 0., maxBinVal);
    fit.SetParLimits(4, 0., massResonance*10.);
-   fit.SetParLimits(5, 5e-2, 1.);
+   fit.SetParLimits(5, 5e-2, 10.);
 
-   fit.SetRange(massResonance - 1e-2, massResonance + 1e-2);
-   distrMInv->Fit(&fit, "RQMNB");
+   fit.SetRange(massResonance - 0.1, massResonance + 0.1);
+   distrMInv->Fit(&fit, "RQMNBL");
 
    for (unsigned int j = 1; j <= fitNTries; j++)
    {
-      fit.SetParLimits(1, fit.GetParameter(1) - 1e-2/static_cast<double>(j*j*j), 
-                       fit.GetParameter(1) + 1e-2/static_cast<double>(j*j*j));
-      fit.SetParLimits(2, fit.GetParameter(2)/(1. + 2./static_cast<double>(j*j*j)),
-                       fit.GetParameter(2)*(1. + 2./static_cast<double>(j*j*j)));
+      fit.SetParLimits(0, fit.GetParameter(0)/(1. + 2./static_cast<double>(j*j*j)),
+                       fit.GetParameter(0)*(1. + 2./static_cast<double>(j*j*j)));
+      fit.SetParLimits(1, fit.GetParameter(1) - 1e-2/static_cast<double>(j*j), 
+                       fit.GetParameter(1) + 1e-2/static_cast<double>(j*j));
+      fit.SetParLimits(2, fit.GetParameter(2)/(1. + 1e-1/static_cast<double>(j*j)),
+                       fit.GetParameter(2)*(1. + 1e-1/static_cast<double>(j*j)));
       /*
       fit.SetParLimits(4, fit.GetParameter(4)/(1. + 2./static_cast<double>(j*j*j)),
                        fit.GetParameter(4)*(1. + 2./static_cast<double>(j*j*j)));
+                       */
+      /*
       fit.SetParLimits(5, fit.GetParameter(2)*5.,
                        fit.GetParameter(5)*(1. + 2./static_cast<double>(j*j*j)));
                        */
 
       fit.SetRange(fit.GetParameter(1) - fit.GetParameter(2)*10., 
-                  fit.GetParameter(1) + fit.GetParameter(2)*10.);
+                   fit.GetParameter(1) + fit.GetParameter(2)*10.);
 
-      distrMInv->Fit(&fit, "RQMNBL");
+      distrMInv->Fit(&fit, "RQMNLB");
       if (j == fitNTries) distrMInv->Fit(&fit, "RQMNBLE");
    }
 
