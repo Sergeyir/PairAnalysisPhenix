@@ -17,6 +17,7 @@
 #include "TH1.h"
 #include "TH2.h"
 #include "TH3.h"
+#include "TGraph.h"
 #include "TFile.h"
 
 #include "ROOT/TThreadedObject.hxx"
@@ -113,8 +114,10 @@ namespace AnalyzeSimResonance
    bool cutsOffsetLoose;
    /// shows whether cuts are tight
    bool cutsOffsetTight;
-   // weight function for spectra
+   // weight function for spectra (from the spectra fit) for re-weighting pT
    TF1 *weightFunc;
+   // exponential interpolation of the spectra graph for re-weighting pT
+   TGraph *weightExtrapolation;
 
    /* @struct ThrContainerCopy
     * @brief Container for storing local ThrContainer copies (at least 1 for each thread) 
