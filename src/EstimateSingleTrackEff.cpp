@@ -157,7 +157,7 @@ void EstimateSingleTrackEff::EstimateEffForSingleDetector(const std::string& det
    distrRecPTPBar->SetLineWidth(3);
 
    TLegend legend(0.65, 0.15, 0.95, 0.3);
-   legend.SetLineColorAlpha(0, 0.);
+   legend.SetBorderSize(0);
    legend.SetFillColorAlpha(0, 0.);
    legend.SetNColumns(3);
 
