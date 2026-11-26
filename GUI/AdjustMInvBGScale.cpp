@@ -181,6 +181,11 @@ void AdjustMInvBGScale()
       CppTools::PrintWarning("File " + outputFileName + " already exists; the old file "\
                              "will be renamed to " + outputFileName + ".backup");
    }
+   // not much changes when scaling each z bin separately (rescaling for different z bins seem to be the same in every case)
+   /*
+   SetMInvBGRescale(outputFileName, pTNBins*inputYAMLResonance["cb_z_bins"].as<unsigned int>()*
+                    inputYAMLResonance["cb_r_bins"].as<unsigned int>());
+                    */
    SetMInvBGRescale(outputFileName, pTNBins);
 
    PerformMInvFits(method, centralityBinIndex);
@@ -411,130 +416,142 @@ void AnalyzeRealMInv::PerformMInvFits(const YAML::Node& method, const unsigned i
 
       double numberOfEvents = 0.;
 
-      TH1D *distrMInv = 
-         MInv::Merge(inputFile, histPrefix, decayMode, 
-                     centrality["cb_c_min"].as<int>(), centrality["cb_c_max"].as<int>(),
-                     0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
-                     0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
-                     pTBinRanges[i], pTBinRanges[i + 1],
-                     distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR, 
-                     numberOfEvents);
-
-      if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
-          !inputYAMLResonance["separate_antiparticle"].as<bool>())
+      /*
+      for (int j = 0; j < inputYAMLResonance["cb_z_bins"].as<int>(); j++)
       {
-         decayMode = ParticleMap::nameShort[daughter2Id] +
-                     ParticleMap::nameShort[daughter1Id];
-         distrMInv->Add(MInv::Merge(inputFile, histPrefix, decayMode, 
-                                    centrality["cb_c_min"].as<int>(), 
-                                    centrality["cb_c_max"].as<int>(),
-                                    0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
-                                    0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
-                                    pTBinRanges[i], pTBinRanges[i + 1],
-                                    distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR,
-                                    numberOfEvents));
-      }
-
-      if (!distrMInv)
-      {
-         pBar.Clear();
-         CppTools::PrintError("Resulting M_{inv} histogram could not be constructed for " + 
-                              CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 2));
-      }
-      else if (distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()) < 1e-7)
-      {
-         pBar.Clear();
-         CppTools::PrintWarning("Resulting histogram is empty in " + 
-                                centrality["name"].as<std::string>() + " " +
-                                CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 2));
-         pBar.RePrint();
-         continue;
-      }
-
-      if (!distrMInvFG)
-      {
-         pBar.Clear();
-         CppTools::PrintError("Resulting M_{inv} foreground histogram "\
-                              "could not be constructed for " + 
-                              centrality["name"].as<std::string>() + " " +
-                              CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                              CppTools::DtoStr(pTBinRanges[i + 1], 2));
-      }
-
-      if (!distrMInvBG)
-      {
-         pBar.Clear();
-         CppTools::PrintWarning("Resulting M_{inv} foreground histogram "\
-                                "could not be constructed for " + 
-                                centrality["name"].as<std::string>() + " " +
-                                CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 2));
-         pBar.RePrint();
-      }
-      else if (distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins()) < 1e-7)
-      {
-         pBar.Clear();
-         CppTools::PrintWarning("Resulting background histogram is empty in " + 
-                                centrality["name"].as<std::string>() + 
-                                CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
-                                CppTools::DtoStr(pTBinRanges[i + 1], 2));
-         pBar.RePrint();
-      }
-
-      if (rebinX != 1)
-      {
-         distrMInv->Rebin(rebinX);
-         distrMInvFG->Rebin(rebinX);
-         distrMInvBG->Rebin(rebinX);
-      }
-
-      distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
-
-      distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv + 1e-7), 
-                                      distrMInv->GetXaxis()->FindBin(maxMInv - 1e-7));
-      distrMInvFG->GetXaxis()->SetRange(distrMInvFG->GetXaxis()->FindBin(minMInv + 1e-7), 
-                                        distrMInvFG->GetXaxis()->FindBin(maxMInv - 1e-7));
-      distrMInvBG->GetXaxis()->SetRange(distrMInvBG->GetXaxis()->FindBin(minMInv + 1e-7), 
-                                        distrMInvBG->GetXaxis()->FindBin(maxMInv - 1e-7));
-
-      distrMInv->SetLineWidth(2);
-      distrMInvFG->SetLineWidth(3);
-      distrMInvBG->SetLineWidth(2);
-
-      distrMInvFG->SetLineColor(kAzure - 3);
-      distrMInvBG->SetLineColor(kGreen - 3);
-
-      distrMInvFGLR->SetLineColor(kBlack);
-      distrMInvFGLR->SetLineWidth(2);
-
-      distrMInvFG->SetLineWidth(2);
-      distrMInvBG->SetLineWidth(2);
-      distrMInv->SetLineWidth(2);
-
-      for (int j = distrMInvFGLR->GetXaxis()->GetNbins(); j >= 1; j--)
-      {
-         if (distrMInvFGLR->GetBinContent(j) > 10.) 
+         for (int k = 0; k < inputYAMLResonance["cb_r_bins"].as<int>(); k++)
          {
-            if (j < distrMInvFGLR->GetXaxis()->GetNbins() - 5.)
-            distrMInvFGLR->GetXaxis()->SetRange(1, j + 5);
-            break;
+         */
+            TH1D *distrMInv = 
+               MInv::Merge(inputFile, histPrefix, decayMode, 
+                           centrality["cb_c_min"].as<int>(), centrality["cb_c_max"].as<int>(),
+                           0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
+                           0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
+                           // j, j, k, k,
+                           pTBinRanges[i], pTBinRanges[i + 1],
+                           distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR, 
+                           numberOfEvents);
+
+            if (inputYAMLResonance["has_antiparticle"].as<bool>() && 
+                !inputYAMLResonance["separate_antiparticle"].as<bool>())
+            {
+               decayMode = ParticleMap::nameShort[daughter2Id] +
+                           ParticleMap::nameShort[daughter1Id];
+               distrMInv->Add(MInv::Merge(inputFile, histPrefix, decayMode, 
+                                          centrality["cb_c_min"].as<int>(), 
+                                          centrality["cb_c_max"].as<int>(),
+                                          0, inputYAMLResonance["cb_z_bins"].as<int>() - 1, 
+                                          0, inputYAMLResonance["cb_r_bins"].as<int>() - 1,
+                                          // j, j, k, k,
+                                          pTBinRanges[i], pTBinRanges[i + 1],
+                                          distrMInvFG, distrMInvBG, distrMInvFGLR, distrMInvBGLR,
+                                          numberOfEvents));
+            }
+
+            if (!distrMInv)
+            {
+               pBar.Clear();
+               CppTools::PrintError("Resulting M_{inv} histogram could not be constructed for " + 
+                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            }
+            else if (distrMInv->Integral(1, distrMInv->GetXaxis()->GetNbins()) < 1e-7)
+            {
+               pBar.Clear();
+               CppTools::PrintWarning("Resulting histogram is empty in " + 
+                                      centrality["name"].as<std::string>() + " " +
+                                      CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                      CppTools::DtoStr(pTBinRanges[i + 1], 2));
+               pBar.RePrint();
+               continue;
+            }
+
+            if (!distrMInvFG)
+            {
+               pBar.Clear();
+               CppTools::PrintError("Resulting M_{inv} foreground histogram "\
+                                    "could not be constructed for " + 
+                                    centrality["name"].as<std::string>() + " " +
+                                    CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                    CppTools::DtoStr(pTBinRanges[i + 1], 2));
+            }
+
+            if (!distrMInvBG)
+            {
+               pBar.Clear();
+               CppTools::PrintWarning("Resulting M_{inv} foreground histogram "\
+                                      "could not be constructed for " + 
+                                      centrality["name"].as<std::string>() + " " +
+                                      CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                      CppTools::DtoStr(pTBinRanges[i + 1], 2));
+               pBar.RePrint();
+            }
+            else if (distrMInvBG->Integral(1, distrMInvBG->GetXaxis()->GetNbins()) < 1e-7)
+            {
+               pBar.Clear();
+               CppTools::PrintWarning("Resulting background histogram is empty in " + 
+                                      centrality["name"].as<std::string>() + 
+                                      CppTools::DtoStr(pTBinRanges[i], 2) + "<pT<" + 
+                                      CppTools::DtoStr(pTBinRanges[i + 1], 2));
+               pBar.RePrint();
+            }
+
+            if (rebinX != 1)
+            {
+               distrMInv->Rebin(rebinX);
+               distrMInvFG->Rebin(rebinX);
+               distrMInvBG->Rebin(rebinX);
+            }
+
+            distrMInv->SetMaximum(distrMInv->GetMaximum()*1.2);
+
+            distrMInv->GetXaxis()->SetRange(distrMInv->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                            distrMInv->GetXaxis()->FindBin(maxMInv - 1e-7));
+            distrMInvFG->GetXaxis()->SetRange(distrMInvFG->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                              distrMInvFG->GetXaxis()->FindBin(maxMInv - 1e-7));
+            distrMInvBG->GetXaxis()->SetRange(distrMInvBG->GetXaxis()->FindBin(minMInv + 1e-7), 
+                                              distrMInvBG->GetXaxis()->FindBin(maxMInv - 1e-7));
+
+            distrMInv->SetLineWidth(2);
+            distrMInvFG->SetLineWidth(3);
+            distrMInvBG->SetLineWidth(2);
+
+            distrMInvFG->SetLineColor(kAzure - 3);
+            distrMInvBG->SetLineColor(kGreen - 3);
+
+            distrMInvFGLR->SetLineColor(kBlack);
+            distrMInvFGLR->SetLineWidth(2);
+
+            distrMInvFG->SetLineWidth(2);
+            distrMInvBG->SetLineWidth(2);
+            distrMInv->SetLineWidth(2);
+
+            for (int j = distrMInvFGLR->GetXaxis()->GetNbins(); j >= 1; j--)
+            {
+               if (distrMInvFGLR->GetBinContent(j) > 10.) 
+               {
+                  if (j < distrMInvFGLR->GetXaxis()->GetNbins() - 5.)
+                  distrMInvFGLR->GetXaxis()->SetRange(1, j + 5);
+                  break;
+               }
+            }
+
+            distrsMInvFG.emplace_back(static_cast<TH1D *>(distrMInvFG->Clone()));
+            distrsMInvBG.emplace_back(static_cast<TH1D *>(distrMInvBG->Clone()));
+            distrsMInvFGLR.emplace_back(static_cast<TH1D *>(distrMInvFGLR->Clone()));
+            distrsMInvBGLR.emplace_back(static_cast<TH1D *>(distrMInvBGLR->Clone()));
+            distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
+                                         CppTools::DtoStr(pTBinRanges[i + 1], 2)));
+         /*
          }
       }
-
-      distrsMInvFG.emplace_back(static_cast<TH1D *>(distrMInvFG->Clone()));
-      distrsMInvBG.emplace_back(static_cast<TH1D *>(distrMInvBG->Clone()));
-      distrsMInvFGLR.emplace_back(static_cast<TH1D *>(distrMInvFGLR->Clone()));
-      distrsMInvBGLR.emplace_back(static_cast<TH1D *>(distrMInvBGLR->Clone()));
-      distrMInvNames.emplace_back((CppTools::DtoStr(pTBinRanges[i], 2) + "<p_{T}<" + 
-                                   CppTools::DtoStr(pTBinRanges[i + 1], 2)));
+      */
       numberOfCalls++;
    }
    pBar.Finish();
 }
 
-void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
+bool AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsigned int nPar)
 {
    rescalesMInvBG.clear();
 
@@ -546,7 +563,7 @@ void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsign
          rescalesMInvBG[i] = 1.;
       }
 
-      return;
+      return false;
    }
 
    std::ifstream file(fileName);
@@ -561,4 +578,5 @@ void AnalyzeRealMInv::SetMInvBGRescale(const std::string& fileName, const unsign
    {
       CppTools::PrintError("Number of parameters mismatch from file " + fileName);
    }
+   return true;
 }
