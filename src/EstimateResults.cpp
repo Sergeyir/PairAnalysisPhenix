@@ -87,6 +87,9 @@ int main(int argc, char **argv)
       CppTools::PrintWarning("Cuts variation systematics evaluation will be disabled");
    }
 
+   ROOT::Math::MinimizerOptions::SetDefaultTolerance(0.001);
+   ROOT::Math::MinimizerOptions::SetDefaultMaxFunctionCalls(10000);
+
    runName = inputYAMLResonance["run_name"].as<std::string>();
 
    inputYAMLMain.OpenFile("input/" + runName + "/main.yaml");
@@ -241,7 +244,7 @@ int main(int argc, char **argv)
       double yMax = 1e-31;
 
       TLegend legend(0.6, 0.7, 0.95, 0.95);
-      legend.SetLineColorAlpha(kWhite, 0.6);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(kWhite, 0.5);
 
       std::vector<int> methodColors;
@@ -358,7 +361,7 @@ int main(int argc, char **argv)
             }
             if (!doCutsVarSysForCurrentMethod)
             {
-               CppTools::PrintInfo("Disabling cut variation systematics for current method");
+               CppTools::PrintInfo("Disabling cut variation systematics for " + methodName);
             }
          }
 
@@ -520,7 +523,7 @@ int main(int argc, char **argv)
             resultVarCutsVarT.Draw("SAME");
 
             TLegend legend(0.21, 0.85, 0.95, 0.95);
-            legend.SetLineColorAlpha(kGray, 0.3);
+            legend.SetBorderSize(0);
             legend.SetFillColorAlpha(kWhite, 0.5);
             legend.SetNColumns(2);
 
@@ -663,7 +666,7 @@ int main(int argc, char **argv)
             }
 
             TLegend legend(0.15, 0.85, 0.9, 0.95);
-            legend.SetLineColorAlpha(0, 0.);
+            legend.SetBorderSize(0);
             legend.SetFillColorAlpha(0, 0.);
             legend.SetNColumns(3);
 
@@ -761,7 +764,8 @@ int main(int argc, char **argv)
       // also used in https://arxiv.org/pdf/1405.3628
       // possible problems: derivation of dN/dpTdy from Ed^3sigma/dp^3 was not shown yet stated
       TF1 spectraFit("spectra fit", 
-                     "1/(2*pi)*[0]*([1] - 1)*([1] - 2)/(([1]*[2] + [3]*([1] - 1))*([1]*[2] + [3]))*"\
+                     "1/(2*pi)*[0]*([1] - 1)*([1] - 2)/"\
+                     "(([1]*[2] + [3]*([1] - 1))*([1]*[2] + [3]))*"\
                      "(([1]*[2] + sqrt(x^2 + [3]^2))/([1]*[2] + [3]))^(-[1])");
 
       // STAR derived tsallis statistics
@@ -779,17 +783,16 @@ int main(int argc, char **argv)
                      "0.5/(pi)*[0]*([1] - 1.)*([1] - 2.)/([2] + [3]*([1] - 1.))/"\
                      "([2] + [3])*(([2] + sqrt(x^2 + [3]^2))/(([2] + [3])))^(-[1])");
                      */
-
       spectraFit.SetParameters(1., 12, 0.01);
-      spectraFit.SetParLimits(1, 8., 30.);
+      spectraFit.SetParLimits(1, 5., 30.);
       spectraFit.SetParLimits(2, 0.05, 1.);
       spectraFit.FixParameter(3, resonanceMass);
 
-      spectraFit.SetRange(xMin/1.05, xMax*1.05);
+      spectraFit.SetRange(xMin-0.1, xMax+0.1);
 
-      spectraFit.SetLineStyle(2);
       spectraFit.SetLineWidth(3);
-      spectraFit.SetLineColorAlpha(kBlack, 0.5);
+      spectraFit.SetLineStyle(9);
+      spectraFit.SetLineColorAlpha(kGray+3, 0.5);
 
       for (unsigned int i = 0; i < fitNTries; i++)
       {
@@ -847,6 +850,51 @@ int main(int argc, char **argv)
 
       graphSpectraVsPTForTsallisFit.Fit(&spectraFit, "RQMBN E EX0");
 
+      // exponential extrapolation of spectra
+      TGraph spectraExtrapolation;
+
+      spectraExtrapolation.SetLineStyle(2);
+      spectraExtrapolation.SetLineWidth(3);
+
+      for (unsigned int i = 0; i < pTNBins - 1; i++)
+      {
+         TF1 expF("exp fit", "expo");
+         expF.SetRange(pTBinRanges[i], pTBinRanges[i+2]);
+         graphSpectraVsPTForTsallisFit.Fit(&expF, "RQMBN");
+
+         if (i == 0)
+         {
+            for (double x = pTBinRanges[i]/1.5; x < (pTBinRanges[i] + pTBinRanges[i+1])/2.; x+=0.01)
+            {
+               spectraExtrapolation.AddPoint(x, expF.Eval(x));
+            }
+         }
+         for (double x = (pTBinRanges[i] + pTBinRanges[i+1])/2.; x < (pTBinRanges[i+1] + pTBinRanges[i+2])/2.; x+=0.01)
+         {
+            spectraExtrapolation.AddPoint(x, expF.Eval(x));
+         }
+         if (i == pTNBins - 2)
+         {
+            for (double x = (pTBinRanges[i+1] + pTBinRanges[i+2])/2.; x < pTBinRanges[i+2]*1.5; x+=0.01)
+            {
+               spectraExtrapolation.AddPoint(x, expF.Eval(x));
+            }
+         }
+      }
+
+      // TF1 
+      TGraph spectraExtrapolationToFitRatio;
+      for (int i = 0; i < spectraExtrapolation.GetN(); i++)
+      {
+         spectraExtrapolationToFitRatio.AddPoint(spectraExtrapolation.GetPointX(i),
+                                                 spectraExtrapolation.GetPointY(i)/
+                                                 spectraFit.Eval(spectraExtrapolation.GetPointX(i)));
+      }
+
+      spectraExtrapolationToFitRatio.SetLineWidth(3);
+      spectraExtrapolationToFitRatio.SetLineStyle(2);
+      spectraExtrapolationToFitRatio.SetLineColorAlpha(kP6Grape, 0.9);
+
       resultsOutputFile->mkdir(centralityName.c_str());
       resultsOutputFile->cd(centralityName.c_str());
 
@@ -886,7 +934,7 @@ int main(int argc, char **argv)
          }
       }
 
-      spectraFit.SetLineColor(kGray + 1);
+      spectraExtrapolation.SetLineColor(kP6Grape);
 
       TCanvas canvSpectra("spectra canv", "", 800, 800);
 
@@ -907,6 +955,7 @@ int main(int argc, char **argv)
                            "#it{N}}{#it{dp}_{T}#it{dy}} [GeV/#it{c}]^{-2}", 0.91, 1.85);
 
       spectraFit.Draw("SAME");
+      spectraExtrapolation.Draw("SAME");
 
       TLatex tlText;
 
@@ -932,6 +981,7 @@ int main(int argc, char **argv)
       }
 
       legend.AddEntry(&spectraFit, "Tsallis fit", "L");
+      legend.AddEntry(&spectraExtrapolation, "Extrapolation", "L");
 
       legend.Draw();
 
@@ -950,11 +1000,13 @@ int main(int argc, char **argv)
       if (ratioMin/1.1 < 1. && ratioMax*1.1 > 1.)
       {
          TLine line(xMin - 0.1, 1., xMax + 0.1, 1.);
-         line.SetLineColorAlpha(kBlack, 0.5);
-         line.SetLineStyle(2);
+         line.SetLineColorAlpha(kGray + 3, 0.6);
          line.SetLineWidth(4);
+         line.SetLineStyle(9);
          line.Clone()->Draw();
       }
+
+      spectraExtrapolationToFitRatio.Draw("L");
 
       for (unsigned int i = 0; i < spectraRatiosVsPTStatErr.size(); i++)
       {
@@ -1120,6 +1172,7 @@ int main(int argc, char **argv)
       iC++;
 
       spectraFit.Write();
+      spectraExtrapolation.Write("spectra extrapolation");
    }
 
    resultsOutputFile->Close();
