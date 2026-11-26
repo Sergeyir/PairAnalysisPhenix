@@ -78,10 +78,12 @@ namespace AnalyzeRealMInv
     * @param[in] inputFile file from which approximation parameters will be written
     * @param[in] fitBG background fit to which BG approximation parameters will be applied
     * @param[in] identifier string containing all important information about the fit type and pT range. This value is not required to be absolutely correct and is only used to print warning if something goes wrong to help pinpoint the problem if there is one.
+    * @param[in] suppressWarning if no fixed BG file found prints warning by default
     *
     * @param[out] readStatus value that shows whether assigning fit parameters values from inputFile was succesfull (true if everything was fine, otherwise false)
     */
-   bool SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier);
+   bool SetBGFit(TFile *&inputFile, TF1 *&fitBG, const std::string& identifier, 
+                 const bool suppressWarning = false);
    /// Sets parameters for a function needed for estimating width of 
    /// gaus for convolution of Gaus and Breit-Wigner
    void SetGaussianBroadeningFunction();
@@ -163,6 +165,9 @@ namespace AnalyzeRealMInv
    unsigned long numberOfCalls = 0;
    /// Overal number of iterations. Needed by pBar
    unsigned long numberOfIterations = 0;
+   /// verbosity flag (false suppresses non essential warnings)
+   /// true by default except for cut variation jobs in which case the default is false
+   bool isVerbose = true;
    /// Number of consequent fits of invariant mass distributions for better approximation results
    /// each consequent fit decreases the limits around value from previous fit for every parameter
    /// which makes bettter gradual gradient descent of approximation parameters since ROOT built in
