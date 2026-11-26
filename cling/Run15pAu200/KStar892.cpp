@@ -67,7 +67,7 @@ void KStar892()
    // Spectra (old and new)
    {
       TLegend legend(0.65, 0.6, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(0, 0.);
 
       PainterHelper spectra(&legend);
@@ -190,7 +190,7 @@ void KStar892()
       canv.Clear();
 
       TLegend ratioLegend(0.4, 0.8, 0.95, 0.95);
-      ratioLegend.SetLineColorAlpha(0, 0.);
+      ratioLegend.SetBorderSize(0);
       ratioLegend.SetFillColorAlpha(0, 0.);
 
       PainterHelper ratio(&ratioLegend);
@@ -342,7 +342,7 @@ void KStar892()
    // RAB for K*
    {
       TLegend legend(0.7, 0.7, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(0, 0.);
 
       TCanvas canv("canv", "canv", 800, 800);
@@ -425,7 +425,7 @@ void KStar892()
    // RCP
    {
       TLegend legend(0.4, 0.8, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(0, 0.);
 
       const unsigned int centralIndex = 1;
@@ -580,7 +580,7 @@ void KStar892()
    for (const auto& centrality : inputYAMLResonance["centrality_bins"])
    {
       TLegend legend(0.4, 0.8, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(0, 0.);
 
       const std::string centralityName = centrality["name"].as<std::string>();
@@ -728,7 +728,7 @@ void KStar892()
    if (std::filesystem::exists(spectraPPNewFileName))
    {
       TLegend legend(0.7, 0.7, 0.95, 0.95);
-      legend.SetLineColorAlpha(0, 0.);
+      legend.SetBorderSize(0);
       legend.SetFillColorAlpha(0, 0.);
 
       TFile *resultsInputFilePP = TFile::Open(spectraPPNewFileName.c_str());

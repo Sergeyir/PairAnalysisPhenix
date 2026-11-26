@@ -42,7 +42,7 @@ void KStar892()
    std::filesystem::create_directories(outputDir);
 
    TLegend legend(0.7, 0.8, 0.95, 0.95);
-   legend.SetLineColorAlpha(0, 0.);
+   legend.SetBorderSize(0);
    legend.SetFillColorAlpha(0, 0.);
 
    // Spectra (old and new)
