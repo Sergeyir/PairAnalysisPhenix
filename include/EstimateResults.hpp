@@ -22,6 +22,7 @@
 #include "TLegend.h"
 #include "TLine.h"
 #include "TGraphErrors.h"
+#include "Math/MinimizerOptions.h"
 
 #include "StrTools.hpp"
 #include "IOTools.hpp"
