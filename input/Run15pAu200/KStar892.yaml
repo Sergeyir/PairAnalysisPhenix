@@ -92,7 +92,7 @@ pair_selection_methods:
   custom_bg_fit:
     - {func: "", pt_bins: []}
   cuts_var_sys_fit_func: "pol2"
-  raw_yield_sys_fit_func: "pol1"
+  raw_yield_sys_fit_func: "pol3"
 - 
   name: 1K1TOF1PID
   hist_prefix: 1K1TOF1PID
@@ -107,7 +107,7 @@ pair_selection_methods:
   custom_bg_fit:
     - {func: "", pt_bins: []}
   cuts_var_sys_fit_func: "pol3"
-  raw_yield_sys_fit_func: "pol1"
+  raw_yield_sys_fit_func: "pol3"
 centrality_bins:
 - 
   name: "0-84"
